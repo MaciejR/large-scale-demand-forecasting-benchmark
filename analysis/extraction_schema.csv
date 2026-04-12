@@ -68,3 +68,7 @@ B01_gift_lb_timesfm,GIFT-Eval leaderboard,2025,GIFT-Eval Leaderboard,tsfm.ai,GIF
 B01_gift_lb_deepar,GIFT-Eval leaderboard,2025,GIFT-Eval Leaderboard,tsfm.ai,GIFT-Eval,23 datasets,,,mixed,No,DeepAR,deep_learning,No,Yes,mixed,fixed_origin,avg_rank,12.00 (#12),No,,,Avg WQL=0.99; worst on leaderboard
 # === Critical Evaluation paper details ===
 C03_critical_detail,Unknown,2024,Critical Evaluation of TS Foundation Models in Demand Forecasting,OpenReview,VN1 Forecasting (Rohlik),4 warehouses,5800,,D/W/M,No,TimesFM,foundation,Yes,No,13w/3m,,MASE+sMAPE,best across all granularities,No,,,Prague+Brno warehouses; TimesFM>TFT>NHITS; TimeGPT PI not calibrated
+# === Additional models from extended search ===
+A16_sundial_fev,Liu et al.,2025,Sundial: A Family of Highly Capable Time Series Foundation Models,ICML 2025 (Oral),fev-bench,,,,mixed,No,Sundial-Base,foundation,Yes,No,mixed,rolling,win_rate_SQL,49.2,No,,,128M params; flow-matching; sub-ms inference
+B07_mdpi_zs,Unknown,2025,Benchmarking Foundation Models for TS Forecasting: Zero/Few/Full-Shot,MDPI CSMF,public+industrial,,,,,No,Chronos+Moirai+TimesFM,foundation,Yes+few+full,Yes,mixed,,sMAPE+NMAE,FM > traditional,No,,,FMs outperform traditional with minimal tuning; onTime library
+B08_tsorch,Unknown,2025,TSOrchestra: LLM-orchestrated ensemble of time series FMs,arXiv,GIFT-Eval,,,,mixed,No,TSOrchestra (Moirai-2+Sundial+Toto+TabPFN),ensemble_fm,Yes,No,mixed,,MASE+CRPS,#1 GIFT-Eval (Dec 2025),No,,,LLM as judge coordinates 4 base FMs; meta-learning approach
