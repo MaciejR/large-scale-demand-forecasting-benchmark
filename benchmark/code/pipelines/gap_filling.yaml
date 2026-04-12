@@ -28,7 +28,7 @@ jobs:
     inputs:
       sales_data: ${{parent.inputs.sales_data}}
       calendar_data: ${{parent.inputs.calendar_data}}
-    environment: azureml:forecast-benchmark-env:2
+    environment: azureml:forecast-benchmark-cpu-env:1
 
   seasonal_naive_m5_h14:
     type: command
@@ -42,7 +42,7 @@ jobs:
     inputs:
       sales_data: ${{parent.inputs.sales_data}}
       calendar_data: ${{parent.inputs.calendar_data}}
-    environment: azureml:forecast-benchmark-env:2
+    environment: azureml:forecast-benchmark-cpu-env:1
 
   seasonal_naive_m5_h28:
     type: command
@@ -56,7 +56,7 @@ jobs:
     inputs:
       sales_data: ${{parent.inputs.sales_data}}
       calendar_data: ${{parent.inputs.calendar_data}}
-    environment: azureml:forecast-benchmark-env:2
+    environment: azureml:forecast-benchmark-cpu-env:1
 
   # Foundation models need GPU compute — uncomment after quota approval
   # chronos2_m5_h7:
