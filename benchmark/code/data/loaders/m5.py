@@ -22,6 +22,7 @@ def load_m5(path_sales: str, path_calendar: str) -> pd.DataFrame:
         value_name="y",
     )
 
+    df["d"] = df["d"].str.replace("d_", "").astype(int)
     df = df.merge(calendar[["d", "date"]], on="d", how="left")
     df = df.rename(columns={"id": "series_id", "date": "ds"})
     df["ds"] = pd.to_datetime(df["ds"])
