@@ -190,7 +190,12 @@ def log_run(
         with tempfile.TemporaryDirectory() as tmpdir:
             csv_path = os.path.join(tmpdir, "per_series_metrics.csv")
             metrics_df.to_csv(csv_path, index=False)
-            mlflow.log_artifact(csv_path)
+            try:
+                mlflow.log_artifact(csv_path)
+            except TypeError:
+                # azureml-mlflow artifact builder incompatibility with newer mlflow
+                print("WARNING: mlflow.log_artifact failed (azureml-mlflow compat issue), "
+                      "skipping per-series CSV upload. Metrics already logged.")
 
 
 def main():
