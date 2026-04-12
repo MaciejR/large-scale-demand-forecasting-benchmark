@@ -1,0 +1,39 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+type: command
+
+experiment_name: demand-forecast-benchmark
+display_name: single-model-run
+
+code: ../
+
+command: >
+  python experiments/run_model.py
+  --model ${{inputs.model}}
+  --horizon ${{inputs.horizon}}
+  --min-train-size ${{inputs.min_train_size}}
+  --sales-path ${{inputs.sales_data}}
+  --calendar-path ${{inputs.calendar_data}}
+  --max-series ${{inputs.max_series}}
+
+inputs:
+  model:
+    type: string
+    default: naive
+  horizon:
+    type: integer
+    default: 7
+  min_train_size:
+    type: integer
+    default: 100
+  max_series:
+    type: integer
+    default: 100
+  sales_data:
+    type: uri_file
+    path: azureml:m5-sales:1
+  calendar_data:
+    type: uri_file
+    path: azureml:m5-calendar:1
+
+environment: azureml:forecast-benchmark-env:1
+compute: azureml:cc-forecast-batch

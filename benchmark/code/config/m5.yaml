@@ -1,0 +1,11 @@
+experiment_name: demand-forecast-benchmark
+dataset: m5
+horizons: [7, 14, 28]
+min_train_size: 100
+models:
+  - naive
+  - ets
+  - lightgbm
+tags:
+  phase: phase1
+  eval_method: rolling_origin
