@@ -53,14 +53,22 @@ def load_dataset(dataset: str, task: str = None, **kwargs):
         raise ValueError(f"Unknown dataset: {dataset}")
 
 
-def get_model_fn(model_name: str):
+def _device_for_hardware(hardware: str) -> str:
+    """Map hardware name to torch device string."""
+    gpu_hardware = {"NC6", "T4", "K80", "A100"}
+    return "cuda" if hardware in gpu_hardware else "cpu"
+
+
+def get_model_fn(model_name: str, hardware: str = "E4DS_V4"):
     """Return (forecast_fn, is_foundation_model) for a given model name."""
+    device = _device_for_hardware(hardware)
+
     if model_name == "seasonal_naive":
         return seasonal_naive_forecast, False
 
     elif model_name == "chronos2":
         from models.foundation.chronos2 import Chronos2Forecaster
-        forecaster = Chronos2Forecaster()
+        forecaster = Chronos2Forecaster(device=device)
         return forecaster.predict, True
 
     elif model_name == "timesfm25":
@@ -70,11 +78,47 @@ def get_model_fn(model_name: str):
 
     elif model_name == "moirai2":
         from models.foundation.moirai2 import Moirai2Forecaster
-        forecaster = Moirai2Forecaster()
+        forecaster = Moirai2Forecaster(device=device)
         return forecaster.predict, True
+
+    elif model_name == "lightgbm_cov":
+        # Sentinel — LightGBM with covariates uses a different code path
+        return None, False
 
     else:
         raise ValueError(f"Unknown model: {model_name}")
+
+
+def _evaluate_lightgbm_cov(df, horizon, min_train_size, metadata):
+    """Run LightGBM with covariates — separate path because it needs full DataFrame."""
+    from models.ml.lightgbm_covariates import LightGBMCovariateForecaster
+
+    covariate_cols = (
+        metadata.get("known_dynamic_columns", [])
+        + metadata.get("past_dynamic_columns", [])
+    )
+    if not covariate_cols:
+        covariate_cols = [c for c in df.columns if c not in ("series_id", "ds", "y")]
+
+    lgbm = LightGBMCovariateForecaster(covariate_columns=covariate_cols)
+    lgbm.fit(df)
+
+    outputs = []
+    for sid, g in df.groupby("series_id"):
+        g = g.sort_values("ds").reset_index(drop=True)
+        for t in range(min_train_size, len(g) - horizon + 1, horizon):
+            hist = g.iloc[:t]
+            test = g.iloc[t : t + horizon]
+            future_cov = test[covariate_cols].reset_index(drop=True) if covariate_cols else None
+            pred = lgbm.predict(hist, horizon, future_covariates=future_cov)
+            for i in range(min(horizon, len(test))):
+                outputs.append({
+                    "series_id": sid,
+                    "y_true": test["y"].iloc[i],
+                    "y_pred": pred.iloc[i],
+                })
+
+    return pd.DataFrame(outputs)
 
 
 def run_experiment(
@@ -84,6 +128,7 @@ def run_experiment(
     min_train_size: int,
     hardware: str,
     max_series: int = None,
+    metadata: dict = None,
 ):
     """Run a single model on a dataset with cost tracking."""
     if max_series:
@@ -91,11 +136,16 @@ def run_experiment(
         df = df[df["series_id"].isin(series_ids)]
 
     n_series = df["series_id"].nunique()
-    forecast_fn, is_gpu = get_model_fn(model_name)
 
     tracker = CostTracker(hardware=hardware)
     tracker.start()
-    results = rolling_forecast(df, horizon, min_train_size, forecast_fn)
+
+    if model_name == "lightgbm_cov":
+        results = _evaluate_lightgbm_cov(df, horizon, min_train_size, metadata or {})
+    else:
+        forecast_fn, is_gpu = get_model_fn(model_name, hardware)
+        results = rolling_forecast(df, horizon, min_train_size, forecast_fn)
+
     tracker.stop()
 
     metrics_df = aggregate_metrics(results)
@@ -183,7 +233,7 @@ def main():
 
     metrics_df, cost_metrics, n_series = run_experiment(
         args.model, df, horizon, args.min_train_size,
-        args.hardware, args.max_series,
+        args.hardware, args.max_series, metadata,
     )
 
     tags = {"phase": "gap_filling", "eval_method": "rolling_origin", "paper": "meta-analysis"}
