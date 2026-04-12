@@ -14,9 +14,6 @@ inputs:
   calendar_data:
     type: uri_file
     path: azureml:m5-calendar:1
-  min_train_size:
-    type: integer
-    default: 100
 
 jobs:
   naive_h7:
@@ -25,13 +22,12 @@ jobs:
     command: >
       python experiments/run_model.py
       --model naive --horizon 7
-      --min-train-size ${{inputs.min_train_size}}
+      --min-train-size 100
       --sales-path ${{inputs.sales_data}}
       --calendar-path ${{inputs.calendar_data}}
     inputs:
       sales_data: ${{parent.inputs.sales_data}}
       calendar_data: ${{parent.inputs.calendar_data}}
-      min_train_size: ${{parent.inputs.min_train_size}}
     environment: azureml:forecast-benchmark-env:1
 
   ets_h7:
@@ -40,13 +36,12 @@ jobs:
     command: >
       python experiments/run_model.py
       --model ets --horizon 7
-      --min-train-size ${{inputs.min_train_size}}
+      --min-train-size 100
       --sales-path ${{inputs.sales_data}}
       --calendar-path ${{inputs.calendar_data}}
     inputs:
       sales_data: ${{parent.inputs.sales_data}}
       calendar_data: ${{parent.inputs.calendar_data}}
-      min_train_size: ${{parent.inputs.min_train_size}}
     environment: azureml:forecast-benchmark-env:1
 
   lightgbm_h7:
@@ -55,13 +50,12 @@ jobs:
     command: >
       python experiments/run_model.py
       --model lightgbm --horizon 7
-      --min-train-size ${{inputs.min_train_size}}
+      --min-train-size 100
       --sales-path ${{inputs.sales_data}}
       --calendar-path ${{inputs.calendar_data}}
     inputs:
       sales_data: ${{parent.inputs.sales_data}}
       calendar_data: ${{parent.inputs.calendar_data}}
-      min_train_size: ${{parent.inputs.min_train_size}}
     environment: azureml:forecast-benchmark-env:1
 
   naive_h14:
@@ -70,13 +64,12 @@ jobs:
     command: >
       python experiments/run_model.py
       --model naive --horizon 14
-      --min-train-size ${{inputs.min_train_size}}
+      --min-train-size 100
       --sales-path ${{inputs.sales_data}}
       --calendar-path ${{inputs.calendar_data}}
     inputs:
       sales_data: ${{parent.inputs.sales_data}}
       calendar_data: ${{parent.inputs.calendar_data}}
-      min_train_size: ${{parent.inputs.min_train_size}}
     environment: azureml:forecast-benchmark-env:1
 
   ets_h14:
@@ -85,13 +78,12 @@ jobs:
     command: >
       python experiments/run_model.py
       --model ets --horizon 14
-      --min-train-size ${{inputs.min_train_size}}
+      --min-train-size 100
       --sales-path ${{inputs.sales_data}}
       --calendar-path ${{inputs.calendar_data}}
     inputs:
       sales_data: ${{parent.inputs.sales_data}}
       calendar_data: ${{parent.inputs.calendar_data}}
-      min_train_size: ${{parent.inputs.min_train_size}}
     environment: azureml:forecast-benchmark-env:1
 
   lightgbm_h14:
@@ -100,13 +92,12 @@ jobs:
     command: >
       python experiments/run_model.py
       --model lightgbm --horizon 14
-      --min-train-size ${{inputs.min_train_size}}
+      --min-train-size 100
       --sales-path ${{inputs.sales_data}}
       --calendar-path ${{inputs.calendar_data}}
     inputs:
       sales_data: ${{parent.inputs.sales_data}}
       calendar_data: ${{parent.inputs.calendar_data}}
-      min_train_size: ${{parent.inputs.min_train_size}}
     environment: azureml:forecast-benchmark-env:1
 
   naive_h28:
@@ -115,13 +106,12 @@ jobs:
     command: >
       python experiments/run_model.py
       --model naive --horizon 28
-      --min-train-size ${{inputs.min_train_size}}
+      --min-train-size 100
       --sales-path ${{inputs.sales_data}}
       --calendar-path ${{inputs.calendar_data}}
     inputs:
       sales_data: ${{parent.inputs.sales_data}}
       calendar_data: ${{parent.inputs.calendar_data}}
-      min_train_size: ${{parent.inputs.min_train_size}}
     environment: azureml:forecast-benchmark-env:1
 
   ets_h28:
@@ -130,13 +120,12 @@ jobs:
     command: >
       python experiments/run_model.py
       --model ets --horizon 28
-      --min-train-size ${{inputs.min_train_size}}
+      --min-train-size 100
       --sales-path ${{inputs.sales_data}}
       --calendar-path ${{inputs.calendar_data}}
     inputs:
       sales_data: ${{parent.inputs.sales_data}}
       calendar_data: ${{parent.inputs.calendar_data}}
-      min_train_size: ${{parent.inputs.min_train_size}}
     environment: azureml:forecast-benchmark-env:1
 
   lightgbm_h28:
@@ -145,11 +134,10 @@ jobs:
     command: >
       python experiments/run_model.py
       --model lightgbm --horizon 28
-      --min-train-size ${{inputs.min_train_size}}
+      --min-train-size 100
       --sales-path ${{inputs.sales_data}}
       --calendar-path ${{inputs.calendar_data}}
     inputs:
       sales_data: ${{parent.inputs.sales_data}}
       calendar_data: ${{parent.inputs.calendar_data}}
-      min_train_size: ${{parent.inputs.min_train_size}}
     environment: azureml:forecast-benchmark-env:1

@@ -1,118 +1,106 @@
 # Paper Outline
 
 ## Title
-**Short-Term Demand Forecasting at Scale: A Benchmark of Statistical, ML, and Foundation Models (2026)**
+**When Do Foundation Models Pay Off for Retail Demand Forecasting? A Systematic Review and Cross-Benchmark Meta-Analysis**
 
 ## Abstract
-This paper presents a large-scale benchmark of demand forecasting methods for short-term horizons in retail and supply chain settings. We compare statistical baselines, machine learning, deep learning, transformer-based, and time-series foundation models under a unified experimental protocol across established and contemporary benchmarks — M5, GIFT-Eval (sales domain), and fev-bench (tasks with covariates). The study emphasizes forecast accuracy, computational cost, stability, and scalability, with particular focus on whether recent foundation models (Chronos-2, TimesFM 2.5, Moirai 2.0) justify their cost over simpler alternatives. All experiments are tracked via MLflow on Azure ML for full reproducibility.
+We present a PRISMA-compliant systematic review and meta-analysis of forecasting methods for short-term retail demand. We screen ~150-200 papers (2020-2026), extract quantitative results from ~40-60 studies spanning M5, GIFT-Eval, and fev-bench, and run gap-filling experiments where model-dataset combinations are missing from the literature. A random-effects meta-regression identifies data characteristics that moderate foundation model performance relative to traditional approaches. We provide a practitioner-oriented decision framework and cost-accuracy Pareto analysis. All gap-filling experiments are tracked via MLflow on Azure ML.
 
-## 1. Introduction
-- Importance of demand forecasting in retail and supply chain management
-- Characteristics of short-term, large-scale forecasting problems
-- The foundation model revolution (2024–2026) and the question of diminishing returns
-- Limitations of existing benchmarks: single-dataset, no covariates, data leakage concerns
-- Contributions of this work
+## 1. Introduction (~2 pages)
+- The foundation model wave in time-series forecasting (2024-2026)
+- The hype-reality gap: do Chronos-2, TimesFM 2.5, Moirai 2.0 justify their cost?
+- Why a meta-analysis, not another benchmark: too many benchmarks, no synthesis
+- Research questions (RQ1-RQ4)
+- Contributions
 
-## 2. Related Work
-### 2.1 Statistical Forecasting Methods
-### 2.2 Machine Learning Approaches
-### 2.3 Deep Learning Models
-### 2.4 Transformer-Based Forecasting
-### 2.5 Foundation Models for Time Series
-- Chronos / Chronos-2 (Amazon, 2024–2025)
-- TimesFM 1.0–2.5 (Google, 2024–2025)
-- Moirai / Moirai 2.0 / Moirai-MoE (Salesforce, 2024–2025)
-### 2.6 Benchmarking Challenges
-- Data leakage in pretraining (TimesFM on GIFT-Eval datasets)
-- GIFT-Eval non-leaking pretraining protocol
-- fev-bench: covariates, statistical rigor, bootstrapped CIs
+## 2. Background (~3 pages)
+### 2.1 Taxonomy of Forecasting Approaches
+- Statistical (Naive, Seasonal Naive, ETS, ARIMA)
+- Machine Learning (LightGBM, XGBoost — global models)
+- Deep Learning (N-BEATS, DeepAR, TFT, PatchTST)
+- Foundation Models (Chronos-2, TimesFM 2.5, Moirai 2.0) — zero-shot vs fine-tuned
 
-## 3. Problem Formulation
-- Multi-series short-term forecasting setup
-- Global vs local models
-- Univariate vs multivariate (covariate-aware) forecasting
-- Zero-shot vs fine-tuned foundation models
+### 2.2 Existing Benchmarks
+- M5 Competition (2020) — established but aging
+- GIFT-Eval (NeurIPS 2024) — 28 datasets, 144K series, non-leaking protocol
+- fev-bench (2025) — 100 tasks, 46 with covariates, bootstrapped CIs
 
-## 4. Datasets
+### 2.3 Systematic Reviews in Forecasting
+- Prior meta-analyses (M-competition lineage)
+- Gap: no PRISMA-compliant review of foundation models for retail
 
-### 4.1 M5 Forecasting (Walmart, 2020)
-- 30,490 product-level daily sales across 10 stores
-- Hierarchical aggregation (12 levels, 42,840 series)
-- Established baseline for retail demand forecasting
-- **Role:** backward compatibility, reproducibility anchor
+## 3. Methodology (~4 pages)
+### 3.1 Search Protocol (PRISMA Phase A)
+- Databases: Scopus, Google Scholar, Semantic Scholar, arXiv
+- Search strings and date range (2020-2026)
+- Inclusion/exclusion criteria (retail domain, >1000 series, quantitative metrics)
 
-### 4.2 GIFT-Eval — Sales Domain Subset (Salesforce, NeurIPS 2024)
-- Part of 28-dataset, 144K-series benchmark spanning 7 domains
-- Sales subset: retail and e-commerce demand series
-- Short/medium/long prediction horizons per dataset
-- Non-leaking pretraining dataset (230B data points)
-- 20 published baselines including foundation models
-- **Role:** contemporary multi-domain benchmark, direct comparability with SOTA
+### 3.2 Data Extraction
+- Variables: model, dataset, metric (WAPE, sMAPE, MAE, CRPS), horizon, n_series, series_length, intermittency, covariates, compute cost
 
-### 4.3 fev-bench — Demand Tasks with Covariates (AutoGluon/Amazon, 2025)
-- 100 forecasting tasks from 96 datasets, 7 domains
-- 46 tasks include covariates (prices, promotions, weather, events)
-- Bootstrapped confidence intervals for statistical rigor
-- Compatible with GluonTS, darts, AutoGluon, Nixtla, sktime
-- **Role:** covariate-aware evaluation, statistical significance testing
+### 3.3 Gap-Filling Experiments (Phase B)
+- Foundation models on M5 (not in literature with rolling-origin)
+- LightGBM+covariates on fev-bench retail tasks
+- Seasonal Naive everywhere (universal baseline)
+- Cost tracking: GPU hours, $/1000 series, CO2
 
-### 4.4 SupplyGraph (2024) — exploratory
-- Supply chain graph structure: products as nodes, relationships as edges
-- GNN-ready format
-- **Role:** future extension for graph-based models
+### 3.4 Meta-Regression Specification (Phase C)
+- Random-effects model
+- Moderators: n_series, series_length, intermittency_ratio, has_covariates, horizon_ratio
+- Publication bias assessment (funnel plot, Egger's test)
 
-## 5. Forecasting Models
+## 4. Literature Results (~4 pages)
+- PRISMA flow diagram (identification → screening → eligibility → included)
+- Descriptive statistics of included studies
+- Narrative synthesis by model family
+- Extracted accuracy tables
 
-### 5.1 Baselines
-- Naive (last-value repeat)
-- Seasonal Naive (same-day-last-week)
-- ETS (Holt-Winters, statsmodels)
+## 5. Gap-Filling Experiments (~3 pages)
+### 5.1 Experimental Setup
+- Azure ML infrastructure, rolling-origin evaluation
+- Metrics: WAPE (primary), sMAPE, MAE, CRPS
+- Horizons: 7/14/28 (M5), short/medium/long (GIFT-Eval), task-specific (fev-bench)
 
-### 5.2 Machine Learning
-- LightGBM (global model with lag/rolling features)
+### 5.2 Results
+- Foundation models zero-shot on M5
+- LightGBM+covariates on fev-bench
+- Cost metrics across all runs
 
-### 5.3 Deep Learning
-- N-BEATS / N-BEATSx
-- DeepAR
-- Temporal Fusion Transformer (TFT)
-- PatchTST
+## 6. Meta-Analysis (~4 pages)
+### 6.1 Overall Effect Sizes
+- Forest plots: foundation models vs statistical, vs ML, vs DL
 
-### 5.4 Foundation Models (zero-shot and fine-tuned)
-- Chronos-2 (Amazon, T5 encoder-decoder, univariate)
-- TimesFM 2.5 (Google, continuous quantile prediction, univariate)
-- Moirai 2.0 (Salesforce, any-variate, decoder-only, 36M pretrain series)
+### 6.2 Moderator Analysis
+- Which data characteristics predict foundation model advantage?
+- Interaction effects (covariates × model family)
 
-## 6. Experimental Setup
-- Evaluation protocol: rolling-origin
-- Horizons: 7, 14, 28 days (M5); short/medium/long (GIFT-Eval); task-specific (fev-bench)
-- Metrics: WAPE (primary), sMAPE, MAE, CRPS (probabilistic)
-- Computational cost: training time, inference time, GPU hours, CO₂ estimate
-- Infrastructure: Azure ML + MLflow tracking, reproducible YAML pipelines
-- Data leakage mitigation: GIFT-Eval non-leaking protocol, separate pretraining
+### 6.3 Cost-Accuracy Pareto Frontier
+- GPU hours vs WAPE improvement
+- $/1000 series across model families
+- CO2 footprint comparison
 
-## 7. Results
-- Accuracy comparison across datasets and horizons
-- Foundation models vs traditional: when do they win?
-- Cost–accuracy Pareto frontiers
-- Covariate impact (fev-bench tasks with vs without covariates)
-- Stability analysis (variance across rolling windows)
-- Statistical significance (bootstrapped CIs from fev-bench)
+### 6.4 Publication Bias
+- Funnel plots, Egger's test results
 
-## 8. Discussion
-- Practical implications for retail practitioners
-- When foundation models justify their cost (and when they do not)
-- The covariate gap: univariate foundation models vs covariate-aware ML
+## 7. Decision Framework (~2 pages)
+- Flowchart: data characteristics → recommended model family
+- Cost thresholds: "foundation model pays off when..."
+- Practical implementation guidance for retail teams
+
+## 8. Discussion (~2 pages)
 - Data leakage: the elephant in foundation model benchmarking
-- Scalability: wall-clock time at 30K+ series
+- Covariate gap: univariate foundation models vs covariate-aware ML
+- Limitations of this meta-analysis
+- Generalizability beyond retail
 
-## 9. Threats to Validity
-- Dataset selection bias
-- Foundation model pretraining contamination
-- Hardware-dependent runtime comparisons
-- Hyperparameter tuning budget fairness
+## 9. Conclusions (~1 page)
+- Key findings per RQ
+- Practical recommendations
+- Future work: probabilistic forecasting, graph-based models, fine-tuning strategies
 
-## 10. Conclusions and Future Work
-- Practical model selection guidelines
-- Foundation model fine-tuning strategies
-- Graph-based forecasting (SupplyGraph extension)
-- Probabilistic forecast evaluation expansion
+## Appendices
+- A: PRISMA checklist
+- B: Full search strings
+- C: Per-series metric distributions
+- D: Sensitivity analyses
+- E: Full extracted data table
