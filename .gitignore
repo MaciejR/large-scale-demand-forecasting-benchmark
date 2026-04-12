@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+data/m5/*.csv
+data/m5/*.parquet
+data/gift_eval/
+data/fev_bench/
+.DS_Store
+*.log
+mlruns/
+outputs/

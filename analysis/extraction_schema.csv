@@ -1,0 +1,2 @@
+paper_id,authors,year,title,venue,dataset,dataset_variant,n_series,series_length_median,frequency,has_covariates,model_name,model_family,zero_shot,fine_tuned,horizon,eval_method,metric_name,metric_value,runtime_reported,gpu_hours,hardware,notes
+example_2024,Smith et al.,2024,Example Paper Title,NeurIPS,M5,full,30490,1941,D,No,Chronos-2,foundation,Yes,No,28,rolling_origin,WAPE,0.123,Yes,2.5,A100,Zero-shot evaluation
