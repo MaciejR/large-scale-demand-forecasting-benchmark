@@ -73,7 +73,7 @@ AND
 | 2026-04-12 | Web (arXiv) | demand forecasting foundation model Chronos TimesFM Moirai 2024 2025 | ~10 | arXiv targeted |
 | 2026-04-12 | Semantic Scholar API | foundation model time series demand forecasting | 1 (rate limited) | Got Chronos citation count (622) |
 
-**Total unique candidate papers after deduplication: 44**
+**Total unique candidate papers after deduplication: 49**
 
 ---
 
@@ -95,6 +95,10 @@ AND
 | A10 | Tiny Time Mixers (TTMs): Fast Pre-trained Models for Zero/Few-Shot Forecasting | Ekambaram et al. | 2024 | 2401.03955 | NeurIPS 2024 | - | TTM (<1M params, TSMixer-based) | Multiple (outperforms larger FMs) | INCLUDE |
 | A11 | Fast and accurate zero-shot forecasting with Chronos-Bolt and AutoGluon | AWS | 2025 | - | AWS Blog (tech report) | - | Chronos-Bolt (250x faster) | 27 datasets | INCLUDE |
 | A12 | In-Context Fine-Tuning for Time-Series Foundation Models | Das et al. | 2025 | - | ICML 2025 | - | TimesFM few-shot | Multiple | INCLUDE |
+| A13 | TiRex: Zero-Shot Forecasting Across Long and Short Horizons with Enhanced ICL | Alonso et al. | 2025 | 2505.23719 | arXiv | - | TiRex (35M, xLSTM) | GIFT-Eval (#1 WQL), fev-bench (#1) | INCLUDE |
+| A14 | From Tables to Time: Extending TabPFN-v2 to Time Series Forecasting | Hollmann et al. | 2025 | 2501.02945 | NeurIPS TSALM + arXiv | - | TabPFN-TS (11M, tabular FM) | GIFT-Eval (#1 Jan 2025), fev-bench (covariates) | INCLUDE |
+| A15 | Toto: Time Series Optimized Transformer for Observability | Datadog | 2025 | 2407.07874 | arXiv | - | Toto-1.0 (151M) | GIFT-Eval, BOOM | INCLUDE |
+| A16 | Sundial: A Family of Highly Capable Time Series Foundation Models | Liu et al. | 2025 | 2502.00816 | ICML 2025 (Oral) | - | Sundial (32M-444M, flow-matching) | GIFT-Eval (#1 MASE May 2025) | INCLUDE |
 
 ### Category B: Benchmark Papers
 
@@ -161,22 +165,22 @@ AND
 ## PRISMA Flow Summary
 
 ```
-Records identified through database searching: ~200 (across 24 queries)
-Records after deduplication: ~120
-Titles/abstracts screened: 120
-Records excluded (not demand/retail, no quant results): ~76
-Full-text articles assessed for eligibility: 44
-Studies included in qualitative synthesis: ~38 (pending full-text review)
-Studies included in meta-analysis (with extractable metrics): TBD
+Records identified through database searching: ~250 (across 30+ queries)
+Records after deduplication: ~130
+Titles/abstracts screened: 130
+Records excluded (not demand/retail, no quant results): ~81
+Full-text articles assessed for eligibility: 49
+Studies included in qualitative synthesis: 43
+Studies included in meta-analysis (with extractable metrics): ~35 (extraction in progress)
 ```
 
 ## Status Summary
 
 | Status | Count |
 |--------|-------|
-| INCLUDE (confirmed relevant) | 38 |
-| SCREEN (need full-text review) | 4 |
-| EXCLUDE | 0 (pending screening) |
+| INCLUDE (confirmed relevant) | 43 |
+| SCREEN (need full-text review) | 3 |
+| EXCLUDE | 3 (energy-only, no retail relevance) |
 
 ---
 
@@ -184,17 +188,24 @@ Studies included in meta-analysis (with extractable metrics): TBD
 
 1. **No existing PRISMA-compliant systematic review** of foundation models for retail demand forecasting — confirms our contribution C1.
 2. **Three major benchmarks dominate**: GIFT-Eval (2024), fev-bench (2025), M5 (2020). Each has different model coverage — our meta-analysis connects them.
-3. **Foundation model landscape is fast-moving**: Chronos-2 (Oct 2025), Moirai 2.0 (Nov 2025), TimesFM 2.5 (Sep 2025) all released within 3 months.
-4. **Key gap**: No paper systematically compares cost/efficiency across foundation models — confirms our contribution C4.
-5. **LightGBM remains strong**: Multiple papers confirm tree-based methods competitive or superior, especially on retail/tabular data with covariates.
-6. **Intermittent demand** is under-studied for foundation models — potential moderator for RQ2.
+3. **Foundation model landscape is fast-moving**: Chronos-2 (Oct 2025), Moirai 2.0 (Nov 2025), TimesFM 2.5 (Sep 2025), TiRex (May 2025), Sundial (Feb 2025) all released within 9 months.
+4. **GIFT-Eval leaderboard churns rapidly**: #1 changed 4+ times in 2025 (PatchTST → TabPFN-TS → Sundial → Toto → TSOrchestra). Zero-shot FMs cluster mid-pack.
+5. **Key gap**: No paper systematically compares cost/efficiency across foundation models — confirms our contribution C4.
+6. **Covariate gap is critical**: All 20 fev-bench retail tasks have covariates, but only TabPFN-TS (11M params) uses them. This validates our LightGBM+covariates experiment (C2).
+7. **LightGBM remains strong**: M5 winner, multiple papers confirm tree-based methods competitive/superior on retail data with covariates.
+8. **Intermittent demand** is under-studied for foundation models — potential moderator for RQ2.
+9. **Model size paradox**: Smaller models (TiRex 35M, TabPFN-TS 11M, TTM <1M) often outperform larger ones (Chronos-Large 710M). Size is not a reliable predictor of accuracy.
+10. **FM hardware cost**: 40,000x latency overhead vs tree ensembles for 0.8% accuracy gain (C12). Chronos-2 runs at 300 series/sec on single A10G.
 
 ## Next Steps
 
-1. [x] Automated search across multiple databases/queries
-2. [ ] Full-text download for all 38 INCLUDE papers
-3. [ ] Screen 4 remaining SCREEN papers
-4. [ ] Forward/backward citation search on B01, B02, A01, A02, C01
-5. [ ] Extract quantitative data into `analysis/extraction_schema.csv`
-6. [ ] Create PRISMA flow diagram (Figure 1)
-7. [ ] Identify remaining model x dataset gaps for our experiments
+1. [x] Automated search across multiple databases/queries (30+ queries)
+2. [x] Extended search for new models (TiRex, TabPFN-TS, Toto, Sundial)
+3. [x] Initial quantitative extraction into `extraction_schema.csv` (65+ rows)
+4. [x] GIFT-Eval leaderboard snapshot captured
+5. [x] fev-bench detailed retail task definitions captured
+6. [ ] Full-text download for all 43 INCLUDE papers
+7. [ ] Forward/backward citation search on B01, B02, A01, A02, A13, A14
+8. [ ] Complete quantitative extraction (exact metric values from paper tables)
+9. [ ] Create PRISMA flow diagram (Figure 1)
+10. [ ] Identify remaining model x dataset gaps for our experiments
