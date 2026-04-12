@@ -1,0 +1,35 @@
+experiment_name: meta-analysis-gap-filling
+dataset: m5
+
+experiments:
+  foundation_m5:
+    models: [seasonal_naive, chronos2, timesfm25, moirai2]
+    dataset: m5
+    horizons: [7, 14, 28]
+    min_train_size: 100
+    max_series: null
+
+  lightgbm_covariates_fev:
+    models: [lightgbm_cov]
+    dataset: fev_bench
+    tasks:
+      - m5_1D
+      - favorita_stores_1D
+      - rossmann_1D
+      - rohlik_sales_1D
+      - walmart
+
+  seasonal_naive_gift:
+    models: [seasonal_naive]
+    dataset: gift_eval
+    datasets:
+      - car_parts_with_missing
+      - restaurant
+      - hierarchical_sales/D
+      - hierarchical_sales/W
+    term: short
+
+tags:
+  phase: gap_filling
+  eval_method: rolling_origin
+  paper: meta-analysis
