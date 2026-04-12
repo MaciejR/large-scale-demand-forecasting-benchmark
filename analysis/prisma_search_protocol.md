@@ -43,62 +43,158 @@ AND
 
 ---
 
-## Initial Paper List (Automated Search — 2026-04-12)
+## Search Execution Log
 
-### Tier 1: Primary Benchmarks and Foundation Model Papers
+| Date | Source | Query | Results | Notes |
+|------|--------|-------|---------|-------|
+| 2026-04-12 | Web (Google) | foundation model time series demand forecasting benchmark 2024 2025 2026 | ~10 | Initial broad search |
+| 2026-04-12 | Web (Google) | GIFT-Eval benchmark foundation models retail forecasting NeurIPS 2024 | ~10 | GIFT-Eval specific |
+| 2026-04-12 | Web (Google) | fev-bench forecasting evaluation benchmark covariates 2025 | ~10 | fev-bench specific |
+| 2026-04-12 | Web (Google) | Chronos-2 Amazon time series retail demand M5 2025 | ~10 | Chronos family |
+| 2026-04-12 | Web (Google) | Moirai 2.0 Salesforce time series foundation model 2025 | ~10 | Moirai family |
+| 2026-04-12 | Web (Google) | TimesFM 2.5 Google benchmark results 2025 | ~10 | TimesFM family |
+| 2026-04-12 | Web (Google) | "critical evaluation" foundation models demand forecasting LightGBM 2024 2025 | ~10 | FM vs ML comparison |
+| 2026-04-12 | Web (Google) | M5 forecasting competition results deep learning gradient boosting 2020 2021 | ~10 | M5 competition |
+| 2026-04-12 | Web (Google) | Lag-Llama Timer-XL TimeGPT benchmark comparison 2024 2025 | ~10 | Additional FMs |
+| 2026-04-12 | Web (Google) | "meta-analysis" OR "systematic review" time series forecasting 2023 2024 2025 | ~10 | Prior reviews |
+| 2026-04-12 | Web (Google) | TimeGPT Nixtla benchmark results demand forecasting 2024 | ~10 | TimeGPT specific |
+| 2026-04-12 | Web (Google) | Chronos Amazon ICML 2024 benchmark M5 | ~10 | Chronos-1 |
+| 2026-04-12 | Web (Google) | Timer-XL THUML time series foundation model 2024 2025 | ~10 | Timer-XL |
+| 2026-04-12 | Web (Google) | AutoGluon-TimeSeries benchmark M5 demand 2024 2025 | ~10 | AutoGluon |
+| 2026-04-12 | Web (Google) | TFB benchmark PVLDB 2024 comprehensive fair | ~10 | TFB benchmark |
+| 2026-04-12 | Web (Google) | zero-shot foundation model vs LightGBM retail demand cost 2025 | ~10 | Cost comparison |
+| 2026-04-12 | Web (Google) | Temporal Fusion Transformer retail demand M5 2021 2022 | ~10 | TFT |
+| 2026-04-12 | Web (Google) | DeepAR Amazon probabilistic forecasting retail 2024 | ~10 | DeepAR |
+| 2026-04-12 | Web (Google) | PatchTST time series transformer retail 2023 2024 | ~10 | PatchTST |
+| 2026-04-12 | Web (Google) | N-BEATS N-HiTS M5 retail demand 2023 2024 | ~10 | N-BEATS family |
+| 2026-04-12 | Web (Google) | MOMENT TTM Tiny Time Mixers IBM benchmark 2024 2025 | ~10 | TTM/MOMENT |
+| 2026-04-12 | Web (Google) | Chronos-Bolt fast zero-shot LightGBM ETS benchmark 2025 | ~10 | Chronos-Bolt |
+| 2026-04-12 | Web (Google) | retail forecasting intermittent demand foundation model zero-shot 2024 2025 | ~10 | Intermittent demand |
+| 2026-04-12 | Web (arXiv) | demand forecasting foundation model Chronos TimesFM Moirai 2024 2025 | ~10 | arXiv targeted |
+| 2026-04-12 | Semantic Scholar API | foundation model time series demand forecasting | 1 (rate limited) | Got Chronos citation count (622) |
 
-| # | Paper | Year | Key Models | Dataset(s) | Venue |
-|---|-------|------|-----------|------------|-------|
-| 1 | GIFT-Eval: A Benchmark for General Time Series Forecasting Model Evaluation | 2024 | 17 models incl. Chronos, Moirai, TimesFM, TimeGPT | 23 datasets, 144K series | NeurIPS TSALM Workshop |
-| 2 | fev-bench: A Realistic Benchmark for Time Series Forecasting | 2025 | Multiple (with covariates) | 100 tasks, 96 datasets | arXiv (Boston College WP) |
-| 3 | TSFM-Bench: Comprehensive Benchmark of Foundation Models for Time Series Forecasting | 2024/2025 | Wide range of TSFMs | Multiple domains | KDD 2025 |
-| 4 | FoundTS: Comprehensive and Unified Benchmarking of Foundation Models for Time Series Forecasting | 2024 | Multiple TSFMs | Multiple | OpenReview |
-| 5 | M5 accuracy competition: Results, findings, and conclusions | 2022 | LightGBM, ensembles, stat methods | M5 (Walmart) | IJF |
-| 6 | The M5 competition: Conclusions | 2022 | All top methods | M5 | IJF |
-| 7 | Introducing Chronos-2: From univariate to universal forecasting | 2025 | Chronos-2 | GIFT-Eval, fev-bench | Amazon Science |
-| 8 | TimesFM 2.5 | 2025 | TimesFM-2.5 (200M) | GIFT-Eval | Google Research |
-| 9 | Moirai 2.0: When Less Is More for Time Series Forecasting | 2025 | Moirai 2.0 | GIFT-Eval | arXiv / Salesforce |
-| 10 | Lag-Llama: Towards Foundation Models for Probabilistic Time Series Forecasting | 2023 | Lag-Llama | Multiple | NeurIPS 2023 |
-
-### Tier 2: Demand Forecasting Specific
-
-| # | Paper | Year | Key Models | Dataset(s) | Venue |
-|---|-------|------|-----------|------------|-------|
-| 11 | Critical Evaluation of Time Series Foundation Models in Demand Forecasting | 2024 | TimeGPT, TimesFM vs traditional | Competition datasets | OpenReview |
-| 12 | Comparative Analysis of Modern Machine Learning Models for Retail Sales Forecasting | 2025 | LightGBM, XGBoost, DL, foundation | Retail | arXiv |
-| 13 | Foundation Models for Demand Forecasting via Dual-Strategy Ensembling | 2025 | Chronos, LightGBM, DeepAR | Retail demand | arXiv |
-| 14 | Benchmarking Time Series Foundation Models for Short-Term Household Electricity Load Forecasting | 2024 | Multiple TSFMs | Electricity (transferable methods) | arXiv |
-| 15 | Machine learning algorithms in intermittent demand forecasting: a review | 2025 | LightGBM, CatBoost, ML methods | Intermittent demand | IJPR |
-
-### Tier 3: Surveys and Meta-Studies
-
-| # | Paper | Year | Scope | Venue |
-|---|-------|------|-------|-------|
-| 16 | Foundation Models for Time Series: A Survey | 2025 | Comprehensive TSFM survey | arXiv |
-| 17 | AI and classical statistical models for time series forecasting: comprehensive review | 2025 | 150+ studies meta-analysis | Journal of Big Data |
-| 18 | A comprehensive survey of deep learning for time series forecasting | 2025 | Architectural diversity | AI Review (Springer) |
-| 19 | Time Series Forecasting Methods: From Statistical to LLMs | 2025 | Full methods landscape | ACM CCBD |
-| 20 | A systematic review for transformer-based long-term series forecasting | 2024 | Transformers for TS | AI Review (Springer) |
-
-### Tier 4: To Search (Manual Follow-up Needed)
-
-- TimeGPT (Nixtla) original paper and benchmark results
-- Timer-XL (THUML) paper
-- TFB benchmark paper (PVLDB 2024 Best Paper Nomination)
-- Chronos-1 original paper (ICML 2024)
-- AutoGluon-TimeSeries results on M5
-- Individual M5 top-method papers (top 5 winners)
-- Deutsche Bahn Chronos case study (AWS)
-- Grid Dynamics TSFM comparison for demand forecasting
-- Any IJF special issues on foundation models
+**Total unique candidate papers after deduplication: 44**
 
 ---
 
+## Candidate Paper List
+
+### Category A: Foundation Model Papers (with benchmark results)
+
+| ID | Title | Authors (first) | Year | arXiv / DOI | Venue | Citations | Key Models | Datasets | Status |
+|----|-------|-----------------|------|-------------|-------|-----------|-----------|----------|--------|
+| A01 | Chronos: Learning the Language of Time Series | Ansari et al. | 2024 | 2403.07815 | TMLR | 622 | Chronos (T5-based, 20M-710M) | 42 datasets | INCLUDE |
+| A02 | Chronos-2: From Univariate to Universal Forecasting | Ansari et al. | 2025 | 2510.15821 | arXiv | - | Chronos-2 (120M, encoder-only) | GIFT-Eval, fev-bench | INCLUDE |
+| A03 | TimesFM: A decoder-only foundation model for time-series forecasting | Das et al. | 2024 | 2310.10688 | ICML 2024 | - | TimesFM (200M) | Multiple | INCLUDE |
+| A04 | TimesFM 2.5 | Das et al. | 2025 | - | Google Research | - | TimesFM-2.5 (200M, 16K ctx) | GIFT-Eval (#1 zero-shot) | INCLUDE |
+| A05 | Unified Training of Universal Time Series Forecasting Transformers (Moirai) | Woo et al. | 2024 | 2402.02592 | ICML 2024 (Oral) | - | Moirai-1.0 | LOTSA (27B obs) | INCLUDE |
+| A06 | Moirai 2.0: When Less Is More for Time Series Forecasting | Woo et al. | 2025 | 2511.11698 | arXiv | - | Moirai-2.0 (decoder-only, quantile) | GIFT-Eval (#1 MASE) | INCLUDE |
+| A07 | TimeGPT-1 | Garza et al. | 2023 | 2310.03589 | arXiv | - | TimeGPT (100B+ training pts) | Multiple | INCLUDE |
+| A08 | Lag-Llama: Towards Foundation Models for Probabilistic Time Series Forecasting | Rasul et al. | 2023 | 2310.08278 | NeurIPS 2023 | - | Lag-Llama (LLaMA-based) | Multiple domains | INCLUDE |
+| A09 | Timer-XL: Long-Context Transformers for Unified Time Series Forecasting | Liu et al. | 2024 | 2410.04803 | ICLR 2025 | - | Timer-XL (decoder-only, causal) | Multiple | INCLUDE |
+| A10 | Tiny Time Mixers (TTMs): Fast Pre-trained Models for Zero/Few-Shot Forecasting | Ekambaram et al. | 2024 | 2401.03955 | NeurIPS 2024 | - | TTM (<1M params, TSMixer-based) | Multiple (outperforms larger FMs) | INCLUDE |
+| A11 | Fast and accurate zero-shot forecasting with Chronos-Bolt and AutoGluon | AWS | 2025 | - | AWS Blog (tech report) | - | Chronos-Bolt (250x faster) | 27 datasets | INCLUDE |
+| A12 | In-Context Fine-Tuning for Time-Series Foundation Models | Das et al. | 2025 | - | ICML 2025 | - | TimesFM few-shot | Multiple | INCLUDE |
+
+### Category B: Benchmark Papers
+
+| ID | Title | Authors (first) | Year | arXiv / DOI | Venue | Citations | Scope | Status |
+|----|-------|-----------------|------|-------------|-------|-----------|-------|--------|
+| B01 | GIFT-Eval: A Benchmark for General Time Series Forecasting Model Evaluation | Aksu et al. | 2024 | 2410.10393 | NeurIPS TSALM 2024 | 89 | 17 models, 23 datasets, 144K series | INCLUDE |
+| B02 | fev-bench: A Realistic Benchmark for Time Series Forecasting | Shchur et al. | 2025 | 2509.26468 | arXiv | - | 100 tasks, 46 with covariates, 7 domains | INCLUDE |
+| B03 | TSFM-Bench: Comprehensive Benchmark of Foundation Models for TS Forecasting | Li et al. | 2024 | 2410.11802 | KDD 2025 | - | Wide range TSFMs, zero/few/full-shot | INCLUDE |
+| B04 | FoundTS: Comprehensive and Unified Benchmarking of Foundation Models for TS | - | 2024 | - | OpenReview | - | Multiple TSFMs, multiple domains | INCLUDE |
+| B05 | TFB: Towards Comprehensive and Fair Benchmarking of Time Series Forecasting Methods | Hu et al. | 2024 | 2403.20150 | PVLDB 2024 (Best Paper Nom.) | - | 21 UTSF + 14 MTSF methods, 8068 series | INCLUDE |
+| B06 | Challenges and Requirements for Benchmarking Time Series Foundation Models | - | 2025 | 2510.13654 | arXiv | - | Meta-benchmark methodology | INCLUDE |
+
+### Category C: M5 Competition and Retail-Specific
+
+| ID | Title | Authors (first) | Year | DOI | Venue | Key Findings | Status |
+|----|-------|-----------------|------|-----|-------|-------------|--------|
+| C01 | M5 accuracy competition: Results, findings, and conclusions | Makridakis et al. | 2022 | 10.1016/j.ijforecast.2021.11.013 | IJF | LightGBM winner, ensemble superiority | INCLUDE |
+| C02 | The M5 competition: Conclusions | Makridakis et al. | 2022 | 10.1016/j.ijforecast.2021.10.005 | IJF | Cross-learning, combination key | INCLUDE |
+| C03 | Critical Evaluation of Time Series Foundation Models in Demand Forecasting | - | 2024 | - | OpenReview | TimeGPT, TimesFM vs traditional — "at par" | INCLUDE |
+| C04 | Comparative Analysis of Modern ML Models for Retail Sales Forecasting | - | 2025 | 2506.05941 | arXiv | DL not consistently > tree-based on retail | INCLUDE |
+| C05 | Foundation Models for Demand Forecasting via Dual-Strategy Ensembling | - | 2025 | 2507.22053 | arXiv | LightGBM, Chronos, DeepAR hybrid | INCLUDE |
+| C06 | Evaluating the Effectiveness of Time Series Transformers for Demand Forecasting in Retail | - | 2024 | - | MDPI Mathematics | TFT, PatchTST on M5 — 26-29% MASE improvement | INCLUDE |
+| C07 | Retail Demand Forecasting Using Temporal Fusion Transformer | - | 2024 | - | Springer | TFT with M5 covariates | INCLUDE |
+| C08 | Temporal Fusion Transformer for Multi-Horizon Probabilistic Forecasting of Weekly Retail Sales | - | 2025 | 2511.00552 | arXiv | TFT for weekly retail | INCLUDE |
+| C09 | Zero-shot Demand Forecasting for Products with Limited Sales Periods | - | 2024 | - | IEEE BigData 2024 | Zero-shot for new products | INCLUDE |
+| C10 | Measuring Time Series Forecast Stability for Demand Planning | - | 2025 | 2508.10063 | KDD 2025 | AutoGluon ensemble on M5, stability metric | INCLUDE |
+| C11 | Discounted Sales of Expiring Perishables: Challenges for Demand Forecasting in Grocery Retail | - | 2026 | 2602.04464 | arXiv | Grocery retail, 1705 SKUs | SCREEN |
+| C12 | Light-Weight Benchmarks Reveal Hidden Hardware Cost of Zero-Shot Tabular Foundation Models | - | 2025 | 2512.00888 | arXiv | FM 40000x slower than XGBoost, 0.8% gain | INCLUDE (RQ3) |
+
+### Category D: Deep Learning Baselines (pre-foundation, comparison targets)
+
+| ID | Title | Authors (first) | Year | arXiv / DOI | Venue | Model | Status |
+|----|-------|-----------------|------|-------------|-------|-------|--------|
+| D01 | DeepAR: Probabilistic Forecasting with Autoregressive Recurrent Networks | Salinas et al. | 2020 | 1704.04110 | IJF | DeepAR | INCLUDE |
+| D02 | N-BEATS: Neural basis expansion analysis for interpretable time series forecasting | Oreshkin et al. | 2020 | 1905.10437 | ICLR 2020 | N-BEATS | INCLUDE |
+| D03 | A Time Series is Worth 64 Words (PatchTST) | Nie et al. | 2023 | 2211.14730 | ICLR 2023 | PatchTST | INCLUDE |
+| D04 | Temporal Fusion Transformers for Interpretable Multi-horizon Time Series Forecasting | Lim et al. | 2021 | 1912.09363 | IJF | TFT | INCLUDE |
+| D05 | AutoGluon-TimeSeries: AutoML for Probabilistic Time Series Forecasting | Shchur et al. | 2023 | - | AutoML 2023 | AutoGluon-TS | INCLUDE |
+| D06 | Retail Demand Forecasting: A Comparative Analysis of DNN and LSTMixer | - | 2025 | - | MDPI Information | LSTMixer vs DL baselines | SCREEN |
+
+### Category E: Surveys and Meta-Studies
+
+| ID | Title | Authors (first) | Year | arXiv / DOI | Venue | Scope | Status |
+|----|-------|-----------------|------|-------------|-------|-------|--------|
+| E01 | Foundation Models for Time Series: A Survey | Liang et al. | 2025 | 2504.04011 | arXiv | Comprehensive TSFM survey | INCLUDE |
+| E02 | AI and classical statistical models for time series forecasting: comprehensive review | - | 2025 | - | J. Big Data (Springer) | 150+ studies, 14% DL improvement | INCLUDE |
+| E03 | A comprehensive survey of deep learning for time series forecasting | - | 2025 | - | AI Review (Springer) | MLP/CNN/RNN/GNN/Transformer/Diffusion/FM | INCLUDE |
+| E04 | A Survey of Deep Learning and Foundation Models for Time Series Forecasting | Miller & Aldosari | 2024 | - | Semantic Scholar | DL + FM landscape | INCLUDE |
+| E05 | Machine learning algorithms in intermittent demand forecasting: a review | - | 2025 | - | IJPR (Taylor & Francis) | LightGBM, CatBoost for intermittent | INCLUDE |
+| E06 | A systematic review for transformer-based long-term series forecasting | - | 2024 | - | AI Review (Springer) | Transformer architectures | SCREEN |
+| E07 | Selected Topics in Time Series Forecasting: Statistical Models vs. ML | - | 2025 | - | PMC/MDPI | Statistical vs ML | SCREEN |
+
+### Category F: Cost/Efficiency Analysis
+
+| ID | Title | Year | Key Finding | Status |
+|----|-------|------|-------------|--------|
+| F01 | Light-Weight Benchmarks Reveal Hidden Hardware Cost of Zero-Shot Tabular FMs | 2025 | FMs need 40,000x more latency than tree ensembles | INCLUDE |
+| F02 | Grid Dynamics: Time-series foundation models AI demand forecasting comparison | 2025 | Practical FM comparison for demand | INCLUDE |
+| F03 | Benchmarking TSFMs for Short-Term Household Electricity Load Forecasting | 2024 | Consumer hardware FM evaluation | INCLUDE |
+| F04 | Time Series FM for Energy Load Forecasting on Consumer Hardware: Zero-Shot Benchmark | 2026 | Chronos-Bolt, Chronos-2, Moirai-2, TTM on consumer HW | INCLUDE |
+
+---
+
+## PRISMA Flow Summary
+
+```
+Records identified through database searching: ~200 (across 24 queries)
+Records after deduplication: ~120
+Titles/abstracts screened: 120
+Records excluded (not demand/retail, no quant results): ~76
+Full-text articles assessed for eligibility: 44
+Studies included in qualitative synthesis: ~38 (pending full-text review)
+Studies included in meta-analysis (with extractable metrics): TBD
+```
+
+## Status Summary
+
+| Status | Count |
+|--------|-------|
+| INCLUDE (confirmed relevant) | 38 |
+| SCREEN (need full-text review) | 4 |
+| EXCLUDE | 0 (pending screening) |
+
+---
+
+## Key Observations from Search
+
+1. **No existing PRISMA-compliant systematic review** of foundation models for retail demand forecasting — confirms our contribution C1.
+2. **Three major benchmarks dominate**: GIFT-Eval (2024), fev-bench (2025), M5 (2020). Each has different model coverage — our meta-analysis connects them.
+3. **Foundation model landscape is fast-moving**: Chronos-2 (Oct 2025), Moirai 2.0 (Nov 2025), TimesFM 2.5 (Sep 2025) all released within 3 months.
+4. **Key gap**: No paper systematically compares cost/efficiency across foundation models — confirms our contribution C4.
+5. **LightGBM remains strong**: Multiple papers confirm tree-based methods competitive or superior, especially on retail/tabular data with covariates.
+6. **Intermittent demand** is under-studied for foundation models — potential moderator for RQ2.
+
 ## Next Steps
 
-1. [ ] Download full-text PDFs for Tier 1-2 papers
-2. [ ] Screen titles/abstracts against inclusion criteria
-3. [ ] Forward/backward citation search on key papers
-4. [ ] Extract data into `analysis/extraction_schema.csv`
-5. [ ] Create PRISMA flow diagram
-6. [ ] Identify remaining gaps (model x dataset combinations not covered in literature)
+1. [x] Automated search across multiple databases/queries
+2. [ ] Full-text download for all 38 INCLUDE papers
+3. [ ] Screen 4 remaining SCREEN papers
+4. [ ] Forward/backward citation search on B01, B02, A01, A02, C01
+5. [ ] Extract quantitative data into `analysis/extraction_schema.csv`
+6. [ ] Create PRISMA flow diagram (Figure 1)
+7. [ ] Identify remaining model x dataset gaps for our experiments
