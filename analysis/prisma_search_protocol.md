@@ -204,8 +204,9 @@ Studies included in meta-analysis (with extractable metrics): ~35 (extraction in
 3. [x] Initial quantitative extraction into `extraction_schema.csv` (65+ rows)
 4. [x] GIFT-Eval leaderboard snapshot captured
 5. [x] fev-bench detailed retail task definitions captured
-6. [ ] Full-text download for all 43 INCLUDE papers
-7. [ ] Forward/backward citation search on B01, B02, A01, A02, A13, A14
-8. [ ] Complete quantitative extraction (exact metric values from paper tables)
-9. [ ] Create PRISMA flow diagram (Figure 1)
-10. [ ] Identify remaining model x dataset gaps for our experiments
+6. [x] Quantitative extraction expanded: M5 exact WRMSSE (Table 3), TSFM-Bench, TTM (90 rows)
+7. [x] Create PRISMA flow diagram → `analysis/figures/prisma_flow.pdf`
+8. [ ] Full-text download for remaining INCLUDE papers
+9. [ ] Forward/backward citation search on B01, B02, A01, A02, A13, A14
+10. [ ] Complete quantitative extraction (remaining papers)
+11. [ ] Identify remaining model x dataset gaps for our experiments
