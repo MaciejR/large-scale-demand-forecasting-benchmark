@@ -1,0 +1,5 @@
+$schema: https://azuremlschemas.azureedge.net/latest/environment.schema.json
+name: forecast-benchmark-env
+version: 2
+image: mcr.microsoft.com/azureml/openmpi4.1.0-ubuntu22.04
+conda_file: environment.yaml
