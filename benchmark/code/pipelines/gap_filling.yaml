@@ -1,0 +1,75 @@
+$schema: https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
+type: pipeline
+
+experiment_name: meta-analysis-gap-filling
+display_name: Gap-Filling Experiments
+
+settings:
+  default_compute: azureml:cc-forecast-batch
+
+inputs:
+  sales_data:
+    type: uri_file
+    path: azureml:m5-sales:1
+  calendar_data:
+    type: uri_file
+    path: azureml:m5-calendar:1
+
+jobs:
+  seasonal_naive_m5_h7:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model seasonal_naive --dataset m5 --horizon 7
+      --min-train-size 100 --hardware E4DS_V4
+      --sales-path ${{inputs.sales_data}}
+      --calendar-path ${{inputs.calendar_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+      calendar_data: ${{parent.inputs.calendar_data}}
+    environment: azureml:forecast-benchmark-env:2
+
+  seasonal_naive_m5_h14:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model seasonal_naive --dataset m5 --horizon 14
+      --min-train-size 100 --hardware E4DS_V4
+      --sales-path ${{inputs.sales_data}}
+      --calendar-path ${{inputs.calendar_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+      calendar_data: ${{parent.inputs.calendar_data}}
+    environment: azureml:forecast-benchmark-env:2
+
+  seasonal_naive_m5_h28:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model seasonal_naive --dataset m5 --horizon 28
+      --min-train-size 100 --hardware E4DS_V4
+      --sales-path ${{inputs.sales_data}}
+      --calendar-path ${{inputs.calendar_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+      calendar_data: ${{parent.inputs.calendar_data}}
+    environment: azureml:forecast-benchmark-env:2
+
+  # Foundation models need GPU compute — uncomment after quota approval
+  # chronos2_m5_h7:
+  #   type: command
+  #   code: ../
+  #   command: >
+  #     python experiments/run_gap_filling.py
+  #     --model chronos2 --dataset m5 --horizon 7
+  #     --min-train-size 100 --hardware T4
+  #     --sales-path ${{inputs.sales_data}}
+  #     --calendar-path ${{inputs.calendar_data}}
+  #   inputs:
+  #     sales_data: ${{parent.inputs.sales_data}}
+  #     calendar_data: ${{parent.inputs.calendar_data}}
+  #   environment: azureml:forecast-benchmark-gpu-env:1
+  #   compute: azureml:cc-forecast-gpu
