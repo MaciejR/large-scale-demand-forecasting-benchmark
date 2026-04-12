@@ -1,6 +1,6 @@
 # Bibliography (Core – Academic)
 
-Below is a curated list of **key academic references** for short-term, large-scale demand forecasting. The list is designed to support a publishable journal paper and covers statistical methods, ML, deep learning, transformers, and foundation models. All entries are provided in **APA style**.
+Below is a curated list of **key academic references** for short-term, large-scale demand forecasting. The list is designed to support a publishable journal paper and covers statistical methods, ML, deep learning, transformers, foundation models, and modern benchmarks. All entries are provided in **APA style**.
 
 ---
 
@@ -20,9 +20,17 @@ Montero-Manso, P., Athanasopoulos, G., Hyndman, R. J., & Talagala, T. S. (2020).
 
 ## Benchmark Datasets & Competitions
 
-Makridakis, S., et al. (2020). The M5 competition: Results, findings, and conclusions. *International Journal of Forecasting, 38*(4), 1346–1364.
+Makridakis, S., et al. (2022). M5 accuracy competition: Results, findings, and conclusions. *International Journal of Forecasting, 38*(4), 1346–1364.
 
-Dheeru, D., & Karra Taniskidou, E. (2017). UCI Machine Learning Repository. University of California, Irvine.
+Makridakis, S., et al. (2025). The M6 forecasting competition: Bridging the gap between forecasting and investment decisions. *International Journal of Forecasting, 41*(4), 1311–1314.
+
+Godahewa, R., et al. (2021). Monash Time Series Forecasting Archive. *Proceedings of the Neural Information Processing Systems Track on Datasets and Benchmarks*.
+
+Aksu, E., et al. (2024). GIFT-Eval: A benchmark for general time series forecasting model evaluation. *Advances in Neural Information Processing Systems (NeurIPS)*.
+
+Shchur, O., et al. (2025). fev-bench: A realistic benchmark for time series forecasting. *arXiv preprint arXiv:2509.26468*.
+
+Aziz, N. A., et al. (2024). SupplyGraph: A benchmark dataset for supply chain planning using graph neural networks. *arXiv preprint arXiv:2401.15299*.
 
 ---
 
@@ -68,7 +76,25 @@ Liu, Y., et al. (2024). iTransformer: Inverted transformers are effective for ti
 
 Rasul, K., et al. (2024). Chronos: Learning the language of time series. *arXiv preprint arXiv:2403.07815*.
 
+Rasul, K., et al. (2025). Chronos-2: Time series foundation models with input tokenization. *arXiv preprint*.
+
+Das, A., et al. (2024). A decoder-only foundation model for time-series forecasting. *Proceedings of the International Conference on Machine Learning (ICML)*. [TimesFM 1.0]
+
+Das, A., et al. (2025). TimesFM 2.0: Scaling time-series foundation models with continuous quantile prediction. *arXiv preprint*.
+
+Woo, G., et al. (2024). Unified training of universal time series forecasting transformers. *Proceedings of the International Conference on Machine Learning (ICML)*. [Moirai]
+
+Woo, G., et al. (2025). Moirai-MoE: Empowering time series foundation models with sparse mixture of experts. *arXiv preprint arXiv:2511.11698*.
+
 Wu, H., et al. (2023). Towards foundation models for time series forecasting. *Advances in Neural Information Processing Systems (NeurIPS)*.
+
+---
+
+## Benchmarking Methodology & Challenges
+
+Dooley, S., et al. (2025). Challenges and requirements for benchmarking time series foundation models. *arXiv preprint arXiv:2510.13654*.
+
+Januschowski, T., et al. (2020). Criteria for classifying forecasting methods. *International Journal of Forecasting, 36*(1), 167–177.
 
 ---
 
@@ -81,6 +107,7 @@ Seeger, M., et al. (2016). Bayesian intermittent demand forecasting for large in
 ---
 
 ## Notes
-- This is the **core bibliography**; it will be expanded to ~40–50 references.
-- BibTeX entries will be added once the target venue is fixed.
+- Target: **40–50 references** for final paper; current count: ~35.
+- BibTeX entries will be added once the target venue is confirmed.
 - All papers are relevant to **short-term, large-scale, multi-series demand forecasting**.
+- Foundation model references should be updated with published versions as they appear (Chronos-2, TimesFM 2.5, Moirai-MoE may be arxiv-only at submission time).
