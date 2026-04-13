@@ -36,7 +36,7 @@ jobs:
     command: >
       python experiments/run_gap_filling.py
       --model seasonal_naive --dataset favorita --horizon 7
-      --min-train-size 1347 --hardware E4DS_V4
+      --min-train-size 1347 --hardware E4DS_V4 --max-series 30000
       --sales-path ${{inputs.sales_data}}
     inputs:
       sales_data: ${{parent.inputs.sales_data}}
@@ -48,7 +48,7 @@ jobs:
     command: >
       python experiments/run_gap_filling.py
       --model seasonal_naive --dataset favorita --horizon 14
-      --min-train-size 1347 --hardware E4DS_V4
+      --min-train-size 1347 --hardware E4DS_V4 --max-series 30000
       --sales-path ${{inputs.sales_data}}
     inputs:
       sales_data: ${{parent.inputs.sales_data}}
@@ -60,7 +60,7 @@ jobs:
     command: >
       python experiments/run_gap_filling.py
       --model seasonal_naive --dataset favorita --horizon 28
-      --min-train-size 1347 --hardware E4DS_V4
+      --min-train-size 1347 --hardware E4DS_V4 --max-series 30000
       --sales-path ${{inputs.sales_data}}
     inputs:
       sales_data: ${{parent.inputs.sales_data}}
@@ -72,7 +72,7 @@ jobs:
     command: >
       python experiments/run_gap_filling.py
       --model lightgbm_cov --dataset favorita --horizon 7
-      --hardware E4DS_V4
+      --hardware E4DS_V4 --max-series 30000
       --train-fraction 0.8 --train-window-days 365
       --sales-path ${{inputs.sales_data}}
       --oil-path ${{inputs.oil_data}}
@@ -93,7 +93,7 @@ jobs:
     command: >
       python experiments/run_gap_filling.py
       --model lightgbm_cov --dataset favorita --horizon 14
-      --hardware E4DS_V4
+      --hardware E4DS_V4 --max-series 30000
       --train-fraction 0.8 --train-window-days 365
       --sales-path ${{inputs.sales_data}}
       --oil-path ${{inputs.oil_data}}
@@ -114,7 +114,7 @@ jobs:
     command: >
       python experiments/run_gap_filling.py
       --model lightgbm_cov --dataset favorita --horizon 28
-      --hardware E4DS_V4
+      --hardware E4DS_V4 --max-series 30000
       --train-fraction 0.8 --train-window-days 365
       --sales-path ${{inputs.sales_data}}
       --oil-path ${{inputs.oil_data}}
@@ -135,7 +135,7 @@ jobs:
     command: >
       python experiments/run_gap_filling.py
       --model lightgbm_direct --dataset favorita --horizon 7
-      --hardware E4DS_V4
+      --hardware E4DS_V4 --max-series 30000
       --train-fraction 0.8 --train-window-days 365
       --sales-path ${{inputs.sales_data}}
       --oil-path ${{inputs.oil_data}}
@@ -156,7 +156,7 @@ jobs:
     command: >
       python experiments/run_gap_filling.py
       --model lightgbm_direct --dataset favorita --horizon 14
-      --hardware E4DS_V4
+      --hardware E4DS_V4 --max-series 30000
       --train-fraction 0.8 --train-window-days 365
       --sales-path ${{inputs.sales_data}}
       --oil-path ${{inputs.oil_data}}
@@ -177,7 +177,7 @@ jobs:
     command: >
       python experiments/run_gap_filling.py
       --model lightgbm_direct --dataset favorita --horizon 28
-      --hardware E4DS_V4
+      --hardware E4DS_V4 --max-series 30000
       --train-fraction 0.8 --train-window-days 365
       --sales-path ${{inputs.sales_data}}
       --oil-path ${{inputs.oil_data}}

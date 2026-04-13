@@ -75,8 +75,11 @@ def load_favorita(
             dtype={"store_nbr": "int16", "item_nbr": "int32"},
         )
     train["unit_sales"] = train["unit_sales"].clip(lower=0.0).astype("float32")
+    # Pack (store_nbr, item_nbr) into a single int64 — much cheaper than
+    # string "{store}_{item}" across 100M+ rows (saves ~6 GB on full Favorita).
     train["series_id"] = (
-        train["store_nbr"].astype(str) + "_" + train["item_nbr"].astype(str)
+        train["store_nbr"].astype("int64") * 10_000_000
+        + train["item_nbr"].astype("int64")
     )
 
     if max_series:
