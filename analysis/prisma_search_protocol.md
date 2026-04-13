@@ -126,7 +126,7 @@ AND
 | C09 | Zero-shot Demand Forecasting for Products with Limited Sales Periods | - | 2024 | - | IEEE BigData 2024 | Zero-shot for new products | INCLUDE |
 | C10 | Measuring Time Series Forecast Stability for Demand Planning | - | 2025 | 2508.10063 | KDD 2025 | AutoGluon ensemble on M5, stability metric | INCLUDE |
 | C11 | Discounted Sales of Expiring Perishables: Challenges for Demand Forecasting in Grocery Retail | - | 2026 | 2602.04464 | arXiv | Grocery retail, 1705 SKUs | SCREEN |
-| C12 | Light-Weight Benchmarks Reveal Hidden Hardware Cost of Zero-Shot Tabular Foundation Models | - | 2025 | 2512.00888 | arXiv | FM 40000x slower than XGBoost, 0.8% gain | INCLUDE (RQ3) |
+| C12 | Light-Weight Benchmarks Reveal Hidden Hardware Cost of Zero-Shot Tabular Foundation Models | - | 2025 | 2512.00888 | arXiv | TabPFN/TabICL 40000× slower than XGBoost for +0.8pp accuracy — **TABULAR FMs, not TS FMs**; cite as cross-domain analogue only | INCLUDE (RQ3 cross-domain) |
 
 ### Category D: Deep Learning Baselines (pre-foundation, comparison targets)
 
@@ -155,7 +155,7 @@ AND
 
 | ID | Title | Year | Key Finding | Status |
 |----|-------|------|-------------|--------|
-| F01 | Light-Weight Benchmarks Reveal Hidden Hardware Cost of Zero-Shot Tabular FMs | 2025 | FMs need 40,000x more latency than tree ensembles | INCLUDE |
+| F01 | Light-Weight Benchmarks Reveal Hidden Hardware Cost of Zero-Shot Tabular FMs | 2025 | **TABULAR FMs** (TabPFN/TabICL on Higgs) — 40,000× more latency than XGBoost for +0.8pp. Cross-domain analogue for §6.3; do NOT cite as evidence for TS FM hardware cost | INCLUDE (cross-domain) |
 | F02 | Grid Dynamics: Time-series foundation models AI demand forecasting comparison | 2025 | Practical FM comparison for demand | INCLUDE |
 | F03 | Benchmarking TSFMs for Short-Term Household Electricity Load Forecasting | 2024 | Consumer hardware FM evaluation | INCLUDE |
 | F04 | Time Series FM for Energy Load Forecasting on Consumer Hardware: Zero-Shot Benchmark | 2026 | Chronos-Bolt, Chronos-2, Moirai-2, TTM on consumer HW | INCLUDE |
@@ -195,7 +195,18 @@ Studies included in meta-analysis (with extractable metrics): ~35 (extraction in
 7. **LightGBM remains strong**: M5 winner, multiple papers confirm tree-based methods competitive/superior on retail data with covariates.
 8. **Intermittent demand** is under-studied for foundation models — potential moderator for RQ2.
 9. **Model size paradox**: Smaller models (TiRex 35M, TabPFN-TS 11M, TTM <1M) often outperform larger ones (Chronos-Large 710M). Size is not a reliable predictor of accuracy.
-10. **FM hardware cost**: 40,000x latency overhead vs tree ensembles for 0.8% accuracy gain (C12). Chronos-2 runs at 300 series/sec on single A10G.
+10. **FM hardware cost (two distinct signals, do not conflate):**
+    (a) **Tabular FMs:** TabPFN/TabICL are 40,000× slower than XGBoost
+    for a +0.8pp accuracy gain on Higgs (C12, arXiv 2512.00888). This
+    is a **cross-domain analogue** for the TS FM cost argument, not
+    direct evidence.
+    (b) **TS FMs:** Chronos-2 runs at ~300 series/sec on a single A10G
+    (A02 paper); Chronos-Bolt claims 250× speedup over Chronos-1
+    (A11); TTM is <1M params and CPU-capable (A10); F04 reports
+    Chronos-Bolt at ~tens of ms/window on consumer CPUs. Our own
+    LightGBM baseline on E4DS_V4 is ~$0.04 per 30k-series-horizon
+    (§5.2). The TS FM cost argument for §6.3 must be built from
+    these direct numbers, not from (a).
 
 ## Next Steps
 
