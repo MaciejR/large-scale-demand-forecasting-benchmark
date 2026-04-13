@@ -25,6 +25,12 @@ jobs:
         run: |
           python3 -m pip install --quiet kaggle
 
+      - name: Probe auth (list one competition)
+        run: |
+          kaggle competitions list --page-size 1 || true
+          echo "---"
+          kaggle datasets list -s 'titanic' --page-size 1 || true
+
       - name: Download Rohlik v2
         if: ${{ inputs.dataset == 'rohlik' || inputs.dataset == 'both' }}
         run: |
