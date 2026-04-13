@@ -35,6 +35,7 @@ KNOWN_DYNAMIC_COLUMNS = [
 
 def load_rohlik(
     path_train: str,
+    path_calendar: str | None = None,
     with_covariates: bool = False,
     max_series: int | None = None,
 ) -> pd.DataFrame:
@@ -44,7 +45,12 @@ def load_rohlik(
     Parameters
     ----------
     path_train : str
-        Path to sales_train.csv.
+        Path to sales_train.csv (cols: unique_id, date, warehouse, sales,
+        sell_price_main, availability, type_0..6_discount).
+    path_calendar : str, optional
+        Path to calendar.csv (cols: date, warehouse, holiday, shops_closed,
+        winter_school_holidays, school_holidays). Only used when
+        with_covariates=True. If None, calendar covariates default to 0.
     with_covariates : bool
         If True, returns KNOWN_DYNAMIC_COLUMNS in addition to [series_id,
         ds, y].
@@ -52,11 +58,8 @@ def load_rohlik(
         Cap series count for development. Picks the most-active series.
     """
     base_cols = ["unique_id", "date", "sales"]
-    cov_cols = [
-        "sell_price_main", "holiday", "shops_closed",
-        "winter_school_holidays", "school_holidays", "availability",
-    ]
-    use_cols = base_cols + (cov_cols if with_covariates else [])
+    sales_cov_cols = ["warehouse", "sell_price_main", "availability"]
+    use_cols = base_cols + (sales_cov_cols if with_covariates else [])
 
     df = pd.read_csv(path_train, usecols=use_cols, parse_dates=["date"])
     df = df.rename(columns={
@@ -76,10 +79,21 @@ def load_rohlik(
     if not with_covariates:
         return df[["series_id", "ds", "y"]]
 
-    for c in [
-        "sell_price_main", "holiday", "shops_closed",
-        "winter_school_holidays", "school_holidays",
-    ]:
+    df["sell_price_main"] = df["sell_price_main"].fillna(0).astype("float32")
+
+    cal_keys = ["holiday", "shops_closed", "winter_school_holidays", "school_holidays"]
+    if path_calendar:
+        cal = pd.read_csv(
+            path_calendar,
+            usecols=["date", "warehouse"] + cal_keys,
+            parse_dates=["date"],
+        ).rename(columns={"date": "ds"})
+        for c in cal_keys:
+            cal[c] = cal[c].fillna(0).astype("float32")
+        df = df.merge(cal, on=["ds", "warehouse"], how="left")
+    for c in cal_keys:
+        if c not in df.columns:
+            df[c] = 0.0
         df[c] = df[c].fillna(0).astype("float32")
 
     df["dayofweek"] = df["ds"].dt.dayofweek.astype("int8")

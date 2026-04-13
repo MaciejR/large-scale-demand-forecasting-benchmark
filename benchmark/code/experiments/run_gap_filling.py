@@ -87,6 +87,7 @@ def load_dataset(dataset: str, task: str = None, **kwargs):
         with_covariates = kwargs.get("with_covariates", False)
         df = load_rohlik(
             path_train=kwargs.get("sales_path") or os.environ["ROHLIK_TRAIN_PATH"],
+            path_calendar=kwargs.get("calendar_path") or os.environ.get("ROHLIK_CALENDAR_PATH"),
             with_covariates=with_covariates,
             max_series=kwargs.get("max_series"),
         )

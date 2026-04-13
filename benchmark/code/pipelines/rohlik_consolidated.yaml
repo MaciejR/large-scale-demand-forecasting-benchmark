@@ -11,6 +11,9 @@ inputs:
   sales_data:
     type: uri_file
     path: azureml:rohlik-sales-train:1
+  calendar_data:
+    type: uri_file
+    path: azureml:rohlik-calendar:1
 
 # Rohlik: 5,390 series × 1,402 days. train_until = floor(0.8 × 1402) = 1121.
 # 1.2% zero days (continuous demand) vs M5's ~70% — sMAPE pathology should NOT appear.
@@ -63,8 +66,10 @@ jobs:
       --hardware E4DS_V4
       --train-fraction 0.8 --train-window-days 365
       --sales-path ${{inputs.sales_data}}
+      --calendar-path ${{inputs.calendar_data}}
     inputs:
       sales_data: ${{parent.inputs.sales_data}}
+      calendar_data: ${{parent.inputs.calendar_data}}
     environment: azureml:forecast-benchmark-cpu-env:1
 
   lgbm_rec_h14:
@@ -76,8 +81,10 @@ jobs:
       --hardware E4DS_V4
       --train-fraction 0.8 --train-window-days 365
       --sales-path ${{inputs.sales_data}}
+      --calendar-path ${{inputs.calendar_data}}
     inputs:
       sales_data: ${{parent.inputs.sales_data}}
+      calendar_data: ${{parent.inputs.calendar_data}}
     environment: azureml:forecast-benchmark-cpu-env:1
 
   lgbm_rec_h28:
@@ -89,8 +96,10 @@ jobs:
       --hardware E4DS_V4
       --train-fraction 0.8 --train-window-days 365
       --sales-path ${{inputs.sales_data}}
+      --calendar-path ${{inputs.calendar_data}}
     inputs:
       sales_data: ${{parent.inputs.sales_data}}
+      calendar_data: ${{parent.inputs.calendar_data}}
     environment: azureml:forecast-benchmark-cpu-env:1
 
   lgbm_dir_h7:
@@ -102,8 +111,10 @@ jobs:
       --hardware E4DS_V4
       --train-fraction 0.8 --train-window-days 365
       --sales-path ${{inputs.sales_data}}
+      --calendar-path ${{inputs.calendar_data}}
     inputs:
       sales_data: ${{parent.inputs.sales_data}}
+      calendar_data: ${{parent.inputs.calendar_data}}
     environment: azureml:forecast-benchmark-cpu-env:1
 
   lgbm_dir_h14:
@@ -115,8 +126,10 @@ jobs:
       --hardware E4DS_V4
       --train-fraction 0.8 --train-window-days 365
       --sales-path ${{inputs.sales_data}}
+      --calendar-path ${{inputs.calendar_data}}
     inputs:
       sales_data: ${{parent.inputs.sales_data}}
+      calendar_data: ${{parent.inputs.calendar_data}}
     environment: azureml:forecast-benchmark-cpu-env:1
 
   lgbm_dir_h28:
@@ -128,6 +141,8 @@ jobs:
       --hardware E4DS_V4
       --train-fraction 0.8 --train-window-days 365
       --sales-path ${{inputs.sales_data}}
+      --calendar-path ${{inputs.calendar_data}}
     inputs:
       sales_data: ${{parent.inputs.sales_data}}
+      calendar_data: ${{parent.inputs.calendar_data}}
     environment: azureml:forecast-benchmark-cpu-env:1
