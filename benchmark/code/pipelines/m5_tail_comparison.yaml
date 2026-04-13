@@ -1,0 +1,115 @@
+$schema: https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
+type: pipeline
+
+experiment_name: meta-analysis-gap-filling
+display_name: M5 Tail Eval — Seasonal Naive vs LightGBM Cov
+
+settings:
+  default_compute: azureml:cc-forecast-batch
+
+inputs:
+  sales_data:
+    type: uri_file
+    path: azureml:m5-sales:1
+  calendar_data:
+    type: uri_file
+    path: azureml:m5-calendar:1
+  prices_data:
+    type: uri_file
+    path: azureml:m5-prices:1
+
+# train_until = floor(0.8 * 1941) = 1552 → eval window: days 1552..1940 (389 days)
+
+jobs:
+  sn_tail_h7:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model seasonal_naive --dataset m5 --horizon 7
+      --min-train-size 1552 --hardware E4DS_V4
+      --sales-path ${{inputs.sales_data}}
+      --calendar-path ${{inputs.calendar_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+      calendar_data: ${{parent.inputs.calendar_data}}
+    environment: azureml:forecast-benchmark-cpu-env:1
+
+  sn_tail_h14:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model seasonal_naive --dataset m5 --horizon 14
+      --min-train-size 1552 --hardware E4DS_V4
+      --sales-path ${{inputs.sales_data}}
+      --calendar-path ${{inputs.calendar_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+      calendar_data: ${{parent.inputs.calendar_data}}
+    environment: azureml:forecast-benchmark-cpu-env:1
+
+  sn_tail_h28:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model seasonal_naive --dataset m5 --horizon 28
+      --min-train-size 1552 --hardware E4DS_V4
+      --sales-path ${{inputs.sales_data}}
+      --calendar-path ${{inputs.calendar_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+      calendar_data: ${{parent.inputs.calendar_data}}
+    environment: azureml:forecast-benchmark-cpu-env:1
+
+  lgbm_tail_h7:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model lightgbm_cov --dataset m5 --horizon 7
+      --hardware E4DS_V4
+      --train-fraction 0.8 --train-window-days 365
+      --sales-path ${{inputs.sales_data}}
+      --calendar-path ${{inputs.calendar_data}}
+      --prices-path ${{inputs.prices_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+      calendar_data: ${{parent.inputs.calendar_data}}
+      prices_data: ${{parent.inputs.prices_data}}
+    environment: azureml:forecast-benchmark-cpu-env:1
+
+  lgbm_tail_h14:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model lightgbm_cov --dataset m5 --horizon 14
+      --hardware E4DS_V4
+      --train-fraction 0.8 --train-window-days 365
+      --sales-path ${{inputs.sales_data}}
+      --calendar-path ${{inputs.calendar_data}}
+      --prices-path ${{inputs.prices_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+      calendar_data: ${{parent.inputs.calendar_data}}
+      prices_data: ${{parent.inputs.prices_data}}
+    environment: azureml:forecast-benchmark-cpu-env:1
+
+  lgbm_tail_h28:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model lightgbm_cov --dataset m5 --horizon 28
+      --hardware E4DS_V4
+      --train-fraction 0.8 --train-window-days 365
+      --sales-path ${{inputs.sales_data}}
+      --calendar-path ${{inputs.calendar_data}}
+      --prices-path ${{inputs.prices_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+      calendar_data: ${{parent.inputs.calendar_data}}
+      prices_data: ${{parent.inputs.prices_data}}
+    environment: azureml:forecast-benchmark-cpu-env:1

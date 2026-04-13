@@ -18,7 +18,10 @@ def smape(y_true, y_pred):
 
 
 def wape(y_true, y_pred):
-    return np.sum(np.abs(y_true - y_pred)) / np.sum(np.abs(y_true))
+    denom = np.sum(np.abs(y_true))
+    if denom == 0:
+        return np.nan
+    return np.sum(np.abs(y_true - y_pred)) / denom
 
 
 def aggregate_metrics(df: pd.DataFrame) -> pd.DataFrame:

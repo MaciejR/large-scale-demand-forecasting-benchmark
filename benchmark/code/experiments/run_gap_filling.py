@@ -303,7 +303,10 @@ def log_run(
         mlflow.log_metric("MAE_std", metrics_df["MAE"].std())
         mlflow.log_metric("sMAPE_mean", metrics_df["sMAPE"].mean())
         mlflow.log_metric("sMAPE_std", metrics_df["sMAPE"].std())
-        mlflow.log_metric("WAPE_mean", metrics_df["WAPE"].mean())
+        wape_mean = metrics_df["WAPE"].dropna().mean()
+        if pd.notna(wape_mean):
+            mlflow.log_metric("WAPE_mean", wape_mean)
+        mlflow.log_metric("WAPE_n_valid", int(metrics_df["WAPE"].notna().sum()))
 
         mlflow.log_metric("runtime_sec", cost_metrics["runtime_sec"])
         mlflow.log_metric("cost_usd", cost_metrics["cost_usd"])
@@ -391,7 +394,8 @@ def main():
     print(f"Done. Runtime: {cost_metrics['runtime_sec']:.1f}s")
     print(f"  MAE_mean:   {metrics_df['MAE'].mean():.4f}")
     print(f"  sMAPE_mean: {metrics_df['sMAPE'].mean():.2f}")
-    print(f"  WAPE_mean:  {metrics_df['WAPE'].mean():.4f}")
+    print(f"  WAPE_mean:  {metrics_df['WAPE'].dropna().mean():.4f} "
+          f"(n_valid={int(metrics_df['WAPE'].notna().sum())})")
     print(f"  Cost: ${cost_metrics['cost_usd']:.4f}")
     print(f"  CO2:  {cost_metrics['co2_kg']:.6f} kg")
 
