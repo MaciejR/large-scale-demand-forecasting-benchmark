@@ -1,0 +1,133 @@
+$schema: https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
+type: pipeline
+
+experiment_name: meta-analysis-gap-filling
+display_name: Rohlik v2 Consolidated — SN, LGBM Recursive, LGBM Direct (h=7,14,28)
+
+settings:
+  default_compute: azureml:cc-forecast-batch
+
+inputs:
+  sales_data:
+    type: uri_file
+    path: azureml:rohlik-sales-train:1
+
+# Rohlik: 5,390 series × 1,402 days. train_until = floor(0.8 × 1402) = 1121.
+# 1.2% zero days (continuous demand) vs M5's ~70% — sMAPE pathology should NOT appear.
+# Replicates M5 9-job grid for direct-vs-recursive cross-dataset comparison.
+
+jobs:
+
+  sn_h7:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model seasonal_naive --dataset rohlik --horizon 7
+      --min-train-size 1121 --hardware E4DS_V4
+      --sales-path ${{inputs.sales_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+    environment: azureml:forecast-benchmark-cpu-env:1
+
+  sn_h14:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model seasonal_naive --dataset rohlik --horizon 14
+      --min-train-size 1121 --hardware E4DS_V4
+      --sales-path ${{inputs.sales_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+    environment: azureml:forecast-benchmark-cpu-env:1
+
+  sn_h28:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model seasonal_naive --dataset rohlik --horizon 28
+      --min-train-size 1121 --hardware E4DS_V4
+      --sales-path ${{inputs.sales_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+    environment: azureml:forecast-benchmark-cpu-env:1
+
+  lgbm_rec_h7:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model lightgbm_cov --dataset rohlik --horizon 7
+      --hardware E4DS_V4
+      --train-fraction 0.8 --train-window-days 365
+      --sales-path ${{inputs.sales_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+    environment: azureml:forecast-benchmark-cpu-env:1
+
+  lgbm_rec_h14:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model lightgbm_cov --dataset rohlik --horizon 14
+      --hardware E4DS_V4
+      --train-fraction 0.8 --train-window-days 365
+      --sales-path ${{inputs.sales_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+    environment: azureml:forecast-benchmark-cpu-env:1
+
+  lgbm_rec_h28:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model lightgbm_cov --dataset rohlik --horizon 28
+      --hardware E4DS_V4
+      --train-fraction 0.8 --train-window-days 365
+      --sales-path ${{inputs.sales_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+    environment: azureml:forecast-benchmark-cpu-env:1
+
+  lgbm_dir_h7:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model lightgbm_direct --dataset rohlik --horizon 7
+      --hardware E4DS_V4
+      --train-fraction 0.8 --train-window-days 365
+      --sales-path ${{inputs.sales_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+    environment: azureml:forecast-benchmark-cpu-env:1
+
+  lgbm_dir_h14:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model lightgbm_direct --dataset rohlik --horizon 14
+      --hardware E4DS_V4
+      --train-fraction 0.8 --train-window-days 365
+      --sales-path ${{inputs.sales_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+    environment: azureml:forecast-benchmark-cpu-env:1
+
+  lgbm_dir_h28:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model lightgbm_direct --dataset rohlik --horizon 28
+      --hardware E4DS_V4
+      --train-fraction 0.8 --train-window-days 365
+      --sales-path ${{inputs.sales_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+    environment: azureml:forecast-benchmark-cpu-env:1

@@ -549,6 +549,10 @@ def main():
     parser.add_argument("--sales-path", default=None)
     parser.add_argument("--calendar-path", default=None)
     parser.add_argument("--prices-path", default=None)
+    parser.add_argument("--oil-path", default=None)
+    parser.add_argument("--holidays-path", default=None)
+    parser.add_argument("--stores-path", default=None)
+    parser.add_argument("--transactions-path", default=None)
     parser.add_argument("--train-fraction", type=float, default=0.8,
                         help="LightGBM only: fraction of days for training")
     parser.add_argument("--train-window-days", type=int, default=365,
@@ -565,6 +569,10 @@ def main():
         sales_path=args.sales_path,
         calendar_path=args.calendar_path,
         prices_path=args.prices_path,
+        oil_path=args.oil_path,
+        holidays_path=args.holidays_path,
+        stores_path=args.stores_path,
+        transactions_path=args.transactions_path,
         with_covariates=with_covariates,
         horizon=args.horizon,
         term=args.term,

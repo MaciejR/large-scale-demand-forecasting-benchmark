@@ -62,12 +62,18 @@ def load_favorita(
     pd.DataFrame with [series_id, ds, y] and KNOWN_DYNAMIC_COLUMNS when
     with_covariates=True.
     """
-    train = pd.read_csv(
-        path_train,
-        usecols=["date", "store_nbr", "item_nbr", "unit_sales", "onpromotion"],
-        parse_dates=["date"],
-        dtype={"store_nbr": "int16", "item_nbr": "int32"},
-    )
+    if path_train.endswith(".parquet"):
+        train = pd.read_parquet(
+            path_train,
+            columns=["date", "store_nbr", "item_nbr", "unit_sales", "onpromotion"],
+        )
+    else:
+        train = pd.read_csv(
+            path_train,
+            usecols=["date", "store_nbr", "item_nbr", "unit_sales", "onpromotion"],
+            parse_dates=["date"],
+            dtype={"store_nbr": "int16", "item_nbr": "int32"},
+        )
     train["unit_sales"] = train["unit_sales"].clip(lower=0.0).astype("float32")
     train["series_id"] = (
         train["store_nbr"].astype(str) + "_" + train["item_nbr"].astype(str)
