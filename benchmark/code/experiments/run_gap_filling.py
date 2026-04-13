@@ -178,12 +178,12 @@ def _evaluate_lightgbm_cov(
 
     print(f"  Pivoting to wide ({n_series} series x {n_days} days)...")
     y_wide = df.pivot(index="series_id", columns="ds", values="y") \
-                .reindex(series_ids).values.astype(np.float32)
+                .reindex(series_ids).fillna(0).values.astype(np.float32)
     cov_wide = {}
     for col in covariate_cols:
         cov_wide[col] = (
             df.pivot(index="series_id", columns="ds", values=col)
-              .reindex(series_ids).values.astype(np.float32)
+              .reindex(series_ids).fillna(0).values.astype(np.float32)
         )
 
     LAGS = (1, 7, 14)
@@ -309,12 +309,12 @@ def _evaluate_lightgbm_direct(
 
     print(f"  Pivoting to wide ({n_series} series x {n_days} days)...")
     y_wide = df.pivot(index="series_id", columns="ds", values="y") \
-                .reindex(series_ids).values.astype(np.float32)
+                .reindex(series_ids).fillna(0).values.astype(np.float32)
     cov_wide = {}
     for col in covariate_cols:
         cov_wide[col] = (
             df.pivot(index="series_id", columns="ds", values=col)
-              .reindex(series_ids).values.astype(np.float32)
+              .reindex(series_ids).fillna(0).values.astype(np.float32)
         )
 
     LAGS = (1, 7, 14)
