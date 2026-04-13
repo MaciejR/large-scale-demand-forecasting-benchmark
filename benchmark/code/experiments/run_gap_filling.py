@@ -26,14 +26,29 @@ from models.baselines.seasonal_naive import seasonal_naive_forecast
 def load_dataset(dataset: str, task: str = None, **kwargs):
     """Load dataset by name. Returns (df, metadata)."""
     if dataset == "m5":
-        sales_path = kwargs.get("sales_path", os.environ.get(
+        sales_path = kwargs.get("sales_path") or os.environ.get(
             "M5_SALES_PATH", "data/m5/sales_train_validation.csv"
-        ))
-        calendar_path = kwargs.get("calendar_path", os.environ.get(
+        )
+        calendar_path = kwargs.get("calendar_path") or os.environ.get(
             "M5_CALENDAR_PATH", "data/m5/calendar.csv"
-        ))
-        df = load_m5(sales_path, calendar_path)
-        return df, {"dataset": "m5", "horizon": kwargs.get("horizon", 7)}
+        )
+        prices_path = kwargs.get("prices_path") or os.environ.get(
+            "M5_PRICES_PATH"
+        )
+        with_covariates = kwargs.get("with_covariates", False)
+        if with_covariates and not prices_path:
+            raise ValueError("with_covariates=True requires prices_path")
+
+        df = load_m5(
+            sales_path, calendar_path,
+            path_prices=prices_path,
+            with_covariates=with_covariates,
+        )
+        meta = {"dataset": "m5", "horizon": kwargs.get("horizon", 7)}
+        if with_covariates:
+            from data.loaders.m5 import KNOWN_DYNAMIC_COLUMNS
+            meta["known_dynamic_columns"] = KNOWN_DYNAMIC_COLUMNS
+        return df, meta
 
     elif dataset == "gift_eval":
         from data.loaders.gift_eval import load_gift_eval, get_gift_eval_prediction_length
@@ -89,36 +104,142 @@ def get_model_fn(model_name: str, hardware: str = "E4DS_V4"):
         raise ValueError(f"Unknown model: {model_name}")
 
 
-def _evaluate_lightgbm_cov(df, horizon, min_train_size, metadata):
-    """Run LightGBM with covariates — separate path because it needs full DataFrame."""
-    from models.ml.lightgbm_covariates import LightGBMCovariateForecaster
+def _evaluate_lightgbm_cov(
+    df, horizon, min_train_size, metadata,
+    train_fraction: float = 0.8,
+    train_window_days: int = 365,
+):
+    """
+    Vectorized panel LightGBM with covariates for large datasets (e.g. M5).
 
-    covariate_cols = (
-        metadata.get("known_dynamic_columns", [])
-        + metadata.get("past_dynamic_columns", [])
+    Protocol: single global model, trained ONCE on the last `train_window_days`
+    of the training portion (first `train_fraction` of days), then recursive
+    rolling-origin forecasts in non-overlapping windows of length `horizon`
+    over the remaining tail.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Long-format with [series_id, ds, y, ...covariate_cols].
+    horizon, min_train_size : int
+        min_train_size is ignored when train_fraction is set.
+    metadata : dict
+        Must contain "known_dynamic_columns" with the covariate names.
+    train_fraction : float
+        Fraction of days assigned to training. The remainder is the eval tail.
+    train_window_days : int
+        Cap on training-history depth (last K days of the training portion).
+    """
+    from lightgbm import LGBMRegressor
+
+    covariate_cols = list(metadata.get("known_dynamic_columns", []))
+
+    df = df.sort_values(["series_id", "ds"]).reset_index(drop=True)
+    series_ids = df["series_id"].unique()
+    dates = np.sort(df["ds"].unique())
+    n_series = len(series_ids)
+    n_days = len(dates)
+
+    print(f"  Pivoting to wide ({n_series} series x {n_days} days)...")
+    y_wide = df.pivot(index="series_id", columns="ds", values="y") \
+                .reindex(series_ids).values.astype(np.float32)
+    cov_wide = {}
+    for col in covariate_cols:
+        cov_wide[col] = (
+            df.pivot(index="series_id", columns="ds", values=col)
+              .reindex(series_ids).values.astype(np.float32)
+        )
+
+    LAGS = (1, 7, 14)
+    WINDOWS = (7, 14)
+    max_lag = max(max(LAGS), max(WINDOWS))
+
+    train_until = int(n_days * train_fraction)
+    train_start = max(max_lag, train_until - train_window_days)
+    if train_until - train_start < max_lag + 1:
+        raise ValueError(
+            f"Not enough training days: train_until={train_until}, "
+            f"train_start={train_start}, need >{max_lag}"
+        )
+
+    feature_names = (
+        [f"lag_{l}" for l in LAGS]
+        + [f"roll_mean_{w}" for w in WINDOWS]
+        + ["dayofweek"]
+        + covariate_cols
     )
-    if not covariate_cols:
-        covariate_cols = [c for c in df.columns if c not in ("series_id", "ds", "y")]
+    n_features = len(feature_names)
 
-    lgbm = LightGBMCovariateForecaster(covariate_columns=covariate_cols)
-    lgbm.fit(df)
+    dayofweek = pd.to_datetime(dates).dayofweek.values.astype(np.int8)
 
-    outputs = []
-    for sid, g in df.groupby("series_id"):
-        g = g.sort_values("ds").reset_index(drop=True)
-        for t in range(min_train_size, len(g) - horizon + 1, horizon):
-            hist = g.iloc[:t]
-            test = g.iloc[t : t + horizon]
-            future_cov = test[covariate_cols].reset_index(drop=True) if covariate_cols else None
-            pred = lgbm.predict(hist, horizon, future_covariates=future_cov)
-            for i in range(min(horizon, len(test))):
-                outputs.append({
-                    "series_id": sid,
-                    "y_true": test["y"].iloc[i],
-                    "y_pred": pred.iloc[i],
-                })
+    def features_at(t, y_buf):
+        """Build (n_series, n_features) feature matrix using y_buf[:, :t]."""
+        cols = []
+        for lag in LAGS:
+            cols.append(y_buf[:, t - lag])
+        for w in WINDOWS:
+            cols.append(y_buf[:, t - w : t].mean(axis=1))
+        cols.append(np.full(n_series, dayofweek[t], dtype=np.float32))
+        for cname in covariate_cols:
+            cols.append(cov_wide[cname][:, t])
+        return np.column_stack(cols).astype(np.float32, copy=False)
 
-    return pd.DataFrame(outputs)
+    print(f"  Building training matrix [t={train_start}..{train_until})...")
+    n_train_t = train_until - train_start
+    X_train = np.empty((n_series * n_train_t, n_features), dtype=np.float32)
+    y_train = np.empty(n_series * n_train_t, dtype=np.float32)
+
+    for i, t in enumerate(range(train_start, train_until)):
+        rs = i * n_series
+        re = rs + n_series
+        X_train[rs:re] = features_at(t, y_wide)
+        y_train[rs:re] = y_wide[:, t]
+
+    print(f"  Training LightGBM on {len(y_train):,} examples x "
+          f"{n_features} features...")
+    lgbm = LGBMRegressor(
+        objective="tweedie",
+        tweedie_variance_power=1.1,
+        learning_rate=0.05,
+        num_leaves=63,
+        n_estimators=300,
+        min_child_samples=20,
+        verbosity=-1,
+    )
+    lgbm.fit(X_train, y_train)
+    del X_train, y_train
+
+    print(f"  Rolling-origin eval [t={train_until}..{n_days}), horizon={horizon}...")
+    eval_starts = list(range(train_until, n_days - horizon + 1, horizon))
+    n_windows = len(eval_starts)
+    n_obs = n_series * n_windows * horizon
+
+    sid_col = np.tile(np.repeat(series_ids, horizon), n_windows)
+    y_true_col = np.empty(n_obs, dtype=np.float32)
+    y_pred_col = np.empty(n_obs, dtype=np.float32)
+
+    y_buf = y_wide.copy()
+    block_size = n_series * horizon
+    for w_idx, t0 in enumerate(eval_starts):
+        for k in range(horizon):
+            t = t0 + k
+            X_step = features_at(t, y_buf)
+            pred = lgbm.predict(X_step).astype(np.float32)
+            pred = np.maximum(pred, 0.0)
+            y_buf[:, t] = pred
+
+        rs = w_idx * block_size
+        re = rs + block_size
+        y_true_col[rs:re] = y_wide[:, t0 : t0 + horizon].reshape(-1)
+        y_pred_col[rs:re] = y_buf[:, t0 : t0 + horizon].reshape(-1)
+
+        y_buf[:, t0 : t0 + horizon] = y_wide[:, t0 : t0 + horizon]
+
+    return pd.DataFrame({
+        "series_id": sid_col,
+        "y_true": y_true_col,
+        "y_pred": y_pred_col,
+    })
 
 
 def run_experiment(
@@ -129,6 +250,8 @@ def run_experiment(
     hardware: str,
     max_series: int = None,
     metadata: dict = None,
+    train_fraction: float = 0.8,
+    train_window_days: int = 365,
 ):
     """Run a single model on a dataset with cost tracking."""
     if max_series:
@@ -141,7 +264,11 @@ def run_experiment(
     tracker.start()
 
     if model_name == "lightgbm_cov":
-        results = _evaluate_lightgbm_cov(df, horizon, min_train_size, metadata or {})
+        results = _evaluate_lightgbm_cov(
+            df, horizon, min_train_size, metadata or {},
+            train_fraction=train_fraction,
+            train_window_days=train_window_days,
+        )
     else:
         forecast_fn, is_gpu = get_model_fn(model_name, hardware)
         results = rolling_forecast(df, horizon, min_train_size, forecast_fn)
@@ -215,8 +342,15 @@ def main():
                         choices=["E4DS_V4", "NC6", "T4", "K80", "A100"])
     parser.add_argument("--sales-path", default=None)
     parser.add_argument("--calendar-path", default=None)
+    parser.add_argument("--prices-path", default=None)
+    parser.add_argument("--train-fraction", type=float, default=0.8,
+                        help="LightGBM only: fraction of days for training")
+    parser.add_argument("--train-window-days", type=int, default=365,
+                        help="LightGBM only: cap on training history depth")
     parser.add_argument("--term", default="short", help="GIFT-Eval term")
     args = parser.parse_args()
+
+    with_covariates = args.model == "lightgbm_cov"
 
     print(f"Loading {args.dataset}" + (f"/{args.task}" if args.task else "") + "...")
     df, metadata = load_dataset(
@@ -224,6 +358,8 @@ def main():
         task=args.task,
         sales_path=args.sales_path,
         calendar_path=args.calendar_path,
+        prices_path=args.prices_path,
+        with_covariates=with_covariates,
         horizon=args.horizon,
         term=args.term,
     )
@@ -239,6 +375,8 @@ def main():
     metrics_df, cost_metrics, n_series = run_experiment(
         args.model, df, horizon, args.min_train_size,
         args.hardware, args.max_series, metadata,
+        train_fraction=args.train_fraction,
+        train_window_days=args.train_window_days,
     )
 
     tags = {"phase": "gap_filling", "eval_method": "rolling_origin", "paper": "meta-analysis"}
