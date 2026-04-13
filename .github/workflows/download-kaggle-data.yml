@@ -1,0 +1,58 @@
+name: Download Kaggle datasets
+
+on:
+  workflow_dispatch:
+    inputs:
+      dataset:
+        description: "Which dataset to pull"
+        type: choice
+        required: true
+        default: rohlik
+        options:
+          - rohlik
+          - favorita
+          - both
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+      KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+    steps:
+      - name: Install Kaggle CLI
+        run: |
+          python3 -m pip install --quiet kaggle
+
+      - name: Download Rohlik v2
+        if: ${{ inputs.dataset == 'rohlik' || inputs.dataset == 'both' }}
+        run: |
+          mkdir -p out/rohlik
+          kaggle competitions download -c rohlik-sales-forecasting-challenge-v2 -p out/rohlik
+          ls -lh out/rohlik
+
+      - name: Upload Rohlik artifact
+        if: ${{ inputs.dataset == 'rohlik' || inputs.dataset == 'both' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: rohlik-v2
+          path: out/rohlik
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Download Favorita
+        if: ${{ inputs.dataset == 'favorita' || inputs.dataset == 'both' }}
+        run: |
+          mkdir -p out/favorita
+          kaggle competitions download -c favorita-grocery-sales-forecasting -p out/favorita
+          ls -lh out/favorita
+
+      - name: Upload Favorita artifact
+        if: ${{ inputs.dataset == 'favorita' || inputs.dataset == 'both' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: favorita
+          path: out/favorita
+          retention-days: 7
+          if-no-files-found: error
