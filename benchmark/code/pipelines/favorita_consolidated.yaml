@@ -1,0 +1,193 @@
+$schema: https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
+type: pipeline
+
+experiment_name: meta-analysis-gap-filling
+display_name: Favorita Consolidated — SN, LGBM Recursive, LGBM Direct (h=7,14,28)
+
+settings:
+  default_compute: azureml:cc-forecast-batch
+
+inputs:
+  sales_data:
+    type: uri_file
+    path: azureml:favorita-train:1
+  oil_data:
+    type: uri_file
+    path: azureml:favorita-oil:1
+  holidays_data:
+    type: uri_file
+    path: azureml:favorita-holidays:1
+  stores_data:
+    type: uri_file
+    path: azureml:favorita-stores:1
+  transactions_data:
+    type: uri_file
+    path: azureml:favorita-transactions:1
+
+# Favorita: ~125k series x ~1700 days, ~125M rows. train_until = floor(0.8 x ndays).
+# Continuous demand (median ~5 units/day) but with long-tail intermittent items.
+# Replicates M5/Rohlik 9-job grid for cross-dataset direct-vs-recursive test.
+
+jobs:
+
+  sn_h7:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model seasonal_naive --dataset favorita --horizon 7
+      --min-train-size 1347 --hardware E4DS_V4
+      --sales-path ${{inputs.sales_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+    environment: azureml:forecast-benchmark-cpu-env:1
+
+  sn_h14:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model seasonal_naive --dataset favorita --horizon 14
+      --min-train-size 1347 --hardware E4DS_V4
+      --sales-path ${{inputs.sales_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+    environment: azureml:forecast-benchmark-cpu-env:1
+
+  sn_h28:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model seasonal_naive --dataset favorita --horizon 28
+      --min-train-size 1347 --hardware E4DS_V4
+      --sales-path ${{inputs.sales_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+    environment: azureml:forecast-benchmark-cpu-env:1
+
+  lgbm_rec_h7:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model lightgbm_cov --dataset favorita --horizon 7
+      --hardware E4DS_V4
+      --train-fraction 0.8 --train-window-days 365
+      --sales-path ${{inputs.sales_data}}
+      --oil-path ${{inputs.oil_data}}
+      --holidays-path ${{inputs.holidays_data}}
+      --stores-path ${{inputs.stores_data}}
+      --transactions-path ${{inputs.transactions_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+      oil_data: ${{parent.inputs.oil_data}}
+      holidays_data: ${{parent.inputs.holidays_data}}
+      stores_data: ${{parent.inputs.stores_data}}
+      transactions_data: ${{parent.inputs.transactions_data}}
+    environment: azureml:forecast-benchmark-cpu-env:1
+
+  lgbm_rec_h14:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model lightgbm_cov --dataset favorita --horizon 14
+      --hardware E4DS_V4
+      --train-fraction 0.8 --train-window-days 365
+      --sales-path ${{inputs.sales_data}}
+      --oil-path ${{inputs.oil_data}}
+      --holidays-path ${{inputs.holidays_data}}
+      --stores-path ${{inputs.stores_data}}
+      --transactions-path ${{inputs.transactions_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+      oil_data: ${{parent.inputs.oil_data}}
+      holidays_data: ${{parent.inputs.holidays_data}}
+      stores_data: ${{parent.inputs.stores_data}}
+      transactions_data: ${{parent.inputs.transactions_data}}
+    environment: azureml:forecast-benchmark-cpu-env:1
+
+  lgbm_rec_h28:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model lightgbm_cov --dataset favorita --horizon 28
+      --hardware E4DS_V4
+      --train-fraction 0.8 --train-window-days 365
+      --sales-path ${{inputs.sales_data}}
+      --oil-path ${{inputs.oil_data}}
+      --holidays-path ${{inputs.holidays_data}}
+      --stores-path ${{inputs.stores_data}}
+      --transactions-path ${{inputs.transactions_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+      oil_data: ${{parent.inputs.oil_data}}
+      holidays_data: ${{parent.inputs.holidays_data}}
+      stores_data: ${{parent.inputs.stores_data}}
+      transactions_data: ${{parent.inputs.transactions_data}}
+    environment: azureml:forecast-benchmark-cpu-env:1
+
+  lgbm_dir_h7:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model lightgbm_direct --dataset favorita --horizon 7
+      --hardware E4DS_V4
+      --train-fraction 0.8 --train-window-days 365
+      --sales-path ${{inputs.sales_data}}
+      --oil-path ${{inputs.oil_data}}
+      --holidays-path ${{inputs.holidays_data}}
+      --stores-path ${{inputs.stores_data}}
+      --transactions-path ${{inputs.transactions_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+      oil_data: ${{parent.inputs.oil_data}}
+      holidays_data: ${{parent.inputs.holidays_data}}
+      stores_data: ${{parent.inputs.stores_data}}
+      transactions_data: ${{parent.inputs.transactions_data}}
+    environment: azureml:forecast-benchmark-cpu-env:1
+
+  lgbm_dir_h14:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model lightgbm_direct --dataset favorita --horizon 14
+      --hardware E4DS_V4
+      --train-fraction 0.8 --train-window-days 365
+      --sales-path ${{inputs.sales_data}}
+      --oil-path ${{inputs.oil_data}}
+      --holidays-path ${{inputs.holidays_data}}
+      --stores-path ${{inputs.stores_data}}
+      --transactions-path ${{inputs.transactions_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+      oil_data: ${{parent.inputs.oil_data}}
+      holidays_data: ${{parent.inputs.holidays_data}}
+      stores_data: ${{parent.inputs.stores_data}}
+      transactions_data: ${{parent.inputs.transactions_data}}
+    environment: azureml:forecast-benchmark-cpu-env:1
+
+  lgbm_dir_h28:
+    type: command
+    code: ../
+    command: >
+      python experiments/run_gap_filling.py
+      --model lightgbm_direct --dataset favorita --horizon 28
+      --hardware E4DS_V4
+      --train-fraction 0.8 --train-window-days 365
+      --sales-path ${{inputs.sales_data}}
+      --oil-path ${{inputs.oil_data}}
+      --holidays-path ${{inputs.holidays_data}}
+      --stores-path ${{inputs.stores_data}}
+      --transactions-path ${{inputs.transactions_data}}
+    inputs:
+      sales_data: ${{parent.inputs.sales_data}}
+      oil_data: ${{parent.inputs.oil_data}}
+      holidays_data: ${{parent.inputs.holidays_data}}
+      stores_data: ${{parent.inputs.stores_data}}
+      transactions_data: ${{parent.inputs.transactions_data}}
+    environment: azureml:forecast-benchmark-cpu-env:1
