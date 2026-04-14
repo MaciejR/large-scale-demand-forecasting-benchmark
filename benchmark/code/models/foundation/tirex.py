@@ -8,7 +8,7 @@ CUDA-first support and fall back to a pure-PyTorch slow path on MPS.
 This means TiRex inference is slower on a MacBook than Chronos-Bolt-
 Tiny or TabPFN-TS but still feasible inside the §5.4.3 budget.
 
-Requires: pip install "tirex>=0.3"
+Requires: pip install "tirex-ts>=0.3"  (import path: `from tirex import load_model`)
 
 Device note: on MPS, expect ~5-15x slowdown relative to CUDA per the
 TiRex GitHub benchmarks. We document the effect in the §5.4.6

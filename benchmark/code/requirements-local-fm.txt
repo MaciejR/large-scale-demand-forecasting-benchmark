@@ -15,7 +15,7 @@ pyarrow>=15
 # --- foundation models under test ---
 chronos-forecasting>=1.4   # Chronos-Bolt-Tiny (~9 M params, T5 encoder-only)
 tabpfn-time-series>=0.2    # TabPFN-TS (~11 M params, covariate-aware)
-tirex>=0.3                 # TiRex (~35 M params, xLSTM)
+tirex-ts>=0.3              # TiRex (~35 M params, xLSTM). PyPI name is "tirex-ts"; import stays `from tirex import load_model`. The bare `tirex` PyPI slot is an unrelated project — do NOT use it.
 
 # --- shared evaluation code paths used by run_gap_filling.py ---
 mlflow>=2.14,<3.0
