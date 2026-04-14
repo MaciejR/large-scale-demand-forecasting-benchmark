@@ -103,7 +103,11 @@ def load_dataset(dataset: str, task: str = None, **kwargs):
 def _device_for_hardware(hardware: str) -> str:
     """Map hardware name to torch device string."""
     gpu_hardware = {"NC6", "T4", "K80", "A100"}
-    return "cuda" if hardware in gpu_hardware else "cpu"
+    if hardware in gpu_hardware:
+        return "cuda"
+    if hardware == "M_SERIES_MAC":
+        return "mps"
+    return "cpu"
 
 
 def get_model_fn(model_name: str, hardware: str = "E4DS_V4"):
@@ -126,6 +130,21 @@ def get_model_fn(model_name: str, hardware: str = "E4DS_V4"):
     elif model_name == "moirai2":
         from models.foundation.moirai2 import Moirai2Forecaster
         forecaster = Moirai2Forecaster(device=device)
+        return forecaster.predict, True
+
+    elif model_name == "chronos_bolt_tiny":
+        from models.foundation.chronos_bolt_tiny import ChronosBoltTinyForecaster
+        forecaster = ChronosBoltTinyForecaster(device=device)
+        return forecaster.predict, True
+
+    elif model_name == "tabpfn_ts":
+        from models.foundation.tabpfn_ts import TabPFNTSForecaster
+        forecaster = TabPFNTSForecaster(device=device)
+        return forecaster.predict, True
+
+    elif model_name == "tirex":
+        from models.foundation.tirex import TiRexForecaster
+        forecaster = TiRexForecaster(device=device)
         return forecaster.predict, True
 
     elif model_name == "lightgbm_cov":
@@ -536,6 +555,7 @@ def main():
     parser = argparse.ArgumentParser(description="Run gap-filling experiment")
     parser.add_argument("--model", required=True,
                         choices=["seasonal_naive", "chronos2", "timesfm25", "moirai2",
+                                 "chronos_bolt_tiny", "tabpfn_ts", "tirex",
                                  "lightgbm_cov", "lightgbm_direct"])
     parser.add_argument("--dataset", required=True,
                         choices=["m5", "gift_eval", "fev_bench", "favorita", "rohlik"])
@@ -546,7 +566,7 @@ def main():
     parser.add_argument("--min-train-size", type=int, default=100)
     parser.add_argument("--max-series", type=int, default=None)
     parser.add_argument("--hardware", default="E4DS_V4",
-                        choices=["E4DS_V4", "NC6", "T4", "K80", "A100"])
+                        choices=["E4DS_V4", "NC6", "T4", "K80", "A100", "M_SERIES_MAC"])
     parser.add_argument("--sales-path", default=None)
     parser.add_argument("--calendar-path", default=None)
     parser.add_argument("--prices-path", default=None)

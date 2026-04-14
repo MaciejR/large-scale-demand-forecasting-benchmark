@@ -1,0 +1,27 @@
+# Local MPS foundation-model inference pipeline (§5.4.3).
+# Target: Apple M-series MacBook, Python 3.11, PyTorch MPS backend.
+# Install into an isolated venv: python3.11 -m venv ~/venvs/fm-local
+#
+# Separate from the Azure ML environment because the FM wheels (tirex,
+# tabpfn-time-series) pull incompatible torch pins and are not needed
+# for the main Azure runs.
+
+# --- torch stack (MPS-compatible on macOS arm64) ---
+torch>=2.3,<2.6
+numpy>=1.26,<2.0
+pandas>=2.1,<2.3
+pyarrow>=15
+
+# --- foundation models under test ---
+chronos-forecasting>=1.4   # Chronos-Bolt-Tiny (~9 M params, T5 encoder-only)
+tabpfn-time-series>=0.2    # TabPFN-TS (~11 M params, covariate-aware)
+tirex>=0.3                 # TiRex (~35 M params, xLSTM)
+
+# --- shared evaluation code paths used by run_gap_filling.py ---
+mlflow>=2.14,<3.0
+lightgbm>=4.3
+scikit-learn>=1.4
+tqdm>=4.66
+
+# --- dataset loaders (used by shared data/loaders code) ---
+datasets>=2.19

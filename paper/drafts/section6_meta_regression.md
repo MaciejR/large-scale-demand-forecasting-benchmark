@@ -225,8 +225,15 @@ sensitivity check for reviewers who prefer that reference point.
 Cost-accuracy Pareto frontier across the three datasets (M5,
 Rohlik v2, Favorita top-30k) on consumer hardware. X-axis:
 log₁₀ USD of the full 9-job equivalent sweep per dataset per
-family, priced at the consumer-CPU amortization of a $1,500
-laptop running 24/7 (≈ $0.007/hr straight-line over 3 years).
+family, priced at the *marginal electricity* of an M-series
+laptop: ~30 W sustained draw under inference × Polish
+residential electricity ($0.20/kWh) ≈ $0.006/hr. This is the
+cost the practitioner actually pays on top of a machine they
+already own for other work; it excludes the sunk capex of the
+laptop itself. The hardware bucket `M_SERIES_MAC` in
+`benchmark/code/evaluation/cost.py` uses exactly these
+constants so that local-run rows on Figure 6.4 are generated
+from the same cost model as the LightGBM re-costing below.
 Y-axis: the per-dataset WAPE / WRMSSE of the best variant. The
 data for this figure comes from three sources:
 
