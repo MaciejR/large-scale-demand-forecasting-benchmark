@@ -61,11 +61,13 @@ class TiRexForecaster:
         with torch.no_grad():
             out = self._model.forecast(context, prediction_length=horizon)
 
-        if isinstance(out, dict):
-            point = out.get("mean", out.get("median", out.get("predictions")))
+        if isinstance(out, tuple):
+            mean = out[1]
+        elif isinstance(out, dict):
+            mean = out.get("mean", out.get("median", out.get("predictions")))
         else:
-            point = out
-        if hasattr(point, "cpu"):
-            point = point.cpu()
-        arr = np.asarray(point).reshape(-1)[:horizon]
+            mean = out
+        if hasattr(mean, "cpu"):
+            mean = mean.cpu()
+        arr = np.asarray(mean).reshape(-1)[:horizon]
         return pd.Series(arr)

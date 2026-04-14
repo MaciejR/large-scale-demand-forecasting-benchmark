@@ -12,9 +12,9 @@ a deployability caveat on the consumer-box sensitivity panel.
 
 Requires: pip install "tabpfn-time-series>=0.2"
 
-Device note: TabPFN's transformer backbone supports MPS. Covariate
-handling is done by the wrapper's own preprocessor which runs on CPU
-regardless of backbone device; this is fine for our inference budget.
+Device note: we force local on-device inference (no PriorLabs cloud
+round-trip) so the machine fingerprint for §5.4.5 actually reflects
+the work being done on the MacBook and not on PriorLabs' servers.
 """
 
 import numpy as np
@@ -26,44 +26,32 @@ class TabPFNTSForecaster:
 
     def __init__(self, device: str = "mps"):
         self.device = device
-        self._predictor = None
+        self._pipeline = None
 
     def _load_model(self):
-        if self._predictor is None:
-            from tabpfn_time_series import TabPFNTimeSeriesPredictor
+        if self._pipeline is None:
+            from tabpfn_time_series import TabPFNTSPipeline, TabPFNMode
 
-            try:
-                self._predictor = TabPFNTimeSeriesPredictor(device=self.device)
-            except (RuntimeError, NotImplementedError, TypeError) as err:
-                if self.device == "mps":
-                    print(
-                        f"WARNING: TabPFN-TS MPS init failed ({err}); "
-                        f"falling back to CPU."
-                    )
-                    self.device = "cpu"
-                    self._predictor = TabPFNTimeSeriesPredictor(device="cpu")
-                else:
-                    raise
+            self._pipeline = TabPFNTSPipeline(tabpfn_mode=TabPFNMode.LOCAL)
 
     def predict(self, train: pd.Series, horizon: int) -> pd.Series:
         """Zero-shot point forecast. Univariate call path."""
         self._load_model()
 
         n = len(train)
-        history = pd.DataFrame(
+        context_df = pd.DataFrame(
             {
-                "unique_id": "series",
-                "ds": pd.date_range("2000-01-01", periods=n, freq="D"),
+                "item_id": "series",
+                "timestamp": pd.date_range("2000-01-01", periods=n, freq="D"),
                 "target": train.values.astype("float32"),
             }
         )
-        future_ds = pd.date_range(
-            start=history["ds"].iloc[-1] + pd.Timedelta(days=1),
-            periods=horizon,
-            freq="D",
-        )
-        future = pd.DataFrame({"unique_id": "series", "ds": future_ds})
 
-        pred_df = self._predictor.predict(history, future)
-        point = pred_df["target"].values if "target" in pred_df.columns else pred_df.iloc[:, -1].values
-        return pd.Series(point[:horizon])
+        pred_df = self._pipeline.predict_df(context_df, prediction_length=horizon)
+        if "target" in pred_df.columns:
+            point = pred_df["target"].values
+        elif "0.5" in pred_df.columns:
+            point = pred_df["0.5"].values
+        else:
+            point = pred_df.iloc[:, -1].values
+        return pd.Series(np.asarray(point)[:horizon])

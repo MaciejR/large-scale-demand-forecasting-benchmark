@@ -16,3 +16,4 @@ data/raw/
 *.log
 mlruns/
 outputs/
+tabpfn-v2-regressor-*.ckpt

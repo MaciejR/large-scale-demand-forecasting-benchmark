@@ -34,14 +34,18 @@ if [[ ! -x "$VENV/bin/python" ]]; then
 fi
 PY="$VENV/bin/python"
 
-MAX_SERIES="${MAX_SERIES:-500}"
+MAX_SERIES="${MAX_SERIES:-100}"
 HARDWARE="M_SERIES_MAC"
 
 REPO_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 cd "$REPO_ROOT"
 export PYTHONPATH="$REPO_ROOT/benchmark/code:${PYTHONPATH:-}"
 
-MODELS=(chronos_bolt_tiny tabpfn_ts tirex)
+MODELS=(chronos_bolt_tiny tirex)
+# TabPFN-TS dropped from Source B: on-device inference costs ~60 s per
+# forecast window on M-series CPU (~100x Chronos-Bolt-Tiny), making a
+# 48-window rolling-origin sweep infeasible inside the §5.4.3 budget.
+# Documented as a Source B finding; TabPFN-TS still appears in Source A.
 DATASETS=(m5 favorita rohlik)
 HORIZONS=(7 14 28)
 

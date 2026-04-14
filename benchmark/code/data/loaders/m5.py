@@ -47,6 +47,7 @@ def load_m5(
     """
     sales = pd.read_csv(path_sales)
     calendar = pd.read_csv(path_calendar)
+    calendar["d"] = calendar["d"].str.replace("d_", "").astype(int)
 
     value_cols = [c for c in sales.columns if c.startswith("d_")]
     id_vars = ["id"]

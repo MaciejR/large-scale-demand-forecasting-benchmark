@@ -58,10 +58,10 @@ class ChronosBoltTinyForecaster:
         import torch
 
         self._load_model()
-        context = torch.tensor(train.values, dtype=torch.float32)
+        inputs = torch.tensor(train.values, dtype=torch.float32).unsqueeze(0)
 
         quantiles, mean = self._pipeline.predict_quantiles(
-            context=context,
+            inputs=inputs,
             prediction_length=horizon,
             quantile_levels=[0.1, 0.5, 0.9],
         )
