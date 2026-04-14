@@ -37,26 +37,14 @@ intermittent series — and not a property of multi-step LightGBM
 protocol choice in the abstract. §5.3.6 develops this synthesis
 across all three datasets.
 
-We instantiate this range with three experiments on the held-out M5
-tail (days 1552–1940, 389 evaluation days), all sharing a single
-eval window and a single set of covariates (`sell_price`, `snap_CA`,
-`snap_TX`, `snap_WI`, `is_event`, `wday`, `month`, plus lags
-{1, 7, 14} and rolling means {7, 14}). The three variants are:
-
-1. **Seasonal Naive** — period 7, no training, no covariates;
-2. **LightGBM recursive** — one global Tweedie model (variance_power
-   = 1.1, 300 trees, num_leaves = 63) trained once on the last 365 days
-   of the training portion, then applied recursively at evaluation time
-   with its own output fed back into lag features;
-3. **LightGBM direct** — `h` separate global Tweedie models (same
-   hyperparameters, same feature set) trained on the same 365-day
-   window, where model `k` predicts `y[t + k]` from lags known at `t`
-   and future-known covariates at `t + k`, without any feedback.
-
-All three use identical rolling-origin non-overlapping forecast
-windows of length `h ∈ {7, 14, 28}`. WRMSSE is computed in-job via the
-full 12-level Makridakis (2022) hierarchy from the same raw
-sales/calendar/prices CSVs as the predictions.
+We instantiate this range with the three-variant sweep of §5.1.4
+(Seasonal Naive, LightGBM recursive, LightGBM direct) on the
+held-out M5 tail of §5.1.3 (days 1552–1940, 389 evaluation days).
+Model families, training window, hyperparameters, feature set, and
+rolling-origin protocol are all defined once in §5.1 and not repeated
+here. The rest of §5.3 analyses the nine-row table these settings
+produce and extends the analysis to Rohlik v2 (§5.3.4) and
+Favorita (§5.3.5) with the same protocol.
 
 ### 5.3.1 Results
 
@@ -166,16 +154,12 @@ days versus M5's ~70%**. Mean sales per series-day are ~108 units
 (median 40), so Rohlik is continuous retail demand with a light
 right tail rather than intermittent demand dominated by zeros.
 
-Protocol matches Phase C except for: (a) `train_until = floor(0.8
-× 1402) = 1121`, yielding a 281-day tail-eval window; (b) Rohlik-
-specific dynamic covariates
-`{sell_price_main, holiday, shops_closed,
-winter_school_holidays, school_holidays, dayofweek, month}` (the
-closest analogue to the M5 covariate set); (c) the wide pivot over
-series × days uses `fillna(0)` to handle ragged series starts —
-about 31% of Rohlik SKUs enter later than day 1. Training window,
-loss, lags, rolling means, tree count, leaf budget, and the
-direct-vs-recursive head are unchanged.
+Protocol matches §5.1 in every respect — train/eval split at
+`train_until = 1121` (281-day tail window), rolling-origin
+non-overlapping horizons, Tweedie hyperparameters, training
+window — except for the Rohlik-specific dataset and covariate
+set documented in Table 5.1, and the `fillna(0)` wide-pivot
+handling of ragged series starts (§5.1.1).
 
 **Table 5.4.** Seasonal Naive vs LightGBM recursive vs LightGBM
 direct on the Rohlik v2 tail-eval window. Bold = best per horizon
@@ -241,14 +225,10 @@ continuous at the head of the distribution but with a long
 low-velocity tail (many SKUs with sparse sales). If the Rohlik
 inversion of §5.3.4 is real, Favorita should land somewhere in
 between. We ran the same nine-job sweep (pipeline
-`loyal_roti_bcc63n9gkh`) with `--max-series 30000` (the top 30k
-most-active series by total unit sales, chosen to match M5's
-30,490-series scale for forecast-count-comparable cross-dataset
-evaluation) and covariates `{onpromotion, dcoilwtico, is_holiday,
-transactions, dayofweek, month}` — the Favorita analogue of the
-M5 set plus Favorita-specific oil price and per-store
-transactions. Training protocol and hyperparameters are otherwise
-identical to §5.3.1 and §5.3.4.
+`loyal_roti_bcc63n9gkh`) under the §5.1 protocol, with the top
+30,000-series cap and Favorita-specific covariates as documented
+in Table 5.1 and §5.1.1. Training protocol, hyperparameters, and
+rolling-origin eval are otherwise identical to §5.3.1 and §5.3.4.
 
 **Table 5.5.** Seasonal Naive vs LightGBM recursive vs LightGBM
 direct on the Favorita top-30k tail-eval window (train_until =
@@ -322,7 +302,7 @@ covariate sets), hyperparameters, loss, and tree budget across all
 three datasets; only the dataset and the forecast-horizon head
 change.
 
-**Table 5.6.** Cross-dataset summary of the direct-vs-recursive
+**Table 5.8.** Cross-dataset summary of the direct-vs-recursive
 LightGBM gap with matched protocol (WAPE-based; positive = direct
 wins, negative = recursive wins). Zero-day fraction is the
 fraction of series-day observations with `y = 0` in the training
@@ -334,7 +314,7 @@ portion.
 | Rohlik    | ~1.2 %   | −4.4 %  | −3.0 %  | −2.8 %  | recursive wins   | 4.8–18.0× |
 | Favorita  | ~15–25 %, long tail | −4.1 % | −7.5 % | −9.6 % | recursive wins, growing | 4.3–15.6× |
 
-Three patterns emerge from Table 5.6:
+Three patterns emerge from Table 5.8:
 
 1. **Direction tracks intermittency, not protocol.** The sign of the
    direct-vs-recursive gap flips cleanly at the continuous-demand
@@ -439,36 +419,33 @@ where the recursive-beats-direct margin may be different than on
 the full long tail. We flag this as a limitation for §7 (threats
 to validity) and plan to revisit on bigger hardware (Phase F, GPU).
 
-### 5.3.8 Cost envelope across three datasets
+### 5.3.8 Protocol-conditional cost consequences
 
-Each full 9-job sweep on `cc-forecast-batch` (E4DS_V4, 4 vCPU /
-32 GB, region swedencentral) has the following total cost and
-runtime profile:
+The per-dataset cost and CO₂ envelope is reported once in §5.2.3
+(Table 5.6) so that all budget numbers in §5 live in a single
+place. Two consequences of that table are specific to the
+§5.3.4/§5.3.5 accuracy findings and belong here rather than in
+§5.2.3:
 
-| Dataset  | Total cost | SN share | LGBM-rec share | LGBM-dir share | Bottleneck job | CO₂ (kg) |
-|---|---|---|---|---|---|---|
-| M5       | $0.810 | 17 % |  12 % |  71 % | `lgbm_dir_h28` (62 min) | 0.00250 |
-| Rohlik   | $0.120 | 2 %  |   8 % |  90 % | `lgbm_dir_h28` (9 min)  | 0.00030 |
-| Favorita | $1.119 | 1 %  |   7 % |  92 % | `lgbm_dir_h28` (60 min) | 0.00290 |
+First, the recursive-LightGBM sweeps cost $0.090 (M5), $0.009
+(Rohlik), and $0.073 (Favorita), i.e. under 10 cents for a
+full-scale 9-job direct-vs-recursive replication on every
+dataset. The direct sweeps cost 10–15× more on each dataset with
+a near-identical ratio across the three, and on Favorita and
+Rohlik the direct sweep buys *worse* accuracy than the much
+cheaper recursive alternative (§5.3.4, §5.3.5). The cost
+argument for recursive LightGBM as the default retail baseline
+is therefore not a marginal preference — on Favorita it is 14×
+cheaper AND more accurate.
 
-The recursive LightGBM sweeps cost $0.09, $0.009, and $0.074 total
-across the three datasets — less than 10 cents each for a
-full-scale 9-job direct-vs-recursive replication. The direct
-sweeps cost 10–15× more on each dataset (the ratio is near-
-identical across the three), and on Favorita and Rohlik the
-direct sweep buys *worse* accuracy than the much cheaper
-recursive alternative (§5.3.4, §5.3.5).
-
-Two consequences for the rest of the paper. First, the cost
-argument for recursive LightGBM as the default retail baseline is
-not marginal — on Favorita it is 14×. Second, even our most
-expensive LightGBM configuration ($1.12 for a 9-job sweep) is an
-order of magnitude below the zero-shot inference cost of the
-smallest foundation models in our review on comparably-sized eval
-windows, a point we develop in the cost-accuracy Pareto analysis
-(§6.3). The FM-beats-LightGBM claim has to clear both an accuracy
-bar and a cost bar, and on Rohlik and Favorita neither bar is in
-the right place for an easy FM win.
+Second, even our most expensive LightGBM configuration ($1.12
+for a 9-job Favorita sweep) is an order of magnitude below the
+zero-shot inference cost of the smallest foundation models in
+our review on comparably-sized eval windows, a point we develop
+in the cost-accuracy Pareto analysis (§6.3, anchored to the
+FM cost projection in §5.4.5). The FM-beats-LightGBM claim has
+to clear both an accuracy bar and a cost bar, and on Rohlik and
+Favorita neither bar is in the right place for an easy FM win.
 
 ### 5.3.9 Takeaways for the rest of the paper
 
@@ -522,7 +499,7 @@ claims that single-dataset (M5-only) papers have been making:
    budget with horizon (as the M5 winner does). §6's moderator
    table records this for every indexed paper.
 
-For the Pareto frontier in §6.3, Table 5.6 (cross-dataset cost
+For the Pareto frontier in §6.3, Table 5.6 in §5.2.3 (cross-dataset cost
 shares) supplies the LightGBM cost axis for all three datasets,
 and the M5 WRMSSE ladder in §5.3.3 supplies the accuracy axis for
 the M5 slice. We extend the accuracy axis to Rohlik and Favorita
