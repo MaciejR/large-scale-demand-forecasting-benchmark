@@ -242,10 +242,13 @@ save_forest <- function(res, delta_df, dataset, out_path) {
 #' (M_SERIES_MAC marginal electricity; Figure 6.4 primary) or `cloud_gpu`
 #' (Figure 6.5 sensitivity).
 pareto_plot <- function(rows, cost_axis, out_path) {
+  if (!("cost_usd" %in% colnames(rows))) {
+    message(sprintf("Skipping %s Pareto — cost_usd column missing", cost_axis))
+    return(invisible(NULL))
+  }
   have <- rows %>%
-    filter(!is.na(metric_num)) %>%
-    mutate(cost_usd = NA_real_)  # populated by Source B rows only for now
-  if (sum(!is.na(have$cost_usd)) < 2) {
+    filter(!is.na(metric_num), !is.na(cost_usd))
+  if (nrow(have) < 2) {
     message(sprintf("Skipping %s Pareto — need Source B cost rows", cost_axis))
     return(invisible(NULL))
   }
@@ -270,6 +273,16 @@ main <- function() {
     message("Appending Source B from ", LOCAL_PATH)
     loc <- read_csv(LOCAL_PATH, show_col_types = FALSE)
     loc$source <- "LOCAL"
+    # Force column types to match Source A (everything is free-text in
+    # extraction_schema.csv). Without this, mlflow-derived numeric columns
+    # cause bind_rows() to error on the <chr>/<dbl> mismatch.
+    cast_cols <- intersect(
+      c("n_series", "series_length_median", "horizon", "metric_value",
+        "runtime_reported", "gpu_hours"),
+      colnames(loc)
+    )
+    for (col in cast_cols) loc[[col]] <- as.character(loc[[col]])
+    if ("year" %in% colnames(loc)) loc$year <- as.integer(loc$year)
     raw <- bind_rows(raw, loc)
   } else {
     message("Source B file not found at ", LOCAL_PATH,
