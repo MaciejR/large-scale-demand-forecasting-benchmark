@@ -480,6 +480,120 @@ cluster around zero (CIs nearly overlap), while the M5 panel
 shows the large and consistent FM advantage driven by the WAPE
 failure mode of the baseline on that specific dataset.
 
+**Source A pairing diagnosis (2026-04-15).** A hard structural
+problem surfaced when we looked at why §6.1 Pass 1 produced
+exactly nine paired cells — and zero cells from Source A. The
+extraction schema uses row-level IDs (`A01_chronos_indomain`,
+`OWN_lgbm_tail_h7`, `C04_retail_lgbm`, …), not paper-level IDs.
+Every row in `extraction_schema.csv` has a *unique* `paper_id`, so
+the Pass-1 `group_by(paper_id, dataset_norm, horizon_bucket,
+metric_name)` clause can never find two rows from different
+families sharing a paper. In the retail-relevant slice we checked,
+**no paper** in Source A reports FM and ML_TREE side-by-side under a
+single ID — the one paper that does (C12) is out-of-scope tabular
+classification. The 24.4 pp headline above therefore runs on
+Source B (`LOCAL_MAC_*`) only.
+
+**Cross-paper pooled Δ (primary §6.1, 2026-04-15 redesign).** On
+the advice of the 2026-04-15 design call we replaced strict
+within-paper pairing with **cross-paper pooling inside each
+`(dataset, horizon, metric)` bucket**: for each bucket, take
+`mean(FM rows across any papers) − mean(ML_TREE rows across any
+papers)`, and let Source A's single-family rows finally enter
+Pass 1. Random effect moves to `~ 1 | dataset_norm` because each Δ
+now mixes papers and within-paper anchoring is lost. Model:
+
+```
+rma.mv(yi = delta, V = 0.01, random = ~ 1 | dataset_norm,
+       data = delta_cross, test = "t", method = "REML")
+```
+
+The ten eligible buckets are Favorita × {short, medium, long} ×
+WAPE, Rohlik × {short, medium, long} × WAPE, M5 × {short, medium,
+long} × WAPE, and M5 × long × WRMSSE (the only Source A WRMSSE
+bucket with both families represented). Per-bucket Δ̂ values:
+
+| Dataset  | Horizon | Metric | n FM | n ML_TREE | Δ̂      |
+|----------|---------|--------|-----:|----------:|--------:|
+| Favorita | short   | WAPE   |    2 |         4 | −0.012  |
+| Favorita | medium  | WAPE   |    2 |         4 | −0.017  |
+| Favorita | long    | WAPE   |    2 |         4 | −0.021  |
+| M5       | short   | WAPE   |    2 |         2 | −0.542  |
+| M5       | medium  | WAPE   |    2 |         2 | −0.623  |
+| M5       | long    | WAPE   |    2 |         2 | −0.776  |
+| M5       | long    | WRMSSE |    1 |         7 | +0.410  |
+| Rohlik   | short   | WAPE   |    2 |         4 | −0.055  |
+| Rohlik   | medium  | WAPE   |    1 |         4 | −0.067  |
+| Rohlik   | long    | WAPE   |    1 |         4 | −0.085  |
+
+Cross-paper intercept (k = 10):
+
+&nbsp;&nbsp;&nbsp;&nbsp;**Δ̂ (FM − ML_TREE, cross-paper) = −0.1578 WAPE**, &nbsp;
+95 % CI [−0.418, 0.103], &nbsp; `t(9) = −1.37`, &nbsp; *p* = 0.204,
+&nbsp; `Q(9) = 114.74`, *p* < 10⁻⁴.
+
+**The effect is no longer significant at α = 0.05** once Source A
+literature rows enter the pool, even though the point estimate is
+still in FM's favour. The `Q` is enormous again, for the same
+reason as before: M5 WAPE cells carry a −0.54/−0.62/−0.78
+signature driven by Source B `lightgbm_cov` WAPE explosions
+(`WAPE_mean = inf` on several Azure runs, confirmed in MLflow), and
+the one M5 WRMSSE cell flips the sign to +0.41 (FM worse, drawn
+from the seven Source A WRMSSE baselines on M5 — those are the
+published competition numbers, not broken baselines).
+
+Excl-M5 cross-paper sensitivity (k = 6, Favorita + Rohlik WAPE
+cells only):
+
+&nbsp;&nbsp;&nbsp;&nbsp;**Δ̂ (cross-paper, excl. M5) = −0.0429 WAPE**, &nbsp;
+95 % CI [−0.148, 0.062], &nbsp; `t(5) = −1.05`, &nbsp; *p* = 0.342, &nbsp;
+`Q(5) = 0.47`, *p* = 0.99.
+
+The excl-M5 cross-paper result is **identical in sign and
+magnitude** to the within-paper excl-M5 result from the nine-cell
+Source-B-only run, and the heterogeneity collapses to zero
+(`σ² = 0`, `Q p = 0.99`). That is the cleanest signal from §6.7:
+**outside M5, FM and ML_TREE are indistinguishable on WAPE, and
+the apparent aggregate FM advantage is a M5 WAPE artefact of a
+broken baseline.** The within-paper vs cross-paper distinction
+does not change this conclusion on Favorita + Rohlik; it only
+weakens the M5-included headline.
+
+**Why the cross-paper pool weakens the full-pool headline.** Two
+reasons. First, adding literature FM rows brings in selectively
+reported best-case FM numbers (authors reporting their own model
+on their own evaluation), which lowers mean(FM) in each bucket
+and *should* strengthen FM's advantage — but the effect is small
+because on Favorita and Rohlik the Source A FM rows are already
+close to Source B numbers (within 1 pp WAPE). Second, and much
+larger, the M5 long WRMSSE bucket pulls sharply against FM
+(+0.41 Δ̂) because Source A has seven ML_TREE WRMSSE rows on M5 —
+competition-grade LGBM, not broken baselines — and only one FM
+WRMSSE row, from Chronos in-domain. That single cell alone moves
+the cross-paper intercept by roughly +0.04 compared to dropping
+it. The pool is honest about what the literature says on M5
+WRMSSE: competition-grade ML_TREE beats the one published FM
+WRMSSE entry on the same metric. The M5 WAPE cells say the
+opposite, for the per-series-denominator reasons in §5.4.5.
+Both are true of the same dataset; they should not be averaged
+into a single M5 claim. The paper will report M5 WAPE and M5
+WRMSSE as separate cells in Table 6.1, not as a single
+"M5 effect".
+
+**What §6.7 reports in the final draft.** Three rows per dataset:
+(1) within-paper Δ̂ (Source B only), (2) cross-paper Δ̂ (Source A
++ Source B pool), (3) full-pool intercept and excl-M5
+intercept stacked. The headline number in the abstract is the
+**excl-M5 cross-paper Δ̂ = −0.043 (n.s.)**, not the full-pool
+−0.244. The M5 cells stay in §6.7 as a dataset-specific finding
+with the per-series-WAPE caveat from §5.4.5 and a separate line
+for M5 WRMSSE where the sign flips.
+
+Artifacts from the 2026-04-15 re-run are committed at
+`analysis/figures/table_6_1_crosspaper_intercept.txt`,
+`analysis/figures/table_6_1_crosspaper_intercept_exclM5.txt`, and
+`analysis/figures/table_6_1_crosspaper_cells.csv`.
+
 ### 6.8 What §6 will conclude (hypotheses and gates)
 
 §6 is a pre-registered meta-regression in the sense that §6.2

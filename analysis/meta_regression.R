@@ -144,8 +144,20 @@ prepare_rows <- function(raw) {
 }
 
 # ---------------------------------------------------------------------------
-# 2. Pass (1) — Dataset-anchored Δ: within paper×dataset×horizon, compute
-#    FM metric MINUS same-paper ML_TREE metric on the same metric scale.
+# 2. Pass (1) — Dataset-anchored Δ.
+#
+#    Primary (within-paper): FM metric MINUS same-paper ML_TREE metric within
+#    paper × dataset × horizon. Preserves within-paper correlation but in
+#    our Source A retail slice essentially no paper reports both families
+#    under a shared paper_id, so this pass runs almost entirely on Source B
+#    LOCAL_MAC_* cells.
+#
+#    Cross-paper (this function, after design call on 2026-04-15): pool
+#    across papers within dataset × horizon × metric, taking
+#    mean(FM rows) - mean(ML_TREE rows) as a single bucket-level Δ. This
+#    lets Source A rows actually enter Pass 1 — at the cost of losing the
+#    within-paper anchoring. Clustering moves to `~1 | dataset_norm` since
+#    each Δ now mixes papers.
 # ---------------------------------------------------------------------------
 
 compute_paired_delta <- function(rows) {
@@ -162,6 +174,33 @@ compute_paired_delta <- function(rows) {
     filter(is.finite(delta))
 
   by_cell
+}
+
+compute_crosspaper_delta <- function(rows) {
+  rows %>%
+    filter(family %in% c("FM", "ML_TREE")) %>%
+    group_by(dataset_norm, horizon_bucket, metric_name) %>%
+    filter(any(family == "FM"), any(family == "ML_TREE")) %>%
+    summarise(
+      fm       = mean(metric_num[family == "FM"], na.rm = TRUE),
+      ml_tree  = mean(metric_num[family == "ML_TREE"], na.rm = TRUE),
+      n_fm     = sum(family == "FM"),
+      n_mltree = sum(family == "ML_TREE"),
+      .groups  = "drop"
+    ) %>%
+    mutate(delta = fm - ml_tree) %>%
+    filter(is.finite(delta))
+}
+
+fit_meta_crosspaper <- function(delta_df) {
+  delta_df$vi <- 0.01
+  rma.mv(
+    yi = delta, V = vi,
+    random = ~ 1 | dataset_norm,
+    data = delta_df,
+    test = "t",
+    method = "REML"
+  )
 }
 
 # ---------------------------------------------------------------------------
@@ -313,11 +352,34 @@ main <- function() {
                   n_distinct(rows$dataset_norm)))
 
   delta <- compute_paired_delta(rows)
+  delta_cross <- compute_crosspaper_delta(rows)
   abs_matched <- compute_absolute_matched(rows)
   rank_tab <- compute_rank_table(rows)
 
-  message(sprintf("Paired Δ rows: %d across %d datasets",
+  message(sprintf("Paired Δ rows (within-paper): %d across %d datasets",
                   nrow(delta), n_distinct(delta$dataset_norm)))
+  message(sprintf("Paired Δ rows (cross-paper pool): %d across %d datasets",
+                  nrow(delta_cross), n_distinct(delta_cross$dataset_norm)))
+
+  if (nrow(delta_cross) >= 3) {
+    message("\n--- Cross-paper pooled Δ (primary §6.1) ---")
+    res_cross <- fit_meta_crosspaper(delta_cross)
+    print(res_cross)
+    writeLines(capture.output(print(res_cross)),
+               file.path(FIG_DIR, "table_6_1_crosspaper_intercept.txt"))
+    write_csv(delta_cross,
+              file.path(FIG_DIR, "table_6_1_crosspaper_cells.csv"))
+
+    # Excl-M5 sensitivity on the cross-paper pool.
+    d_no_m5 <- delta_cross %>% filter(dataset_norm != "M5")
+    if (nrow(d_no_m5) >= 3) {
+      message("\n--- Cross-paper pooled Δ, excl M5 ---")
+      res_cross_nom5 <- fit_meta_crosspaper(d_no_m5)
+      print(res_cross_nom5)
+      writeLines(capture.output(print(res_cross_nom5)),
+                 file.path(FIG_DIR, "table_6_1_crosspaper_intercept_exclM5.txt"))
+    }
+  }
 
   if (nrow(delta) >= 5) {
     res_intercept <- fit_meta(delta)
