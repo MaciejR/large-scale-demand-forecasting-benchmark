@@ -1,4 +1,4 @@
-# §6 Meta-Regression — DRAFT v0.1
+# §6 Meta-Regression — DRAFT v0.2
 
 *Drop-in draft for §6 of the paper. This section is the analytic
 core of the meta-analysis. It combines the 25+ papers extracted in
@@ -7,13 +7,16 @@ writing) with our own gap-filling experiments (§5.2–§5.3) into a
 single moderator-aware comparison of foundation models and
 gradient-boosted-tree baselines on retail demand forecasting.
 Our own FM rows come from two sources defined in §5.4: the
-PRISMA literature extraction (Source A, primary) and a small
-local consumer-box run on a MacBook (Source B, secondary,
-scheduled 2026-04-15/16). §6.1–§6.5 all run on Source A alone
-and do not block on Source B; Source B tightens the §6.5
-Pareto frontier when it lands but does not change the main
-findings. No cloud-GPU FM work is planned; the v0.1 Phase F
-sweep has been dropped.*
+PRISMA literature extraction (Source A, primary) and the Source B
+local consumer-box run on a MacBook that was executed 2026-04-13
+/ 2026-04-14 (16 of 18 FM cells shipped; see §5.4.5 for the ship
+state and the per-cell WAPE table). §6.1–§6.5 are pre-registered
+against Source A alone; §6.7 reports the preliminary §6.1 paired-Δ
+estimate on the Source B paired cells that landed, which is the
+first real number this section has produced. Source B rows
+tighten the §6.5 Pareto frontier; they do not change the
+pre-registered hypotheses. No cloud-GPU FM work is planned; the
+v0.1 Phase F sweep has been dropped.*
 
 ---
 
@@ -360,7 +363,124 @@ the FM-vs-LGBM variance in the literature is because people
 report on different datasets with different intermittency, not
 because FMs vary wildly in quality on a fixed dataset.
 
-### 6.7 What §6 will conclude (hypotheses and gates)
+### 6.7 Preliminary findings on the Source B paired cells (2026-04-14)
+
+*The pre-registered Source A analysis of §6.2–§6.6 is not yet run
+(extraction lock is scheduled for 2026-04-20). The numbers below
+are from the Source B paired cells that landed over 2026-04-13/14
+(see §5.4.5 for the ship state). They are not the headline §6
+numbers; they are a narrow nine-cell sanity check that the R
+pipeline `analysis/meta_regression.R` produces sensible estimates
+under the Pass-1 pairing when real data flows through it. The
+pre-registered Source A run in §6.2 onwards supersedes this
+subsection in the final draft.*
+
+**Setup.** Nine paired cells (M5, Favorita, Rohlik v2 × horizons 7,
+14, 28) with `paper_id = LOCAL_MAC_<dataset>_h<horizon>` joining
+Source B FM rows (Chronos-Bolt-Tiny + TiRex, averaged inside
+family) to matched Azure `lightgbm_cov` + `lightgbm_direct` rows
+(averaged inside ML_TREE family). Outcome is absolute WAPE
+difference (not the relative-error framing of §6.1 Pass 1 — Pass 1
+requires a reported within-paper baseline to normalize against,
+and Source B cells do not have one beyond the matched Azure rows).
+Model is `rma.mv(yi = delta, V = 0.01, random = ~ 1 | paper_id /
+dataset_norm, test = "t", method = "REML")` — Knapp-Hartung
+small-sample adjustment, REML, cluster on `paper_id / dataset_norm`.
+The `V = 0.01` is a placeholder for the Source-A-to-B handoff; the
+pre-registered §6.2 regression uses per-row sampling variance
+from the bootstrap residuals of the source rows.
+
+**Full-pool intercept.**
+
+&nbsp;&nbsp;&nbsp;&nbsp;**Δ̂ (FM − ML_TREE) = −0.2442 WAPE**, &nbsp;
+95 % CI [−0.482, −0.007], &nbsp; `t(8) = −2.37`, &nbsp; *p* = 0.045,
+&nbsp; `Q(8) = 76.26`, *p* < 10⁻⁴.
+
+The intercept is significant at the 5 % level but the `Q`-statistic
+is enormous. The heterogeneity is not noise: it is a single
+high-leverage dataset (M5) pulling the pool. Per-dataset
+intercepts (REML, `~ 1 | paper_id`, `test = "t"`, k = 3 each):
+
+| Dataset    | Δ̂ (WAPE) | 95 % CI            |   *t* |   *p* |
+|------------|---------:|:-------------------|------:|------:|
+| M5         |  −0.6470 | [−0.942, −0.352]   | −9.45 | 0.011 |
+| Favorita   |  −0.0165 | [−0.265,  0.232]   | −0.29 | 0.802 |
+| Rohlik v2  |  −0.0692 | [−0.318,  0.179]   | −1.20 | 0.353 |
+
+M5's intercept is large and significant (−64.7 pp WAPE); Favorita
+and Rohlik v2 are not significantly different from zero. **The
+entire 24.4 pp aggregate advantage comes from M5.** This is
+consistent with the §5.4.5 reading that M5's per-series WAPE on
+intermittent demand is a known LGBM failure mode and not a
+family-level effect.
+
+**Excluding M5 (sensitivity).** Dropping the three M5 cells and
+refitting on Favorita + Rohlik alone:
+
+&nbsp;&nbsp;&nbsp;&nbsp;**Δ̂ (FM − ML_TREE, excl. M5) = −0.0429 WAPE**, &nbsp;
+95 % CI [−0.148, 0.062], &nbsp; `t(5) = −1.05`, &nbsp; *p* = 0.342.
+
+The confidence interval crosses zero. **On the two smooth-demand
+retail datasets the FM-vs-ML_TREE advantage on Source B is
+indistinguishable from zero.** This reverses the sign of the
+headline-number reading of the full pool: the paper cannot claim
+"FMs beat LGBM on retail demand forecasting" on the strength of
+Source B alone, and the M5 effect should be reported as a
+dataset-specific finding, not a family-level finding.
+
+**Horizon moderator.** We also fitted
+
+```
+rma.mv(yi = delta, V = 0.01, mods = ~ horizon,
+       random = ~ 1 | paper_id / dataset_norm,
+       data = delta, test = "t", method = "REML")
+```
+
+on the full nine-cell pool. The horizon slope is
+`β_h = −0.0043 per day`, `t(7) = −0.34`, `p = 0.741`, 95 % CI
+[−0.034, 0.025]. **No evidence of a horizon effect on Δ** in this
+sub-pool. This is a nine-cell sensitivity, not a decisive test;
+the pre-registered §6.2 moderator regression on Source A has the
+statistical power for a real horizon test.
+
+**What this means for the paper's main claim.** Three things:
+
+1. **The M5 caveat in §5.4.5 is load-bearing.** The per-series
+   WAPE failure mode of `lightgbm_cov` on M5 long horizons
+   (WAPE 1.62–1.94, worse than `seasonal_naive` at 1.31–1.33)
+   is the single feature driving the whole Source B paired Δ.
+   Any §6 narrative that omits this is misleading. The final
+   §6.7 table in the paper will report the full-pool intercept
+   and the excl-M5 intercept side-by-side, with a footnote
+   pointing at §5.4.5.
+
+2. **"When do FMs pay off" has a sharper answer than §6 v0.1
+   anticipated.** The answer on our three datasets appears to be
+   "on M5 when the ML_TREE baseline is broken by per-series
+   WAPE on intermittent demand, not elsewhere". This is a more
+   conservative claim than the v0.1 draft's phrasing and aligns
+   more precisely with the §5.4.5 Favorita close-call finding
+   (`lightgbm_cov` 0.5295 vs Chronos-Bolt-Tiny 0.5321 at `h = 7`
+   — a 0.3 pp *LGBM win*).
+
+3. **The hypotheses of §6.8 (formerly §6.7) are not yet settled.**
+   Source B does not contain enough papers (it has one "paper"
+   by design, LOCAL_MAC_*) to power the zero-day-fraction or
+   protocol-direct moderators of §6.2. The §6.8 gate decisions
+   wait for the Source A extraction lock of 2026-04-20. The
+   Source B result above is a sanity-check numerical anchor;
+   it is not the paper's final meta-regression.
+
+Artifacts from this run are committed at `analysis/figures/
+figure_6_forest_{m5,favorita,rohlik}.pdf` and
+`analysis/figures/table_6_1_intercept.txt`. The per-dataset forest
+plots are the visual companion of the per-dataset intercept table
+above; the Favorita and Rohlik panels show how tight the cells
+cluster around zero (CIs nearly overlap), while the M5 panel
+shows the large and consistent FM advantage driven by the WAPE
+failure mode of the baseline on that specific dataset.
+
+### 6.8 What §6 will conclude (hypotheses and gates)
 
 §6 is a pre-registered meta-regression in the sense that §6.2
 and §6.4 above state the sign of each moderator hypothesis
@@ -397,7 +517,7 @@ hypotheses, with their prediction and gate criterion:
 
 All four hypotheses are testable against the Source A
 extraction today and are re-tested against the Source A + B
-union once the §5.4.3 local run lands. §6.7 reports the four
+union once the §5.4.3 local run lands. §6.8 reports the four
 coefficients, CIs, and gate outcomes as a single table
 (Table 6.3 placeholder) in the final draft, with a second
 column showing the coefficient under the Source-A-only
