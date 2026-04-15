@@ -638,13 +638,64 @@ column showing the coefficient under the Source-A-only
 restriction, so the reader can see whether LOCAL rows changed
 any of the four conclusions.
 
+**Gate status after the 2026-04-15 §6.7 redesign.** The cross-
+paper Pass 1 headline has moved from `Δ̂ = −0.244 (p = 0.045)`
+to `Δ̂ = −0.043 (n.s., excl. M5)`, which reshapes what each gate
+can plausibly clear. Key effects on H1–H4:
+
+- **Power.** The cross-paper pool holds k = 10 bucket-level Δs
+  (k = 6 excl. M5). A moderator regression fits one slope per
+  covariate against k = 10 points with random effect `~ 1 |
+  dataset_norm` spanning three dataset levels. This is not
+  enough resolution to reliably detect 5 pp-scale moderator
+  effects; the 95 % CIs on H1–H4 will be wide, and gate "CI
+  excludes zero" is a stringent bar. The paper will report gate
+  outcomes as *direction-consistent / direction-inconsistent*
+  alongside the CI test rather than treating inclusion of zero
+  as automatic falsification.
+- **H1 (intermittency ↓ FM advantage).** Direction is consistent
+  with §6.7: M5 is the one retail dataset in the pool with
+  material zero-day fraction, and M5 is where FM advantage is
+  largest (WAPE cells) *and* where it reverses (WRMSSE cell).
+  H1 is the one moderator that the data have something to say
+  about. Gate: likely *direction-consistent*, CI probably
+  includes zero at k = 10.
+- **H2 (covariates ↓ FM advantage).** Favorita is covariate-rich
+  and `lightgbm_cov` matches Chronos-Bolt-Tiny within 0.3 pp
+  (§5.4.5). Direction is consistent; Rohlik and M5 muddy the
+  reading because their covariate sets differ in kind and
+  quality. H2 needs Source A's `has_covariates` column cleaned
+  up before the test is meaningful.
+- **H3 (direct LGBM ↓ FM advantage).** `lightgbm_direct` is
+  worse than `lightgbm_cov` on every Source B M5 cell (1.35–
+  1.51 vs 1.62–1.94) *but also* remains worse than both FMs on
+  every cell. The direct framing does not help LGBM close the
+  FM gap on our data. Gate: H3 is likely *direction-inconsistent*
+  on Source B, which contradicts the §5.3.6 synthesis prior. If
+  Source A rows confirm this, §5.3.6 needs revision.
+- **H4 (zeros × protocol interaction).** Not fit in §6.7. With
+  k = 10 and only three dataset levels, an interaction term is
+  underidentified and the paper will likely report H4 as
+  "untestable on current data; flagged for future work" rather
+  than forcing a coefficient.
+
+The final §6.8 table in the paper will therefore be smaller than
+v0.1 planned: three rows (H1–H3) with coefficients, CIs, and a
+*direction-consistent?* column, plus an H4 row annotated as
+"untestable at k = 10, requires cross-paper pool ≥ 30". The M5
+dataset-specific finding from §6.7 is reported as the primary
+empirical contribution of §6, with H1–H3 framed as moderator
+sensitivity around that central result.
+
 ---
 
 *Sources for this section:* `analysis/extraction_schema.csv`
-(Source A — 214 rows, 25+ papers at time of writing, grows to
-~241 rows after the §5.4.3 LOCAL run lands), §5.3's three-
-dataset synthesis, and the PRISMA screening record in
-`analysis/prisma_search_protocol.md`. Code for the meta-
-regression, forest plots, and heterogeneity diagnostics is in
-`analysis/meta_regression.R` and `analysis/figures/` (to be
-committed with the final extraction before paper submission).
+(Source A — 185 rows as of 2026-04-15 after the A01 off-by-one
+fix), Source B in `benchmark/results/local_fm_sweep.csv` (43
+rows from the local MacBook MPS sweep and the Azure batch
+baselines), §5.3's three-dataset synthesis, and the PRISMA
+screening record in `analysis/prisma_search_protocol.md`. Code
+for the meta-regression, forest plots, and heterogeneity
+diagnostics is in `analysis/meta_regression.R` and
+`analysis/figures/` — the `table_6_1_crosspaper_*` artefacts
+from the 2026-04-15 re-run are already committed on `main`.
