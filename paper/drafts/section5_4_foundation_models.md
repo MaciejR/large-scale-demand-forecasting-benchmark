@@ -307,6 +307,22 @@ favour of the FMs — so the M5-level Δ is the ceiling, not the central
 tendency. We report both the full-pool intercept and the `excl_M5`
 subgroup intercept in the final §6.1 table.
 
+A sanity check on 2026-04-15 quantifies how much of the M5 level comes
+from the metric framing vs. the model. For the six FM M5 cells in
+Table 5.17, recomputing WAPE as the aggregate form Σ|e| / Σ|y| (sum of
+absolute errors over sum of actuals across all series in the held-out
+window) gives roughly 0.84–0.85 — versus the per-series mean of
+0.94–0.95 reported above, a ratio of **~0.89**. So the per-series
+denominator inflates the FM WAPE level by ~11 % on M5, which is real
+but does not explain the full FM-vs-LGBM gap: even after deflating FM
+numbers by 11 %, `lightgbm_cov` at 1.62–1.94 stays materially worse.
+For `lightgbm_cov` the per-series-to-aggregate ratio is harder to
+measure directly because several Azure runs logged `WAPE_mean = inf`
+(the zero-denominator blow-up on the tail series, confirmed in MLflow),
+so the aggregate form is the one to trust on the LGBM side. The §6.7
+cross-paper analysis reports the M5 cells both with and without this
+deflation in the excl-M5 sensitivity row.
+
 **Favorita is the "close call" dataset.** On Favorita, `lightgbm_cov`
 matches Chronos-Bolt-Tiny almost exactly (0.5295 vs 0.5321 at `h = 7`,
 a 0.3 pp *LGBM win*) and TiRex only barely edges `lightgbm_cov` (0.5249
