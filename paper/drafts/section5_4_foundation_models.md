@@ -470,32 +470,63 @@ Five threats specific to §5.4, in decreasing order of magnitude:
    flag `dataset_variant` per row so the §6 pool can restrict
    to comparable subsets.
 
-### 5.4.9 Status and next steps
+### 5.4.9 Status and what changed
 
-**Source A (extraction) is ready today.** The 214-row
-`extraction_schema.csv` already covers the majority of the FM
-cells for M5 and Favorita; Rohlik coverage is thinner but
-sufficient for a preliminary forest plot. The §6 meta-regression
-runs on Source A alone and does not block on Source B.
+**Source A extraction locked at 185 rows.** The comment-annotated
+`analysis/extraction_schema.csv` holds 185 extracted rows spanning
+FM reports, benchmark papers, retail ML_TREE baselines, and
+cross-domain rows retained for provenance. M5 and Favorita
+coverage is dense enough to drive §6.1 on WAPE alone; Rohlik
+coverage is thinner on the FM side (one TiRex cell still missing
+at `h ∈ {14, 28}` after the Source B run stalled — see below). A
+single off-by-one in the A01 row was fixed on 2026-04-15
+(`cd2cd72`), which had previously caused pandas to silently index-
+shift the whole file and mis-classify `model_family` entries — that
+fix unlocked the `ml` → `ML_TREE` bucket in the R pipeline.
 
-**Source B (local run) is scheduled for 2026-04-15 / 2026-04-16**
-as an overnight-and-weekend job on the MacBook. Deliverable:
-- 27 rows in `benchmark/runs/local/2026-04-16/runs.csv` using
-  the §5.1.3 metric definitions
-- Injected into `extraction_schema.csv` with `paper_id =
-  LOCAL_{chronos_bolt_tiny,tabpfn_ts,tirex}`
-- Per-run sidecar JSON with the five reproducibility anchors of
-  §5.4.6
-- A 3 × 9 cross-protocol comparison table in §5.4.7 against the
-  corresponding Source A rows
+**Source B ran on 2026-04-13 / 2026-04-14.** The consumer-box
+sweep landed 16 FM cells out of 18 (Chronos-Bolt-Tiny 9/9 + TiRex
+7/9 — the two missing cells are Rohlik × `h ∈ {14, 28}`, killed
+after a 14-hour MPS xLSTM stall that is a known TiRex failure mode
+on Apple silicon and documented in `benchmark/code/models/
+foundation/tirex.py`'s `TIREX_FORCE_CPU` guard). The Azure batch
+sweep on `cc-forecast-batch` contributed 18 ML_TREE cells
+(`lightgbm_cov`, `lightgbm_direct`) and 9 `seasonal_naive`
+baselines. Export path changed from the originally planned
+`benchmark/runs/local/2026-04-16/runs.csv` to
+`benchmark/results/local_fm_sweep.csv`, populated by
+`tools/export_mlflow_to_csv.py` which pulls both MLflow backends
+(local file store + Azure ML workspace) into a single 43-row CSV
+keyed on the shared `paper_id = LOCAL_MAC_<dataset>_h<horizon>`.
+That shared-ID scheme is what unlocked within-paper Δ for the
+§6.7 sanity check.
 
-**No Azure GPU work is planned.** The Phase F v0.1 cloud sweep is
-explicitly dropped from the project todo queue. If GPU quota
-becomes available later, Phase F may be revived as a second
-sensitivity run — but the paper does not depend on it, and the
-§6 Pareto frontier (§6.5) is specifically framed around the
-consumer-hardware cost axis, so revival would add a second
-sensitivity panel rather than change the main finding.
+**Per-series-WAPE diagnostic came back positive.** Several Azure
+`lightgbm_cov` runs logged `WAPE_mean = inf` on M5, which is the
+zero-denominator blow-up of the per-series metric on tail series
+with near-zero held-out actuals. This is the concrete evidence
+behind the §5.4.5 M5 caveat and behind the §6 decision to stop
+aggregating M5 WAPE and M5 WRMSSE into a single "M5 effect" in
+Table 6.1. The aggregate form Σ|e| / Σ|y| deflates FM WAPE on M5
+by ~11 % (§5.4.5), narrowing but not closing the gap.
+
+**No Azure GPU work was performed.** The Phase F v0.1 cloud FM
+sweep stayed dropped. The Azure batch activity above is
+CPU-only ML_TREE + statistical baselines on the same
+`cc-forecast-batch` cluster, not GPU FM inference, and the §6.5
+Pareto frontier is still specifically framed around the
+consumer-hardware cost axis, unchanged from v0.1 of this section.
+
+**Known gaps carried into §6:**
+- Two TiRex × Rohlik cells (`h ∈ {14, 28}`) still missing; the
+  Source B within-paper Pass 1 runs on 9 cells instead of the
+  planned 18, and §6.7 reports the gap explicitly.
+- Source A row-level IDs are unique per row, so §6.1 Pass 1 was
+  redesigned on 2026-04-15 (`afcc21d`) to use cross-paper pooling
+  inside each (dataset, horizon, metric) bucket. The headline
+  number in §6.7 is now `Δ̂ = −0.043 (n.s., excl. M5)` rather
+  than the Source-B-only `Δ̂ = −0.244 (p = 0.045)` of the v0.1
+  draft.
 
 ---
 
@@ -503,6 +534,9 @@ sensitivity panel rather than change the main finding.
 (Chronos-2), A04 (TimesFM 2.5), A06 (Moirai 2.0), A11
 (Chronos-Bolt), A13 (TiRex), A14 (TabPFN-TS), plus B01
 (GIFT-Eval) and B02 (fev-bench) benchmark papers — extraction
-rows in `analysis/extraction_schema.csv`. Local run artifacts
-in `benchmark/runs/local/2026-04-16/` (to be committed after
-the weekend run).
+rows in `analysis/extraction_schema.csv`. Source B artefacts:
+consolidated `benchmark/results/local_fm_sweep.csv` (exported via
+`tools/export_mlflow_to_csv.py`) and the underlying MLflow runs
+in the local `mlruns/` file store plus the `meta-analysis-gap-
+filling` experiment in the `mlw-forecast-benchmark` Azure ML
+workspace.
