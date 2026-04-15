@@ -16,6 +16,8 @@ cross-protocol comparison table (our LOCAL row will be slower than
 A13's published throughput, which is expected).
 """
 
+import os
+
 import numpy as np
 import pandas as pd
 
@@ -29,6 +31,13 @@ class TiRexForecaster:
         device: str = "mps",
     ):
         self.model_id = model_id
+        # Override: when MPS loads successfully but the xLSTM fallback
+        # dispatches one element at a time through MPSGraph, a single
+        # forecast window takes tens of seconds and the sweep stalls.
+        # Empirically the CPU path is 5-10x faster for the same cell.
+        # TIREX_FORCE_CPU=1 short-circuits the MPS attempt.
+        if os.environ.get("TIREX_FORCE_CPU", "") == "1":
+            device = "cpu"
         self.device = device
         self._model = None
 
