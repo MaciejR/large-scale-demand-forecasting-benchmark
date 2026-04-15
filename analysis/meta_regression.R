@@ -221,14 +221,27 @@ fit_meta_by_moderator <- function(delta_df, moderator) {
 # 6. Forest plots per dataset (Figures 6.1 - 6.3).
 # ---------------------------------------------------------------------------
 
-save_forest <- function(res, delta_df, dataset, out_path) {
+save_forest <- function(delta_df, dataset, out_path) {
   sub <- delta_df %>% filter(dataset_norm == dataset)
-  if (nrow(sub) < 3) {
+  if (nrow(sub) < 2) {
     message(sprintf("Skipping forest for %s (n=%d rows)", dataset, nrow(sub)))
     return(invisible(NULL))
   }
-  pdf(out_path, width = 7, height = max(4, 0.25 * nrow(sub)))
-  forest(res, slab = sub$paper_id,
+  # Refit per-dataset: the global `res` has k=nrow(delta_df), so passing
+  # it with a length-nrow(sub) slab blows up forest.rma. A per-dataset
+  # fit also matches the §6.1 figure semantics ("Δ on dataset X").
+  sub$vi <- 0.01
+  sub_fit <- tryCatch(
+    rma.mv(
+      yi = delta, V = vi,
+      random = ~ 1 | paper_id,
+      data = sub, test = "t", method = "REML"
+    ),
+    error = function(e) { message("Per-dataset fit failed for ", dataset, ": ", e$message); NULL }
+  )
+  if (is.null(sub_fit)) return(invisible(NULL))
+  pdf(out_path, width = 7, height = max(4, 0.4 * nrow(sub) + 2))
+  forest(sub_fit, slab = sub$paper_id,
          xlab = "FM - ML_TREE delta", main = dataset)
   dev.off()
   message("Wrote ", out_path)
@@ -317,7 +330,7 @@ main <- function() {
                file.path(FIG_DIR, "table_6_1_intercept.txt"))
 
     for (ds in c("M5", "Favorita", "Rohlik")) {
-      save_forest(res_intercept, delta, ds,
+      save_forest(delta, ds,
                   file.path(FIG_DIR, sprintf("figure_6_forest_%s.pdf", tolower(ds))))
     }
   } else {
