@@ -1,6 +1,6 @@
 paper_id,authors,year,title,venue,dataset,dataset_variant,n_series,series_length_median,frequency,has_covariates,model_name,model_family,zero_shot,fine_tuned,horizon,eval_method,metric_name,metric_value,runtime_reported,gpu_hours,hardware,notes
 # === Category A: Foundation Model Papers ===
-A01_chronos_indomain,Ansari et al.,2024,Chronos: Learning the Language of Time Series,TMLR,Chronos Benchmark I,15 in-domain datasets,890000,,mixed,No,Chronos-T5 Large,foundation,No,No,mixed,fixed_origin,WQL (agg relative),best,,No,,,710M params; T5-based; 84B observations training
+A01_chronos_indomain,Ansari et al.,2024,Chronos: Learning the Language of Time Series,TMLR,Chronos Benchmark I,15 in-domain datasets,890000,,mixed,No,Chronos-T5 Large,foundation,No,No,mixed,fixed_origin,WQL (agg relative),best,No,,,710M params; T5-based; 84B observations training
 A01_chronos_zeroshot,Ansari et al.,2024,Chronos: Learning the Language of Time Series,TMLR,Chronos Benchmark II,27 zero-shot datasets,,,mixed,No,Chronos-T5 Large,foundation,Yes,No,mixed,fixed_origin,WQL (agg relative),2nd-4th,No,,,42 total datasets; 622 citations
 A02_c2_gift_wql,Ansari et al.,2025,Chronos-2: From Univariate to Universal Forecasting,arXiv,GIFT-Eval,,,,mixed,No,Chronos-2,foundation,Yes,No,mixed,,win_rate_WQL,81.9,No,,,120M encoder-only; supports covariates
 A02_c2_gift_mase,Ansari et al.,2025,Chronos-2: From Univariate to Universal Forecasting,arXiv,GIFT-Eval,,,,mixed,No,Chronos-2,foundation,Yes,No,mixed,,win_rate_MASE,83.8,No,,,skill_score_MASE=30.2

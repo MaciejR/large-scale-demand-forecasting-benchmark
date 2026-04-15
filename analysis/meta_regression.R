@@ -96,11 +96,16 @@ normalize_dataset <- function(d) {
 normalize_family <- function(f) {
   # Collapse fine-grained `model_family` labels into four meta-analysis
   # families: FM, ML_TREE, STATS, NN (and NA otherwise — excluded).
+  # The `ml` bucket holds most of our OWN_* LightGBM rows and the two
+  # external C04 retail LightGBM/XGBoost rows, all tree-based — include
+  # them in ML_TREE so Source A's LGBM side is not silently dropped.
   dplyr::case_when(
     f %in% c("foundation") ~ "FM",
-    f %in% c("ml_tree", "ml_gbm", "gbdt") ~ "ML_TREE",
+    f %in% c("ml_tree", "ml_gbm", "gbdt", "ml",
+             "ml_ensemble", "ml_hybrid") ~ "ML_TREE",
     f %in% c("statistical", "stat", "ets") ~ "STATS",
-    f %in% c("nn", "deep", "transformer", "rnn") ~ "NN",
+    f %in% c("nn", "deep", "transformer", "rnn",
+             "deep_learning", "ensemble_dl") ~ "NN",
     TRUE ~ NA_character_
   )
 }
