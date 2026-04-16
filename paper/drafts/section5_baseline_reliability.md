@@ -73,14 +73,14 @@ striking — a WAPE gap that grows from 17% at `h = 7` to 22% at `h =
 28`. Recursive LightGBM's WAPE rises from 1.62 → 1.94 across horizons
 (+19%), while direct LightGBM's WAPE rises from 1.35 → 1.51 (+12%).
 
-This decomposes the "metric flip" reported in our Phase B experiment
-(Table 5.2, §5.2). In that phase the recursive-only LightGBM beat
+This decomposes the "metric flip" reported in the initial experiment
+(Table 5.2, §5.2). There, the recursive-only LightGBM beat
 Seasonal Naive on MAE (10–13%) but lost to it badly on WAPE (24–46%
 worse at long horizons) and sMAPE (≈2×). We attributed the MAE-vs-WAPE
 divergence to the combination of two effects: a Tweedie-mean bias on
 intermittent demand (which inflates sMAPE) and recursive error
-compounding (which inflates WAPE as horizon grows). Phase C separates
-the two:
+compounding (which inflates WAPE as horizon grows). The
+direct-vs-recursive comparison on M5 (Table 5.3) separates the two:
 
 - **Tweedie-mean bias is real and is not a recursion artefact.** Both
   LightGBM variants post sMAPE ≈ 145% regardless of horizon. This is
@@ -319,9 +319,9 @@ Three patterns emerge from Table 5.8:
 2. **The "recursive compounding penalty" is demand-dependent.**
    The M5 result in §5.3.2 attributed recursive's WAPE blow-up
    (1.62 → 1.94, +19%) to error compounding at long horizons.
-   Phase D showed that same quantity on Rohlik is +18% for
+   On Rohlik (Table 5.4) that same quantity is +18% for
    recursive and +16% for direct — statistically indistinguishable.
-   Phase E showed that on Favorita recursive actually grows
+   On Favorita (Table 5.5) recursive actually grows
    *less* with horizon than direct (+1.5% vs +6.9%). The M5
    pattern is not recursive compounding in the abstract — it is
    recursive compounding amplified by intermittency. On
