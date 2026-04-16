@@ -1,0 +1,147 @@
+# §8 Discussion (v0.1 draft — 2026-04-16)
+
+### 8.1 Data leakage: the elephant in FM evaluation
+
+The largest uncontrolled confound in the FM literature is training
+data overlap. Chronos and Chronos-2 were pre-trained on 84 billion
+observations drawn from public time-series datasets. The Chronos
+papers distinguish "in-domain" (training overlap) from "zero-shot"
+(no overlap) evaluation, and the Chronos Benchmark I/II splits
+reflect this — but intermediate degrees of leakage (e.g., same
+source domain, different temporal slice) are harder to verify.
+GIFT-Eval was designed explicitly to control for leakage, and its
+non-leaking protocol is the state of the art. Our Source B runs
+sidestep the issue by running on held-out rolling-origin windows
+that postdate any plausible training cutoff, but we cannot make the
+same claim for Source A rows drawn from FM papers' self-reported
+evaluations.
+
+The practical consequence for our meta-regression: Source A FM rows
+may be slightly optimistic (the FM saw something like the test
+distribution during pre-training), while Source A ML_TREE rows have
+no such advantage (they are trained from scratch on each dataset).
+If this bias is present, it works *against* our headline finding —
+it would inflate FM performance in the cross-paper pool, and we
+still find a null effect on smooth-demand data. This means the null
+finding is conservative: the true FM-vs-ML_TREE gap may be even
+closer to zero than Δ̂ = −0.044 suggests.
+
+### 8.2 The covariate gap
+
+The most frequently cited limitation of zero-shot FMs in the
+practitioner community is the inability to incorporate exogenous
+covariates (promotions, pricing, calendar events, weather).
+Chronos-2 and Moirai 2.0 have added covariate channels, but at the
+time of our extraction, no Source A paper reports Chronos-2 or
+Moirai 2.0 with covariates on M5, Favorita, or Rohlik under matched
+conditions. Our Source B FM cells are all univariate zero-shot.
+
+The §5.4.5 "close call" on Favorita is the clearest evidence of
+this gap: lightgbm_cov (with oil price, holidays, and promotions)
+matches Chronos-Bolt-Tiny (univariate) within 0.3 pp WAPE at h = 7,
+and beats it at h = 14 and h = 28. The covariate signal on Favorita
+is real (oil price affects transportation costs, promotions drive
+30–50% of volume on promoted SKUs), and the univariate FM cannot
+access it. Whether a covariate-aware FM (Chronos-2 v2, Moirai 2.0
+with exogenous inputs) would close this gap is an open question
+that our data cannot answer — we flag it as the highest-priority
+future work.
+
+### 8.3 Per-series vs aggregate WAPE
+
+The M5 finding (§5.4.5, §6.7) turns on a metric choice that is
+rarely discussed in the FM literature. Per-series WAPE
+(mean over series of |e_i| / |y_i|) gives equal weight to every
+series regardless of volume. On M5's long tail of low-velocity
+SKUs (zero-day fraction ~70%), a series with 3 units sold in the
+test window contributes the same to the metric as a series with
+30,000 units. When the denominator is near zero, any non-zero
+forecast error produces WAPE >> 1, and tree-based models that
+predict a flat non-zero value (e.g., LightGBM's leaf mean) are
+penalised disproportionately.
+
+Aggregate WAPE (Σ|e| / Σ|y| across all series) weights by volume
+and is robust to the denominator problem. Our sanity check (§5.4.5)
+shows that aggregate WAPE deflates FM scores on M5 by ~11% (from
+0.95 to 0.85), narrowing but not closing the gap. For LGBM, the
+deflation is harder to measure because several Azure runs logged
+WAPE_mean = ∞ — the per-series denominator literally blew up.
+
+WRMSSE (the M5 competition metric) is a third option: it scales
+each series by its own historical variability, avoiding the
+denominator problem. On WRMSSE, competition-grade LightGBM scores
+0.52 vs Chronos at 0.97 — a 45 pp gap in LGBM's favour. The M5
+WAPE and WRMSSE readings should not be averaged; they answer
+different questions about different parts of the demand distribution.
+
+**Recommendation for future benchmarks:** report both per-series and
+aggregate WAPE (or volume-weighted MASE) whenever the dataset
+contains intermittent demand. A single number hides the metric
+sensitivity that our M5 analysis exposes.
+
+### 8.4 Limitations
+
+**Small pool.** The cross-paper meta-regression operates on k = 10
+bucket-level deltas (k = 6 excluding M5). This is sufficient for an
+intercept test with Knapp-Hartung adjustment but leaves moderator
+regressions underpowered — 95% CIs on H1–H3 are wide, and H4
+(interaction) is untestable. A future meta-analysis with more retail
+FM papers and standardised per-series WAPE reporting would
+substantially tighten the estimates.
+
+**Three datasets.** The retail meta-regression covers M5, Favorita,
+and Rohlik v2 — one intermittent-demand US retail dataset and two
+smooth-demand European grocery datasets. The findings may not
+generalise to fashion retail (highly seasonal, short life cycles),
+e-commerce (long tail, promotional spikes), or fresh produce (short
+shelf life, weather-driven). Each of these domains has different
+demand characteristics that could shift the FM-vs-ML_TREE balance.
+
+**Consumer-HW-only Source B.** All FM Source B cells ran on a
+MacBook M3 Air (16 GB, MPS backend). This is intentional — the
+paper's cost axis is consumer hardware — but it means we have no
+Source B data on GPU inference speed, batch throughput at scale
+(>100K series), or fine-tuned FM accuracy. The Azure batch cells
+are CPU-only ML_TREE and statistical baselines.
+
+**Placeholder sampling variance.** The meta-regression uses
+V = 0.01 (uniform) instead of per-row sampling variances derived
+from bootstrap residuals. This simplification is adequate for the
+intercept test (the Knapp-Hartung adjustment accounts for
+between-study variance) but may distort moderator coefficient
+standard errors. The pre-registered §6.2 design specifies
+vi = 1/n_series as a rough proxy; implementing proper bootstrap
+variances is flagged for the camera-ready revision.
+
+**Evaluation protocol heterogeneity.** Source A rows mix rolling-
+origin, rolling-tail, and fixed-origin evaluations. Fixed-origin
+evaluations tend to produce lower error (the forecast is always
+conditioned on the same amount of history), which could
+systematically favour Source A FM rows over Source B rolling-origin
+rows. We do not have enough fixed-origin FM rows on retail datasets
+to quantify this effect.
+
+**No probabilistic metrics.** The primary analysis is on point-
+forecast WAPE. Several FMs (Chronos, Moirai, Lag-Llama) produce
+full predictive distributions, and their value may lie in
+calibration and quantile accuracy rather than point-forecast WAPE.
+CRPS and quantile-loss comparisons are outside the scope of this
+paper but would be a natural extension.
+
+### 8.5 Generalisability beyond retail
+
+The conditional finding — FM advantage depends on demand
+intermittency and metric choice, not on model family per se — likely
+extends to other domains with similar demand structures. Spare-parts
+forecasting, pharmaceutical demand, and agricultural supply chains
+share M5's intermittent-demand profile and would face the same
+per-series WAPE pathology. Energy load forecasting and financial
+time series have different characteristics (smooth, high-frequency,
+covariate-rich) that map more closely to Favorita/Rohlik, where
+our finding is that FMs and well-tuned ML are indistinguishable.
+
+We do not claim that FMs are useless — we claim that their value
+proposition in retail is narrower than the literature's aggregate
+benchmark scores suggest, and that the decision of whether to deploy
+one depends on data characteristics and infrastructure constraints
+that are knowable before running a single experiment.
