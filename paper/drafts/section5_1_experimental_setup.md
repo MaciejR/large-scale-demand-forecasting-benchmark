@@ -1,4 +1,6 @@
-# §5.1 Experimental Setup — DRAFT v0.1
+# §5 Gap-Filling Experiments
+
+## §5.1 Experimental Setup — DRAFT v0.1
 
 *Drop-in draft for §5.1 of the paper (Gap-Filling Experiments —
 Setup). This section defines the shared protocol used across

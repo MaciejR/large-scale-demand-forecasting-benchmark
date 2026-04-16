@@ -417,8 +417,8 @@ family-level effect.
 **Excluding M5 (sensitivity).** Dropping the three M5 cells and
 refitting on Favorita + Rohlik alone:
 
-&nbsp;&nbsp;&nbsp;&nbsp;**Δ̂ (FM − ML_TREE, excl. M5) = −0.0429 WAPE**, &nbsp;
-95 % CI [−0.148, 0.062], &nbsp; `t(5) = −1.05`, &nbsp; *p* = 0.342.
+&nbsp;&nbsp;&nbsp;&nbsp;**Δ̂ (FM − ML_TREE, excl. M5) = −0.0442 WAPE**, &nbsp;
+95 % CI [−0.149, 0.061], &nbsp; `t(5) = −1.08`, &nbsp; *p* = 0.329.
 
 The confidence interval crosses zero. **On the two smooth-demand
 retail datasets the FM-vs-ML_TREE advantage on Source B is
@@ -528,8 +528,8 @@ bucket with both families represented). Per-bucket Δ̂ values:
 
 Cross-paper intercept (k = 10):
 
-&nbsp;&nbsp;&nbsp;&nbsp;**Δ̂ (FM − ML_TREE, cross-paper) = −0.1578 WAPE**, &nbsp;
-95 % CI [−0.418, 0.103], &nbsp; `t(9) = −1.37`, &nbsp; *p* = 0.204,
+&nbsp;&nbsp;&nbsp;&nbsp;**Δ̂ (FM − ML_TREE, cross-paper) = −0.1586 WAPE**, &nbsp;
+95 % CI [−0.418, 0.101], &nbsp; `t(9) = −1.38`, &nbsp; *p* = 0.200,
 &nbsp; `Q(9) = 114.74`, *p* < 10⁻⁴.
 
 **The effect is no longer significant at α = 0.05** once Source A
@@ -545,9 +545,9 @@ published competition numbers, not broken baselines).
 Excl-M5 cross-paper sensitivity (k = 6, Favorita + Rohlik WAPE
 cells only):
 
-&nbsp;&nbsp;&nbsp;&nbsp;**Δ̂ (cross-paper, excl. M5) = −0.0429 WAPE**, &nbsp;
-95 % CI [−0.148, 0.062], &nbsp; `t(5) = −1.05`, &nbsp; *p* = 0.342, &nbsp;
-`Q(5) = 0.47`, *p* = 0.99.
+&nbsp;&nbsp;&nbsp;&nbsp;**Δ̂ (cross-paper, excl. M5) = −0.0442 WAPE**, &nbsp;
+95 % CI [−0.149, 0.061], &nbsp; `t(5) = −1.08`, &nbsp; *p* = 0.329, &nbsp;
+`Q(5) = 0.52`, *p* = 0.99.
 
 The excl-M5 cross-paper result is **identical in sign and
 magnitude** to the within-paper excl-M5 result from the nine-cell
@@ -660,12 +660,17 @@ can plausibly clear. Key effects on H1–H4:
   H1 is the one moderator that the data have something to say
   about. Gate: likely *direction-consistent*, CI probably
   includes zero at k = 10.
-- **H2 (covariates ↓ FM advantage).** Favorita is covariate-rich
-  and `lightgbm_cov` matches Chronos-Bolt-Tiny within 0.3 pp
-  (§5.4.5). Direction is consistent; Rohlik and M5 muddy the
-  reading because their covariate sets differ in kind and
-  quality. H2 needs Source A's `has_covariates` column cleaned
-  up before the test is meaningful.
+- **H2 (covariates ↓ FM advantage).** Structurally untestable as
+  a moderator regression: after the 2026-04-16 `has_covariates`
+  cleanup, all 20 FM retail rows are `No` and all 47 ML_TREE
+  retail rows are `Yes`. There is zero within-family variation,
+  so `mods = ~ has_covariates` is perfectly collinear with the
+  family split and cannot estimate a separate covariate effect.
+  The qualitative reading remains direction-consistent — Favorita
+  is covariate-rich and `lightgbm_cov` matches Chronos-Bolt-Tiny
+  within 0.3 pp (§5.4.5) — but a formal test requires ML_TREE
+  rows evaluated *without* covariates, which no Source A paper
+  reports on these retail datasets.
 - **H3 (direct LGBM ↓ FM advantage).** On M5, `lightgbm_direct`
   (WAPE 1.35–1.51) is materially *better* than `lightgbm_cov`
   (1.62–1.94), narrowing the FM gap from ~0.67 to ~0.40 — this
