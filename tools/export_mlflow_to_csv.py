@@ -142,7 +142,7 @@ def build_rows(leaf: pd.DataFrame) -> pd.DataFrame:
 
     is_fm = leaf["family"] == "foundation"
     zero_shot = is_fm.map({True: "Yes", False: "No"})
-    has_cov = leaf["params.model"].eq("lightgbm_cov").map({True: "Yes", False: "No"})
+    has_cov = leaf["params.model"].isin(["lightgbm_cov", "lightgbm_direct"]).map({True: "Yes", False: "No"})
 
     # Source tag: local Mac sweep vs Azure batch. Drives the hardware
     # column that the §6.5 Pareto figures bucket on.
