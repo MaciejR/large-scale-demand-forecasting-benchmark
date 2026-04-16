@@ -159,7 +159,7 @@ run scope bounded at 27 jobs and avoids a situation where the
 local run becomes its own mini-benchmark.
 
 **Implications for generalisation.** The retail-specific
-FM-vs-ML_TREE comparison (Table 5.17, §6.7) therefore rests on
+FM-vs-ML_TREE comparison (Table 5.9, §6.7) therefore rests on
 two small FMs: Chronos-Bolt-Tiny (9 M) and TiRex (35 M). The
 larger models — Chronos-2 (120 M), TimesFM 2.5 (200 M), and
 Moirai 2.0 (311 M) — achieve higher win rates on benchmark suites:
@@ -336,7 +336,7 @@ subgroup intercept in the final §6.1 table.
 
 A sanity check on 2026-04-15 quantifies how much of the M5 level comes
 from the metric framing vs. the model. For the six FM M5 cells in
-Table 5.17, recomputing WAPE as the aggregate form Σ|e| / Σ|y| (sum of
+Table 5.9, recomputing WAPE as the aggregate form Σ|e| / Σ|y| (sum of
 absolute errors over sum of actuals across all series in the held-out
 window) gives roughly 0.84–0.85 — versus the per-series mean of
 0.94–0.95 reported above, a ratio of **~0.89**. So the per-series
@@ -424,13 +424,13 @@ flag in §7 that its consumer-box numbers are reproducible for
 academic benchmarking but not deployable under PriorLabs'
 RL-NC without a commercial license negotiation.
 
-### 5.4.7 Table 5.17: cross-model WAPE on the three retail datasets
+### 5.4.7 Table 5.9: cross-model WAPE on the three retail datasets
 
 Source A's FM coverage on the three retail datasets is sparse: one
 M5 WRMSSE row (TEMPO baseline, 0.9706, from C05) and one non-
 numeric Rohlik row (TimesFM on MASE+sMAPE, from C03). No Source A
 FM paper reports WAPE on M5, Favorita, or Rohlik with the per-
-series rolling-origin protocol of §5.1.3. Table 5.17 is therefore
+series rolling-origin protocol of §5.1.3. Table 5.9 is therefore
 almost entirely Source B, with the M5 WRMSSE cross-reference from
 Source A flagged in the notes column. The v0.1 expectation of "~85
 Source A FM retail rows" proved unrealistic: the FM literature
@@ -438,7 +438,7 @@ evaluates primarily on benchmark suites (GIFT-Eval, fev-bench,
 Chronos Benchmark I/II) rather than on individual retail datasets
 under matched conditions.
 
-**Table 5.17.** Consumer-box WAPE (Source B, per-series mean,
+**Table 5.9.** Consumer-box WAPE (Source B, per-series mean,
 rolling origin) across models, datasets, and horizons. Lower is
 better. All 45 cells populated (the two TiRex × Rohlik `h ∈ {14,
 28}` cells that previously stalled on MPS were filled on 2026-04-16
@@ -460,12 +460,9 @@ Reading guide:
   `lightgbm_direct` is 2–5 pp worse than `lightgbm_cov` — the
   §5.3.6 conditional pattern (recursive wins on smooth demand).
 - **M5:** Both FMs (0.93–0.96) beat all ML_TREE variants by 40+ pp
-  WAPE. The ML_TREE numbers include the per-series WAPE
-  zero-denominator pathology documented in §5.4.5. On WRMSSE (not
-  shown, but Source A reports TEMPO at 0.9706 vs competition-grade
-  LightGBM at 0.52), the sign reverses: ML_TREE wins. M5 should
-  not be read as "FMs are better" — it is "per-series WAPE on
-  intermittent demand is a broken metric for ML_TREE".
+  WAPE, but this is the per-series WAPE pathology documented in
+  §5.4.5 — on WRMSSE the sign reverses (ML_TREE wins). Do not
+  read the M5 WAPE column as a model-quality comparison.
 - **Rohlik:** FMs lead by 4–8 pp over `lightgbm_cov`. The gap
   widens with horizon (7 → 28: +2 pp for FM, +7 pp for LGBM).
   `seasonal_naive` overtakes `lightgbm_cov` at `h = 28` (0.412
@@ -482,47 +479,16 @@ Reading guide:
 
 ### 5.4.8 Threats to validity
 
-Five threats specific to §5.4, in decreasing order of magnitude:
-
-1. **Extraction selection bias.** Papers that publish on M5 /
-   Favorita / Rohlik are not a random sample of the FM
-   literature — they are the subset that chose a retail task
-   for their own evaluation. Papers that chose ETT / Weather /
-   ECL (most of the LSF literature) are absent. The §6.6
-   heterogeneity diagnostic includes a `paper_chose_retail_as_
-   primary_task` binary flag to surface this.
-
-2. **Source A vs Source B protocol drift.** Source A numbers
-   are extracted as-reported; Source B numbers are run on our
-   §5.1.3 protocol. When the two diverge on the same (model,
-   dataset, horizon) cell, the divergence is a data point
-   about protocol sensitivity, not about model quality. The
-   three-model overlap between A and B is designed to quantify
-   this drift, and §5.4.7 treats >5% gaps as findings.
-
-3. **Local run is three small models only.** The four large
-   models (Moirai 2.0, TimesFM 2.5, Chronos-2, Chronos-Bolt
-   bigger variants) cannot be run locally and are therefore
-   represented in Table 5.7 only by Source A. A reviewer who
-   distrusts Source A on a specific large model cannot cross-
-   check against our local run. We flag this as the single
-   biggest residual risk in §7.
-
-4. **Covariate asymmetry.** Four of the six FM families in
-   Table 5.7 are univariate and cannot consume the §5.1.1
-   covariate sets. The LightGBM baselines in §5.2 use the
-   full covariate sets. This biases the comparison toward
-   LightGBM on covariate-driven datasets (M5: SNAP, prices;
-   Favorita: oil, promotions) and is not correctable inside a
-   zero-shot protocol. §6.2 treats covariate-aware vs
-   univariate as a moderator.
-
-5. **Top-30k Favorita cap propagates to the local run.** Same
-   cap, same selection rule, same velocity bias as §5.1.1.
-   Source A rows for Favorita include both fev-bench's top-54k
-   subset and the full-Favorita subset where available; we
-   flag `dataset_variant` per row so the §6 pool can restrict
-   to comparable subsets.
+Five threats are specific to the Source B FM runs, detailed in
+Appendix F. In summary: (1) extraction selection bias — only
+papers that chose a retail task are represented; (2) Source A
+vs Source B protocol drift — as-reported vs our rolling-origin
+protocol; (3) local run covers only three small models (<35 M
+params) — large FMs are Source A only; (4) covariate asymmetry
+— univariate FMs vs covariate-aware LightGBM; (5) top-30k
+Favorita cap propagates velocity bias. The largest residual risk
+is threat (3): any claim about FM-family performance rests on
+two small models in Source B and extracted numbers in Source A.
 
 ### 5.4.9 Status and what changed
 

@@ -63,7 +63,7 @@ Q1: Does your dataset have >15% zero-day fraction
               │         WHY: 9M params, ~0.6s per series on
               │         consumer CPU, competitive with LGBM
               │         on Rohlik within 4–8 pp WAPE (§5.4.7
-              │         Table 5.17). No feature pipeline needed.
+              │         Table 5.9). No feature pipeline needed.
               │         RISK: On Rohlik h=28, seasonal_naive
               │         overtakes lightgbm_cov (0.412 vs 0.432)
               │         — at long horizons on smooth data, even
@@ -142,7 +142,7 @@ retail forecasting system:
 **VP / Director** making a build-vs-buy decision:
 - The FM "pays off" when your team does not have the bandwidth to
   build and maintain a covariate feature pipeline. The accuracy
-  sacrifice on smooth-demand data is <1 pp WAPE (Table 5.17,
+  sacrifice on smooth-demand data is <1 pp WAPE (Table 5.9,
   Favorita row) — likely within the noise floor of most business
   KPIs.
 - The FM does NOT pay off when you already have a production LGBM

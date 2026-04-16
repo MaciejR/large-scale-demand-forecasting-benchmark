@@ -146,7 +146,20 @@ The primary estimand is the cross-paper pooled delta:
 
 This produces k = 10 bucket-level deltas (Favorita × 3 horizons ×
 WAPE, M5 × 3 horizons × WAPE, M5 × long × WRMSSE, Rohlik × 3
-horizons × WAPE). The model is:
+horizons × WAPE).
+
+> **Notation convention.** Throughout this paper, Δ̂ denotes the
+> pooled estimate of the FM − ML_TREE difference on the metric in
+> question (WAPE unless stated otherwise). **Negative Δ̂ means FM
+> is better** (lower WAPE); **positive Δ̂ means ML_TREE is better.**
+> All confidence intervals and p-values refer to the two-sided test
+> H₀: Δ = 0. When we write "the FM advantage is null," we mean
+> the CI includes zero — not that Δ̂ is exactly zero. The variance
+> proxy `vi` is defined per bucket in the next paragraph; it is
+> *not* the metric's own variance but a precision weight reflecting
+> pool depth and dataset size.
+
+The model is:
 
 ```
 rma.mv(yi = delta, V = vi,

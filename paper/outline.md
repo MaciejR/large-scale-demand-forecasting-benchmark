@@ -27,7 +27,7 @@ and document that the LightGBM direct-vs-recursive protocol gap
 is conditional on demand intermittency (§5.3.6), a finding
 vindicated by the gap-filling experiments.
 
-## 1. Introduction (~2 pages)
+## 1. Introduction (~2 pages, drafted)
 - The foundation model wave in time-series forecasting (2024–2026)
 - The hype-reality gap: Chronos-2, TimesFM 2.5, Moirai 2.0,
   TiRex — cost and accuracy under realistic retail conditions
@@ -39,7 +39,7 @@ vindicated by the gap-filling experiments.
   from zero; on M5 the apparent gap is a metric artefact
 - Contributions (five bullets from contribution.md)
 
-## 2. Background (~3 pages)
+## 2. Background (~3 pages, drafted)
 ### 2.1 Taxonomy of Forecasting Approaches
 - Statistical (Naive, Seasonal Naive, ETS, ARIMA, Croston)
 - Machine Learning — global tree models (LightGBM, XGBoost)
@@ -57,7 +57,7 @@ vindicated by the gap-filling experiments.
 - Prior meta-analyses (M-competition lineage)
 - Gap: no PRISMA-compliant review of foundation models for retail
 
-## 3. Methodology (~4 pages)
+## 3. Methodology (~4 pages, drafted)
 ### 3.1 Search Protocol (PRISMA)
 - Databases: Scopus, Google Scholar, Semantic Scholar, arXiv
 - Search strings and date range (2020–2026)
@@ -92,7 +92,7 @@ vindicated by the gap-filling experiments.
   (H1–H3). H4 (interaction) flagged as untestable at k = 10.
 - Sensitivity: excl-M5, within-paper-only (Source B)
 
-## 4. Literature Results (~3 pages)
+## 4. Literature Results (~3 pages, drafted)
 - PRISMA flow diagram
 - Descriptive statistics of the 185 extraction rows
 - Narrative synthesis by model family: FM literature evaluates
@@ -109,10 +109,10 @@ vindicated by the gap-filling experiments.
 ### 5.3 Baseline Reliability — direct vs recursive (drafted)
   - §5.3.6 conditional synthesis vindicated by Source B
 ### 5.4 Foundation Models (drafted)
-  - §5.4.5 consumer-box results: Table 5.17 (45 cells)
+  - §5.4.5 consumer-box results: Table 5.9 (45 cells)
   - §5.4.5 M5 caveat: per-series WAPE + aggregate ratio 0.89
   - §5.4.5 Favorita close call (0.3 pp LGBM win at h=7)
-  - §5.4.7 Table 5.17 populated (all 18 FM + baselines)
+  - §5.4.7 Table 5.9 populated (all 18 FM + baselines)
   - §5.4.9 status: 18/18 FM, 2 TiRex CPU fallback
 
 ## 6. Meta-Analysis (~5 pages, already drafted)
@@ -127,7 +127,7 @@ vindicated by the gap-filling experiments.
   - H1 direction-consistent, H2 needs test, H3 conditional
     (vindicates §5.3.6), H4 untestable at k = 10
 
-## 7. Decision Framework (~2 pages, not yet drafted)
+## 7. Decision Framework (~2 pages, drafted)
 - Flowchart: data characteristics → recommended model family
 - Key decision: "if your demand data has <15% zero-day fraction
   and you have covariates, a well-tuned LightGBM matches or
@@ -135,7 +135,7 @@ vindicated by the gap-filling experiments.
 - When FMs do pay off: univariate cold-start, no historical
   data engineering budget, acceptable ±1 pp WAPE vs LGBM
 
-## 8. Discussion (~2 pages, not yet drafted)
+## 8. Discussion (~2 pages, drafted)
 - Data leakage: the elephant in foundation model benchmarking
 - Covariate gap: univariate FMs vs covariate-aware ML
 - Per-series vs aggregate WAPE: metric choice as a moderator
@@ -143,7 +143,7 @@ vindicated by the gap-filling experiments.
   metrics, Source B on consumer HW only
 - Generalizability beyond retail
 
-## 9. Conclusions (~1 page, not yet drafted)
+## 9. Conclusions (~1 page, drafted)
 - RQ1: FM advantage is null on smooth-demand retail (Δ = −0.044
   n.s.); M5 effect is metric-specific, not family-level
 - RQ2: Intermittency is the load-bearing moderator; covariates
@@ -159,3 +159,4 @@ vindicated by the gap-filling experiments.
 - C: Per-series metric distributions (M5 tail analysis)
 - D: Sensitivity analyses (within-paper, excl-M5, WRMSSE)
 - E: Full extraction table (extraction_schema.csv snapshot)
+- F: Threats to validity — §5.4 foundation model protocol (5 items)
