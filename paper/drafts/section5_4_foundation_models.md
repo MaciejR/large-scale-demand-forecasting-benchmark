@@ -1,14 +1,9 @@
-# §5.4 Foundation Model Protocol — DRAFT v0.2
+# §5.4 Foundation Model Protocol
 
-*Drop-in draft for §5.4 of the paper (Gap-Filling Experiments —
-Foundation Models). §5.4 populates Table 5.7 (§5.2.4) from two
-complementary data sources: the PRISMA literature extraction for
-the bulk of the FM grid (§5.4.2), and a small local consumer-box
-sensitivity run that we execute ourselves on a MacBook via
-PyTorch MPS (§5.4.3). This structure replaces the Phase F
-cloud-GPU sweep from v0.1, which is blocked indefinitely on
-Azure GPU quota and is no longer on the critical path for this
-paper.*
+Foundation model rows come from two complementary data sources:
+the PRISMA literature extraction (§5.4.1–5.4.2) and a local
+consumer-box sensitivity run on a MacBook via PyTorch MPS
+(§5.4.3–5.4.5).
 
 ---
 
@@ -192,9 +187,9 @@ the fair-use protocol for each.
 default context (2048 for Chronos-Bolt-Tiny and TiRex, 1024 for
 TabPFN-TS) and point-forecast mode (median over 20 samples for
 Chronos-Bolt, deterministic for TiRex, point head for
-TabPFN-TS). No tuning. Identical to §5.4.1 v0.1 except that
-four large models are dropped and only three small models
-remain.
+TabPFN-TS). No tuning. The original design included four
+additional large models; they were dropped to match the
+consumer-hardware constraint (§5.4.1).
 
 **Runtime budget.** On an M-series MacBook at typical MPS
 throughput of ~50–150 series-day/s for Chronos-Bolt-Tiny-class
@@ -432,8 +427,8 @@ numeric Rohlik row (TimesFM on MASE+sMAPE, from C03). No Source A
 FM paper reports WAPE on M5, Favorita, or Rohlik with the per-
 series rolling-origin protocol of §5.1.3. Table 5.9 is therefore
 almost entirely Source B, with the M5 WRMSSE cross-reference from
-Source A flagged in the notes column. The v0.1 expectation of "~85
-Source A FM retail rows" proved unrealistic: the FM literature
+Source A flagged in the notes column. The initial expectation of
+abundant Source A FM retail rows proved unrealistic: the FM literature
 evaluates primarily on benchmark suites (GIFT-Eval, fev-bench,
 Chronos Benchmark I/II) rather than on individual retail datasets
 under matched conditions.
@@ -490,75 +485,3 @@ Favorita cap propagates velocity bias. The largest residual risk
 is threat (3): any claim about FM-family performance rests on
 two small models in Source B and extracted numbers in Source A.
 
-### 5.4.9 Status and what changed
-
-**Source A extraction locked at 185 rows.** The comment-annotated
-`analysis/extraction_schema.csv` holds 185 extracted rows spanning
-FM reports, benchmark papers, retail ML_TREE baselines, and
-cross-domain rows retained for provenance. M5 and Favorita
-coverage is dense enough to drive §6.1 on WAPE alone; Rohlik
-coverage is thinner on the FM side (one TiRex cell still missing
-at `h ∈ {14, 28}` after the Source B run stalled — see below). A
-single off-by-one in the A01 row was fixed on 2026-04-15
-(`cd2cd72`), which had previously caused pandas to silently index-
-shift the whole file and mis-classify `model_family` entries — that
-fix unlocked the `ml` → `ML_TREE` bucket in the R pipeline.
-
-**Source B ran on 2026-04-13 / 2026-04-14 + 2026-04-16.** The
-consumer-box sweep landed all 18 FM cells (Chronos-Bolt-Tiny 9/9 +
-TiRex 9/9). The initial MPS run on 2026-04-13/14 produced 16/18
-cells; the two missing TiRex × Rohlik `h ∈ {14, 28}` cells were
-killed after a 14-hour MPS xLSTM stall and re-run on 2026-04-16
-with `TIREX_FORCE_CPU=1` (CPU fallback, ~9–17 min per cell). The
-MPS stall is a known TiRex failure mode on Apple silicon, documented
-in `benchmark/code/models/foundation/tirex.py`. The Azure batch
-sweep on `cc-forecast-batch` contributed 18 ML_TREE cells
-(`lightgbm_cov`, `lightgbm_direct`) and 9 `seasonal_naive`
-baselines. Export path changed from the originally planned
-`benchmark/runs/local/2026-04-16/runs.csv` to
-`benchmark/results/local_fm_sweep.csv`, populated by
-`tools/export_mlflow_to_csv.py` which pulls both MLflow backends
-(local file store + Azure ML workspace) into a single 43-row CSV
-keyed on the shared `paper_id = LOCAL_MAC_<dataset>_h<horizon>`.
-That shared-ID scheme is what unlocked within-paper Δ for the
-§6.7 sanity check.
-
-**Per-series-WAPE diagnostic came back positive.** Several Azure
-`lightgbm_cov` runs logged `WAPE_mean = inf` on M5, which is the
-zero-denominator blow-up of the per-series metric on tail series
-with near-zero held-out actuals. This is the concrete evidence
-behind the §5.4.5 M5 caveat and behind the §6 decision to stop
-aggregating M5 WAPE and M5 WRMSSE into a single "M5 effect" in
-Table 6.1. The aggregate form Σ|e| / Σ|y| deflates FM WAPE on M5
-by ~11 % (§5.4.5), narrowing but not closing the gap.
-
-**No Azure GPU work was performed.** The Phase F v0.1 cloud FM
-sweep stayed dropped. The Azure batch activity above is
-CPU-only ML_TREE + statistical baselines on the same
-`cc-forecast-batch` cluster, not GPU FM inference, and the §6.5
-Pareto frontier is still specifically framed around the
-consumer-hardware cost axis, unchanged from v0.1 of this section.
-
-**Known gaps carried into §6:**
-- TiRex × Rohlik `h ∈ {14, 28}` gaps closed on 2026-04-16 via
-  CPU fallback (WAPE 0.326 and 0.345 respectively). All 18 FM
-  Source B cells now populated.
-- Source A row-level IDs are unique per row, so §6.1 Pass 1 was
-  redesigned on 2026-04-15 (`afcc21d`) to use cross-paper pooling
-  inside each (dataset, horizon, metric) bucket. The headline
-  number in §6.7 is now `Δ̂ = −0.043 (n.s., excl. M5)` rather
-  than the Source-B-only `Δ̂ = −0.244 (p = 0.045)` of the v0.1
-  draft.
-
----
-
-*Sources for this section:* per-model technical reports A02
-(Chronos-2), A04 (TimesFM 2.5), A06 (Moirai 2.0), A11
-(Chronos-Bolt), A13 (TiRex), A14 (TabPFN-TS), plus B01
-(GIFT-Eval) and B02 (fev-bench) benchmark papers — extraction
-rows in `analysis/extraction_schema.csv`. Source B artefacts:
-consolidated `benchmark/results/local_fm_sweep.csv` (exported via
-`tools/export_mlflow_to_csv.py`) and the underlying MLflow runs
-in the local `mlruns/` file store plus the `meta-analysis-gap-
-filling` experiment in the `mlw-forecast-benchmark` Azure ML
-workspace.

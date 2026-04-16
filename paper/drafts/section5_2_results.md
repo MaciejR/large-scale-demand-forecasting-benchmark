@@ -1,15 +1,4 @@
-# §5.2 Gap-Filling Results — DRAFT v0.1
-
-*Drop-in draft for §5.2 of the paper (Gap-Filling Experiments —
-Results). This section reports the headline numbers from Phases
-B–E. Interpretation, protocol analysis, and the cross-dataset
-synthesis live in §5.3. Foundation model rows are pending Phase F
-(GPU sweep); §5.2 documents the baseline half of the experimental
-grid in full. Sources:
-`analysis/baseline_results.md`, pipelines `mighty_morning_6qz5c4jmwm`,
-`goofy_pear_g54m1skybs`, `loyal_roti_bcc63n9gkh`.*
-
----
+# §5.2 Gap-Filling Results
 
 This section reports the headline accuracy and cost numbers from
 our gap-filling experiments across the three retail datasets
@@ -106,41 +95,11 @@ Two observations on cost:
    baseline is also the cheapest, and direct LightGBM is a
    dominated variant on both axes simultaneously.
 
-### 5.2.4 Foundation model rows (pending Phase F)
+### 5.2.4 Foundation model results
 
-Foundation model zero-shot rows are pending — the GPU cluster
-for Phase F (`cc-forecast-gpu`, Standard_NC6s_v3, quota
-requested 2026-04-13) is blocked on Azure capacity approval.
-When Phase F lands it will populate the following grid:
-
-**Table 5.7 [placeholder].** Foundation model zero-shot results,
-same protocol as §5.1.3. Models: Chronos-Bolt (Base), Chronos-2
-(120 M), TimesFM 2.5 (200 M), Moirai 2.0 (large), TiRex (35 M),
-TabPFN-TS (11 M, covariate-aware). Datasets: M5, Rohlik v2,
-Favorita (top 30k). Horizons: 7, 14, 28. All models evaluated
-zero-shot (no fine-tuning). Per-model context length, sampling
-parameters, and inference script details are in §5.4.
-
-*(Grid skeleton: 6 models × 3 datasets × 3 horizons = 54 rows,
-plus SN and best-LGBM baselines duplicated from §5.2 for
-readability. §5.2.4 will be populated in place when Phase F
-jobs complete.)*
-
-Expected FM cost is estimated at **$18–24 per full 54-job
-sweep** on a single NC6s_v3 node, based on the per-model
-inference throughput numbers reported in the source papers
-(§4, extracted from A11/A13/A14). This is an order of
-magnitude above the baseline sweep cost (§5.2.3) but well below
-the tuned FM fine-tuning workflows reported in e.g. TTM
-(NeurIPS 2024) and Chronos-2 (arXiv 2025). Once Phase F lands,
-the Pareto frontier of §6.3 will combine Table 5.6's baseline
-cost with Table 5.7's FM cost.
-
----
-
-*Sources for this section:* `analysis/baseline_results.md`
-Phases B–E, pipeline YAMLs `benchmark/code/pipelines/
-{m5,rohlik,favorita}_consolidated.yaml`, and the MLflow run
-registries for the three named pipelines. §5.3 reads its numbers
-from the same sources, so any update to §5.2 requires the
-same update to §5.3's tables.
+Foundation model zero-shot results are reported separately in
+§5.4. Table 5.9 (§5.4.7) presents the full 18-cell FM grid
+(Chronos-Bolt-Tiny, TiRex × 3 datasets × 3 horizons) alongside
+the baseline rows from Tables 5.3–5.5 for direct comparison.
+The Pareto analysis of §6.5 combines the baseline cost envelope
+of Table 5.6 with the FM cost data from §5.4.

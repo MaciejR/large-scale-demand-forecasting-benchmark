@@ -1,4 +1,4 @@
-# §1 Introduction (v0.1 draft — 2026-04-16)
+# §1 Introduction
 
 The 2024–2026 wave of time-series foundation models — Chronos-2
 (Ansari et al., 2025), TimesFM 2.5 (Das et al., 2025), Moirai 2.0

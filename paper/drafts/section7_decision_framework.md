@@ -1,4 +1,4 @@
-# §7 Decision Framework (v0.1 draft — 2026-04-16)
+# §7 Decision Framework
 
 The meta-regression of §6 answers "when do FMs pay off?" in
 statistical terms (Δ̂, CIs, moderator directions). This section

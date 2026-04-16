@@ -1,4 +1,4 @@
-# §4 Literature Results (v0.1 draft — 2026-04-16)
+# §4 Literature Results
 
 This section reports the outcome of the PRISMA search and describes
 the 185-row extraction before the gap-filling experiments (§5) and

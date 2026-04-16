@@ -1,4 +1,4 @@
-# §3 Methodology (v0.1 draft — 2026-04-16)
+# §3 Methodology
 
 This section describes the three-phase protocol: search and
 extraction (Source A), gap-filling experiments (Source B), and the

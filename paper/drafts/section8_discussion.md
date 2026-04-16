@@ -1,4 +1,4 @@
-# §8 Discussion (v0.1 draft — 2026-04-16)
+# §8 Discussion
 
 ### 8.1 Data leakage: the elephant in FM evaluation
 

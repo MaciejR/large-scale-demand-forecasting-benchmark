@@ -1,14 +1,6 @@
 # §5 Gap-Filling Experiments
 
-## §5.1 Experimental Setup — DRAFT v0.1
-
-*Drop-in draft for §5.1 of the paper (Gap-Filling Experiments —
-Setup). This section defines the shared protocol used across
-Phases B–F. The section is deliberately short and self-contained;
-dataset-specific deviations are noted inline where they occur, and
-the cross-dataset analysis lives in §5.3.*
-
----
+## §5.1 Experimental Setup
 
 All gap-filling experiments described in §5 follow a single
 experimental protocol, parameterized per dataset. This section
@@ -56,7 +48,7 @@ Three notes on dataset preparation:
   32 GB E4DS_V4 compute used for Phases A–D. The selection rule
   biases Favorita LightGBM evaluation toward higher-velocity
   series; this is flagged as a limitation in §5.3.7 and §7, and
-  the full-series evaluation is scheduled for Phase F on larger
+  the full-series evaluation is left for future work on larger
   hardware.
 
 All three datasets are registered as versioned Azure ML data
@@ -71,9 +63,8 @@ All jobs run on Azure ML compute cluster `cc-forecast-batch`
 `swedencentral`, inside Docker environment
 `forecast-benchmark-cpu-env:1`. We use `cc-forecast-batch` for
 the classical and ML baselines of §5.2–§5.3. Foundation model
-sweeps (§5.4) will use a GPU-backed cluster once quota is
-approved; setup for Phase F is documented in the reproducibility
-appendix.
+sweeps (§5.4) run on consumer hardware (Apple M-series MPS);
+setup details are in §5.4.1.
 
 Experiment orchestration uses Azure ML pipelines defined in
 `benchmark/code/pipelines/{m5,rohlik,favorita}_consolidated.yaml`.
@@ -185,11 +176,11 @@ extending to the full training portion would recover ~1 % on
 WRMSSE on M5. The same cap applies on Rohlik and Favorita for
 comparability.
 
-Foundation models (Chronos-Bolt, Chronos-2, TimesFM 2.5, Moirai
-2.0, TiRex, TabPFN-TS) are evaluated zero-shot in Phase F on the
-same rolling-origin protocol, using each model's published
-inference script. Details of the FM protocol, context-length
-choices, and the GPU cluster configuration are in §5.4.
+Foundation models (Chronos-Bolt-Tiny and TiRex) are evaluated
+zero-shot on the same rolling-origin protocol, using each model's
+published inference script on consumer hardware (Apple M-series
+MPS). Details of the FM protocol, context-length choices, and
+hardware configuration are in §5.4.
 
 ### 5.1.5 Reproducibility
 
@@ -206,15 +197,9 @@ Every result reported in §5.2–§5.3 is tied to:
   per-dataset covariate assets. Data is immutable once registered;
   the `:1` suffix binds the job to the exact snapshot.
 - **A versioned environment** — `forecast-benchmark-cpu-env:1`
-  (and `:2` for Phase F GPU jobs). The environment specifies
+  The environment specifies
   Python 3.11, `lightgbm==4.6.0`, `pandas==2.2.0`, `numpy<2`,
   and the loader code path.
 
 Code and data-asset manifests are released in the paper's
 reproducibility appendix and at the repository linked in §9.
-
----
-
-*Sources for this section:* `benchmark/code/pipelines/*.yaml`,
-`benchmark/code/experiments/run_gap_filling.py`, `analysis/
-baseline_results.md` (§5.2 draws its numbers from the same files).

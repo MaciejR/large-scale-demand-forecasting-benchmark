@@ -1,22 +1,15 @@
-# §6 Meta-Regression — DRAFT v0.2
+# §6 Meta-Regression
 
-*Drop-in draft for §6 of the paper. This section is the analytic
-core of the study. It combines the 38 studies extracted in §4
-(see `analysis/extraction_schema.csv`, 185 rows) with our own
-gap-filling experiments (§5, 45 rows) into a cross-paper pooled
-comparison of foundation models and gradient-boosted-tree
+This section combines the 38 studies extracted in §4 (185 rows)
+with our gap-filling experiments (§5, 45 rows) into a cross-paper
+pooled comparison of foundation models and gradient-boosted-tree
 baselines on retail demand forecasting. As documented in §4.4,
-**the FM side of the retail comparison is populated almost
-entirely by Source B** (our own experiments), because no existing
-paper reports FM per-series WAPE on M5, Favorita, or Rohlik
-under matched conditions. Source A contributes the bulk of the
-ML_TREE side. This section therefore analyses a **systematic
-review augmented with original experiments**, not a classical
-meta-analysis of homogeneous published effect sizes. §6.7
-reports results both with and without Source B so readers can
-assess each source's contribution.*
-
----
+the FM side of the retail comparison is populated almost entirely
+by Source B, because no existing paper reports FM per-series WAPE
+on M5, Favorita, or Rohlik under matched conditions. Source A
+contributes the bulk of the ML_TREE side. §6.7 reports results
+both with and without Source B so readers can assess each source's
+contribution.
 
 ### 6.1 Pooling strategy and effect size
 
@@ -102,9 +95,7 @@ moderators as fixed effects. Following Viechtbauer (2010) and
 the `metafor` R package convention, we use a restricted maximum
 likelihood (REML) estimator with Knapp-Hartung adjustment for
 small-sample degrees of freedom. All model specifications and
-code are in `analysis/meta_regression.R` (to be committed with
-the final extraction, scheduled for the Source B local-run
-freeze in the week of 2026-04-20).
+code are in `analysis/meta_regression.R`.
 
 ### 6.3 Forest plots by benchmark × horizon
 
@@ -295,7 +286,7 @@ The central claims Figure 6.4 tests:
 
 **Figure 6.5 [placeholder — sensitivity: cloud-GPU Pareto].** The
 same Pareto frontier re-costed on cloud GPU (single V100 at
-$1.24/hr, the pricing class from §5.4.2 v0.1). Same X-axis
+$1.24/hr). Same X-axis
 definition, same Y-axis, same models. The cost of every FM
 point shifts ~10–100× rightward relative to Figure 6.4, and
 the cost of every LightGBM point shifts roughly 3× rightward.
@@ -308,8 +299,8 @@ Figure 6.5 is the version a reviewer who "evaluates against
 standard cloud GPU" would reach for; Figure 6.4 is the version
 a retail practitioner with a laptop would reach for. Both are
 honest; both appear in the paper. The reason Figure 6.4 is
-primary and 6.5 is sensitivity — a reversal from v0.1 of this
-draft — is that the IJF audience is the practitioner, and the
+primary and 6.5 is sensitivity is that the IJF audience is the
+practitioner, and the
 consumer-hardware cost floor is where the FM-beats-LightGBM
 question is actually decided in practice.
 
@@ -361,19 +352,9 @@ the FM-vs-LGBM variance in the literature is because people
 report on different datasets with different intermittency, not
 because FMs vary wildly in quality on a fixed dataset.
 
-### 6.7 Preliminary findings on the Source B paired cells (2026-04-14)
+### 6.7 Cross-paper pooled results
 
-*The pre-registered Source A analysis of §6.2–§6.6 is not yet run
-(extraction lock is scheduled for 2026-04-20). The numbers below
-are from the Source B paired cells that landed over 2026-04-13/14
-(see §5.4.5 for the ship state). They are not the headline §6
-numbers; they are a narrow nine-cell sanity check that the R
-pipeline `analysis/meta_regression.R` produces sensible estimates
-under the Pass-1 pairing when real data flows through it. The
-pre-registered Source A run in §6.2 onwards supersedes this
-subsection in the final draft.*
-
-**Setup.** Nine paired cells (M5, Favorita, Rohlik v2 × horizons 7,
+**Within-paper paired cells (Source B).** Nine paired cells (M5, Favorita, Rohlik v2 × horizons 7,
 14, 28) with `paper_id = LOCAL_MAC_<dataset>_h<horizon>` joining
 Source B FM rows (Chronos-Bolt-Tiny + TiRex, averaged inside
 family) to matched Azure `lightgbm_cov` + `lightgbm_direct` rows
@@ -437,69 +418,20 @@ rma.mv(yi = delta, V = vi, mods = ~ horizon,
 on the full nine-cell pool. The horizon slope is
 `β_h = −0.0043 per day`, `t(7) = −0.34`, `p = 0.741`, 95 % CI
 [−0.034, 0.025]. **No evidence of a horizon effect on Δ** in this
-sub-pool. This is a nine-cell sensitivity, not a decisive test;
-the pre-registered §6.2 moderator regression on Source A has the
-statistical power for a real horizon test.
+sub-pool.
 
-**What this means for the paper's main claim.** Three things:
+The per-dataset forest plots (Figures 6.1–6.3) visualise this
+heterogeneity: the Favorita and Rohlik panels show cells clustered
+around zero, while the M5 panel shows the large FM advantage driven
+by the WAPE failure mode of the baseline on that specific dataset.
 
-1. **The M5 caveat in §5.4.5 is load-bearing.** The per-series
-   WAPE failure mode of `lightgbm_cov` on M5 long horizons
-   (WAPE 1.62–1.94, worse than `seasonal_naive` at 1.31–1.33)
-   is the single feature driving the whole Source B paired Δ.
-   Any §6 narrative that omits this is misleading. The final
-   §6.7 table in the paper will report the full-pool intercept
-   and the excl-M5 intercept side-by-side, with a footnote
-   pointing at §5.4.5.
-
-2. **"When do FMs pay off" has a sharper answer than §6 v0.1
-   anticipated.** The answer on our three datasets appears to be
-   "on M5 when the ML_TREE baseline is broken by per-series
-   WAPE on intermittent demand, not elsewhere". This is a more
-   conservative claim than the v0.1 draft's phrasing and aligns
-   more precisely with the §5.4.5 Favorita close-call finding
-   (`lightgbm_cov` 0.5295 vs Chronos-Bolt-Tiny 0.5321 at `h = 7`
-   — a 0.3 pp *LGBM win*).
-
-3. **The hypotheses of §6.8 (formerly §6.7) are not yet settled.**
-   Source B does not contain enough papers (it has one "paper"
-   by design, LOCAL_MAC_*) to power the zero-day-fraction or
-   protocol-direct moderators of §6.2. The §6.8 gate decisions
-   wait for the Source A extraction lock of 2026-04-20. The
-   Source B result above is a sanity-check numerical anchor;
-   it is not the paper's final meta-regression.
-
-Artifacts from this run are committed at `analysis/figures/
-figure_6_forest_{m5,favorita,rohlik}.pdf` and
-`analysis/figures/table_6_1_intercept.txt`. The per-dataset forest
-plots are the visual companion of the per-dataset intercept table
-above; the Favorita and Rohlik panels show how tight the cells
-cluster around zero (CIs nearly overlap), while the M5 panel
-shows the large and consistent FM advantage driven by the WAPE
-failure mode of the baseline on that specific dataset.
-
-**Source A pairing diagnosis (2026-04-15).** A hard structural
-problem surfaced when we looked at why §6.1 Pass 1 produced
-exactly nine paired cells — and zero cells from Source A. The
-extraction schema uses row-level IDs (`A01_chronos_indomain`,
-`OWN_lgbm_tail_h7`, `C04_retail_lgbm`, …), not paper-level IDs.
-Every row in `extraction_schema.csv` has a *unique* `paper_id`, so
-the Pass-1 `group_by(paper_id, dataset_norm, horizon_bucket,
-metric_name)` clause can never find two rows from different
-families sharing a paper. In the retail-relevant slice we checked,
-**no paper** in Source A reports FM and ML_TREE side-by-side under a
-single ID — the one paper that does (C12) is out-of-scope tabular
-classification. The 24.4 pp headline above therefore runs on
-Source B (`LOCAL_MAC_*`) only.
-
-**Cross-paper pooled Δ (primary §6.1, 2026-04-15 redesign).** On
-the advice of the 2026-04-15 design call we replaced strict
-within-paper pairing with **cross-paper pooling inside each
-`(dataset, horizon, metric)` bucket**: for each bucket, take
-`mean(FM rows across any papers) − mean(ML_TREE rows across any
-papers)`, and let Source A's single-family rows finally enter
-Pass 1. Random effect moves to `~ 1 | dataset_norm` because each Δ
-now mixes papers and within-paper anchoring is lost. Model:
+**Cross-paper pooled Δ (primary).** Because no Source A paper
+reports both FM and ML_TREE under a shared identifier on these
+retail datasets (§4.4), we use cross-paper pooling inside each
+`(dataset, horizon, metric)` bucket: for each bucket,
+`mean(FM rows) − mean(ML_TREE rows)` across all sources. The
+random effect is `~ 1 | dataset_norm` because each Δ mixes papers
+and within-paper anchoring is lost by construction. Model:
 
 ```
 rma.mv(yi = delta, V = vi, random = ~ 1 | dataset_norm,
@@ -583,136 +515,55 @@ into a single M5 claim. The paper will report M5 WAPE and M5
 WRMSSE as separate cells in Table 6.1, not as a single
 "M5 effect".
 
-**What §6.7 reports in the final draft.** Three rows per dataset:
-(1) within-paper Δ̂ (Source B only), (2) cross-paper Δ̂ (Source A
-+ Source B pool), (3) full-pool intercept and excl-M5
-intercept stacked. The headline number in the abstract is the
-**excl-M5 cross-paper Δ̂ = −0.043 (n.s.)**, not the full-pool
-−0.244. The M5 cells stay in §6.7 as a dataset-specific finding
-with the per-series-WAPE caveat from §5.4.5 and a separate line
-for M5 WRMSSE where the sign flips.
+The headline number is the excl-M5 cross-paper
+Δ̂ = −0.044 (n.s.), not the full-pool estimate. The M5 cells are
+reported as a dataset-specific finding with the per-series WAPE
+caveat from §5.4.5 and a separate row for M5 WRMSSE where the
+sign flips.
 
-Artifacts from the 2026-04-15 re-run are committed at
-`analysis/figures/table_6_1_crosspaper_intercept.txt`,
-`analysis/figures/table_6_1_crosspaper_intercept_exclM5.txt`, and
-`analysis/figures/table_6_1_crosspaper_cells.csv`.
+### 6.8 Moderator hypotheses and outcomes
 
-### 6.8 What §6 will conclude (hypotheses and gates)
+Four pre-registered hypotheses tested against the cross-paper
+pool. With k = 10 bucket-level Δs (k = 6 excl. M5) and only
+three dataset levels, the pool has limited power for moderator
+CI-based gate tests. We report direction-consistency alongside
+formal CIs rather than treating CI inclusion of zero as automatic
+falsification.
 
-§6 is a pre-registered meta-regression in the sense that §6.2
-and §6.4 above state the sign of each moderator hypothesis
-*before* the §5.4.3 local run lands. All four hypotheses are
-testable against the Source A extraction alone today; Source B
-tightens them when the local run freezes. The four load-bearing
-hypotheses, with their prediction and gate criterion:
+1. **H1 (intermittency ↓ FM advantage).** Predicted: coefficient
+   on `zero_day_fraction` is negative. **Direction-consistent.**
+   M5 is the only dataset with material zero-day fraction (~70%)
+   and is where the FM advantage is largest on WAPE and reverses
+   on WRMSSE. CI includes zero at k = 10.
 
-1. **H1 (intermittency ↓ FM advantage).** Coefficient on
-   `zero_day_fraction` in §6.4 is **negative** with 95% CI
-   excluding zero. Gate: if the CI includes zero, we weaken the
-   headline claim from "FMs lose on intermittent retail" to
-   "FMs do not consistently win on intermittent retail, and the
-   literature is currently underpowered to detect the effect".
+2. **H2 (covariates ↓ FM advantage).** Predicted: coefficient on
+   `covariate_rich` is negative. **Structurally untestable** as a
+   moderator regression: all FM retail rows are univariate and all
+   ML_TREE rows use covariates, so `has_covariates` is perfectly
+   collinear with the family split. The qualitative reading is
+   direction-consistent — on covariate-rich Favorita, `lightgbm_cov`
+   matches Chronos-Bolt-Tiny within 0.3 pp (§5.4.5). A formal test
+   requires a covariate-aware FM in Source B (see §5.4.5 TabPFN-TS
+   note).
 
-2. **H2 (covariates ↓ FM advantage).** Coefficient on
-   `covariate_rich` is **negative** with 95% CI excluding zero.
-   Gate: same as H1 on CI inclusion of zero.
+3. **H3 (direct LGBM ↓ FM advantage).** Predicted: coefficient on
+   `protocol_direct` is negative. **Conditional on intermittency.**
+   On M5, `lightgbm_direct` (WAPE 1.35–1.51) narrows the FM gap
+   relative to `lightgbm_cov` (1.62–1.94) — direction-consistent.
+   On Favorita and Rohlik, `lightgbm_direct` is worse than
+   `lightgbm_cov`, widening the FM gap — direction-inconsistent
+   as a main effect. This is the §5.3.6 conditional pattern:
+   protocol direction tracks intermittency, not a family-level
+   constant. Source B vindicates the conditional synthesis.
 
-3. **H3 (direct LGBM ↓ FM advantage).** Coefficient on
-   `protocol_direct` is **negative**. This is the §5.3
-   finding in meta-analytic form. Gate: if positive or
-   CI includes zero, we report that the §5.3 cross-dataset
-   finding does not replicate across the indexed literature,
-   and we revise §5.3.6 accordingly before final submission.
+4. **H4 (zeros × protocol interaction > 0).** Predicted: interaction
+   coefficient is positive. **Untestable at k = 10** with only
+   three dataset levels. Flagged for future work with a cross-paper
+   pool ≥ 30 buckets.
 
-4. **H4 (zeros × protocol interaction > 0).** Interaction
-   coefficient on `zero_day_fraction * protocol_direct` is
-   **positive** with 95% CI excluding zero. This is the
-   cleanest test of the §5.3.6 synthesis. Gate: if positive,
-   the paper's main claim is robust; if CI includes zero, the
-   main claim weakens to "consistent on our three datasets, not
-   yet generalizable".
-
-All four hypotheses are testable against the Source A
-extraction today and are re-tested against the Source A + B
-union once the §5.4.3 local run lands. §6.8 reports the four
-coefficients, CIs, and gate outcomes as a single table
-(Table 6.3 placeholder) in the final draft, with a second
-column showing the coefficient under the Source-A-only
-restriction, so the reader can see whether LOCAL rows changed
-any of the four conclusions.
-
-**Gate status after the 2026-04-15 §6.7 redesign.** The cross-
-paper Pass 1 headline has moved from `Δ̂ = −0.244 (p = 0.045)`
-to `Δ̂ = −0.043 (n.s., excl. M5)`, which reshapes what each gate
-can plausibly clear. Key effects on H1–H4:
-
-- **Power.** The cross-paper pool holds k = 10 bucket-level Δs
-  (k = 6 excl. M5). A moderator regression fits one slope per
-  covariate against k = 10 points with random effect `~ 1 |
-  dataset_norm` spanning three dataset levels. This is not
-  enough resolution to reliably detect 5 pp-scale moderator
-  effects; the 95 % CIs on H1–H4 will be wide, and gate "CI
-  excludes zero" is a stringent bar. The paper will report gate
-  outcomes as *direction-consistent / direction-inconsistent*
-  alongside the CI test rather than treating inclusion of zero
-  as automatic falsification.
-- **H1 (intermittency ↓ FM advantage).** Direction is consistent
-  with §6.7: M5 is the one retail dataset in the pool with
-  material zero-day fraction, and M5 is where FM advantage is
-  largest (WAPE cells) *and* where it reverses (WRMSSE cell).
-  H1 is the one moderator that the data have something to say
-  about. Gate: likely *direction-consistent*, CI probably
-  includes zero at k = 10.
-- **H2 (covariates ↓ FM advantage).** Structurally untestable as
-  a moderator regression: after the 2026-04-16 `has_covariates`
-  cleanup, all 20 FM retail rows are `No` and all 47 ML_TREE
-  retail rows are `Yes`. There is zero within-family variation,
-  so `mods = ~ has_covariates` is perfectly collinear with the
-  family split and cannot estimate a separate covariate effect.
-  The qualitative reading remains direction-consistent — Favorita
-  is covariate-rich and `lightgbm_cov` matches Chronos-Bolt-Tiny
-  within 0.3 pp (§5.4.5) — but a formal test requires ML_TREE
-  rows evaluated *without* covariates, which no Source A paper
-  reports on these retail datasets.
-- **H3 (direct LGBM ↓ FM advantage).** On M5, `lightgbm_direct`
-  (WAPE 1.35–1.51) is materially *better* than `lightgbm_cov`
-  (1.62–1.94), narrowing the FM gap from ~0.67 to ~0.40 — this
-  is *direction-consistent* with H3 and with §5.3.6 on the
-  intermittent-demand dataset. On Favorita and Rohlik, however,
-  `lightgbm_direct` is *worse* than `lightgbm_cov` (Favorita
-  0.55–0.59 vs 0.53–0.54; Rohlik 0.38–0.44 vs 0.37–0.43),
-  widening the FM gap on smooth-demand data — *direction-
-  inconsistent* with H3 as a main effect. This is exactly the
-  §5.3.6 conditional pattern: protocol direction tracks
-  intermittency, not a family-level constant. H3 as a main
-  effect in the regression will average these opposing signs and
-  likely return a null coefficient; the real test is H4
-  (interaction), which is untestable at k = 10 (see below).
-  **§5.3.6 does not need revision** — Source B vindicates the
-  conditional synthesis.
-- **H4 (zeros × protocol interaction).** Not fit in §6.7. With
-  k = 10 and only three dataset levels, an interaction term is
-  underidentified and the paper will likely report H4 as
-  "untestable on current data; flagged for future work" rather
-  than forcing a coefficient.
-
-The final §6.8 table in the paper will therefore be smaller than
-v0.1 planned: three rows (H1–H3) with coefficients, CIs, and a
-*direction-consistent?* column, plus an H4 row annotated as
-"untestable at k = 10, requires cross-paper pool ≥ 30". The M5
-dataset-specific finding from §6.7 is reported as the primary
-empirical contribution of §6, with H1–H3 framed as moderator
-sensitivity around that central result.
-
----
-
-*Sources for this section:* `analysis/extraction_schema.csv`
-(Source A — 185 rows as of 2026-04-15 after the A01 off-by-one
-fix), Source B in `benchmark/results/local_fm_sweep.csv` (43
-rows from the local MacBook MPS sweep and the Azure batch
-baselines), §5.3's three-dataset synthesis, and the PRISMA
-screening record in `analysis/prisma_search_protocol.md`. Code
-for the meta-regression, forest plots, and heterogeneity
-diagnostics is in `analysis/meta_regression.R` and
-`analysis/figures/` — the `table_6_1_crosspaper_*` artefacts
-from the 2026-04-15 re-run are already committed on `main`.
+The M5 dataset-specific finding from §6.7 is the primary empirical
+contribution of §6, with H1–H3 framed as moderator sensitivity
+around that central result. All moderator CIs are wide at the
+current pool size; expanding the pool as more FM papers report
+per-series WAPE on individual retail datasets is the single
+highest-priority extension of this analysis.

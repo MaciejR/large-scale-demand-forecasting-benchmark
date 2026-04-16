@@ -1,12 +1,4 @@
-# §5.3 Baseline reliability: what is a fair LightGBM on retail demand forecasting? — DRAFT v0.2
-
-*Drop-in draft for §5 of the paper (Gap-Filling Experiments). Source
-data: `analysis/baseline_results.md` Phase B (M5 tail-eval), Phase C
-(M5 consolidated), Phase D (Rohlik v2), Phase E (Favorita). Pipelines
-`witty_wheel_pyjt84yt2j`, `mighty_morning_6qz5c4jmwm`,
-`goofy_pear_g54m1skybs`, `loyal_roti_bcc63n9gkh`.*
-
----
+# §5.3 Baseline reliability: what is a fair LightGBM on retail demand forecasting?
 
 Every foundation model paper that reports results on a retail
 forecasting benchmark compares against a LightGBM baseline, and every
@@ -438,7 +430,7 @@ row-count. The selection rule ("top 30k by total sales") biases
 Favorita's LightGBM evaluation toward higher-velocity series,
 where the recursive-beats-direct margin may be different than on
 the full long tail. We flag this as a limitation for §7 (threats
-to validity) and plan to revisit on bigger hardware (Phase F, GPU).
+to validity) and a candidate for future work on larger hardware.
 
 ### 5.3.8 Protocol-conditional cost consequences
 
@@ -527,19 +519,3 @@ the M5 slice. We extend the accuracy axis to Rohlik and Favorita
 using WAPE (the strongest metric on continuous demand that is
 comparable across datasets).
 
----
-
-*Next steps after FM sweeps land:*
-
-- Drop FM WRMSSE / WAPE numbers into Tables 5.3–5.5 as additional
-  rows per dataset.
-- Optional Phase F extension: run the direct-variant sweep with
-  `--direct-trees-per-horizon h*300` on Favorita to test whether
-  direct's horizon penalty is budget-bounded (our hypothesis from
-  §5.3.5) or protocol-intrinsic. If the penalty disappears, the
-  §5.3.6 synthesis sharpens: direct is a budget-exchange with
-  recursive on continuous data, not a strictly dominated variant.
-- Append the cross-dataset metric-dependence finding to §8.1
-  (Discussion: data leakage and baseline reliability), specifically
-  the observation that Tweedie-mean sMAPE bias is universal across
-  retail demand distributions.

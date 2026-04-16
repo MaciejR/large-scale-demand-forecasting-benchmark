@@ -1,4 +1,4 @@
-# §9 Conclusions (v0.1 draft — 2026-04-16)
+# §9 Conclusions
 
 We presented a PRISMA-compliant systematic review of foundation
 models for retail demand forecasting, augmented with original

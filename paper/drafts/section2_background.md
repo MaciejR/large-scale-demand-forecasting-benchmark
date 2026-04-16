@@ -1,4 +1,4 @@
-# §2 Background (v0.1 draft — 2026-04-16)
+# §2 Background
 
 Short-term retail demand forecasting — predicting daily or weekly
 SKU-level sales 1–4 weeks ahead — is one of the most mature applied
