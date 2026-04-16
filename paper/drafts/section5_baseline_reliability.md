@@ -362,6 +362,27 @@ LightGBM on Rohlik would see *both* of its baselines at their
 strongest, and that is the only apples-to-apples comparison for a
 cross-dataset claim.
 
+**Source B vindication (2026-04-16).** The §5.4 consumer-box sweep
+runs both `lightgbm_cov` (recursive with covariates) and
+`lightgbm_direct` (direct multi-step) on the same three datasets.
+The results confirm the conditional pattern of Table 5.8:
+
+- **M5:** `lightgbm_direct` WAPE 1.35–1.51 vs `lightgbm_cov`
+  1.62–1.94 — direct wins by 17–22 %, consistent with Table 5.8's
+  +16.6 to +21.8 % prediction.
+- **Favorita:** `lightgbm_direct` WAPE 0.55–0.59 vs `lightgbm_cov`
+  0.53–0.54 — recursive/cov wins by 4–9 %, consistent with
+  Table 5.8's −4.1 to −9.6 % prediction.
+- **Rohlik:** `lightgbm_direct` WAPE 0.38–0.44 vs `lightgbm_cov`
+  0.37–0.43 — recursive/cov wins by 2–3 %, consistent with
+  Table 5.8's −2.8 to −4.4 % prediction.
+
+The §6.8 H3 moderator ("direct LGBM ↓ FM advantage") is therefore
+direction-consistent on M5 but direction-inconsistent on Favorita
+and Rohlik — exactly as §5.3.6 predicts. H3 cannot be tested as a
+main effect; the real test is the H4 interaction, which requires a
+larger cross-paper pool than the k = 10 cells currently available.
+
 ### 5.3.7 Method note and threats to validity
 
 Four methodological simplifications in our LightGBM variants are

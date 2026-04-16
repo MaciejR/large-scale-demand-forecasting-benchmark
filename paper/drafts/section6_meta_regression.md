@@ -666,13 +666,22 @@ can plausibly clear. Key effects on H1–H4:
   reading because their covariate sets differ in kind and
   quality. H2 needs Source A's `has_covariates` column cleaned
   up before the test is meaningful.
-- **H3 (direct LGBM ↓ FM advantage).** `lightgbm_direct` is
-  worse than `lightgbm_cov` on every Source B M5 cell (1.35–
-  1.51 vs 1.62–1.94) *but also* remains worse than both FMs on
-  every cell. The direct framing does not help LGBM close the
-  FM gap on our data. Gate: H3 is likely *direction-inconsistent*
-  on Source B, which contradicts the §5.3.6 synthesis prior. If
-  Source A rows confirm this, §5.3.6 needs revision.
+- **H3 (direct LGBM ↓ FM advantage).** On M5, `lightgbm_direct`
+  (WAPE 1.35–1.51) is materially *better* than `lightgbm_cov`
+  (1.62–1.94), narrowing the FM gap from ~0.67 to ~0.40 — this
+  is *direction-consistent* with H3 and with §5.3.6 on the
+  intermittent-demand dataset. On Favorita and Rohlik, however,
+  `lightgbm_direct` is *worse* than `lightgbm_cov` (Favorita
+  0.55–0.59 vs 0.53–0.54; Rohlik 0.38–0.44 vs 0.37–0.43),
+  widening the FM gap on smooth-demand data — *direction-
+  inconsistent* with H3 as a main effect. This is exactly the
+  §5.3.6 conditional pattern: protocol direction tracks
+  intermittency, not a family-level constant. H3 as a main
+  effect in the regression will average these opposing signs and
+  likely return a null coefficient; the real test is H4
+  (interaction), which is untestable at k = 10 (see below).
+  **§5.3.6 does not need revision** — Source B vindicates the
+  conditional synthesis.
 - **H4 (zeros × protocol interaction).** Not fit in §6.7. With
   k = 10 and only three dataset levels, an interaction term is
   underidentified and the paper will likely report H4 as
