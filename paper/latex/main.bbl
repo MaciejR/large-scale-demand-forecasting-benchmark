@@ -1,0 +1,138 @@
+\begin{thebibliography}{16}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\href}[2]{#2}
+\providecommand{\path}[1]{#1}
+\providecommand{\DOIprefix}{doi:}
+\providecommand{\ArXivprefix}{arXiv:}
+\providecommand{\URLprefix}{URL: }
+\providecommand{\Pubmedprefix}{pmid:}
+\providecommand{\doi}[1]{\href{http://dx.doi.org/#1}{\path{#1}}}
+\providecommand{\Pubmed}[1]{\href{pmid:#1}{\path{#1}}}
+\providecommand{\bibinfo}[2]{#2}
+\ifx\xfnm\relax \def\xfnm[#1]{\unskip,\space#1}\fi
+%Type = Inproceedings
+\bibitem[{Aksu et~al.(2024)}]{aksu2024gift}
+\bibinfo{author}{Aksu, E.}, et~al., \bibinfo{year}{2024}.
+\newblock \bibinfo{title}{{GIFT-Eval}: A benchmark for general time series
+  forecasting model evaluation}, in: \bibinfo{booktitle}{Advances in Neural
+  Information Processing Systems (NeurIPS)}.
+%Type = Article
+\bibitem[{Ansari et~al.(2024)Ansari, Stella, Turkmen, Zhang, Mercado, Sez,
+  Rasul, Seeger and Benidis}]{ansari2024chronos}
+\bibinfo{author}{Ansari, A.F.}, \bibinfo{author}{Stella, L.},
+  \bibinfo{author}{Turkmen, C.}, \bibinfo{author}{Zhang, X.},
+  \bibinfo{author}{Mercado, P.}, \bibinfo{author}{Sez, H.},
+  \bibinfo{author}{Rasul, K.}, \bibinfo{author}{Seeger, M.},
+  \bibinfo{author}{Benidis, K.}, \bibinfo{year}{2024}.
+\newblock \bibinfo{title}{Chronos: Learning the language of time series}.
+\newblock \bibinfo{journal}{arXiv preprint arXiv:2403.07815} .
+%Type = Article
+\bibitem[{Ansari et~al.(2025)}]{ansari2025chronos2}
+\bibinfo{author}{Ansari, A.F.}, et~al., \bibinfo{year}{2025}.
+\newblock \bibinfo{title}{{Chronos-2}: Time series foundation models with input
+  tokenization}.
+\newblock \bibinfo{journal}{arXiv preprint} .
+%Type = Article
+\bibitem[{Das et~al.(2025)}]{das2025timesfm2}
+\bibinfo{author}{Das, A.}, et~al., \bibinfo{year}{2025}.
+\newblock \bibinfo{title}{{TimesFM} 2.0: Scaling time-series foundation models
+  with continuous quantile prediction}.
+\newblock \bibinfo{journal}{arXiv preprint} .
+%Type = Article
+\bibitem[{Garza and Mergenthaler-Canseco(2023)}]{garza2023timegpt}
+\bibinfo{author}{Garza, A.}, \bibinfo{author}{Mergenthaler-Canseco, M.},
+  \bibinfo{year}{2023}.
+\newblock \bibinfo{title}{{TimeGPT-1}}.
+\newblock \bibinfo{journal}{arXiv preprint arXiv:2310.03589} .
+%Type = Article
+\bibitem[{Gruber et~al.(2025)}]{gruber2025tirex}
+\bibinfo{author}{Gruber, K.}, et~al., \bibinfo{year}{2025}.
+\newblock \bibinfo{title}{{TiRex}: Time series foundation model for universal
+  forecasting with {xLSTM}}.
+\newblock \bibinfo{journal}{arXiv preprint} .
+%Type = Article
+\bibitem[{Hewamalage et~al.(2023)Hewamalage, Bergmeir and
+  Bandara}]{hewamalage2022forecast}
+\bibinfo{author}{Hewamalage, H.}, \bibinfo{author}{Bergmeir, C.},
+  \bibinfo{author}{Bandara, K.}, \bibinfo{year}{2023}.
+\newblock \bibinfo{title}{Forecast evaluation for data scientists: Common
+  pitfalls and best practices}.
+\newblock \bibinfo{journal}{Data Mining and Knowledge Discovery}
+  \bibinfo{volume}{37}, \bibinfo{pages}{788--832}.
+%Type = Inproceedings
+\bibitem[{Ke et~al.(2017)Ke, Meng, Finley, Wang, Chen, Ma, Ye and
+  Liu}]{ke2017lightgbm}
+\bibinfo{author}{Ke, G.}, \bibinfo{author}{Meng, Q.}, \bibinfo{author}{Finley,
+  T.}, \bibinfo{author}{Wang, T.}, \bibinfo{author}{Chen, W.},
+  \bibinfo{author}{Ma, W.}, \bibinfo{author}{Ye, Q.}, \bibinfo{author}{Liu,
+  T.Y.}, \bibinfo{year}{2017}.
+\newblock \bibinfo{title}{{LightGBM}: A highly efficient gradient boosting
+  decision tree}, in: \bibinfo{booktitle}{Advances in Neural Information
+  Processing Systems}.
+%Type = Article
+\bibitem[{Knapp and Hartung(2003)}]{knapp2003improved}
+\bibinfo{author}{Knapp, G.}, \bibinfo{author}{Hartung, J.},
+  \bibinfo{year}{2003}.
+\newblock \bibinfo{title}{Improved tests for a random effects meta-regression
+  with a single covariate}.
+\newblock \bibinfo{journal}{Statistics in Medicine} \bibinfo{volume}{22},
+  \bibinfo{pages}{2693--2710}.
+%Type = Article
+\bibitem[{Makridakis et~al.(2022)Makridakis, Spiliotis and
+  Assimakopoulos}]{makridakis2022m5}
+\bibinfo{author}{Makridakis, S.}, \bibinfo{author}{Spiliotis, E.},
+  \bibinfo{author}{Assimakopoulos, V.}, \bibinfo{year}{2022}.
+\newblock \bibinfo{title}{{M5} accuracy competition: Results, findings, and
+  conclusions}.
+\newblock \bibinfo{journal}{International Journal of Forecasting}
+  \bibinfo{volume}{38}, \bibinfo{pages}{1346--1364}.
+%Type = Article
+\bibitem[{M\"{u}ller et~al.(2025)}]{mueller2025tabpfnts}
+\bibinfo{author}{M\"{u}ller, S.}, et~al., \bibinfo{year}{2025}.
+\newblock \bibinfo{title}{{TabPFN-TS}: Tabular prior-fitted networks for time
+  series forecasting}.
+\newblock \bibinfo{journal}{arXiv preprint} .
+%Type = Article
+\bibitem[{Page et~al.(2021)Page, McKenzie, Bossuyt, Boutron, Hoffmann, Mulrow
+  et~al.}]{page2021prisma}
+\bibinfo{author}{Page, M.J.}, \bibinfo{author}{McKenzie, J.E.},
+  \bibinfo{author}{Bossuyt, P.M.}, \bibinfo{author}{Boutron, I.},
+  \bibinfo{author}{Hoffmann, T.C.}, \bibinfo{author}{Mulrow, C.D.}, et~al.,
+  \bibinfo{year}{2021}.
+\newblock \bibinfo{title}{The {PRISMA} 2020 statement: An updated guideline for
+  reporting systematic reviews}.
+\newblock \bibinfo{journal}{BMJ} \bibinfo{volume}{372}, \bibinfo{pages}{n71}.
+%Type = Inproceedings
+\bibitem[{Rasul et~al.(2024)Rasul, Ashok, Williams, Khorasani, Adamopoulos,
+  Bhatt, Bickel, Gharbieh, Korat, Wirber et~al.}]{rasul2024laglama}
+\bibinfo{author}{Rasul, K.}, \bibinfo{author}{Ashok, A.},
+  \bibinfo{author}{Williams, A.R.}, \bibinfo{author}{Khorasani, A.},
+  \bibinfo{author}{Adamopoulos, G.}, \bibinfo{author}{Bhatt, R.},
+  \bibinfo{author}{Bickel, S.}, \bibinfo{author}{Gharbieh, E.},
+  \bibinfo{author}{Korat, M.}, \bibinfo{author}{Wirber, S.}, et~al.,
+  \bibinfo{year}{2024}.
+\newblock \bibinfo{title}{{Lag-Llama}: Towards foundation models for
+  probabilistic time series forecasting}, in: \bibinfo{booktitle}{Proceedings
+  of the AAAI Conference on Artificial Intelligence}.
+%Type = Article
+\bibitem[{Shchur et~al.(2025)}]{shchur2025fevbench}
+\bibinfo{author}{Shchur, O.}, et~al., \bibinfo{year}{2025}.
+\newblock \bibinfo{title}{fev-bench: A realistic benchmark for time series
+  forecasting}.
+\newblock \bibinfo{journal}{arXiv preprint arXiv:2509.26468} .
+%Type = Article
+\bibitem[{Viechtbauer(2010)}]{viechtbauer2010metafor}
+\bibinfo{author}{Viechtbauer, W.}, \bibinfo{year}{2010}.
+\newblock \bibinfo{title}{Conducting meta-analyses in {R} with the {metafor}
+  package}.
+\newblock \bibinfo{journal}{Journal of Statistical Software}
+  \bibinfo{volume}{36}, \bibinfo{pages}{1--48}.
+%Type = Article
+\bibitem[{Woo et~al.(2025)}]{woo2025moiraimoe}
+\bibinfo{author}{Woo, G.}, et~al., \bibinfo{year}{2025}.
+\newblock \bibinfo{title}{{Moirai-MoE}: Empowering time series foundation
+  models with sparse mixture of experts}.
+\newblock \bibinfo{journal}{arXiv preprint arXiv:2511.11698} .
+
+\end{thebibliography}

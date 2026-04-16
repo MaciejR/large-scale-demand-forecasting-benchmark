@@ -1,0 +1,278 @@
+% === Section 3: Methodology ===
+\section{Methodology}
+\label{sec:methodology}\label{sec:methods}
+
+This section describes the three-phase protocol: search and
+extraction (Source~A), gap-filling experiments (Source~B), and the
+meta-regression specification that combines them.
+
+\subsection{Search protocol (PRISMA)}
+\label{subsec:search}
+
+We follow the PRISMA 2020 reporting guidelines \citep{page2021prisma}
+for systematic reviews.  The full search protocol is committed at
+\texttt{analysis/prisma\_search\_protocol.md}; we summarise the key
+parameters here.
+
+\noindent\textbf{Databases.}
+Scopus, Google Scholar, Semantic Scholar API, arXiv
+(cs.LG, stat.ML), and Web of Science.
+
+\noindent\textbf{Search query.}
+We combine three concept blocks with AND:
+
+\begin{enumerate}
+  \item \emph{Foundation model identifiers:} ``foundation model'',
+    ``pretrained model'', ``zero-shot forecasting'', Chronos, TimesFM,
+    Moirai, TimeGPT, Lag-Llama, TiRex, TabPFN.
+  \item \emph{Demand forecasting:} ``demand forecasting'', ``retail
+    forecasting'', ``time series forecasting'', ``sales forecasting''.
+  \item \emph{Benchmark anchors:} ``benchmark'', ``comparison'',
+    ``evaluation'', M5, GIFT-Eval, fev-bench.
+\end{enumerate}
+
+\noindent\textbf{Date range.}
+2020-01-01 to 2026-04-12.  The lower bound captures the M5 competition
+and pre-FM baselines; the upper bound is the extraction lock date.
+
+\noindent\textbf{Inclusion criteria.}
+\begin{enumerate}
+  \item Empirical evaluation of at least one foundation model on demand
+    or retail forecasting.
+  \item Reports quantitative accuracy metrics (\WAPE{}, \MASE{}, MAE,
+    sMAPE, CRPS, \WRMSSE{}, or win-rate/skill-score equivalents).
+  \item Uses at least one of M5, Favorita, Rohlik~v2, GIFT-Eval
+    (retail tasks), fev-bench (retail tasks), or Walmart.
+  \item Peer-reviewed or published preprint with reproducible
+    methodology.
+  \item English language.
+\end{enumerate}
+
+\noindent\textbf{Exclusion criteria.}
+\begin{enumerate}
+  \item No quantitative results (position papers, surveys without new
+    data).
+  \item Only financial, stock, or energy forecasting with no retail
+    overlap.
+  \item FM paper without forecasting evaluation (architecture-only).
+  \item Duplicate results --- keep most recent version.
+  \item Non-time-series forecasting (causal inference only).
+\end{enumerate}
+
+\subsection{Data extraction (Source~A)}
+\label{subsec:extraction}\label{sec:extraction-schema}
+
+Each included study is extracted into one or more rows of the
+structured CSV \texttt{analysis/extraction\_schema.csv} (185 rows as of
+2026-04-15).  The schema has 23 fields per row:
+
+\begin{table}[htbp]
+\centering
+\caption{Extraction schema fields (Source~A).}
+\label{tab:extraction-schema}
+\begin{tabular}{lll}
+\toprule
+Field & Type & Description \\
+\midrule
+\texttt{paper\_id}           & char & Unique row-level ID (e.g., \texttt{A01\_chronos\_indomain}) \\
+\texttt{authors}             & char & First author et al. \\
+\texttt{year}                & int  & Publication year \\
+\texttt{title}               & char & Paper title \\
+\texttt{venue}               & char & Journal, conference, or ``this study'' \\
+\texttt{dataset}             & char & Raw dataset name as reported \\
+\texttt{dataset\_variant}    & char & Sub-dataset or task identifier \\
+\texttt{n\_series}           & char & Number of series (free text) \\
+\texttt{series\_length\_median} & char & Median series length \\
+\texttt{frequency}           & char & Data frequency (D, W, M, mixed) \\
+\texttt{has\_covariates}     & char & Yes / No / mixed \\
+\texttt{model\_name}         & char & Model name as reported \\
+\texttt{model\_family}       & char & Normalised family tag (\S\ref{sec:literature}) \\
+\texttt{zero\_shot}          & char & Yes / No / mixed \\
+\texttt{fine\_tuned}         & char & Yes / No \\
+\texttt{horizon}             & char & Forecast horizon (free text) \\
+\texttt{eval\_method}        & char & rolling / rolling-tail / fixed\_origin \\
+\texttt{metric\_name}        & char & Metric name \\
+\texttt{metric\_value}       & char & Reported value (free text, incl.\ ``best'') \\
+\texttt{runtime\_reported}   & char & Whether runtime is reported \\
+\texttt{gpu\_hours}          & char & GPU hours if reported \\
+\texttt{hardware}            & char & Hardware description \\
+\texttt{notes}               & char & Free-text provenance notes \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent\textbf{Row-level IDs.}
+Each extracted result is a separate row with a unique
+\texttt{paper\_id}.  A paper reporting Chronos and LightGBM on M5
+contributes at least two rows (\texttt{A01\_chronos\_indomain},
+\texttt{A01\_chronos\_zeroshot}, etc.).  This scheme means that
+\texttt{group\_by(paper\_id)} in the meta-regression returns singleton
+groups for most rows --- a structural property that motivated the
+cross-paper pooling design of \S\ref{sec:literature}.
+
+\noindent\textbf{Category prefixes.}
+\texttt{A} = FM papers (17 papers, 58 rows),
+\texttt{B} = benchmark papers (4 papers, 40 rows),
+\texttt{C} = retail ML/DL papers (8 papers, 31 rows),
+\texttt{D} = cross-domain papers (3 papers, 3 rows),
+\texttt{F} = fev-bench entries (1 paper, 8 rows),
+\texttt{OWN\_*} = our own baseline runs from \S5.2--5.3 (6 experiment
+blocks, 45 rows).
+
+\noindent\textbf{Normalisation.}
+Raw \texttt{dataset} values are collapsed to five canonical names
+(M5, Favorita, Rohlik, fev-bench, Walmart) by the R function
+\texttt{normalize\_dataset()} in \texttt{analysis/meta\_regression.R}.
+Raw \texttt{model\_family} values are collapsed to four analysis
+families (FM, ML\_TREE, STATS, NN) by \texttt{normalize\_family()}.
+Rows that do not map to a canonical dataset or family are excluded
+from the primary meta-regression but retained in the schema for
+provenance.
+
+\subsection{Gap-filling experiments (Source~B)}
+\label{subsec:gapfilling}
+
+Source~A has two structural gaps: (1)~no FM paper reports per-series
+\WAPE{} on M5, Favorita, or Rohlik under a rolling-origin protocol
+matching \S5.1.3 --- the FM literature evaluates on benchmark suites
+(GIFT-Eval, fev-bench), not on individual retail datasets.
+(2)~No paper reports both FM and ML\_TREE on the same retail dataset
+under matched conditions with a shared \texttt{paper\_id}, so
+within-paper pairing (the original \S6.1 Pass~1 design) is
+structurally empty on Source~A.
+
+Source~B fills these gaps with 45 rows from two hardware backends:
+
+\noindent\textbf{Consumer MacBook (M\_SERIES\_MAC).}
+Apple M3 Air, 16~GB unified memory, PyTorch MPS backend.  Two FM
+models:
+\begin{itemize}
+  \item \textbf{Chronos-Bolt-Tiny} (9~M params, encoder-only): 9/9
+    cells (3~datasets $\times$ 3~horizons), all on MPS.
+  \item \textbf{TiRex} ($\sim$35~M params, xLSTM): 9/9 cells.  Seven
+    completed on MPS; two (Rohlik $h=14$, $h=28$) required CPU fallback
+    (\texttt{TIREX\_FORCE\_CPU=1}) due to a pathological MPS dispatch in
+    \texttt{xlstm\_kernels} that stalled at $<$3~min CPU per hour wall
+    time.
+\end{itemize}
+
+\noindent\textbf{Azure ML batch (AZURE\_E4DS\_V4).}
+Standard\_E4ds\_v4 (4~vCPU, 32~GB), CPU-only.  Three baseline models:
+\begin{itemize}
+  \item \textbf{lightgbm\_cov} (LightGBM recursive, Tweedie + 6
+    covariates): 9~cells.
+  \item \textbf{lightgbm\_direct} (LightGBM direct, Tweedie + 6
+    covariates, per-horizon head): 9~cells.
+  \item \textbf{seasonal\_naive}: 9~cells.
+\end{itemize}
+
+All 45 cells use the \S5.1.3 evaluation protocol: rolling-origin with
+100 sampled series per cell, per-series \WAPE{} as the primary metric,
+and a fixed random seed for reproducibility.  Runtime, cost, and
+CO\textsubscript{2} are logged per run via MLflow (local file store
+for MacBook runs, Azure ML workspace for batch runs).  The export
+script \texttt{tools/export\_mlflow\_to\_csv.py} pulls both backends
+into a single CSV keyed on the shared
+\texttt{paper\_id = LOCAL\_MAC\_<dataset>\_h<horizon>}, which is what
+enables within-paper $\Delta$ computation in the R pipeline.
+
+\subsection{Meta-regression specification}
+\label{subsec:metaspec}
+
+The primary estimand is the cross-paper pooled delta:
+
+\begin{quote}
+For each (dataset, horizon, metric) bucket that contains at least one
+FM row and at least one ML\_TREE row from any source (A or B), compute
+$\Delta = \mathrm{mean}(\text{FM metric values}) - \mathrm{mean}(\text{ML\_TREE metric values})$.
+\end{quote}
+
+This produces $k = 10$ bucket-level deltas (Favorita $\times$ 3
+horizons $\times$ \WAPE{}, M5 $\times$ 3 horizons $\times$ \WAPE{},
+M5 $\times$ long $\times$ \WRMSSE{}, Rohlik $\times$ 3 horizons
+$\times$ \WAPE{}).
+
+\noindent\textbf{Notation convention.}
+Throughout this paper, $\Dhat$ denotes the pooled estimate of the
+FM $-$ ML\_TREE difference on the metric in question (\WAPE{} unless
+stated otherwise).  \textbf{Negative $\Dhat$ means FM is better}
+(lower \WAPE{}); \textbf{positive $\Dhat$ means ML\_TREE is better.}
+All confidence intervals and $p$-values refer to the two-sided test
+$H_0\colon \Delta = 0$.  When we write ``the FM advantage is null,''
+we mean the CI includes zero --- not that $\Dhat$ is exactly zero.
+The variance proxy $v_i$ is defined per bucket in the next paragraph;
+it is \emph{not} the metric's own variance but a precision weight
+reflecting pool depth and dataset size.
+
+The model is:
+
+\begin{alltt}
+rma.mv(yi = delta, V = vi,
+       random = ~ 1 | dataset_norm,
+       data = delta_cross,
+       test = "t",         # Knapp-Hartung
+       method = "REML")
+\end{alltt}
+
+\noindent where $v_i$ is the per-bucket sampling variance proxy
+defined above.
+
+\noindent\textbf{Random effect.}
+\texttt{\~{} 1 | dataset\_norm} clusters on dataset because each
+$\Delta$ mixes rows from multiple papers and the within-paper anchoring
+is lost by construction.  The dataset level captures the primary source
+of heterogeneity (M5 vs smooth-demand datasets).
+
+\noindent\textbf{Variance.}
+For the cross-paper pooled design, the per-bucket sampling variance is
+$v_i = (1/n_{\mathrm{FM}} + 1/n_{\mathrm{ML\_TREE}}) / n_{\mathrm{series,hm}}$,
+where $n_{\mathrm{FM}}$ and $n_{\mathrm{ML\_TREE}}$ are the number of
+FM and ML\_TREE rows entering the bucket and
+$n_{\mathrm{series,hm}}$ is the harmonic mean of the per-row series
+counts within the bucket.  This proxy weights buckets with more source
+rows and larger datasets more precisely than uniform variance.  For
+within-paper paired $\Delta$ (Source~B cells),
+$v_i = 1/n_{\mathrm{valid}} = 0.01$ because each cell samples
+100~series (\S5.1.3).  The proxy does not capture within-series error
+correlation or between-paper protocol heterogeneity; these are flagged
+as limitations in \S8.4.
+
+\noindent\textbf{Small-sample adjustment.}
+\texttt{test = "t"} invokes the Knapp--Hartung adjustment
+\citep{knapp2003improved}, replacing the standard normal reference
+distribution with a $t$-distribution whose degrees of freedom equal
+$k - p$ (where $p$ is the number of estimated coefficients).  This is
+critical at $k = 10$.
+
+\noindent\textbf{Moderator regressions.}
+We test three moderators individually:
+
+\begin{enumerate}
+  \item \texttt{mods = \~{} dataset\_norm} --- tests whether the
+    FM-vs-ML\_TREE gap varies by dataset (H1 proxy for intermittency,
+    since M5 is the only high-intermittency dataset in the pool).
+  \item \texttt{mods = \~{} horizon\_bucket} --- tests whether longer
+    horizons widen or narrow the gap.
+  \item \texttt{mods = \~{} has\_covariates} --- tests whether
+    covariate-rich ML\_TREE baselines reduce FM advantage (H2).
+\end{enumerate}
+
+\noindent\textbf{Sensitivity analyses.}
+Two pre-registered sensitivity runs:
+
+\begin{itemize}
+  \item \textbf{Excl-M5:} Drops all M5 cells and refits on $k = 6$
+    (Favorita + Rohlik \WAPE{} buckets only).  This is the cleanest
+    test of whether FMs outperform ML\_TREE on smooth-demand retail.
+  \item \textbf{Within-paper only (Source~B):} Reverts to the original
+    strict \texttt{group\_by(paper\_id, dataset\_norm, horizon\_bucket,
+    metric\_name)} design, which yields $k = 9$ cells all from
+    \texttt{LOCAL\_MAC\_*}.  This tests whether the cross-paper pooling
+    design materially changes the conclusion.
+\end{itemize}
+
+\noindent\textbf{Implementation.}
+All fits are computed by \texttt{analysis/meta\_regression.R} using the
+\texttt{metafor} R package \citep{viechtbauer2010metafor}.  Outputs
+(forest plots, intercept tables, cell-level CSVs) are committed to
+\texttt{analysis/figures/}.

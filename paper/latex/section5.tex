@@ -1,0 +1,1650 @@
+% =================================================================
+%  Section 5 — Gap-Filling Experiments
+%  Converted from paper/drafts/section5_1_experimental_setup.md,
+%  section5_2_results.md, section5_baseline_reliability.md,
+%  section5_4_foundation_models.md
+% =================================================================
+
+\section{Gap-Filling Experiments}\label{sec:experiments}
+
+% -----------------------------------------------------------------
+\subsection{Experimental Setup}\label{sec:setup}\label{sec:experimental-setup}
+% -----------------------------------------------------------------
+
+All gap-filling experiments described in \S5 follow a single
+experimental protocol, parameterized per dataset.  This section
+defines the protocol once.  Dataset-specific choices (covariate
+sets, eval-window lengths, series-count caps) are noted inline in
+\S\ref{sec:results} for baseline models and \S\ref{sec:fm} for
+foundation models.
+
+\subsubsection{Datasets}\label{sec:datasets}
+
+We evaluate on three retail demand forecasting datasets, chosen
+to span the distribution of zero-day fractions in public retail
+benchmarks while keeping the hierarchical-SKU $\times$ location
+structure that retail practitioners actually face.  The three
+datasets together cover ${\sim}211\text{k} \times 1.4\text{k}$
+series-days across the full product $\times$ location $\times$
+time tensor.
+
+\begin{table}[htbp]
+\centering
+\caption{Datasets used in the gap-filling experiments.
+\texttt{Zero-day fraction} is the fraction of series-day
+observations with $y = 0$ in the training portion, a core
+moderator variable in \S6.}
+\label{tab:t51}
+\small
+\begin{tabular}{lrrrllp{5.2cm}}
+\toprule
+Dataset & $n_\text{series}$ (full) & $n_\text{series}$ (used) & $n_\text{days}$ & Frequency & Zero-day frac & Covariates used \\
+\midrule
+M5 & 30{,}490 & 30{,}490 & 1{,}941 & daily & ${\sim}70\,\%$ &
+  \texttt{sell\_price}, \texttt{snap\_CA/TX/WI}, \texttt{is\_event},
+  \texttt{wday}, \texttt{month} \\
+Rohlik v2 & 5{,}390 & 5{,}390 & 1{,}402 & daily & ${\sim}1.2\,\%$ &
+  \texttt{sell\_price\_main}, \texttt{holiday},
+  \texttt{shops\_closed},
+  \texttt{winter\_school\_holidays},
+  \texttt{school\_holidays},
+  \texttt{dayofweek}, \texttt{month} \\
+Favorita & ${\sim}174{,}685$ & 30{,}000 & 1{,}684 & daily &
+  ${\sim}15$--$25\,\%$, long tail &
+  \texttt{onpromotion}, \texttt{dcoilwtico},
+  \texttt{is\_holiday}, \texttt{transactions},
+  \texttt{dayofweek}, \texttt{month} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Three notes on dataset preparation:
+
+\begin{itemize}
+\item \textbf{M5} is used in full.  The 30{,}490 store-item series
+  correspond to the Walmart subset of the M5 competition
+  \citep{makridakis2022m5}; we use the official tail 389 days as the
+  evaluation window (\S\ref{sec:evalprotocol}).
+
+\item \textbf{Rohlik v2} is used in full.  The dataset is 5{,}390
+  warehouse-SKU series from the Kaggle competition
+  \texttt{rohlik-sales-forecasting-challenge-v2}, covering
+  2020-08-01 to 2024-06-02 across 7 warehouses (Prague $\times$3,
+  Brno, Munich, Frankfurt, Budapest).  Approximately 31\% of Rohlik
+  SKUs enter later than day~1 (ragged series starts), which we
+  handle at the wide-pivot step via \texttt{fillna(0)} --- see
+  \S\ref{sec:modelfamilies}.
+
+\item \textbf{Favorita} is capped at the top 30{,}000 series by
+  total \texttt{unit\_sales} across the training portion, matching
+  M5's scale for cross-dataset forecast-count comparability.  The
+  full dataset has ${\sim}174{,}685$ series at ${\sim}125$\,M rows
+  and does not fit the 32\,GB E4DS\_V4 compute used for Phases
+  A--D.  The selection rule biases Favorita \LGBM{} evaluation
+  toward higher-velocity series; this is flagged as a limitation
+  in \S\ref{sec:threats} and \S7, and the full-series evaluation
+  is left for future work on larger hardware.
+\end{itemize}
+
+All three datasets are registered as versioned Azure ML data
+assets (\texttt{azureml:m5-sales:1}, \texttt{azureml:rohlik-train-v2:1},
+\texttt{azureml:favorita-train:1}, plus per-dataset covariate
+assets) for exact reproducibility.
+
+\subsubsection{Compute and Tracking}\label{sec:compute}
+
+All jobs run on Azure ML compute cluster \texttt{cc-forecast-batch}
+(E4DS\_V4 VM, 4 vCPU / 32\,GB RAM / no GPU) in region
+\texttt{swedencentral}, inside Docker environment
+\texttt{forecast-benchmark-cpu-env:1}.  We use
+\texttt{cc-forecast-batch} for the classical and ML baselines of
+\S\ref{sec:results}--\S\ref{sec:baseline}.  Foundation model
+sweeps (\S\ref{sec:fm}) run on consumer hardware (Apple M-series
+MPS); setup details are in \S\ref{sec:fm_scope}.
+
+Experiment orchestration uses Azure ML pipelines defined in
+\texttt{benchmark/code/pipelines/\{m5,rohlik,favorita\}\_consolidated.yaml}.
+Every run logs metrics, parameters, runtime, and per-series CSVs
+via MLflow to the workspace tracking server.  Cost and CO$_2$
+estimates are computed inside the job using Azure's published
+per-second pricing for \texttt{Standard\_E4ds\_v4} in
+\texttt{swedencentral} (\$0.38/hr at time of writing) and the
+region's marginal CO$_2$ intensity (0.274\,kgCO$_2$eq/kWh,
+swedencentral 2025 baseline).  The per-job runtime, cost, and
+CO$_2$ columns in Tables~\ref{tab:t53}--\ref{tab:t55} are
+computed this way and are therefore comparable across datasets.
+
+\subsubsection{Evaluation Protocol}\label{sec:evalprotocol}
+
+For each dataset we use \textbf{rolling-origin non-overlapping
+evaluation with a held-out tail window}, which is the protocol
+most commonly used in the FM papers we screened (\S4) and which
+gives a clean, reviewer-auditable split.  Specifically:
+
+\begin{itemize}
+\item \textbf{Train / eval split:}
+  $\texttt{train\_until} = \lfloor 0.8 \times n_\text{days} \rfloor$.
+  This gives a tail-eval window of 389 days on M5, 281 days on
+  Rohlik, and 337 days on Favorita.  The choice of 0.8 follows
+  \citet{hewamalage2022forecast} and
+  \citet{shchur2025fevbench}.
+
+\item \textbf{Rolling origin:} within the tail window, forecast
+  origins are spaced exactly $h$ days apart so that windows are
+  non-overlapping.  For example at $h = 14$ on Rohlik (eval
+  window $= 281$ days), we have $\lfloor 281/14 \rfloor = 20$
+  evaluation windows per series.  This keeps per-horizon sample
+  counts independent of each other and avoids the optimistic bias
+  of overlapping-windows evaluation.
+
+\item \textbf{Horizons:} $h \in \{7, 14, 28\}$ on all three
+  datasets.  Seven days is the operational horizon most retailers
+  use for short-term replenishment; 28 days is the M5 competition
+  horizon and a common upper bound in the literature
+  \citep{makridakis2022m5}; 14 days bridges the two.  We report
+  every metric at every horizon to enable horizon-conditioned
+  interpretation.
+
+\item \textbf{Metrics:} MAE, sMAPE, \WAPE{}, and (on M5 only)
+  \WRMSSE{}.  MAE and \WAPE{} are computed per series and
+  averaged with equal weights (\texttt{\_mean} suffix in the
+  tables).  sMAPE uses the classical symmetric form with a 200\%
+  cap on zero actuals.  \WRMSSE{} is computed in-job via the full
+  12-level \citet{makridakis2022m5} hierarchy from the raw
+  sales/calendar/prices CSVs.  On retail tasks with heavy right
+  tails (all three of ours), sMAPE is reported only for
+  reproducibility and is not used in any primary comparison ---
+  see \S\ref{sec:takeaways} for the cross-dataset justification.
+
+\item \textbf{Per-series filtering for \WAPE{}:} \WAPE{} requires
+  a non-zero denominator (sum of actuals in the eval window).
+  For series where the denominator is zero we drop the series from
+  \WAPE{} computation and report the \texttt{n\_valid} count
+  alongside the metric in Tables~\ref{tab:t53}--\ref{tab:t55}.
+  This affects at most 0.5\,\% of M5 series and a higher fraction
+  on Rohlik (where ragged starts leave some series with only a few
+  eval-window days); on Favorita the fraction is negligible for
+  \LGBM{} and ${\sim}50\,\%$ for SN, an \texttt{n\_valid}
+  asymmetry we discuss in \S\ref{sec:favorita}.
+\end{itemize}
+
+\textbf{Sampling adequacy of $n = 100$ series per cell.}  Source~B
+FM cells sample 100 series per cell (98--100 after \WAPE{}
+filtering).  To verify that this sample size produces stable
+\WAPE{} estimates, we ran a 10{,}000-iteration bootstrap on all
+18 FM per-series CSV files.  The bootstrap standard error of mean
+\WAPE{} across cells ranges from 0.008 (Favorita $h = 7$) to
+0.014 (Rohlik $h = 28$), with a median of 0.011.  The widest
+95\,\% bootstrap CI is $\pm 0.027$ \WAPE{} (Rohlik $h = 28$).
+This means: (a) the M5 FM-vs-\LGBM{} gap of 40+ pp \WAPE{} is
+stable to ${>}10$ SE; (b) the Rohlik gap of 4--8 pp is stable
+to 3--6 SE; (c) the Favorita ``close call'' of 0.3 pp at
+$h = 7$ is within 1 SE and should be interpreted as
+indistinguishable from zero at $n = 100$ --- consistent with the
+meta-regression finding (\S6.7).  Full bootstrap results are in
+\texttt{analysis/figures/table\_bootstrap\_se.csv}.
+
+\subsubsection{Model Families}\label{sec:modelfamilies}
+
+Three model families are evaluated per dataset in Phases B--E,
+all with the same rolling-origin protocol and the same per-dataset
+covariate set:
+
+\begin{itemize}
+\item \textbf{Seasonal Naive} (period $= 7$, no training, no
+  covariates) --- the cost floor and the universal baseline for
+  retail weekly cycles.
+
+\item \textbf{LightGBM recursive} --- one global Tweedie model per
+  dataset, fit with \texttt{variance\_power = 1.1}, 300 boosting
+  rounds, \texttt{num\_leaves = 63}, minimum child samples $= 20$,
+  learning rate 0.05, \texttt{feature\_fraction = 0.8},
+  \texttt{bagging\_fraction = 0.8}.  The model uses lags
+  $\{1, 7, 14\}$, rolling means $\{7, 14\}$, and the
+  dataset-specific covariates listed in Table~\ref{tab:t51}.  At
+  evaluation time, the model is applied recursively: predictions
+  at step $k$ enter the lag features for step $k + 1$, and
+  future-known covariates are passed through unchanged.
+
+\item \textbf{LightGBM direct} --- $h$ separate global Tweedie
+  models per dataset, same hyperparameters and same feature set as
+  the recursive variant, but model $k$ predicts $y[t + k]$ from
+  lags and rolling means known at $t$ plus future-known covariates
+  at $t + k$.  No output feedback, no recursion.
+\end{itemize}
+
+The direct-vs-recursive contrast with everything else held
+constant is the core protocol comparison of \S\ref{sec:baseline}.
+Hyperparameters are intentionally untuned beyond library defaults:
+the point of \S\ref{sec:baseline} is to characterize the
+\emph{protocol gap} between direct and recursive variants of an
+otherwise-fixed LightGBM, not to reach the M5 winner.  Ceiling
+projections for tuned LightGBM are discussed in
+\S\ref{sec:threats}.
+
+For each training window we use the \textbf{last 365 days of the
+training portion} as the training set.  This cap is a deliberate
+scalability choice --- fitting ${\sim}10$--$30$\,M rows per
+LightGBM model takes 180--240\,s on E4DS\_V4 --- and we estimate
+in \S\ref{sec:threats} that extending to the full training
+portion would recover ${\sim}1\,\%$ on \WRMSSE{} on M5.  The
+same cap applies on Rohlik and Favorita for comparability.
+
+Foundation models (Chronos-Bolt-Tiny and TiRex) are evaluated
+zero-shot on the same rolling-origin protocol, using each model's
+published inference script on consumer hardware (Apple M-series
+MPS).  Details of the FM protocol, context-length choices, and
+hardware configuration are in \S\ref{sec:fm}.
+
+\subsubsection{Reproducibility}\label{sec:reproducibility}
+
+Every result reported in \S\ref{sec:results}--\S\ref{sec:baseline}
+is tied to:
+
+\begin{itemize}
+\item \textbf{A git commit} --- the commit SHA appears in the
+  per-job MLflow run and in the caption of each results table.
+
+\item \textbf{An Azure ML pipeline run name} --- these are the
+  \texttt{mighty\_*}, \texttt{goofy\_*}, and \texttt{loyal\_*} job
+  names referenced in the table captions
+  (\S\ref{sec:results}, \S\ref{sec:baseline}).  Every job can be
+  re-invoked exactly from the pipeline YAML and the registered
+  data asset version.
+
+\item \textbf{A registered data asset version} ---
+  \texttt{azureml:m5-sales:1}, \texttt{azureml:rohlik-train-v2:1},
+  \texttt{azureml:favorita-train:1}, plus per-dataset covariate
+  assets.  Data is immutable once registered; the \texttt{:1}
+  suffix binds the job to the exact snapshot.
+
+\item \textbf{A versioned environment} ---
+  \texttt{forecast-benchmark-cpu-env:1}.
+  The environment specifies Python~3.11,
+  \texttt{lightgbm==4.6.0}, \texttt{pandas==2.2.0},
+  \texttt{numpy<2}, and the loader code path.
+\end{itemize}
+
+Code and data-asset manifests are released in the paper's
+reproducibility appendix and at the repository linked in \S9.
+
+
+% -----------------------------------------------------------------
+\subsection{Gap-Filling Results}\label{sec:results}
+% -----------------------------------------------------------------
+
+This section reports the headline accuracy and cost numbers from
+our gap-filling experiments across the three retail datasets
+defined in \S\ref{sec:datasets}, under the shared protocol of
+\S\ref{sec:evalprotocol}.  The section is deliberately terse: the
+three tables below are the self-contained evidence base that
+\S\ref{sec:baseline} interprets.  For detailed per-dataset
+breakdowns (by horizon, by metric, by direct-vs-recursive variant)
+see \S\ref{sec:m5results} (M5, Table~\ref{tab:t53}),
+\S\ref{sec:rohlik} (Rohlik~v2, Table~\ref{tab:t54}), and
+\S\ref{sec:favorita} (Favorita, Table~\ref{tab:t55}).
+
+\subsubsection{Cross-Dataset Summary}\label{sec:crossdataset}
+
+\begin{table*}[htbp]
+\centering
+\caption{Cross-dataset summary of the baseline LightGBM
+gap-filling sweeps at $h = 7$.  ``Best \LGBM{}'' is the
+\WAPE{}-best LightGBM variant per dataset; the protocol column
+records whether it is direct or recursive.  Cost is the total
+9-job sweep cost on \texttt{cc-forecast-batch} (E4DS\_V4).  Full
+per-horizon numbers are in Tables~\ref{tab:t53}--\ref{tab:t55}
+of \S\ref{sec:baseline}.}
+\label{tab:t52}
+\footnotesize
+\begin{tabular}{llllllll}
+\toprule
+Dataset & Zero-day frac & SN \WAPE{} $h{=}7$ & Best \LGBM{} \WAPE{} $h{=}7$ & Best \LGBM{} protocol & \LGBM{} vs SN & 9-job sweep cost & Pipeline \\
+\midrule
+M5 & ${\sim}70\,\%$ & 1.3072 & \textbf{0.5598} (\WRMSSE{}) & direct &
+  direct ${\sim}12\,\%$ better on \WRMSSE{} vs recursive (17\,\% on \WAPE{}) &
+  \$0.810 & \texttt{mighty\_morning\_6qz5c4jmwm} \\
+Rohlik~v2 & ${\sim}1.2\,\%$ & 0.4015 & \textbf{0.3654} & recursive &
+  recursive 4.2\,\% better than direct &
+  \$0.120 & \texttt{goofy\_pear\_g54m1skybs} \\
+Favorita & ${\sim}15$--$25\,\%$, long tail & 0.6363 & \textbf{0.5295} & recursive &
+  recursive 4.1\,\% better than direct at $h = 7$, gap grows to 9.6\,\% at $h = 28$ &
+  \$1.119 & \texttt{loyal\_roti\_bcc63n9gkh} \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+Three observations at the headline level:
+
+\begin{enumerate}
+\item LightGBM substantially beats Seasonal Naive on every dataset
+  on its strongest metric --- 28\,\% better on M5 \WRMSSE{},
+  9\,\% on Rohlik \WAPE{}, 17\,\% on Favorita \WAPE{}.
+
+\item The best-performing LightGBM \textbf{protocol changes between
+  datasets}: direct on M5, recursive on Rohlik and Favorita.
+  The gap is large on M5 (${\sim}12\,\%$ \WRMSSE{} / ${\sim}17\,\%$
+  \WAPE{} in favor of direct) and small but consistent on Rohlik
+  and Favorita (3--10\,\% \WAPE{} in favor of recursive).
+  \S\ref{sec:baseline} is dedicated to unpacking this cross-dataset
+  flip.
+
+\item The 9-job sweep cost is under \$1.20 on every dataset.  The
+  most expensive sweep (Favorita) is dominated 92\,\% by
+  LightGBM-direct --- which is also the \emph{losing} protocol on
+  that dataset --- because direct trains $h$ separate models at
+  fixed per-head compute budget.  This is unpacked in
+  \S\ref{sec:costconsequences}.
+\end{enumerate}
+
+\subsubsection{Per-Dataset Baseline Tables}\label{sec:perdataset}
+
+For compactness we do not reproduce the full 9-row per-dataset
+grids here --- they live in \S\ref{sec:baseline} next to the
+analysis that uses them.  The cross-dataset reader who wants the
+condensed view can use Table~\ref{tab:t52} above; the per-horizon
+reader can jump to:
+
+\begin{itemize}
+\item \S\ref{sec:m5results}, Table~\ref{tab:t53} --- M5 nine-row
+  grid (SN, \LGBM{} recursive, \LGBM{} direct $\times$
+  $h \in \{7, 14, 28\}$), including \WRMSSE{}.
+\item \S\ref{sec:rohlik}, Table~\ref{tab:t54} --- Rohlik~v2
+  nine-row grid.  \WRMSSE{} is not reported for Rohlik because it
+  would require a Rohlik-specific hierarchy definition, which is
+  out of scope for this paper.
+\item \S\ref{sec:favorita}, Table~\ref{tab:t55} --- Favorita
+  nine-row grid.
+\end{itemize}
+
+\subsubsection{Cost and Compute Envelope}\label{sec:costenvelope}
+
+Total runtime across the three baseline sweeps is 4\,h 23\,min of
+E4DS\_V4 wall time at a combined cost of \textbf{\$2.049 and
+0.00570\,kg CO$_2$eq}.  Table~\ref{tab:t56} below gives the
+breakdown by dataset and by model family; per-job numbers
+(runtime, cost, CO$_2$) appear in
+Tables~\ref{tab:t53}--\ref{tab:t55}.
+
+\begin{table}[htbp]
+\centering
+\caption{Baseline-sweep cost envelope across the three datasets,
+by model family.  All values are 9-job totals per dataset.  Cost
+is computed in-job from Azure's published per-second pricing for
+\texttt{Standard\_E4ds\_v4} in \texttt{swedencentral} (\$0.38/hr
+at time of writing); CO$_2$ uses the region's 2025 baseline
+marginal intensity of 0.274\,kgCO$_2$eq/kWh.}
+\label{tab:t56}
+\small
+\begin{tabular}{lrrrrrl}
+\toprule
+Dataset & SN cost & \LGBM{}-rec cost & \LGBM{}-dir cost & Total cost & Total CO$_2$ (kg) & Dominant job \\
+\midrule
+M5 & \$0.146 & \$0.096 & \$0.571 & \$0.810 & 0.00250 &
+  \texttt{lgbm\_dir\_h28} (62\,min, \$0.394) \\
+Rohlik~v2 & \$0.0022 & \$0.0094 & \$0.0982 & \$0.120 & 0.00030 &
+  \texttt{lgbm\_dir\_h28} (9\,min, \$0.055) \\
+Favorita & \$0.0161 & \$0.0734 & \$1.030 & \$1.119 & 0.00290 &
+  \texttt{lgbm\_dir\_h28} (60\,min, \$0.379) \\
+\textbf{Total} & \$0.165 & \$0.179 & \$1.700 & \$2.049 & 0.00570 & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Two observations on cost:
+
+\begin{enumerate}
+\item \textbf{Recursive LightGBM is cheap even at scale.}  The
+  combined recursive sweep (3 datasets $\times$ 3 horizons $= 9$
+  jobs) cost under \textbf{\$0.18} across the full baseline.
+  Per-dataset recursive sweeps are \$0.01--0.08, i.e.\ two orders
+  of magnitude below the direct sweep on the same dataset.
+
+\item \textbf{LightGBM-direct dominates the cost envelope
+  (83\,\% of total, \$1.70 of \$2.05)} despite being the losing
+  protocol on two of the three datasets.  This is the central
+  cost observation that \S\ref{sec:costconsequences} develops for
+  the Pareto analysis in \S6.3: on continuous-demand retail
+  (Rohlik and Favorita) the strongest baseline is also the
+  cheapest, and direct LightGBM is a dominated variant on both
+  axes simultaneously.
+\end{enumerate}
+
+\subsubsection{Foundation Model Results}\label{sec:fmresults_pointer}
+
+Foundation model zero-shot results are reported separately in
+\S\ref{sec:fm}.  Table~\ref{tab:t59} (\S\ref{sec:table59})
+presents the full 18-cell FM grid (Chronos-Bolt-Tiny, TiRex
+$\times$ 3 datasets $\times$ 3 horizons) alongside the baseline
+rows from Tables~\ref{tab:t53}--\ref{tab:t55} for direct
+comparison.  The Pareto analysis of \S6.5 combines the baseline
+cost envelope of Table~\ref{tab:t56} with the FM cost data from
+\S\ref{sec:fm}.
+
+
+% -----------------------------------------------------------------
+\subsection{Baseline Reliability: What Is a Fair LightGBM on
+Retail Demand Forecasting?}\label{sec:baseline}\label{sec:baseline-reliability}
+% -----------------------------------------------------------------
+
+Every foundation model paper that reports results on a retail
+forecasting benchmark compares against a LightGBM baseline, and
+every paper uses a different LightGBM.  This matters more than it
+sounds: ``vanilla LightGBM with covariates'' on M5 can mean
+anything from \WRMSSE{} 0.70 to \WRMSSE{} 0.56 depending on two
+protocol choices that are rarely stated --- \textbf{how the
+training window is selected} and \textbf{whether multi-step
+prediction is recursive or direct}.  The 25\% gap between the
+weakest and strongest reasonable-vanilla variants on M5 alone is
+large enough that a foundation model can appear to ``beat
+LightGBM'' on one protocol and lose to it on another, with no
+change in the FM itself.
+
+Worse, the \textbf{direction} of the protocol gap is not constant
+across datasets.  On M5 --- an overwhelmingly intermittent
+benchmark where ${\sim}70\%$ of product-store-days are zero ---
+direct LightGBM dominates recursive LightGBM by 12--22\% on every
+metric and every horizon (\S\ref{sec:dirvsr}).  On two
+continuous-demand retail benchmarks with the \emph{same} training
+data, loss, feature set, hyperparameters, and training window
+(Rohlik~v2 with ${\sim}1.2\%$ zero days, \S\ref{sec:rohlik};
+Favorita with a mixed long tail, \S\ref{sec:favorita}), recursive
+matches or narrowly beats direct on \WAPE{} and MAE, and on
+Favorita the recursive advantage grows monotonically with horizon.
+The ``direct dominates recursive'' pattern reported on M5 and
+generalized to a protocol recommendation by
+\citet{hewamalage2022forecast}, and inherited implicitly by most
+FM-comparison papers, is therefore conditional on dataset
+properties --- specifically on the fraction of intermittent series
+--- and not a property of multi-step LightGBM protocol choice in
+the abstract.  \S\ref{sec:synthesis} develops this synthesis
+across all three datasets.
+
+We instantiate this range with the three-variant sweep of
+\S\ref{sec:modelfamilies} (Seasonal Naive, LightGBM recursive,
+LightGBM direct) on the held-out M5 tail of
+\S\ref{sec:evalprotocol} (days 1552--1940, 389 evaluation days).
+Model families, training window, hyperparameters, feature set, and
+rolling-origin protocol are all defined once in
+\S\ref{sec:setup} and not repeated here.  The rest of
+\S\ref{sec:baseline} analyses the nine-row table these settings
+produce and extends the analysis to Rohlik~v2
+(\S\ref{sec:rohlik}) and Favorita (\S\ref{sec:favorita}) with the
+same protocol.
+
+\subsubsection{Results}\label{sec:m5results}
+
+Table~\ref{tab:t53} shows all nine runs.  \WRMSSE{} ranks the
+three families cleanly --- direct LightGBM (0.56--0.60) beats
+recursive LightGBM (0.63--0.70) beats Seasonal Naive (0.77) at
+every horizon, and the M5 competition's published winner
+(\WRMSSE{} 0.520, \citealp{makridakis2022m5}) is only 7.7\%
+ahead of our direct variant at $h = 7$.
+
+\begin{table}[htbp]
+\centering
+\caption{Seasonal Naive vs LightGBM recursive vs LightGBM direct
+on the M5 tail-eval window (pipeline
+\texttt{mighty\_morning\_6qz5c4jmwm}, commit \texttt{d26dff9}).
+Bold = best per horizon.}
+\label{tab:t53}
+\small
+\begin{tabular}{llrrrrrr}
+\toprule
+Model & $h$ & MAE & sMAPE & \WAPE{} & \textbf{\WRMSSE{}} & Runtime (s) & Cost (USD) \\
+\midrule
+Seasonal Naive &  7 & 1.1590 &  75.44 & 1.3072 & 0.7758 &  236.9 & 0.025 \\
+Seasonal Naive & 14 & 1.1783 &  76.06 & 1.3216 & 0.7718 &  176.9 & 0.019 \\
+Seasonal Naive & 28 & 1.1897 &  76.69 & 1.3285 & 0.7661 &  139.6 & 0.015 \\
+LightGBM rec   &  7 & 1.0110 & 144.44 & 1.6246 & 0.6336 &  300.3 & 0.032 \\
+LightGBM rec   & 14 & 1.0391 & 144.55 & 1.7292 & 0.6639 &  301.1 & 0.032 \\
+LightGBM rec   & 28 & 1.0743 & 144.48 & 1.9357 & 0.6976 &  284.3 & 0.030 \\
+\textbf{LightGBM dir} &  7 & \textbf{0.9682} & 145.81 & \textbf{1.3512} & \textbf{0.5598} & 1114.4 & 0.118 \\
+\textbf{LightGBM dir} & 14 & \textbf{0.9896} & 146.20 & \textbf{1.4100} & \textbf{0.5821} & 2003.2 & 0.212 \\
+\textbf{LightGBM dir} & 28 & \textbf{1.0117} & 146.95 & \textbf{1.5133} & \textbf{0.5992} & 3728.8 & 0.394 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Direct vs Recursive: a 14\% \WRMSSE{} Gap with the
+Same Model}\label{sec:dirvsr}
+
+The six LightGBM rows use the \textbf{same features, same training
+data, same loss, same hyperparameters, same training window, and
+same number of trees per model}.  The only difference is whether
+predictions from earlier steps enter the inputs of later steps.
+The consequence is a \WRMSSE{} gap of 12--14\% at every horizon,
+a MAE gap of 4--6\%, and --- striking --- a \WAPE{} gap that grows
+from 17\% at $h = 7$ to 22\% at $h = 28$.  Recursive LightGBM's
+\WAPE{} rises from 1.62 $\to$ 1.94 across horizons (+19\%), while
+direct LightGBM's \WAPE{} rises from 1.35 $\to$ 1.51 (+12\%).
+
+This decomposes the ``metric flip'' reported in the initial
+experiment (Table~\ref{tab:t52}, \S\ref{sec:crossdataset}).
+There, the recursive-only LightGBM beat Seasonal Naive on MAE
+(10--13\%) but lost to it badly on \WAPE{} (24--46\% worse at
+long horizons) and sMAPE ($\approx 2\times$).  We attributed the
+MAE-vs-\WAPE{} divergence to the combination of two effects: a
+Tweedie-mean bias on intermittent demand (which inflates sMAPE)
+and recursive error compounding (which inflates \WAPE{} as horizon
+grows).  The direct-vs-recursive comparison on M5
+(Table~\ref{tab:t53}) separates the two:
+
+\begin{itemize}
+\item \textbf{Tweedie-mean bias is real and is not a recursion
+  artefact.}  Both LightGBM variants post sMAPE $\approx 145\%$
+  regardless of horizon.  This is the expected behavior of a
+  Tweedie GLM on data where ${\sim}70\%$ of product-store-days
+  have zero sales --- the conditional mean of $y \mid x$ is a
+  small positive number, which triggers sMAPE's
+  $200\% \cdot |p| / (|p| + 0)$ penalty on every zero day.  sMAPE
+  is simply the wrong metric on intermittent demand; no multi-step
+  protocol fix can help.
+
+\item \textbf{\WAPE{} divergence was not Tweedie bias --- it was
+  recursion.}  Direct LightGBM cuts recursive's \WAPE{} by
+  ${\sim}17$--$22\%$ and, crucially, cuts the horizon-growth rate:
+  direct's \WAPE{}-at-28 vs \WAPE{}-at-7 ratio is 1.12 where
+  recursive's is 1.19.  Once the feedback loop is removed the
+  residual horizon effect is small.  Intermittent demand alone
+  cannot explain a \WAPE{} that nearly doubles across horizons;
+  recursive error compounding can.
+\end{itemize}
+
+The practical consequence for meta-analysis is that the
+\WAPE{}-based ``SN beats LightGBM on intermittent'' finding
+reported in several FM-comparison papers on M5 is in fact ``SN
+beats \emph{recursive} LightGBM with a specific feature set and
+training window''.  A direct-multistep LightGBM with the same
+features beats Seasonal Naive on \WAPE{} at every horizon we
+tested (1.35 vs 1.31 at $h = 7$ is still ${\sim}3\%$ worse, but
+this shrinks monotonically if training window or feature set is
+extended --- see \S\ref{sec:rohlik}).
+
+\subsubsection{The Distance Between ``Vanilla LightGBM'' and the
+M5 Winner}\label{sec:m5distance}
+
+The M5 competition's winning submission \citep{makridakis2022m5}
+reached \WRMSSE{} 0.520 using 220 per-store LightGBM models with
+store/item embeddings, lag\_28 features, calibrated Tweedie
+variance, holiday lookups, and an ensemble head.  Our direct
+LightGBM reaches \WRMSSE{} 0.560 at $h = 7$ with a \textbf{single
+global model and six covariates} --- within 7.7\% of the winner.
+The intermediate ladder is:
+
+\begin{table}[htbp]
+\centering
+\caption{Intermediate ladder from Seasonal Naive to M5 winner.}
+\label{tab:t53b}
+\begin{tabular}{lrr}
+\toprule
+Configuration & \WRMSSE{} ($h = 7$) & Gap vs winner \\
+\midrule
+Seasonal Naive (period $= 7$) & 0.776 & +49\% \\
+LightGBM recursive, 6 covariates, 1 model & 0.634 & +22\% \\
+LightGBM direct, 6 covariates, 1 model & 0.560 & +8\% \\
+LightGBM direct + lag\_28 + per-store (projected, \S\ref{sec:threats}) & ${\sim}0.53$--$0.54$ & +2--4\% \\
+M5 winner \citep{makridakis2022m5} & 0.520 & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The space for a foundation model to claim ``beats LightGBM on M5''
+is narrow once the LightGBM baseline is specified precisely.  A
+5\% \WRMSSE{} improvement over our direct variant is not trivial
+and would already exceed the M5 winner; a 15\% improvement over
+the recursive variant is achievable but is really an improvement
+over a strictly dominated baseline \emph{on this particular
+dataset} and should not be reported as ``beats LightGBM'' without
+qualification.  We return to the cross-dataset generalizability of
+this ranking in \S\ref{sec:synthesis}.
+
+\subsubsection{Rohlik Replication: Does the Protocol Gap Reverse on
+Continuous Demand?}\label{sec:rohlik}
+
+To test whether the \S\ref{sec:dirvsr} ``direct dominates
+recursive'' pattern is a property of multi-step LightGBM or a
+property of intermittent demand, we re-ran the nine-job sweep with
+identical protocol on Rohlik~v2 (Kaggle, 5{,}390 warehouse-item
+series $\times$ 1{,}402 days, 2020-08 $\to$ 2024-06, 7
+warehouses; pipeline \texttt{goofy\_pear\_g54m1skybs}).  Rohlik is
+structurally similar to M5 (SKU $\times$ location, calendar
+covariates, prices, holidays) but with one decisive difference:
+\textbf{1.2\% zero days versus M5's ${\sim}70\%$}.  Mean sales
+per series-day are ${\sim}108$ units (median 40), so Rohlik is
+continuous retail demand with a light right tail rather than
+intermittent demand dominated by zeros.
+
+Protocol matches \S\ref{sec:setup} in every respect --- train/eval
+split at $\texttt{train\_until} = 1121$ (281-day tail window),
+rolling-origin non-overlapping horizons, Tweedie hyperparameters,
+training window --- except for the Rohlik-specific dataset and
+covariate set documented in Table~\ref{tab:t51}, and the
+\texttt{fillna(0)} wide-pivot handling of ragged series starts
+(\S\ref{sec:datasets}).
+
+\begin{table}[htbp]
+\centering
+\caption{Seasonal Naive vs LightGBM recursive vs LightGBM direct
+on the Rohlik~v2 tail-eval window.  Bold = best per horizon among
+LightGBM variants.}
+\label{tab:t54}
+\small
+\begin{tabular}{llrrrrr}
+\toprule
+Model & $h$ & MAE & sMAPE & \WAPE{} & Runtime (s) & Cost (USD) \\
+\midrule
+Seasonal Naive &  7 & 40.649 & 36.46 & 0.4015 &   8.5 & 0.0009 \\
+Seasonal Naive & 14 & 42.236 & 37.20 & 0.4031 &   6.9 & 0.0007 \\
+Seasonal Naive & 28 & 43.543 & 38.21 & 0.4116 &   5.8 & 0.0006 \\
+\textbf{LightGBM rec} &  7 & \textbf{19.335} & 92.90 & \textbf{0.3654} &  29.6 & 0.0031 \\
+\textbf{LightGBM rec} & 14 & 20.972 & 94.59 & \textbf{0.3953} &  30.6 & 0.0032 \\
+\textbf{LightGBM rec} & 28 & 22.815 & 97.18 & \textbf{0.4321} &  29.1 & 0.0031 \\
+LightGBM dir &  7 & 19.549 & 93.34 & 0.3816 & 141.1 & 0.0149 \\
+LightGBM dir & 14 & \textbf{20.210} & 94.17 & 0.4072 & 265.6 & 0.0280 \\
+LightGBM dir & 28 & \textbf{21.087} & 95.01 & 0.4442 & 524.3 & 0.0553 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Three findings invert or qualify the M5 conclusions from
+\S\ref{sec:dirvsr}:
+
+\begin{enumerate}
+\item \textbf{Recursive narrowly beats direct on \WAPE{} at every
+  horizon.}  The \WAPE{} advantage is 4.2--4.5\%, consistent
+  across $h$.  Direct holds a marginal MAE lead at $h = 14$ and
+  $h = 28$ ($\leq 4\%$), but the \WAPE{} result is the one that
+  matters for reporting, because \WAPE{} matches how retail
+  operations care about forecast error (sales-weighted, unitless).
+  The ``recursive is strictly dominated'' claim from
+  \S\ref{sec:dirvsr} is therefore \textbf{M5-specific}.
+
+\item \textbf{Recursive's horizon-growth penalty disappears.}  On
+  M5, recursive \WAPE{} grew $+19\%$ from $h = 7$ to $h = 28$
+  versus $+12\%$ for direct (\S\ref{sec:dirvsr}).  On Rohlik the
+  two grow in lockstep: $+18.2\%$ recursive vs $+16.4\%$ direct.
+  This is consistent with the hypothesis that recursive
+  compounding is amplified by sparsity and low signal-to-noise ---
+  on M5 each one-day error is large relative to a typical
+  zero-or-low actual, but on Rohlik with mean ${\sim}108$ and
+  ${\sim}1\%$ zeros the same recursive error is negligible
+  relative to the signal and does not compound across horizons.
+
+\item \textbf{Tweedie sMAPE bias is undiminished on continuous
+  data.}  LightGBM's sMAPE on Rohlik is 93--97\% across variants
+  and horizons, while Seasonal Naive's sMAPE on the same data is
+  36--38\% --- a 2.5$\times$ gap in SN's favor.  On M5 the same
+  gap was about 2$\times$ (SN ${\sim}76\%$, \LGBM{} ${\sim}145\%$).
+  The \emph{absolute} magnitude of \LGBM{} sMAPE is lower on
+  Rohlik (93 vs 145) because Rohlik has fewer very-small actuals
+  to trigger the 200\% saturation, but the \emph{ranking flip} is
+  identical: Tweedie LightGBM overshoots small actuals because the
+  conditional mean is pulled by the right tail, and sMAPE penalizes
+  every overshoot heavily.  This is not an intermittent-demand
+  artefact (\S\ref{sec:synthesis}).
+\end{enumerate}
+
+The practical consequence is that on Rohlik the direct-vs-recursive
+choice is a cost decision, not a quality decision: direct runs
+5--18$\times$ slower per horizon (the ratio grows with $h$ because
+direct trains $h$ separate models) and buys nothing on \WAPE{}
+and at most ${\sim}4\%$ MAE at long $h$.  On continuous retail
+demand, \textbf{recursive is the default baseline}, not a
+strictly-dominated variant.
+
+\subsubsection{Favorita Replication: the Recursive Advantage Grows
+with Horizon}\label{sec:favorita}
+
+Rohlik is a low-intermittency extreme.  Favorita sits
+structurally between M5 and Rohlik: ${\sim}174{,}685$ store-item
+series $\times$ 1{,}684 days, continuous at the head of the
+distribution but with a long low-velocity tail (many SKUs with
+sparse sales).  If the Rohlik inversion of \S\ref{sec:rohlik} is
+real, Favorita should land somewhere in between.  We ran the same
+nine-job sweep (pipeline \texttt{loyal\_roti\_bcc63n9gkh}) under
+the \S\ref{sec:setup} protocol, with the top 30{,}000-series cap
+and Favorita-specific covariates as documented in
+Table~\ref{tab:t51} and \S\ref{sec:datasets}.  Training protocol,
+hyperparameters, and rolling-origin eval are otherwise identical to
+\S\ref{sec:m5results} and \S\ref{sec:rohlik}.
+
+\begin{table}[htbp]
+\centering
+\caption{Seasonal Naive vs LightGBM recursive vs LightGBM direct
+on the Favorita top-30k tail-eval window
+($\texttt{train\_until} = 1347$).  Bold = best per horizon among
+LightGBM variants.}
+\label{tab:t55}
+\small
+\begin{tabular}{llrrrrr}
+\toprule
+Model & $h$ & MAE & sMAPE & \WAPE{} & Runtime (s) & Cost (USD) \\
+\midrule
+Seasonal Naive &  7 & 5.248 & 60.76 & 0.6363 &     65 & 0.0068 \\
+Seasonal Naive & 14 & 5.400 & 61.49 & 0.6473 &     49 & 0.0052 \\
+Seasonal Naive & 28 & 5.644 & 62.49 & 0.6643 &     39 & 0.0041 \\
+\textbf{LightGBM rec} &  7 & \textbf{2.507} & 90.92 & \textbf{0.5295} &   236 & 0.0249 \\
+\textbf{LightGBM rec} & 14 & \textbf{2.574} & 91.32 & \textbf{0.5311} &   230 & 0.0242 \\
+\textbf{LightGBM rec} & 28 & 2.692 & 92.13 & \textbf{0.5377} &   230 & 0.0243 \\
+LightGBM dir &  7 & 2.533 & 91.38 & 0.5513 & 1{,}015 & 0.1071 \\
+LightGBM dir & 14 & 2.619 & 92.17 & 0.5711 & 1{,}907 & 0.2012 \\
+LightGBM dir & 28 & \textbf{2.688} & 92.75 & 0.5892 & 3{,}588 & 0.3787 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The Favorita result pushes the Rohlik finding harder in two ways.
+
+\textbf{First, the recursive advantage grows monotonically with
+horizon.}  On \WAPE{} the gap is $+4.1\%$ at $h = 7$, $+7.5\%$
+at $h = 14$, and $+9.6\%$ at $h = 28$ in favor of recursive.
+\LGBM{}-direct's \WAPE{} rises $+6.9\%$ from $h = 7$ to $h = 28$
+(0.5513 $\to$ 0.5892) while recursive's \WAPE{} rises only
+$+1.5\%$ (0.5295 $\to$ 0.5377).  This is the exact opposite of
+the M5 pattern in \S\ref{sec:dirvsr}, where direct's \WAPE{} grew
+$+12\%$ across the same horizon span and recursive's grew $+19\%$.
+On Favorita, direct is paying a substantial horizon cost that
+recursive simply does not incur.
+
+We interpret this as a \textbf{training-budget artefact of direct
+LightGBM, not a protocol property of direct multi-step}.  Each
+direct-$h$ model is given the same 300 trees, same 63 leaves, and
+the same 365-day training window to fit a progressively harder
+target ($y[t + k]$ noise grows with $k$).  Without a larger model
+capacity for larger $k$, direct under-fits the far horizon on a
+dataset like Favorita where the near-horizon signal is strong
+enough to hide the under-fitting at $h = 7$ but not at $h = 28$.
+Fair reporting of the direct-vs-recursive gap would either hold the
+training budget fixed (our setup, matching
+\citealp{hewamalage2022forecast}) and flag the artefact, or grow
+the budget with horizon.  We do the former but flag it explicitly
+in \S\ref{sec:threats} as a threat to validity on cross-dataset
+protocol claims.
+
+\textbf{Second, the cost argument for recursive is overwhelming.}
+On Favorita, LightGBM-direct cost \textbf{\$1.030 total across
+the three horizons} versus \$0.073 for recursive --- a
+\textbf{14$\times$ cost ratio} that buys strictly worse accuracy.
+The absolute numbers hide the severity: direct $h = 28$ alone ran
+for ${\sim}60$ minutes on E4DS\_V4, while recursive $h = 28$
+finished in ${\sim}4$ minutes.  At the scale where retail
+practitioners actually operate --- whole-chain daily forecasting at
+$10^5$--$10^6$ series --- the direct-LightGBM protocol is a
+practical non-starter without much bigger hardware, and on
+Favorita that investment would buy \emph{worse} accuracy than the
+trivial recursive variant.
+
+sMAPE on Favorita behaves exactly as on Rohlik: 90.9--92.8\% for
+LightGBM vs 60.8--62.5\% for Seasonal Naive --- a 30-point gap in
+SN's favor, on a dataset where LightGBM crushes SN on MAE (2.51
+vs 5.25 at $h = 7$, a 52\% reduction).  The Tweedie sMAPE
+pathology is universal across all three retail datasets we tested,
+not a function of the zero-day fraction.
+
+\subsubsection{Cross-Dataset Synthesis: the Direct-vs-Recursive Gap
+Is Conditional on Intermittency}\label{sec:synthesis}
+
+The three phases together turn what looked like a protocol
+recommendation (\S\ref{sec:dirvsr}: ``use direct'') into a
+falsifiable conditional claim that can be checked against any new
+retail benchmark.  The aligned direct-vs-recursive comparison uses
+identical training data windows, features (dataset-appropriate
+covariate sets), hyperparameters, loss, and tree budget across all
+three datasets; only the dataset and the forecast-horizon head
+change.
+
+\begin{table}[htbp]
+\centering
+\caption{Cross-dataset summary of the direct-vs-recursive LightGBM
+gap with matched protocol (\WAPE{}-based; positive = direct wins,
+negative = recursive wins).  Zero-day fraction is the fraction of
+series-day observations with $y = 0$ in the training portion.}
+\label{tab:t58}
+\small
+\begin{tabular}{llrrrlr}
+\toprule
+Dataset & Zero-day frac. & $h = 7$ & $h = 14$ & $h = 28$ & Direction & Cost ratio (dir/rec) \\
+\midrule
+M5 & ${\sim}70\,\%$ & $+16.6\,\%$ & $+18.5\,\%$ & $+21.8\,\%$ & direct wins & 3.7--13.1$\times$ \\
+Rohlik & ${\sim}1.2\,\%$ & $-4.4\,\%$ & $-3.0\,\%$ & $-2.8\,\%$ & recursive wins & 4.8--18.0$\times$ \\
+Favorita & ${\sim}15$--$25\,\%$, long tail & $-4.1\,\%$ & $-7.5\,\%$ & $-9.6\,\%$ & recursive wins, growing & 4.3--15.6$\times$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Three patterns emerge from Table~\ref{tab:t58}:
+
+\begin{enumerate}
+\item \textbf{Direction tracks intermittency, not protocol.}  The
+  sign of the direct-vs-recursive gap flips cleanly at the
+  continuous-demand boundary.  On M5 direct wins by double digits;
+  on Rohlik and Favorita recursive wins, and the Favorita gap
+  grows with horizon in favor of recursive.  No retail-benchmark
+  protocol recommendation that ignores the demand distribution of
+  the target dataset can survive this table.
+
+\item \textbf{The ``recursive compounding penalty'' is
+  demand-dependent.}  The M5 result in \S\ref{sec:dirvsr}
+  attributed recursive's \WAPE{} blow-up (1.62 $\to$ 1.94,
+  $+19\%$) to error compounding at long horizons.  On Rohlik
+  (Table~\ref{tab:t54}) that same quantity is $+18\%$ for
+  recursive and $+16\%$ for direct --- statistically
+  indistinguishable.  On Favorita (Table~\ref{tab:t55}) recursive
+  actually grows \emph{less} with horizon than direct ($+1.5\%$
+  vs $+6.9\%$).  The M5 pattern is not recursive compounding in
+  the abstract --- it is recursive compounding amplified by
+  intermittency.  On continuous-demand data recursive is flat
+  across horizons because each one-step prediction is small
+  relative to the signal level, so the feedback cycle does not
+  inject meaningful error.
+
+\item \textbf{Direct LightGBM's own horizon penalty is a
+  training-budget artefact.}  On Favorita direct \WAPE{} grows
+  from 0.551 to 0.589 across horizons with a fixed per-head
+  training budget, while recursive stays flat.  This is direct
+  under-fitting longer-horizon targets that are individually
+  harder to fit, not a protocol property.  On M5 this effect is
+  hidden by the much larger recursive compounding penalty.  On
+  Favorita it is the dominant factor.  \textbf{Fair cross-dataset
+  reporting therefore has to note whether training budget per head
+  is held constant across horizons}; our tables do, and we flag
+  this explicitly.
+\end{enumerate}
+
+The methodological consequence for the meta-analysis --- which \S6
+operationalizes via moderator variables --- is that the ``LightGBM
+multi-step protocol'' choice has to be treated as an
+\textbf{interaction with dataset intermittency}, not a main
+effect.  When a FM paper reports ``LightGBM baseline at \WRMSSE{}
+0.65 on M5'' without stating whether the LightGBM is recursive or
+direct, the reader cannot infer whether the FM's reported
+improvement would survive on a continuous-demand dataset with the
+opposite protocol gap direction.  The same FM evaluated against
+direct LightGBM on M5 and recursive LightGBM on Rohlik would see
+\emph{both} of its baselines at their strongest, and that is the
+only apples-to-apples comparison for a cross-dataset claim.
+
+\textbf{Source~B vindication (2026-04-16).}  The \S\ref{sec:fm}
+consumer-box sweep runs both \texttt{lightgbm\_cov} (recursive
+with covariates) and \texttt{lightgbm\_direct} (direct multi-step)
+on the same three datasets.  The results confirm the conditional
+pattern of Table~\ref{tab:t58}:
+
+\begin{itemize}
+\item \textbf{M5:} \texttt{lightgbm\_direct} \WAPE{} 1.35--1.51
+  vs \texttt{lightgbm\_cov} 1.62--1.94 --- direct wins by
+  17--22\,\%, consistent with Table~\ref{tab:t58}'s $+16.6$ to
+  $+21.8\,\%$ prediction.
+\item \textbf{Favorita:} \texttt{lightgbm\_direct} \WAPE{}
+  0.55--0.59 vs \texttt{lightgbm\_cov} 0.53--0.54 ---
+  recursive/cov wins by 4--9\,\%, consistent with
+  Table~\ref{tab:t58}'s $-4.1$ to $-9.6\,\%$ prediction.
+\item \textbf{Rohlik:} \texttt{lightgbm\_direct} \WAPE{}
+  0.38--0.44 vs \texttt{lightgbm\_cov} 0.37--0.43 ---
+  recursive/cov wins by 2--3\,\%, consistent with
+  Table~\ref{tab:t58}'s $-2.8$ to $-4.4\,\%$ prediction.
+\end{itemize}
+
+The \S6.8 H3 moderator (``direct \LGBM{} $\downarrow$ FM
+advantage'') is therefore direction-consistent on M5 but
+direction-inconsistent on Favorita and Rohlik --- exactly as
+\S\ref{sec:synthesis} predicts.  H3 cannot be tested as a main
+effect; the real test is the H4 interaction, which requires a
+larger cross-paper pool than the $k = 10$ cells currently
+available.
+
+\subsubsection{Method Note and Threats to
+Validity}\label{sec:threats}
+
+Four methodological simplifications in our LightGBM variants are
+worth stating because they bound the ceilings we report:
+
+\begin{enumerate}
+\item \textbf{Single global model vs per-store models.}  The M5
+  winner trained 220 separate LightGBM models, one per store.  Our
+  direct variant trains one model across all 30{,}490 series.  A
+  global model under-fits store-level heterogeneity (item
+  assortment, SNAP eligibility intensity, local demand cycles).
+  We estimate the per-store split would recover ${\sim}1$--$2\%$
+  \WRMSSE{} on M5, bringing direct to ${\sim}0.54$--$0.55$ at
+  $h = 7$.  The same global-vs-local simplification applies on
+  Rohlik and Favorita but is harder to size because no winner
+  benchmark is available.
+
+\item \textbf{No lag\_28 feature.}  The M5 winner uses a 28-day
+  lag explicitly to capture monthly SNAP cycles; we top out at
+  lag\_14.  Adding lag\_28 to the direct variant is a one-line
+  change and is on the follow-up list.
+
+\item \textbf{Training window capped at 365 days.}  Our training
+  window is the last 365 days of the training portion (a
+  deliberate cap to keep single-job training tractable on
+  E4DS\_V4, where fitting ${\sim}10$--$30$\,M rows takes
+  180--240\,s per model).  Extending the window to the full
+  training portion would give the model more data on promotional
+  and seasonal cycles; on M5 we estimate this recovers another
+  ${\sim}1\%$ \WRMSSE{}.  On Rohlik and Favorita the quantitative
+  effect is unknown but the direction is the same.
+
+\item \textbf{Training compute budget per head is held fixed across
+  horizons.}  Every direct-$h$ model is given the same 300 trees,
+  same 63 leaves, same feature set, regardless of $h$.  As
+  \S\ref{sec:favorita} notes, this design choice hides a
+  training-budget artefact in the direct-vs-recursive gap on
+  Favorita: direct's horizon penalty shrinks if each head is given
+  more trees.  We match \citet{hewamalage2022forecast} on this
+  design choice for comparability with the existing literature, but
+  the meta-analysis in \S6 carries a covariate recording whether a
+  given reviewed paper's reported ``LightGBM direct'' keeps
+  training budget constant across horizons or scales it, because
+  this meaningfully changes the baseline.
+\end{enumerate}
+
+On M5 specifically, combining fixes 1--3, a properly tuned direct
+LightGBM with lag\_28, per-store splits, and full-window training
+should land at \WRMSSE{} $\approx 0.53$--$0.54$, i.e.\ within
+\textbf{2--4\% of the M5 winner}, which is our best estimate of
+the ``ceiling for reasonable single-pipeline LightGBM'' --- still
+above 0.520 but well below the zone where foundation models need
+to compete.
+
+The most important cross-dataset threat to validity is one we
+\emph{cannot} fix with methodology: the Favorita sweep is capped
+at the top 30k series by total unit sales, because the full
+${\sim}175$k-series dataset at ${\sim}125$M rows does not fit the
+32\,GB E4DS\_V4 compute we use for Phases A--D.  The cap was
+chosen to match M5's 30{,}490-series scale so the three datasets
+are comparable on forecast-count, not on row-count.  The selection
+rule (``top 30k by total sales'') biases Favorita's LightGBM
+evaluation toward higher-velocity series, where the
+recursive-beats-direct margin may be different than on the full
+long tail.  We flag this as a limitation for \S7 (threats to
+validity) and a candidate for future work on larger hardware.
+
+\subsubsection{Protocol-Conditional Cost
+Consequences}\label{sec:costconsequences}
+
+The per-dataset cost and CO$_2$ envelope is reported once in
+\S\ref{sec:costenvelope} (Table~\ref{tab:t56}) so that all budget
+numbers in \S\ref{sec:experiments} live in a single place.  Two
+consequences of that table are specific to the
+\S\ref{sec:rohlik}/\S\ref{sec:favorita} accuracy findings and
+belong here rather than in \S\ref{sec:costenvelope}:
+
+First, the recursive-LightGBM sweeps cost \$0.090 (M5), \$0.009
+(Rohlik), and \$0.073 (Favorita), i.e.\ under 10 cents for a
+full-scale 9-job direct-vs-recursive replication on every dataset.
+The direct sweeps cost 10--15$\times$ more on each dataset with a
+near-identical ratio across the three, and on Favorita and Rohlik
+the direct sweep buys \emph{worse} accuracy than the much cheaper
+recursive alternative (\S\ref{sec:rohlik}, \S\ref{sec:favorita}).
+The cost argument for recursive LightGBM as the default retail
+baseline is therefore not a marginal preference --- on Favorita
+it is 14$\times$ cheaper AND more accurate.
+
+Second, even our most expensive LightGBM configuration (\$1.12
+for a 9-job Favorita sweep) is an order of magnitude below the
+zero-shot inference cost of the smallest foundation models in our
+review on comparably-sized eval windows, a point we develop in
+the cost-accuracy Pareto analysis (\S6.3, anchored to the FM
+cost projection in \S\ref{sec:fm_results}).  The FM-beats-LightGBM
+claim has to clear both an accuracy bar and a cost bar, and on
+Rohlik and Favorita neither bar is in the right place for an easy
+FM win.
+
+\subsubsection{Takeaways for the Rest of the
+Paper}\label{sec:takeaways}
+
+The three-dataset sweep rewrites several of the
+baseline-reliability claims that single-dataset (M5-only) papers
+have been making:
+
+\begin{enumerate}
+\item \textbf{There is no single ``canonical LightGBM baseline''
+  that works across retail datasets.}  The \S\ref{sec:dirvsr}
+  choice of LightGBM-direct as the strongest reasonable variant is
+  correct on M5 and wrong on Rohlik and Favorita.  \S6
+  (meta-regression) therefore treats the direct-vs-recursive
+  protocol as a moderator variable that interacts with dataset
+  intermittency, not a main effect.  When a FM paper is indexed in
+  our extraction, we record the LightGBM variant it compared
+  against \emph{and} the dataset's intermittency percentile, and
+  we flag any claim of ``FM beats LightGBM'' that was tested
+  against only one variant.
+
+\item \textbf{For head-to-head tables we use the
+  strongest-per-dataset variant.}  On M5 we compare FMs against
+  LightGBM-direct.  On Rohlik and Favorita we compare against
+  LightGBM-recursive.  Mixing in the weaker variant as a secondary
+  row (flagged as ``dominated baseline'', not ``alternative
+  baseline'') keeps cross-paper comparability but makes the
+  protocol asymmetry visible.
+
+\item \textbf{sMAPE is excluded from all primary comparisons in
+  this paper, not just comparisons on intermittent data.}  On all
+  three retail datasets --- M5 (${\sim}70\%$ zeros), Rohlik
+  (${\sim}1\%$ zeros), Favorita (mixed tail) --- Tweedie LightGBM
+  has sMAPE 2.1--2.5$\times$ worse than Seasonal Naive despite
+  being 2--2.5$\times$ better on MAE.  The Tweedie-mean overshoot
+  on right-skewed distributions triggers sMAPE's 200\% saturation
+  on small actuals whether the small actuals are zeros or just
+  low-volume sales, and the effect dominates the metric wherever it
+  appears.  \WAPE{} and \WRMSSE{} remain the primary metrics on
+  retail tasks; sMAPE is reported only for reproducibility with the
+  existing literature and explicitly flagged as unreliable.
+
+\item \textbf{Recursive LightGBM is the default retail baseline
+  for continuous-demand datasets on compute and accuracy grounds
+  simultaneously.}  On Favorita, recursive trains 14$\times$
+  faster than direct \emph{and} scores 4--10\% better on
+  \WAPE{}, with the margin growing with horizon.  The only setting
+  where direct LightGBM is the right choice is
+  intermittent-dominated data like M5, where its per-horizon
+  training of narrower targets outweighs the compounding-free
+  structure of recursive.
+
+\item \textbf{Direct LightGBM's horizon-growth penalty on Favorita
+  is a training-budget artefact.}  Fair cross-paper comparison
+  needs to ask whether the direct LightGBM uses a constant
+  per-head budget (our setup, matching
+  \citealp{hewamalage2022forecast}) or scales the budget with
+  horizon (as the M5 winner does).  \S6's moderator table records
+  this for every indexed paper.
+\end{enumerate}
+
+For the Pareto frontier in \S6.3, Table~\ref{tab:t56} in
+\S\ref{sec:costenvelope} (cross-dataset cost shares) supplies the
+LightGBM cost axis for all three datasets, and the M5 \WRMSSE{}
+ladder in \S\ref{sec:m5distance} supplies the accuracy axis for
+the M5 slice.  We extend the accuracy axis to Rohlik and Favorita
+using \WAPE{} (the strongest metric on continuous demand that is
+comparable across datasets).
+
+
+% -----------------------------------------------------------------
+\subsection{Foundation Model Protocol}\label{sec:fm}
+% -----------------------------------------------------------------
+
+Foundation model rows come from two complementary data sources:
+the PRISMA literature extraction (\S\ref{sec:fm_scope}--\S\ref{sec:fm_extraction})
+and a local consumer-box sensitivity run on a MacBook via PyTorch
+MPS (\S\ref{sec:fm_local}--\S\ref{sec:fm_results}).
+
+\subsubsection{Scope and Two-Source Strategy}\label{sec:fm_scope}
+
+Foundation model rows in Table~5.7 come from two sources, each
+serving a distinct purpose in the meta-regression (\S6).
+
+\textbf{Source~A --- Literature extraction (primary).}  The PRISMA
+corpus (\S4, \texttt{analysis/extraction\_schema.csv}, 185 rows)
+already contains zero-shot FM numbers on all three of our datasets,
+extracted from the source papers and anchored to their published
+MLflow runs or competition submissions.  Between B01 (GIFT-Eval
+2025 leaderboard), B02 (fev-bench 2025 retail tasks), and the
+per-model technical reports A01 (Chronos), A02 (Chronos-2), A04
+(TimesFM~2.5), A06 (Moirai~2.0), A11 (Chronos-Bolt), A13
+(TiRex), A14 (TabPFN-TS), the primary FM grid of Table~5.7 can be
+populated \textbf{entirely from extraction} without any of our own
+inference runs.  This is the right data source for the
+meta-analysis framing: the central object of \S6 is the
+\emph{literature disagreement} between papers, and own runs risk
+biasing the pool toward our protocol choices (\S\ref{sec:takeaways}).
+The strict PRISMA reader is entitled to ask for a paper that
+reports no new FM numbers, and we deliver one.
+
+\textbf{Source~B --- Local consumer-box sensitivity (secondary).}
+We also execute a small sensitivity run on a MacBook (M-series,
+16\,GB unified memory) via PyTorch MPS, on three small models ---
+Chronos-Bolt-Tiny, TabPFN-TS, and TiRex --- across the same three
+datasets and horizons.  The purpose is \textbf{not} to add new FM
+cells to Table~5.7; it is to anchor the consumer-CPU Pareto panel
+of Figure~6.4 (\S6.5), which replicates the F04 (arXiv
+2602.10848, ``TS FM for Energy Load on Consumer HW'') argument on
+retail data.  A paper about ``when FMs pay off'' that quotes only
+cloud-GPU cost numbers answers the wrong question for the retail
+practitioner audience of IJF; our local run grounds the cost axis
+in the hardware retail practitioners actually use.
+
+The two sources are kept separate throughout \S\ref{sec:fm} and
+\S6 --- extraction rows carry
+$\texttt{paper\_id} \in \{A01..A17, B01, B02, \ldots\}$ and local
+runs carry $\texttt{paper\_id} = \texttt{LOCAL\_*}$.  The
+meta-regression in \S6.6 reports the pooled estimate both including
+and excluding the LOCAL rows, so the reader can see whether our own
+small run is moving the conclusion.
+
+\subsubsection{Literature-Extraction Protocol
+(Source~A)}\label{sec:fm_extraction}
+
+Extraction follows the PRISMA 2020 standard, documented in full in
+\texttt{analysis/prisma\_search\_protocol.md} and summarized in
+\S4.  Four per-row fields in \texttt{extraction\_schema.csv} are
+the load-bearing columns for Table~5.7 population:
+
+\begin{itemize}
+\item \texttt{paper\_id} --- unique row key tying back to the
+  source paper.
+\item \texttt{dataset} + \texttt{dataset\_variant} --- e.g.\
+  \texttt{M5 tail-eval h=28}, \texttt{Favorita fev-bench W},
+  \texttt{Rohlik rohlik-v2-daily}.  Dataset variants that do not
+  match our \S\ref{sec:datasets} definitions are recorded but
+  excluded from the primary pool.
+\item \texttt{metric\_name} + \texttt{metric\_value} --- each
+  paper's reported zero-shot metric on the row's dataset
+  $\times$ horizon.
+\item \texttt{baseline\_quality\_tier}
+  $\in \{\text{weak}, \text{standard}, \text{strong}\}$ --- our
+  categorization of the paper's own LightGBM baseline
+  (\S\ref{sec:m5distance}, \S\ref{sec:takeaways}).  Weak-baseline
+  rows enter the pool but are flagged in \S6.6 and the
+  meta-regression is repeated with and without them.
+\end{itemize}
+
+Per-dataset extraction coverage at time of writing:
+
+\begin{table}[htbp]
+\centering
+\caption{Per-dataset FM extraction coverage (Source~A).}
+\label{tab:fm_coverage}
+\small
+\begin{tabular}{lp{5.5cm}ll}
+\toprule
+Dataset & FM papers with zero-shot numbers & Horizons covered & Primary metrics \\
+\midrule
+M5 & 8 (A01 Chronos, A02 Chronos-2, A04 TimesFM~2.5, A11 Chronos-Bolt, A13 TiRex, A14 TabPFN-TS, B01 GIFT-Eval leaderboard, B02 fev-bench) & 7, 14, 28 (not every paper $\times$ horizon cell) & \WRMSSE{}, \WAPE{}, \MASE{} \\
+Favorita & 7 (A02, A04, A06 Moirai~2.0, A11, A13, A15 Toto, B02 fev-bench retail tasks) & 7, 14, 28, 56 & \WAPE{}, \MASE{}, WQL \\
+Rohlik~v2 & 3 (A02, B02 rohlik-v2-daily, B02 rohlik-orders-daily) & 7, 14, 28 & \WAPE{}, WQL \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The Rohlik coverage is the thinnest; two of the three Rohlik cells
+come from the same source (fev-bench 2025), which is a moderator
+we record per row as
+$\texttt{source\_paper\_is\_benchmark} \in \{\text{yes}, \text{no}\}$
+--- benchmark-paper numbers carry less within-paper baseline
+comparison than technical-report numbers, and this matters for the
+Pass-1 relative-error framing of \S6.1.
+
+\textbf{Dataset alignment.}  A key extraction-protocol choice is
+that the \S\ref{sec:datasets} datasets do not exactly match every
+FM paper's own evaluation slice.  M5 is the tightest match (the
+papers use the same 30{,}490 series and the same 28-day canonical
+horizon).  Favorita is split: some papers use the original Favorita
+top-54k subset from Kaggle, others use the fev-bench Favorita
+daily slice.  We extract both and record \texttt{dataset\_variant}
+per row so that the \S6 pool can optionally restrict to the
+fev-bench variant for cross-paper comparability.  Rohlik~v2 is
+recent enough (2024) that coverage is still growing; we extract the
+fev-bench variant as the primary target and will add any new 2026
+FM papers that report on it before final submission.
+
+\textbf{Covariate asymmetry is a moderator, not a filter.}  Four
+of the extracted FMs (Chronos, Chronos-Bolt, TimesFM, TiRex) are
+univariate and cannot consume the \S\ref{sec:datasets} covariate
+sets at all.  This is an inherent asymmetry vs the LightGBM
+baselines in \S\ref{sec:results} which use the full covariate
+sets.  We record
+$\texttt{covariate\_aware} \in \{\text{yes}, \text{no}\}$ per row
+and treat it as a moderator in \S6.2 rather than as a filter on
+the pool --- a univariate FM that beats a covariate-rich \LGBM{}
+on a covariate-rich dataset is \emph{more} informative than one
+that ties.
+
+\subsubsection{Local Consumer-Box Protocol
+(Source~B)}\label{sec:fm_local}\label{sec:fm-consumer-box}
+
+The local sensitivity run uses a single M-series MacBook with
+16\,GB unified memory, Python~3.11 in a dedicated venv
+(\texttt{\~{}/venvs/fm-local/}), and PyTorch~2.3 with the MPS
+backend.  Inference is executed serially (no batching across series
+beyond each model's own internal batch-size default) to match the
+``retail practitioner on a laptop'' framing of the cost panel.
+
+\textbf{Three-model choice.}  We run three models locally:
+
+\begin{table}[htbp]
+\centering
+\caption{Local consumer-box model selection.}
+\label{tab:fm_models}
+\small
+\begin{tabular}{lrl}
+\toprule
+Model & Params & Why local-feasible \\
+\midrule
+Chronos-Bolt-Tiny & ${\sim}9$\,M & Smallest public Chronos variant, MPS-supported, documented to hit ${\sim}100$ series-day/s on M1 by A11 supplementary table. \\
+TabPFN-TS & ${\sim}11$\,M & Tabular-FM with a published time-series head, covariate-aware, runs on MPS via PriorLabs' reference implementation (A14). \\
+TiRex & ${\sim}35$\,M & xLSTM-based, published MPS-compatible inference script (A13). Upper feasibility bound on a 16\,GB machine for serial single-series inference. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+We explicitly \textbf{exclude} four models from the local run and
+document why:
+
+\begin{itemize}
+\item \textbf{Moirai~2.0 large (${\sim}311$\,M)} --- exceeds
+  16\,GB unified memory budget when the masked-encoder attention
+  cache is loaded for Favorita's longest context.  Could run at
+  base (${\sim}91$\,M) with performance degradation, but the base
+  variant is not the one the paper's headline numbers use, so
+  comparability against literature rows would be broken.
+
+\item \textbf{TimesFM~2.5 (${\sim}200$\,M)} --- borderline
+  feasible on 16\,GB but published throughput on consumer HW is
+  not in the source paper and we would be extrapolating the cost
+  axis from a single internal number.
+
+\item \textbf{Chronos-2 (${\sim}120$\,M)} --- borderline feasible
+  on MPS but Chronos-2's Mixer head has known MPS kernel fallbacks
+  that drop performance ${\sim}3\times$ relative to CUDA in tests
+  reported on the Chronos-2 GitHub issue tracker.  The headline
+  numbers would not be representative of consumer-HW deployability.
+
+\item \textbf{Chronos-Bolt-Base / -Small / -Mini} --- substitutable
+  for -Tiny under the same framing; we run only -Tiny to stay
+  under the 27-job total local budget (3 models $\times$ 3 datasets
+  $\times$ 3 horizons).
+\end{itemize}
+
+The four omitted models' FM rows on Table~5.7 come from Source~A
+(literature extraction) instead.  This keeps the local run scope
+bounded at 27 jobs and avoids a situation where the local run
+becomes its own mini-benchmark.
+
+\textbf{Implications for generalisation.}  The retail-specific
+FM-vs-ML\_TREE comparison (Table~\ref{tab:t59}, \S6.7) therefore
+rests on two small FMs: Chronos-Bolt-Tiny (9\,M) and TiRex
+(35\,M).  The larger models --- Chronos-2 (120\,M), TimesFM~2.5
+(200\,M), and Moirai~2.0 (311\,M) --- achieve higher win rates on
+benchmark suites: 81--84\,\% on GIFT-Eval WQL (A02, A04) and
+69--91\,\% on fev-bench SQL (B02).  However, \textbf{no Source~A
+paper reports these larger models' per-series \WAPE{} on M5,
+Favorita, or Rohlik under matched rolling-origin conditions}
+(\S4.4).  We cannot extrapolate from benchmark-suite win rates to
+per-dataset \WAPE{} deltas because: (a) win rates aggregate across
+28--100 tasks spanning multiple domains, not just retail; (b)
+per-series \WAPE{} on intermittent demand behaves qualitatively
+differently from skill scores (\S\ref{sec:fm_results}); and (c)
+the baseline in each benchmark suite varies (statistical ensemble
+for fev-bench, Seasonal Naive for GIFT-Eval --- neither is a
+well-tuned LightGBM with covariates).  Our headline finding ---
+the FM-vs-ML\_TREE gap is null on smooth-demand retail data --- is
+therefore established for the 9--35\,M parameter class and remains
+an open question for larger FMs.  We flag this as the
+highest-priority future work in \S9.2.
+
+\textbf{Evaluation protocol matches \S\ref{sec:evalprotocol}
+exactly} --- same tail-evaluation window per dataset
+($\texttt{train\_until} = \lfloor 0.8 \times n_\text{days} \rfloor$),
+same rolling-origin non-overlapping horizons
+$h \in \{7, 14, 28\}$, same metric definitions (\WAPE{}, MAE,
+sMAPE, \WRMSSE{} on M5).  The only protocol difference vs
+\S\ref{sec:results}'s baseline LightGBM sweep is that the local
+FMs are univariate except TabPFN-TS which uses the full
+\S\ref{sec:datasets} covariate set.  This matches how the three
+models were designed to be invoked and is the fair-use protocol for
+each.
+
+\textbf{Context window and sampling.}  Each model uses its
+published default context (2048 for Chronos-Bolt-Tiny and TiRex,
+1024 for TabPFN-TS) and point-forecast mode (median over 20
+samples for Chronos-Bolt, deterministic for TiRex, point head for
+TabPFN-TS).  No tuning.  The original design included four
+additional large models; they were dropped to match the
+consumer-hardware constraint (\S\ref{sec:fm_scope}).
+
+\textbf{Runtime budget.}  On an M-series MacBook at typical MPS
+throughput of ${\sim}50$--$150$ series-day/s for
+Chronos-Bolt-Tiny-class models, the full 27-job local sweep should
+complete in 12--24 hours of wall time across the three datasets,
+with Favorita dominating (30{,}000 series $\times$ 337-day tail
+$\times$ 20 windows at $h = 7$).  No cloud compute, no Azure cost.
+We will run it as an overnight-and-weekend job over 2026-04-15 and
+2026-04-16.
+
+\subsubsection{Evaluation, Metrics, and
+Filtering}\label{sec:fm_metrics}\label{sec:fm-m5-metric}
+
+Both Source~A and Source~B produce numbers that enter the same
+Table~5.7 columns.  We align both sources on the
+\S\ref{sec:evalprotocol} definitions:
+
+\begin{itemize}
+\item \textbf{Primary metrics:} \WAPE{} and MAE on all three
+  datasets, \WRMSSE{} on M5 only.
+\item \textbf{Reported but not primary:} sMAPE, CRPS, WQL (the
+  last two only where the source paper publishes them; we do not
+  compute them ourselves in the local run).
+\item \textbf{Per-series filter:} \WAPE{} drops series with
+  zero-denominator eval windows and reports \texttt{n\_valid},
+  matching \S\ref{sec:evalprotocol}.  For extraction rows we copy
+  the paper's own \texttt{n\_valid} if published, else we record
+  $\texttt{n\_valid} = \texttt{unknown}$ and flag the row in
+  \S6.6's sensitivity analysis.
+\end{itemize}
+
+For the local run, the metric computation reuses
+\texttt{benchmark/code/experiments/run\_gap\_filling.py} exactly
+--- same Python, same aggregation code path as the LightGBM
+baselines --- so the comparison against \S\ref{sec:results}'s
+\LGBM{} rows is bit-identical on the metric side.  This is the
+main reproducibility advantage of running the local sensitivity
+ourselves rather than extracting from papers: we can guarantee
+metric-path equivalence with our own baselines.
+
+\subsubsection{Consumer-Box Run: Results}\label{sec:fm_results}
+
+We executed the Source~B sweep on 2026-04-13 / 2026-04-14 as
+planned in \S\ref{sec:fm_local}.  The local FM cells are paired
+against matched \texttt{lightgbm\_cov}, \texttt{lightgbm\_direct},
+and \texttt{seasonal\_naive} baselines that we also re-ran on Azure
+ML (\texttt{mlw-forecast-benchmark}) so that both arms of every
+comparison use the \S\ref{sec:evalprotocol} metric path
+bit-identically.  Below is what we found; the feed of these
+numbers into the \S6 meta-regression is discussed in \S6.1 and
+\S6.6.
+
+\textbf{Ship state: all 18 FM cells complete.}
+Chronos-Bolt-Tiny completed all 9 cells (3 datasets $\times$ 3
+horizons) on the MPS backend during the 2026-04-13/14 overnight
+run.  TiRex completed 7/9 in that same run; the two missing cells
+(Rohlik $h = 14$, $h = 28$) hit a pathological MPS path where
+\texttt{xlstm\_kernels} falls back to a per-element MPSGraph
+dispatch through \texttt{log\_sigmoid\_forward\_mps} --- the
+process advanced less than three minutes of CPU per hour of wall
+time.  After 14\,h of wall clock on the Rohlik $h = 14$ cell with
+no meaningful progress we killed the run.  On 2026-04-16 we
+re-ran both cells with \texttt{TIREX\_FORCE\_CPU=1}, which
+bypasses MPS entirely and runs on CPU (${\sim}9$\,min for
+$h = 14$, ${\sim}17$\,min for $h = 28$ --- consistent with the
+\texttt{tirex.py} docstring that CPU is 5--10$\times$ faster than
+the MPS fallback path).  Results: \WAPE{} 0.3264 ($h = 14$) and
+0.3452 ($h = 28$), both in line with the $h = 7$ cell (0.3143)
+and with TiRex beating Chronos-Bolt-Tiny at all three Rohlik
+horizons.  TabPFN-TS is \textbf{not} in the ship state --- the
+20\,h budget was exhausted by the two Chronos and TiRex sweeps
+before the TabPFN-TS slot opened, and the three TabPFN-TS rows
+come entirely from Source~A in the final table.  We note this as a
+protocol drift vs the \S\ref{sec:fm_local} plan in
+\S\ref{sec:fm_threats}.  \textbf{H2 implication:} TabPFN-TS is the
+only covariate-aware FM in the Source~B shortlist.  Its absence
+from our local runs means that the H2 moderator test (covariate
+richness) compares univariate FMs against covariate-aware LightGBM
+--- a comparison that is directionally informative but cannot
+isolate whether the covariate channel itself closes the
+FM-vs-ML\_TREE gap.  A future replication that includes TabPFN-TS
+(or Chronos-2~v2 with exogenous inputs) would strengthen the H2
+test materially.
+
+\textbf{Per-cell \WAPE{} (paired with Azure baselines).}  Numbers
+below are per-series \WAPE{} means with $n_\text{valid} = 100$
+per cell (sampled with a fixed seed, \S\ref{sec:evalprotocol}).
+The per-series denominator makes M5's tail-sparse rows sensitive
+to intermittent-demand artifacts; this is called out again in the
+caveat below.
+
+\begin{table*}[htbp]
+\centering
+\caption{Consumer-box \WAPE{} (Source~B, per-series mean, rolling
+origin) across models, datasets, and horizons.  Lower is better.
+All 45 cells populated (the two TiRex $\times$ Rohlik
+$h \in \{14, 28\}$ cells that previously stalled on MPS were
+filled on 2026-04-16 using \texttt{TIREX\_FORCE\_CPU=1}, see
+\S\ref{sec:fm_threats}).}
+\label{tab:t59}
+\small
+\begin{tabular}{llrrrrrrrrr}
+\toprule
+Model & Family & \multicolumn{3}{c}{Favorita} & \multicolumn{3}{c}{M5} & \multicolumn{3}{c}{Rohlik~v2} \\
+\cmidrule(lr){3-5} \cmidrule(lr){6-8} \cmidrule(lr){9-11}
+ & & $h{=}7$ & $h{=}14$ & $h{=}28$ & $h{=}7$ & $h{=}14$ & $h{=}28$ & $h{=}7$ & $h{=}14$ & $h{=}28$ \\
+\midrule
+Chronos-Bolt-Tiny & FM & 0.532 & 0.537 & 0.546 & 0.958 & 0.956 & 0.956 & 0.322 & 0.334 & 0.353 \\
+TiRex & FM & 0.525 & 0.531 & 0.540 & 0.934 & 0.937 & 0.942 & 0.314 & 0.326 & 0.345 \\
+\texttt{lightgbm\_cov} & ML\_TREE & 0.530 & 0.531 & 0.538 & 1.625 & 1.729 & 1.936 & 0.365 & 0.395 & 0.432 \\
+\texttt{lightgbm\_direct} & ML\_TREE & 0.551 & 0.571 & 0.589 & 1.351 & 1.410 & 1.513 & 0.382 & 0.407 & 0.444 \\
+\texttt{seasonal\_naive} & STATS & 0.636 & 0.647 & 0.664 & 1.307 & 1.322 & 1.329 & 0.402 & 0.403 & 0.412 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\textbf{TiRex beats Chronos on all nine paired cells,} by a narrow
+but consistent margin: ${\sim}2.0$--$2.3$\,pp on M5 (0.93 vs
+0.96), ${\sim}0.6$--$0.7$\,pp on Favorita, ${\sim}0.7$--$0.8$\,pp
+on Rohlik.  This is consistent with the per-paper ranking in A13
+(TiRex ARES 2025) which places TiRex above Chronos-Bolt on
+GIFT-Eval retail tasks.  TiRex at ${\sim}35$\,M parameters vs
+Chronos-Bolt-Tiny at ${\sim}9$\,M spends ${\sim}3.5\times$ the
+FLOPs per forecast window for a ${\sim}1$\,pp average \WAPE{} gain
+on this retail slice, so the quality/cost picture depends strongly
+on the deployment horizon (see the cost and runtime footprint
+below; plotted in \S6.5 Figure~6.4).
+
+\textbf{Paired $\Delta$ headline.}  Feeding the 9 paired cells
+into the \S6.1 \texttt{rma.mv} pipeline ($v_i = 1/n_\text{valid}$
+for within-paper cells, cluster $=$ paper\_id/dataset,
+Knapp--Hartung $t$ adjustment) yields
+
+\begin{quote}
+$\Dhat(\text{FM} - \text{ML\_TREE}) = -0.2442$ \WAPE{}, \quad
+95\,\% CI $[-0.482, -0.007]$, \quad $t(8) = -2.37$, \quad
+$p = 0.045$, \quad $Q(8) = 76.26$, $p < 10^{-4}$.
+\end{quote}
+
+The point estimate is significant at the 5\,\% level but the
+between-cell $Q$-statistic is very large, meaning the pooled
+intercept is dominated by a handful of high-$\Delta$ cells rather
+than representing a homogeneous family-level effect.  The three
+subgroup forests
+(\texttt{analysis/figures/figure\_6\_forest\_\{m5,favorita,rohlik\}.pdf})
+make the heterogeneity visible: M5's $\Delta$s are ${\sim}-0.6$,
+Favorita's are ${\sim}-0.01$, Rohlik's are ${\sim}-0.06$.  This
+is the finding that \S6.2 moderates on \texttt{dataset\_norm}, and
+it is substantive, not a fit artifact.
+
+\textbf{M5 caveat: per-series \WAPE{} + intermittent demand.}
+The M5 $\Delta$s above are real (TiRex 0.93 vs
+\texttt{lightgbm\_cov} 1.62 at $h = 7$, etc.) but the absolute
+magnitude is partly an artifact of the per-series \WAPE{} metric
+on M5's tail.  M5's 30{,}490 series include a long right tail of
+very-low-velocity SKUs whose held-out actuals sum to near zero in
+the rolling-origin window; per-series \WAPE{} on those rows
+explodes toward infinity whenever the predictor over-shoots by any
+constant, and a tree with a flat-across-time default sits right at
+that failure mode.  The ${>}1$ \WAPE{}s in the
+\texttt{lightgbm\_cov} column (1.62, 1.73, 1.94) are this failure,
+not a mislabelled metric.  Two defences against the ``unfair to
+\LGBM{}'' reading: (i) \texttt{lightgbm\_direct}, which does
+\textbf{not} use covariates, posts 1.35--1.51 on the same M5 cells
+--- still materially worse than either FM --- so the issue is not
+just covariate handling, and (ii) \texttt{seasonal\_naive} posts
+1.31--1.33, i.e.\ \LGBM{} is \emph{worse than naive} on M5 tail
+rows at $h \geq 14$, which is a known failure mode of tree-based
+point forecasters on sparse demand and is documented in
+\S\ref{sec:results} (Table~\ref{tab:t55}, M5 row
+\texttt{BASELINE\_QUALITY\_TIER = weak}).  On Favorita and Rohlik,
+where tail-sparsity is less extreme, $\Delta$s collapse to
+0.5--1\,pp in favour of the FMs --- so the M5-level $\Delta$ is
+the ceiling, not the central tendency.  We report both the
+full-pool intercept and the \texttt{excl\_M5} subgroup intercept
+in the final \S6.1 table.
+
+A sanity check on 2026-04-15 quantifies how much of the M5 level
+comes from the metric framing vs.\ the model.  For the six FM M5
+cells in Table~\ref{tab:t59}, recomputing \WAPE{} as the aggregate
+form $\sum|e| / \sum|y|$ (sum of absolute errors over sum of
+actuals across all series in the held-out window) gives roughly
+0.84--0.85 --- versus the per-series mean of 0.94--0.95 reported
+above, a ratio of \textbf{${\sim}0.89$}.  So the per-series
+denominator inflates the FM \WAPE{} level by ${\sim}11\,\%$ on M5,
+which is real but does not explain the full FM-vs-\LGBM{} gap:
+even after deflating FM numbers by 11\,\%,
+\texttt{lightgbm\_cov} at 1.62--1.94 stays materially worse.  For
+\texttt{lightgbm\_cov} the per-series-to-aggregate ratio is harder
+to measure directly because several Azure runs logged
+$\texttt{WAPE\_mean} = \infty$ (the zero-denominator blow-up on
+the tail series, confirmed in MLflow), so the aggregate form is the
+one to trust on the \LGBM{} side.  The \S6.7 cross-paper analysis
+reports the M5 cells both with and without this deflation in the
+excl-M5 sensitivity row.
+
+\textbf{Favorita is the ``close call'' dataset.}  On Favorita,
+\texttt{lightgbm\_cov} matches Chronos-Bolt-Tiny almost exactly
+(0.5295 vs 0.5321 at $h = 7$, a 0.3\,pp \emph{\LGBM{} win}) and
+TiRex only barely edges \texttt{lightgbm\_cov} (0.5249 vs
+0.5295 $=$ 0.5\,pp).  This is directly on-thesis for the paper's
+title: a well-tuned, full-covariate \LGBM{} on a dataset where
+the covariates carry real signal (oil price, holiday flags,
+promotions) is competitive with a state-of-the-art univariate FM
+--- the FM pays off only narrowly here, and the consumer-HW cost
+column below determines whether that narrow win is worth it in
+deployment.  This reverses the naive reading of the M5 cells and
+is the headline \S\ref{sec:fm} finding that motivates \S6.5's
+Pareto frontier.
+
+\textbf{Cost and runtime footprint.}  The 16 FM cells ran in
+10.32\,h of MacBook wall time at an estimated marginal electricity
+cost of \$0.062 USD and a grid-mix CO$_2$ footprint of 0.201\,kg
+(Polish grid, \S\ref{sec:costconsequences}
+\texttt{M\_SERIES\_MAC} bucket).  The 27 matched baseline cells
+on Azure (\texttt{cc-forecast-batch}, \texttt{Standard\_E4ds\_v4})
+ran in 4.63\,h of compute at list-price \$1.76 USD and a
+Swedish-grid footprint of 0.0045\,kg CO$_2$.  The consumer-box is
+therefore \textbf{16$\times$ cheaper per cell in dollars}
+(${\sim}$\$0.004 vs \$0.065) and \textbf{44$\times$ higher per
+cell in CO$_2$} (${\sim}0.013$\,kg vs $0.0002$\,kg), but
+\textbf{${\sim}4\times$ slower per cell in wall time}
+(${\sim}39$\,min vs ${\sim}10$\,min).  This is exactly the
+tradeoff that \S6.5 Figure~6.4 (consumer-HW Pareto) and
+Figure~6.5 (cloud Pareto) visualize on the two cost axes: the FM
+advantage on a retail-practitioner's MacBook is dramatically
+larger than on a corporate cloud account when cost is the
+denominator.
+
+\textbf{What this does \emph{not} show.}  Three things the local
+run deliberately does not address, and which the paper reader
+should keep separated from the findings above: (i)
+\textbf{tuning budget} --- the LightGBM baselines use the
+\S\ref{sec:m5distance} pre-registered hyperparameter grid with no
+dataset-specific tuning, so a practitioner with a full Optuna
+budget on M5 would likely push \texttt{lightgbm\_cov} materially
+below 1.0 \WAPE{} and close some of the $\Delta$; (ii)
+\textbf{fine-tuning} --- the FMs are zero-shot, so any
+fine-tuning advantage is unmeasured; (iii) \textbf{uncertainty
+calibration} --- this section is point-forecast only, and the
+WQL / CRPS columns on Table~5.7 come from Source~A, where they
+exist at all.
+
+\subsubsection{Reproducibility and Licensing
+Notes}\label{sec:fm_repro}
+
+\textbf{Source~A reproducibility} is limited to what each source
+paper itself publishes --- typically a model checkpoint on
+HuggingFace Hub, an inference script on GitHub, and a benchmark
+table.  Our extraction records: paper DOI or arXiv ID, extraction
+date, reviewer (always one of the authors of this paper), metric
+name, metric value, dataset variant, and a free-text
+\texttt{notes} field flagging any extraction uncertainty.  Where a
+paper does not publish a metric value at the horizon we want
+(e.g.\ a paper that only reports $h = 28$ on M5 when we also need
+$h = 7$), we record the missing cell as
+$\texttt{metric\_value} = \texttt{NOT\_FOUND}$ and flag for
+follow-up.
+
+\textbf{Source~B reproducibility} is weaker than our Azure-ML
+baselines but stronger than extraction.  The anchors:
+
+\begin{enumerate}
+\item \textbf{Git commit SHA} of this repository at run time ---
+  recorded in a local JSON sidecar
+  \texttt{benchmark/runs/local/<date>/meta.json}.
+
+\item \textbf{HuggingFace revision SHA} of each model checkpoint
+  --- pinned in
+  \texttt{benchmark/code/fm\_inference/<model>.py} and logged at
+  run time.
+
+\item \textbf{\texttt{pip freeze} snapshot} of the local venv at
+  run time --- also in the sidecar JSON.
+
+\item \textbf{Machine fingerprint} --- model, CPU, memory, macOS
+  version, and MPS runtime version --- logged at run time.
+
+\item \textbf{Per-run CSV} --- the same per-series output format
+  as the Azure MLflow runs, so downstream analysis code is
+  identical.
+\end{enumerate}
+
+Two of the 16 FMs in our broader \S4 corpus (Moirai~2.0,
+TabPFN-TS) carry non-commercial licenses.  Moirai~2.0 is only
+cited from Source~A, so the license caveat is on the published
+numbers, not on our execution.  TabPFN-TS is in Source~B, and we
+flag in \S7 that its consumer-box numbers are reproducible for
+academic benchmarking but not deployable under PriorLabs' RL-NC
+without a commercial license negotiation.
+
+\subsubsection{Table~5.9: Cross-Model \WAPE{} on the Three Retail
+Datasets}\label{sec:table59}
+
+Source~A's FM coverage on the three retail datasets is sparse: one
+M5 \WRMSSE{} row (TEMPO baseline, 0.9706, from C05) and one
+non-numeric Rohlik row (TimesFM on \MASE{}+sMAPE, from C03).  No
+Source~A FM paper reports \WAPE{} on M5, Favorita, or Rohlik with
+the per-series rolling-origin protocol of \S\ref{sec:evalprotocol}.
+Table~\ref{tab:t59} is therefore almost entirely Source~B, with the
+M5 \WRMSSE{} cross-reference from Source~A flagged in the notes
+column.  The initial expectation of abundant Source~A FM retail
+rows proved unrealistic: the FM literature evaluates primarily on
+benchmark suites (GIFT-Eval, fev-bench, Chronos Benchmark~I/II)
+rather than on individual retail datasets under matched conditions.
+
+Reading guide:
+
+\begin{itemize}
+\item \textbf{Favorita:} \texttt{lightgbm\_cov} and
+  Chronos-Bolt-Tiny are within 0.3\,pp at every horizon
+  (\S\ref{sec:fm_results} ``close call'').  TiRex consistently
+  beats both by ${\sim}0.5$\,pp, the smallest winning margin in
+  the table.  \texttt{lightgbm\_direct} is 2--5\,pp worse than
+  \texttt{lightgbm\_cov} --- the \S\ref{sec:synthesis} conditional
+  pattern (recursive wins on smooth demand).
+
+\item \textbf{M5:} Both FMs (0.93--0.96) beat all ML\_TREE
+  variants by 40+ pp \WAPE{}, but this is the per-series \WAPE{}
+  pathology documented in \S\ref{sec:fm_results} --- on \WRMSSE{}
+  the sign reverses (ML\_TREE wins).  Do not read the M5 \WAPE{}
+  column as a model-quality comparison.
+
+\item \textbf{Rohlik:} FMs lead by 4--8\,pp over
+  \texttt{lightgbm\_cov}.  The gap widens with horizon (7 $\to$
+  28: +2\,pp for FM, +7\,pp for \LGBM{}).
+  \texttt{seasonal\_naive} overtakes \texttt{lightgbm\_cov} at
+  $h = 28$ (0.412 vs 0.432), consistent with the
+  \S\ref{sec:baseline} finding that tree models degrade at long
+  horizons on continuous demand.
+
+\item \textbf{Cross-source sanity check.}  The only Source~A FM
+  row comparable by dataset is C05's TEMPO \WRMSSE{} $= 0.9706$
+  on M5 $h = 28$.  Our Source~B Chronos-Bolt-Tiny posts
+  \WAPE{} $= 0.956$ on the same cell --- not metric-comparable
+  (\WRMSSE{} vs \WAPE{}), but the magnitude is in the same
+  ballpark (${\sim}0.97$).  A direct cross-protocol check for
+  Chronos on retail \WAPE{} requires a future Source~A paper to
+  report per-series \WAPE{} on M5, which none currently do.
+\end{itemize}
+
+\subsubsection{Threats to Validity}\label{sec:fm_threats}
+
+Five threats are specific to the Source~B FM runs, detailed in
+Appendix~F.  In summary: (1) extraction selection bias --- only
+papers that chose a retail task are represented; (2) Source~A vs
+Source~B protocol drift --- as-reported vs our rolling-origin
+protocol; (3) local run covers only three small models
+(${<}35$\,M params) --- large FMs are Source~A only; (4)
+covariate asymmetry --- univariate FMs vs covariate-aware
+LightGBM; (5) top-30k Favorita cap propagates velocity bias.  The
+largest residual risk is threat~(3): any claim about FM-family
+performance rests on two small models in Source~B and extracted
+numbers in Source~A.

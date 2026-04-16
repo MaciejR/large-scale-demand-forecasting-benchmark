@@ -1,0 +1,77 @@
+% appendix_e.tex — Extraction Table (Abbreviated)
+\section{Extraction Table (Abbreviated)}\label{app:extraction}
+
+The full extraction table (\texttt{analysis/extraction\_schema.csv}, 185
+data rows + 1 header) records one row per (paper $\times$ model $\times$
+dataset $\times$ metric) observation. The complete CSV is available in the
+supplementary materials. Table~\ref{tab:extraction-columns} shows the
+key columns; columns omitted for space include
+\texttt{dataset\_variant}, \texttt{n\_series},
+\texttt{series\_length\_median}, \texttt{frequency},
+\texttt{fine\_tuned}, \texttt{runtime\_reported},
+\texttt{gpu\_hours}, \texttt{hardware}, and \texttt{notes}.
+
+\subsection{Column Definitions}
+
+\begin{table}[htbp]
+\centering
+\caption{Key columns in the extraction table.}\label{tab:extraction-columns}
+\footnotesize
+\begin{tabular}{lp{8.5cm}}
+\toprule
+Column & Description \\
+\midrule
+\texttt{paper\_id}       & Unique row identifier: \texttt{\{category\}\{seq\}\_\{detail\}} \\
+\texttt{authors}         & First author et al. \\
+\texttt{year}            & Publication year \\
+\texttt{dataset}         & Target dataset (M5, Favorita, Rohlik, GIFT-Eval, fev-bench, etc.) \\
+\texttt{model\_name}     & Model as named by the paper \\
+\texttt{model\_family}   & One of: foundation, deep\_learning, ml\_tree, statistical, ensemble \\
+\texttt{zero\_shot}      & Yes / No --- whether the model was applied without task-specific training \\
+\texttt{horizon}         & Forecast horizon (days) or ``mixed'' if aggregated \\
+\texttt{eval\_method}    & rolling / fixed\_origin / competition \\
+\texttt{metric\_name}    & Reported metric (\WAPE{}, \WRMSSE{}, \MASE{}, MAE, sMAPE, WQL, CRPS, win\_rate\_*) \\
+\texttt{metric\_value}   & Reported value (numeric or qualitative rank) \\
+\texttt{has\_covariates} & Whether the model used exogenous covariates \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Row Counts by Category}
+
+\begin{table}[htbp]
+\centering
+\caption{Extraction table row counts by category.}\label{tab:extraction-counts}
+\begin{tabular}{llr}
+\toprule
+Category & Description & Rows \\
+\midrule
+A     & Foundation model papers            & 48 \\
+B     & Benchmark papers                   & 42 \\
+C     & M5 competition and retail-specific & 38 \\
+D     & Deep learning baselines            & 12 \\
+E     & Surveys and meta-studies           & 7 \\
+F     & Cost/efficiency analysis           & 8 \\
+OWN   & Our LightGBM baselines (Source~B)  & 12 \\
+LOCAL & Our FM experiments (Source~B)       & 18 \\
+\midrule
+\textbf{Total} & & \textbf{185} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Source A vs Source B}
+
+\begin{itemize}[nosep]
+  \item \textbf{Source~A} (literature extraction): categories A--F
+    (155 rows from 38 studies). These rows report accuracy numbers as
+    published by the original authors.
+  \item \textbf{Source~B} (gap-filling experiments): OWN + LOCAL
+    (30 rows). These rows are from our own experiments on consumer
+    hardware (MacBook M-series MPS) and Azure ML (E4DS\_V4), using the
+    shared protocol of \S5.1.
+\end{itemize}
+
+The extraction table is frozen at the version used for the
+meta-regression of \S6. Any post-submission additions would require
+re-running the pooled models of \S6.7.
