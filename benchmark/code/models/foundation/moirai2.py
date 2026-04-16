@@ -1,6 +1,11 @@
 """
 Moirai 2.0 (Salesforce) foundation model wrapper.
 Zero-shot any-variate time series forecasting.
+
+Moirai-2.0-R-Small (~11 M params, decoder-only MoE) is the smallest
+variant. On MPS the model loads but inference may be slow due to
+MoE routing on non-CUDA devices. Falls back to CPU if MPS fails.
+
 Requires: pip install uni2ts
 """
 
@@ -14,7 +19,7 @@ class Moirai2Forecaster:
     def __init__(
         self,
         model_id: str = "Salesforce/moirai-2.0-R-small",
-        device: str = "cuda",
+        device: str = "mps",
         context_length: int = 512,
         num_samples: int = 100,
     ):
@@ -27,17 +32,44 @@ class Moirai2Forecaster:
 
     def _load_model(self, horizon: int):
         """Lazy load model with specific horizon."""
+        import torch
         from uni2ts.model.moirai2 import Moirai2Forecast, Moirai2Module
 
-        module = Moirai2Module.from_pretrained(self.model_id)
-        self._model = Moirai2Forecast(
-            module=module,
-            prediction_length=horizon,
-            context_length=self.context_length,
-            target_dim=1,
-            feat_dynamic_real_dim=0,
-            past_feat_dynamic_real_dim=0,
-        )
+        # Determine actual device — MPS may not support all ops.
+        actual_device = self.device
+        try:
+            module = Moirai2Module.from_pretrained(self.model_id)
+            self._model = Moirai2Forecast(
+                module=module,
+                prediction_length=horizon,
+                context_length=self.context_length,
+                target_dim=1,
+                feat_dynamic_real_dim=0,
+                past_feat_dynamic_real_dim=0,
+            )
+            # Quick smoke test on MPS.
+            if actual_device == "mps":
+                test_input = torch.zeros(1, min(10, self.context_length), 1)
+                with torch.no_grad():
+                    _ = self._model.predict(test_input)
+        except (RuntimeError, NotImplementedError) as err:
+            if actual_device == "mps":
+                print(
+                    f"WARNING: Moirai 2.0 MPS failed ({err}); "
+                    f"falling back to CPU."
+                )
+                self.device = "cpu"
+                module = Moirai2Module.from_pretrained(self.model_id)
+                self._model = Moirai2Forecast(
+                    module=module,
+                    prediction_length=horizon,
+                    context_length=self.context_length,
+                    target_dim=1,
+                    feat_dynamic_real_dim=0,
+                    past_feat_dynamic_real_dim=0,
+                )
+            else:
+                raise
         self._current_horizon = horizon
 
     def predict(self, train: pd.Series, horizon: int) -> pd.Series:

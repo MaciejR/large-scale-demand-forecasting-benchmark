@@ -1,33 +1,26 @@
 #!/usr/bin/env Rscript
 # ============================================================================
-# meta_regression.R  — §6 pre-registered meta-regression pipeline.
+# meta_regression.R  — §6 meta-regression pipeline (v2: model-level pooling).
 #
-# Implements the three-pass pooling strategy from §6.1:
-#   (1) Dataset-anchored Δ: FM row MINUS same-paper/same-dataset/same-horizon
-#       gradient-tree row. This is the primary estimand.
-#   (2) Absolute matched: within-paper pairs on common metric scale.
-#   (3) Friedman rank: per-paper ranks across FM / ML / stats families.
+# Restructured from bucket-level (k=10) to model-level paired comparisons
+# (k≥50) using per-task per-model data from fev-bench and Source B.
 #
-# Fits mixed-effects meta-regression (metafor::rma.mv) with cluster_var =
-# paper_id and Knapp-Hartung small-sample adjustment, against the eight
-# moderators declared in §6.2.
+# Unit of analysis: one row per (FM_i, baseline_j, task, metric) pair.
+# Effect size: delta_ij = FM_metric - baseline_metric (absolute difference).
+# Nesting: ~1 | dataset_norm / paper_id to account for dataset-level
+# correlation and within-task clustering.
 #
 # Inputs:
-#   analysis/extraction_schema.csv  — raw PRISMA extraction (Source A).
-#   benchmark/results/local_fm_sweep.csv  — optional Source B rows (created
-#     by tools/export_mlflow_to_csv.py once run_local_fm_sweep.sh finishes).
-#     When present, Source B rows are appended with source="LOCAL" and the
-#     regression re-runs with and without them (three-way sensitivity per
-#     §6.6: full / excl OWN_* / excl OWN_* + LOCAL_*).
+#   analysis/extraction_schema.csv  — Source A (literature) + fev-bench rows.
+#   benchmark/results/local_fm_sweep.csv  — Source B rows (when available).
 #
 # Outputs (analysis/figures/):
-#   figure_6_1_forest_m5.pdf
-#   figure_6_2_forest_favorita.pdf
-#   figure_6_3_forest_rohlik.pdf
-#   figure_6_4_pareto_consumer_hw.pdf
-#   figure_6_5_pareto_cloud_gpu.pdf
-#   table_6_1_moderators.csv
+#   table_6_1_model_level_deltas.csv
 #   table_6_2_heterogeneity.csv
+#   table_6_3_moderators.csv
+#   figure_6_1_forest_*.pdf
+#   figure_6_4_pareto_consumer_hw.pdf
+#   sensitivity_*.txt
 #
 # Usage:
 #   Rscript analysis/meta_regression.R
@@ -42,29 +35,25 @@ suppressPackageStartupMessages({
   library(knitr)
 })
 
-# Run from the repo root: `Rscript analysis/meta_regression.R`.
-# Paths are relative to that working directory.
 SCHEMA_PATH <- "analysis/extraction_schema.csv"
 LOCAL_PATH  <- "benchmark/results/local_fm_sweep.csv"
 FIG_DIR     <- "analysis/figures"
 dir.create(FIG_DIR, showWarnings = FALSE, recursive = TRUE)
 
 # ---------------------------------------------------------------------------
-# 1. Load + clean Source A (literature extraction).
+# 1. Load + clean.
 # ---------------------------------------------------------------------------
 
 load_extraction <- function(path) {
-  # The raw file interleaves comment lines (`# === Category X ===`) with
-  # data rows. read_csv with comment="#" strips them cleanly.
   raw <- read_csv(
     path, comment = "#", show_col_types = FALSE,
     col_types = cols(
       paper_id = col_character(),
       year = col_integer(),
-      n_series = col_character(),      # free-text ("30490", "1579", "mixed")
+      n_series = col_character(),
       series_length_median = col_character(),
-      horizon = col_character(),       # free-text ("28", "mixed")
-      metric_value = col_character(),  # free-text ("0.520", "best", "2nd-4th")
+      horizon = col_character(),
+      metric_value = col_character(),
       .default = col_character()
     )
   )
@@ -72,44 +61,68 @@ load_extraction <- function(path) {
   raw
 }
 
-# Retail datasets we meta-analyze. Everything else is excluded from the
-# primary analysis per the review scope (§2.3). Cross-domain rows stay in
-# the schema as provenance but don't feed the regression.
+# Retail datasets we meta-analyze.
 RETAIL_DATASETS <- c(
   "M5", "Favorita", "Rohlik v2", "VN1 Forecasting (Rohlik)",
-  "fev-bench", "retail (unnamed)",
+  "fev-bench", "retail (unnamed)", "Rossmann", "Walmart",
   "SE Europe retail (proprietary)", "M5 + 3 external",
-  "Walmart"
+  "Restaurant", "Hierarchical Sales", "Hermes"
 )
 
-# Dataset-level n_series for sampling-variance proxy (§6.2 pre-registered
-# design: vi = 1/n_series). Used when row-level n_series is missing or
-# mixed. Source B within-paper cells use n_valid = 100 (sampled series).
+# Dataset-level n_series for variance proxy.
 DATASET_N_SERIES <- c(
   "M5"       = 30490,
   "Favorita" = 30000,
   "Rohlik"   = 5390,
-  "Walmart"  = 30490,
-  "fev-bench" = 5000   # approximate median across fev-bench retail tasks
+  "Walmart"  = 2936,
+  "Rossmann" = 1115,
+  "Restaurant" = 813,
+  "Hierarchical Sales" = 118,
+  "Hermes"   = 10000,
+  "fev-bench" = 5000
+)
+
+# FM model scale (log10 params) for moderator analysis.
+FM_LOG_PARAMS <- c(
+  "Chronos-2"           = log10(120e6),    # ~8.08
+  "TiRex"               = log10(35e6),     # ~7.54
+  "TimesFM-2.5"         = log10(200e6),    # ~8.30
+  "Moirai-2.0-Small"    = log10(11e6),     # ~7.04
+  "Chronos-Bolt-Base"   = log10(46e6),     # ~7.66
+  "Chronos-Bolt-Tiny"   = log10(9e6),      # ~6.95
+  "TabPFN-TS"           = log10(12e6),     # ~7.08
+  "Toto-1.0"            = log10(100e6),    # ~8.00
+  "chronos_bolt_tiny"   = log10(9e6),
+  "tirex"               = log10(35e6),
+  "chronos2"            = log10(120e6),
+  "moirai2"             = log10(11e6),
+  "timesfm25"           = log10(200e6)
 )
 
 normalize_dataset <- function(d) {
   dplyr::case_when(
+    # fev-bench per-task datasets
+    grepl("fev-bench/m5_", d, ignore.case = TRUE) ~ "M5",
+    grepl("fev-bench/favorita_", d, ignore.case = TRUE) ~ "Favorita",
+    grepl("fev-bench/rohlik_", d, ignore.case = TRUE) ~ "Rohlik",
+    grepl("fev-bench/rossmann", d, ignore.case = TRUE) ~ "Rossmann",
+    grepl("fev-bench/walmart", d, ignore.case = TRUE) ~ "Walmart",
+    grepl("fev-bench/restaurant", d, ignore.case = TRUE) ~ "Restaurant",
+    grepl("fev-bench/hierarchical", d, ignore.case = TRUE) ~ "Hierarchical Sales",
+    grepl("fev-bench/hermes", d, ignore.case = TRUE) ~ "Hermes",
+    # Legacy aggregate fev-bench rows
+    grepl("^fev-bench$", d, ignore.case = TRUE) ~ "fev-bench",
+    # Standard datasets
     grepl("^M5", d, ignore.case = TRUE) ~ "M5",
     grepl("Favorita", d, ignore.case = TRUE) ~ "Favorita",
     grepl("Rohlik|VN1", d, ignore.case = TRUE) ~ "Rohlik",
-    grepl("fev-bench", d, ignore.case = TRUE) ~ "fev-bench",
     grepl("Walmart", d, ignore.case = TRUE) ~ "Walmart",
+    grepl("Rossmann", d, ignore.case = TRUE) ~ "Rossmann",
     TRUE ~ NA_character_
   )
 }
 
 normalize_family <- function(f) {
-  # Collapse fine-grained `model_family` labels into four meta-analysis
-  # families: FM, ML_TREE, STATS, NN (and NA otherwise — excluded).
-  # The `ml` bucket holds most of our OWN_* LightGBM rows and the two
-  # external C04 retail LightGBM/XGBoost rows, all tree-based — include
-  # them in ML_TREE so Source A's LGBM side is not silently dropped.
   dplyr::case_when(
     f %in% c("foundation") ~ "FM",
     f %in% c("ml_tree", "ml_gbm", "gbdt", "ml",
@@ -121,11 +134,8 @@ normalize_family <- function(f) {
   )
 }
 
-# Parse numeric metric value, propagating NA for qualitative rows.
 parse_metric <- function(x) suppressWarnings(as.numeric(x))
 
-# Per §6.2, horizon is bucketed because papers report mixed / non-comparable
-# horizons. Bins are: short (h<=7), medium (8<=h<=14), long (h>14), mixed.
 bucket_horizon <- function(h) {
   n <- suppressWarnings(as.integer(h))
   dplyr::case_when(
@@ -146,13 +156,14 @@ prepare_rows <- function(raw) {
       has_covariates = tolower(has_covariates) %in% c("yes", "true", "1"),
       zero_shot = tolower(zero_shot) %in% c("yes", "true", "1"),
       fine_tuned = tolower(fine_tuned) %in% c("yes", "true", "1"),
-      # Parse n_series to numeric; fall back to dataset-level lookup.
       n_series_num = {
         parsed <- suppressWarnings(as.numeric(gsub("[^0-9.]", "", n_series)))
         ifelse(is.na(parsed),
                DATASET_N_SERIES[normalize_dataset(dataset)],
                parsed)
-      }
+      },
+      # Model scale moderator (log10 params, FM only).
+      model_scale = FM_LOG_PARAMS[model_name]
     ) %>%
     filter(
       !is.na(dataset_norm),
@@ -162,37 +173,64 @@ prepare_rows <- function(raw) {
 }
 
 # ---------------------------------------------------------------------------
-# 2. Pass (1) — Dataset-anchored Δ.
+# 2. Model-level paired deltas (NEW — primary for k≥50).
 #
-#    Primary (within-paper): FM metric MINUS same-paper ML_TREE metric within
-#    paper × dataset × horizon. Preserves within-paper correlation but in
-#    our Source A retail slice essentially no paper reports both families
-#    under a shared paper_id, so this pass runs almost entirely on Source B
-#    LOCAL_MAC_* cells.
-#
-#    Cross-paper (this function, after design call on 2026-04-15): pool
-#    across papers within dataset × horizon × metric, taking
-#    mean(FM rows) - mean(ML_TREE rows) as a single bucket-level Δ. This
-#    lets Source A rows actually enter Pass 1 — at the cost of losing the
-#    within-paper anchoring. Clustering moves to `~1 | dataset_norm` since
-#    each Δ now mixes papers.
+# For each (paper_id × metric) group that contains both FM and ML_TREE rows,
+# compute one delta per FM model: delta_i = FM_i_metric - mean(ML_TREE_metric).
+# This is the new unit of analysis.
 # ---------------------------------------------------------------------------
 
-compute_paired_delta <- function(rows) {
-  by_cell <- rows %>%
+compute_model_level_delta <- function(rows) {
+  # Within each paper_id (= task for fev-bench, = dataset×horizon for Source B),
+  # pair each FM row with the average ML_TREE metric in that group.
+  by_group <- rows %>%
+    filter(family %in% c("FM", "ML_TREE")) %>%
     group_by(paper_id, dataset_norm, horizon_bucket, metric_name) %>%
-    filter(n_distinct(family) >= 2, any(family == "FM"),
-           any(family == "ML_TREE")) %>%
-    summarise(
-      fm      = mean(metric_num[family == "FM"], na.rm = TRUE),
-      ml_tree = mean(metric_num[family == "ML_TREE"], na.rm = TRUE),
-      .groups = "drop"
-    ) %>%
-    mutate(delta = fm - ml_tree) %>%
-    filter(is.finite(delta))
+    filter(any(family == "FM"), any(family == "ML_TREE")) %>%
+    ungroup()
 
-  by_cell
+  # Compute baseline per group.
+  baselines <- by_group %>%
+    filter(family == "ML_TREE") %>%
+    group_by(paper_id, dataset_norm, horizon_bucket, metric_name) %>%
+    summarise(
+      baseline_metric = mean(metric_num, na.rm = TRUE),
+      n_baseline = n(),
+      baseline_n_series = mean(n_series_num, na.rm = TRUE),
+      .groups = "drop"
+    )
+
+  # FM rows joined with their within-group baseline.
+  fm_rows <- by_group %>%
+    filter(family == "FM") %>%
+    inner_join(baselines, by = c("paper_id", "dataset_norm",
+                                  "horizon_bucket", "metric_name"))
+
+  # Compute delta and variance proxy.
+  fm_rows %>%
+    mutate(
+      delta = metric_num - baseline_metric,
+      # Relative delta: (FM - baseline) / baseline. Used for moderator plots.
+      delta_rel = ifelse(baseline_metric > 0,
+                         (metric_num - baseline_metric) / baseline_metric,
+                         NA_real_),
+      # Variance proxy: 1/n_series for each side, summed.
+      # For fev-bench rows: n_series from task metadata.
+      # For Source B: n_series from the run (100 if sampled, full if not).
+      vi = (1 / pmax(n_series_num, 1)) + (1 / pmax(baseline_n_series, 1)),
+      # Unique pair ID for clustering.
+      pair_id = paste(paper_id, model_name, metric_name, sep = "__")
+    ) %>%
+    filter(is.finite(delta)) %>%
+    select(pair_id, paper_id, dataset_norm, horizon_bucket, metric_name,
+           model_name, model_scale, has_covariates, zero_shot,
+           metric_num, baseline_metric, delta, delta_rel, vi, source,
+           n_series_num, baseline_n_series)
 }
+
+# ---------------------------------------------------------------------------
+# 3. Legacy bucket-level deltas (kept for backward compatibility / sensitivity).
+# ---------------------------------------------------------------------------
 
 compute_crosspaper_delta <- function(rows) {
   rows %>%
@@ -204,9 +242,6 @@ compute_crosspaper_delta <- function(rows) {
       ml_tree  = mean(metric_num[family == "ML_TREE"], na.rm = TRUE),
       n_fm     = sum(family == "FM"),
       n_mltree = sum(family == "ML_TREE"),
-      # §6.2 pre-registered proxy: vi = 1/n_fm + 1/n_mltree, scaled by
-      # the harmonic mean of per-row n_series within the bucket. This
-      # gives higher precision to buckets with more rows and larger datasets.
       n_series_hm = 1 / mean(1 / n_series_num, na.rm = TRUE),
       .groups  = "drop"
     ) %>%
@@ -217,9 +252,35 @@ compute_crosspaper_delta <- function(rows) {
     filter(is.finite(delta))
 }
 
+# ---------------------------------------------------------------------------
+# 4. Meta-regression fits.
+# ---------------------------------------------------------------------------
+
+fit_model_level <- function(delta_df) {
+  # Primary model: model-level deltas with dataset-level nesting.
+  # k = nrow(delta_df), typically ≥50 with fev-bench expansion.
+  rma.mv(
+    yi = delta, V = vi,
+    random = ~ 1 | dataset_norm / paper_id,
+    data = delta_df,
+    test = "t",
+    method = "REML"
+  )
+}
+
+fit_model_level_mods <- function(delta_df, moderator) {
+  rma.mv(
+    yi = delta, V = vi,
+    mods = as.formula(paste("~", moderator)),
+    random = ~ 1 | dataset_norm / paper_id,
+    data = delta_df,
+    test = "t",
+    method = "REML"
+  )
+}
+
+# Legacy fits (bucket-level).
 fit_meta_crosspaper <- function(delta_df) {
-  # vi is pre-computed per bucket in compute_crosspaper_delta() using the
-  # §6.2 pre-registered proxy: (1/n_fm + 1/n_mltree) / n_series_hm.
   rma.mv(
     yi = delta, V = vi,
     random = ~ 1 | dataset_norm,
@@ -230,69 +291,7 @@ fit_meta_crosspaper <- function(delta_df) {
 }
 
 # ---------------------------------------------------------------------------
-# 3. Pass (2) — Absolute matched: FM and ML_TREE metrics on same scale,
-#    retained separately so rma.mv sees both endpoints and can estimate
-#    heterogeneity in absolute error independent of within-paper baselines.
-# ---------------------------------------------------------------------------
-
-compute_absolute_matched <- function(rows) {
-  rows %>%
-    filter(family %in% c("FM", "ML_TREE")) %>%
-    select(paper_id, dataset_norm, horizon_bucket, metric_name,
-           family, metric_num, has_covariates, n_series, year)
-}
-
-# ---------------------------------------------------------------------------
-# 4. Pass (3) — Friedman rank within each paper×dataset×horizon cell.
-# ---------------------------------------------------------------------------
-
-compute_rank_table <- function(rows) {
-  rows %>%
-    group_by(paper_id, dataset_norm, horizon_bucket, metric_name) %>%
-    mutate(rank_within = rank(metric_num, ties.method = "average")) %>%
-    ungroup() %>%
-    select(paper_id, dataset_norm, horizon_bucket, family, rank_within)
-}
-
-# ---------------------------------------------------------------------------
-# 5. Meta-regression with Knapp-Hartung adjustment (metafor::rma.mv).
-# ---------------------------------------------------------------------------
-
-fit_meta <- function(delta_df) {
-  # §6.2 pre-registered sampling variance proxy: vi = 1/n_series. For
-  # within-paper paired Δ (Source B LOCAL cells), n_series = n_valid = 100
-  # (sampled series per cell, §5.1.3). For Source A pairs (rare in the
-  # retail slice), n_series comes from per-row parsing or dataset lookup.
-  if (!"vi" %in% colnames(delta_df)) {
-    # Within-paper pairs: Source B uses n_valid = 100, so vi = 1/100 = 0.01.
-    # This happens to equal the old placeholder but is now principled.
-    delta_df$vi <- 0.01
-  }
-  rma.mv(
-    yi = delta, V = vi,
-    random = ~ 1 | paper_id / dataset_norm,
-    data = delta_df,
-    test = "t",                    # Knapp-Hartung small-sample adjustment
-    method = "REML"
-  )
-}
-
-fit_meta_by_moderator <- function(delta_df, moderator) {
-  if (!"vi" %in% colnames(delta_df)) {
-    delta_df$vi <- 0.01  # within-paper Source B: n_valid = 100
-  }
-  rma.mv(
-    yi = delta, V = vi,
-    mods = as.formula(paste("~", moderator)),
-    random = ~ 1 | paper_id / dataset_norm,
-    data = delta_df,
-    test = "t",
-    method = "REML"
-  )
-}
-
-# ---------------------------------------------------------------------------
-# 6. Forest plots per dataset (Figures 6.1 - 6.3).
+# 5. Forest plots.
 # ---------------------------------------------------------------------------
 
 save_forest <- function(delta_df, dataset, out_path) {
@@ -301,10 +300,6 @@ save_forest <- function(delta_df, dataset, out_path) {
     message(sprintf("Skipping forest for %s (n=%d rows)", dataset, nrow(sub)))
     return(invisible(NULL))
   }
-  # Refit per-dataset: the global `res` has k=nrow(delta_df), so passing
-  # it with a length-nrow(sub) slab blows up forest.rma. A per-dataset
-  # fit also matches the §6.1 figure semantics ("Δ on dataset X").
-  if (!"vi" %in% colnames(sub)) sub$vi <- 0.01
   sub_fit <- tryCatch(
     rma.mv(
       yi = delta, V = vi,
@@ -314,20 +309,19 @@ save_forest <- function(delta_df, dataset, out_path) {
     error = function(e) { message("Per-dataset fit failed for ", dataset, ": ", e$message); NULL }
   )
   if (is.null(sub_fit)) return(invisible(NULL))
-  pdf(out_path, width = 7, height = max(4, 0.4 * nrow(sub) + 2))
-  forest(sub_fit, slab = sub$paper_id,
+
+  slab_labels <- paste0(sub$model_name, " (", sub$metric_name, ")")
+  pdf(out_path, width = 8, height = max(4, 0.35 * nrow(sub) + 2))
+  forest(sub_fit, slab = slab_labels,
          xlab = "FM - ML_TREE delta", main = dataset)
   dev.off()
   message("Wrote ", out_path)
 }
 
 # ---------------------------------------------------------------------------
-# 7. Pareto frontier (Figures 6.4 / 6.5).
+# 6. Pareto frontier.
 # ---------------------------------------------------------------------------
 
-#' Build a cost-accuracy Pareto scatter. `cost_axis` picks `consumer_hw`
-#' (M_SERIES_MAC marginal electricity; Figure 6.4 primary) or `cloud_gpu`
-#' (Figure 6.5 sensitivity).
 pareto_plot <- function(rows, cost_axis, out_path) {
   if (!("cost_usd" %in% colnames(rows))) {
     message(sprintf("Skipping %s Pareto — cost_usd column missing", cost_axis))
@@ -350,19 +344,39 @@ pareto_plot <- function(rows, cost_axis, out_path) {
 }
 
 # ---------------------------------------------------------------------------
+# 7. Sensitivity analyses.
+# ---------------------------------------------------------------------------
+
+run_sensitivity <- function(delta_df, label, out_prefix) {
+  if (nrow(delta_df) < 3) {
+    message(sprintf("Sensitivity '%s': k=%d, skipped.", label, nrow(delta_df)))
+    return(invisible(NULL))
+  }
+  message(sprintf("\n--- Sensitivity: %s (k=%d) ---", label, nrow(delta_df)))
+  fit <- tryCatch(
+    fit_model_level(delta_df),
+    error = function(e) { message("  fit failed: ", e$message); NULL }
+  )
+  if (!is.null(fit)) {
+    print(fit)
+    writeLines(capture.output(print(fit)),
+               file.path(FIG_DIR, paste0(out_prefix, ".txt")))
+  }
+  invisible(fit)
+}
+
+# ---------------------------------------------------------------------------
 # 8. Main.
 # ---------------------------------------------------------------------------
 
 main <- function() {
   message("Loading Source A from ", SCHEMA_PATH)
   raw <- load_extraction(SCHEMA_PATH)
+
   if (file.exists(LOCAL_PATH)) {
     message("Appending Source B from ", LOCAL_PATH)
     loc <- read_csv(LOCAL_PATH, show_col_types = FALSE)
     loc$source <- "LOCAL"
-    # Force column types to match Source A (everything is free-text in
-    # extraction_schema.csv). Without this, mlflow-derived numeric columns
-    # cause bind_rows() to error on the <chr>/<dbl> mismatch.
     cast_cols <- intersect(
       c("n_series", "series_length_median", "horizon", "metric_value",
         "runtime_reported", "gpu_hours"),
@@ -381,65 +395,127 @@ main <- function() {
                   nrow(rows), n_distinct(rows$paper_id),
                   n_distinct(rows$dataset_norm)))
 
-  delta <- compute_paired_delta(rows)
+  # ---- Model-level deltas (PRIMARY, k≥50) ----
+  model_delta <- compute_model_level_delta(rows)
+  message(sprintf("\nModel-level Δ: %d pairs across %d datasets, %d unique FMs.",
+                  nrow(model_delta), n_distinct(model_delta$dataset_norm),
+                  n_distinct(model_delta$model_name)))
+
+  # Write delta table for paper.
+  write_csv(model_delta,
+            file.path(FIG_DIR, "table_6_1_model_level_deltas.csv"))
+
+  if (nrow(model_delta) >= 5) {
+    message("\n--- Primary model-level fit (all metrics, all datasets) ---")
+    res_primary <- fit_model_level(model_delta)
+    print(res_primary)
+    writeLines(capture.output(print(res_primary)),
+               file.path(FIG_DIR, "table_6_1_primary_intercept.txt"))
+
+    # Heterogeneity diagnostics.
+    het_df <- data.frame(
+      k = res_primary$k,
+      estimate = res_primary$beta[1],
+      se = res_primary$se,
+      ci_lb = res_primary$ci.lb,
+      ci_ub = res_primary$ci.ub,
+      pval = res_primary$pval,
+      QE = res_primary$QE,
+      QEp = res_primary$QEp,
+      sigma2_dataset = res_primary$sigma2[1],
+      sigma2_paper = res_primary$sigma2[2]
+    )
+    write_csv(het_df, file.path(FIG_DIR, "table_6_2_heterogeneity.csv"))
+
+    # Moderator analyses.
+    mod_results <- list()
+    moderators <- c("dataset_norm", "horizon_bucket", "metric_name")
+    # model_scale only for FM rows that have it.
+    if (any(!is.na(model_delta$model_scale))) {
+      moderators <- c(moderators, "model_scale")
+    }
+    for (mod in moderators) {
+      mod_results[[mod]] <- tryCatch(
+        fit_model_level_mods(model_delta, mod),
+        error = function(e) {
+          message("Moderator ", mod, " failed: ", e$message)
+          NULL
+        }
+      )
+      if (!is.null(mod_results[[mod]])) {
+        writeLines(capture.output(print(mod_results[[mod]])),
+                   file.path(FIG_DIR, sprintf("moderator_%s.txt", mod)))
+      }
+    }
+
+    # Forest plots per dataset.
+    for (ds in unique(model_delta$dataset_norm)) {
+      save_forest(model_delta, ds,
+                  file.path(FIG_DIR, sprintf("figure_6_forest_%s.pdf",
+                                              gsub(" ", "_", tolower(ds)))))
+    }
+  } else {
+    message("Fewer than 5 model-level Δ rows — primary regression skipped.")
+  }
+
+  # ---- Sensitivity analyses ----
+
+  # Excl-M5 (metric artefact sensitivity).
+  run_sensitivity(
+    model_delta %>% filter(dataset_norm != "M5"),
+    "Excl M5", "sensitivity_excl_m5"
+  )
+
+  # WAPE-only (metric consistency).
+  run_sensitivity(
+    model_delta %>% filter(metric_name == "WAPE"),
+    "WAPE only", "sensitivity_wape_only"
+  )
+
+  # SQL-only (fev-bench primary metric).
+  run_sensitivity(
+    model_delta %>% filter(metric_name == "SQL"),
+    "SQL only", "sensitivity_sql_only"
+  )
+
+  # Source B only (own experiments).
+  run_sensitivity(
+    model_delta %>% filter(grepl("^LOCAL", source)),
+    "Source B only", "sensitivity_source_b_only"
+  )
+
+  # Source A only (literature).
+  run_sensitivity(
+    model_delta %>% filter(source == "LIT"),
+    "Source A only", "sensitivity_source_a_only"
+  )
+
+  # ---- Legacy bucket-level (for comparison with original k=10) ----
   delta_cross <- compute_crosspaper_delta(rows)
-  abs_matched <- compute_absolute_matched(rows)
-  rank_tab <- compute_rank_table(rows)
-
-  message(sprintf("Paired Δ rows (within-paper): %d across %d datasets",
-                  nrow(delta), n_distinct(delta$dataset_norm)))
-  message(sprintf("Paired Δ rows (cross-paper pool): %d across %d datasets",
-                  nrow(delta_cross), n_distinct(delta_cross$dataset_norm)))
-
   if (nrow(delta_cross) >= 3) {
-    message("\n--- Cross-paper pooled Δ (primary §6.1) ---")
+    message("\n--- Legacy cross-paper bucket Δ (k=", nrow(delta_cross), ") ---")
     res_cross <- fit_meta_crosspaper(delta_cross)
     print(res_cross)
     writeLines(capture.output(print(res_cross)),
-               file.path(FIG_DIR, "table_6_1_crosspaper_intercept.txt"))
+               file.path(FIG_DIR, "legacy_crosspaper_intercept.txt"))
     write_csv(delta_cross,
-              file.path(FIG_DIR, "table_6_1_crosspaper_cells.csv"))
-
-    # Excl-M5 sensitivity on the cross-paper pool.
-    d_no_m5 <- delta_cross %>% filter(dataset_norm != "M5")
-    if (nrow(d_no_m5) >= 3) {
-      message("\n--- Cross-paper pooled Δ, excl M5 ---")
-      res_cross_nom5 <- fit_meta_crosspaper(d_no_m5)
-      print(res_cross_nom5)
-      writeLines(capture.output(print(res_cross_nom5)),
-                 file.path(FIG_DIR, "table_6_1_crosspaper_intercept_exclM5.txt"))
-    }
+              file.path(FIG_DIR, "legacy_crosspaper_cells.csv"))
   }
 
-  if (nrow(delta) >= 5) {
-    res_intercept <- fit_meta(delta)
-    print(res_intercept)
-
-    mod_results <- list()
-    for (mod in c("dataset_norm", "horizon_bucket")) {
-      mod_results[[mod]] <- tryCatch(
-        fit_meta_by_moderator(delta, mod),
-        error = function(e) { message("Moderator ", mod, " fit failed: ", e$message); NULL }
-      )
-    }
-    # Placeholder write — full H1-H4 table populated once Source B lands.
-    writeLines(capture.output(print(res_intercept)),
-               file.path(FIG_DIR, "table_6_1_intercept.txt"))
-
-    for (ds in c("M5", "Favorita", "Rohlik")) {
-      save_forest(delta, ds,
-                  file.path(FIG_DIR, sprintf("figure_6_forest_%s.pdf", tolower(ds))))
-    }
-  } else {
-    message("Fewer than 5 paired Δ rows — regression skipped.")
-  }
-
+  # ---- Pareto plots ----
   pareto_plot(rows, "consumer_hw",
               file.path(FIG_DIR, "figure_6_4_pareto_consumer_hw.pdf"))
   pareto_plot(rows, "cloud_gpu",
               file.path(FIG_DIR, "figure_6_5_pareto_cloud_gpu.pdf"))
 
-  message("Done. Outputs in ", FIG_DIR)
+  # ---- Summary ----
+  message("\n=== Summary ===")
+  message(sprintf("Total analysis rows: %d", nrow(rows)))
+  message(sprintf("Model-level Δ pairs (k): %d", nrow(model_delta)))
+  message(sprintf("Datasets: %s", paste(unique(model_delta$dataset_norm), collapse=", ")))
+  message(sprintf("FM models: %s", paste(unique(model_delta$model_name), collapse=", ")))
+  message(sprintf("Metrics: %s", paste(unique(model_delta$metric_name), collapse=", ")))
+  message(sprintf("Outputs in %s", FIG_DIR))
 }
 
 main()

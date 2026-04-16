@@ -1,7 +1,13 @@
 """
 TimesFM 2.5 (Google) foundation model wrapper.
 Zero-shot time series forecasting with continuous quantile head.
-Requires: pip install timesfm (or install from source for v2.5)
+
+TimesFM 2.5 (~200 M params, decoder-only) is the largest FM in scope.
+The PyTorch variant runs on CPU; MPS support is experimental. On a
+16 GB MacBook this is the most memory-constrained model — if it OOMs,
+reduce max_context.
+
+Requires: pip install timesfm>=2.0
 """
 
 import numpy as np
@@ -15,9 +21,14 @@ class TimesFM25Forecaster:
         self,
         model_id: str = "google/timesfm-2.5-200m-pytorch",
         max_context: int = 1024,
+        device: str = "cpu",
     ):
         self.model_id = model_id
         self.max_context = max_context
+        # TimesFM PyTorch variant: CPU is the safest default. MPS may work
+        # for the core matmuls but the quantile head uses ops that can fail
+        # on Apple Silicon. Override via device="mps" at your own risk.
+        self.device = device
         self._model = None
 
     def _load_model(self):
@@ -26,20 +37,24 @@ class TimesFM25Forecaster:
             import timesfm
 
             torch.set_float32_matmul_precision("high")
-            self._model = timesfm.TimesFM_2p5_200M_torch.from_pretrained(
-                self.model_id
-            )
-            self._model.compile(
-                timesfm.ForecastConfig(
-                    max_context=self.max_context,
-                    max_horizon=256,
-                    normalize_inputs=True,
-                    use_continuous_quantile_head=True,
-                    force_flip_invariance=True,
-                    infer_is_positive=True,
-                    fix_quantile_crossing=True,
+            try:
+                self._model = timesfm.TimesFM_2p5_200M_torch.from_pretrained(
+                    self.model_id
                 )
-            )
+                self._model.compile(
+                    timesfm.ForecastConfig(
+                        max_context=self.max_context,
+                        max_horizon=256,
+                        normalize_inputs=True,
+                        use_continuous_quantile_head=True,
+                        force_flip_invariance=True,
+                        infer_is_positive=True,
+                        fix_quantile_crossing=True,
+                    )
+                )
+            except Exception as err:
+                print(f"WARNING: TimesFM 2.5 load/compile failed: {err}")
+                raise
 
     def predict(self, train: pd.Series, horizon: int) -> pd.Series:
         """

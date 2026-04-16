@@ -124,7 +124,7 @@ def get_model_fn(model_name: str, hardware: str = "E4DS_V4"):
 
     elif model_name == "timesfm25":
         from models.foundation.timesfm25 import TimesFM25Forecaster
-        forecaster = TimesFM25Forecaster()
+        forecaster = TimesFM25Forecaster(device=device)
         return forecaster.predict, True
 
     elif model_name == "moirai2":
@@ -425,6 +425,54 @@ def _evaluate_lightgbm_direct(
     })
 
 
+def _evaluate_fm_with_covariates(
+    df, horizon, min_train_size, metadata, hardware,
+):
+    """
+    Rolling-origin evaluation for covariate-aware foundation models (Chronos-2).
+
+    Same protocol as rolling_forecast() but passes covariate columns to the
+    model's predict_with_covariates() method. Only Chronos-2 supports this.
+    """
+    from models.foundation.chronos2 import Chronos2Forecaster
+
+    device = _device_for_hardware(hardware)
+    forecaster = Chronos2Forecaster(device=device)
+
+    covariate_cols = list(metadata.get("known_dynamic_columns", []))
+    outputs = []
+
+    for sid, g in df.groupby("series_id"):
+        g = g.sort_values("ds").reset_index(drop=True)
+        y = g["y"]
+        covs = g[covariate_cols] if covariate_cols else pd.DataFrame(index=g.index)
+
+        for t in range(min_train_size, len(y) - horizon + 1, horizon):
+            train_y = y.iloc[:t]
+            train_covs = covs.iloc[:t] if len(covariate_cols) > 0 else None
+            future_covs = covs.iloc[t:t + horizon] if len(covariate_cols) > 0 else None
+            test_y = y.iloc[t:t + horizon]
+
+            if train_covs is not None and len(covariate_cols) > 0:
+                pred = forecaster.predict_with_covariates(
+                    target=train_y,
+                    covariates=train_covs,
+                    horizon=horizon,
+                    future_covariates=future_covs,
+                )
+            else:
+                pred = forecaster.predict(train_y, horizon)
+
+            for i in range(min(horizon, len(test_y), len(pred))):
+                outputs.append({
+                    "series_id": sid,
+                    "y_true": test_y.iloc[i],
+                    "y_pred": pred.iloc[i],
+                })
+
+    return pd.DataFrame(outputs)
+
+
 def run_experiment(
     model_name: str,
     df: pd.DataFrame,
@@ -436,6 +484,7 @@ def run_experiment(
     train_fraction: float = 0.8,
     train_window_days: int = 365,
     wrmsse_paths: dict = None,
+    with_covariates: bool = False,
 ):
     """Run a single model on a dataset with cost tracking.
 
@@ -467,6 +516,11 @@ def run_experiment(
             train_window_days=train_window_days,
         )
         eval_train_until = int(n_days_full * train_fraction)
+    elif with_covariates and model_name == "chronos2":
+        results = _evaluate_fm_with_covariates(
+            df, horizon, min_train_size, metadata or {}, hardware,
+        )
+        eval_train_until = min_train_size
     else:
         forecast_fn, is_gpu = get_model_fn(model_name, hardware)
         results = rolling_forecast(df, horizon, min_train_size, forecast_fn)
@@ -579,9 +633,12 @@ def main():
     parser.add_argument("--train-window-days", type=int, default=365,
                         help="LightGBM only: cap on training history depth")
     parser.add_argument("--term", default="short", help="GIFT-Eval term")
+    parser.add_argument("--with-covariates", action="store_true",
+                        help="Load covariates and pass to model. For LightGBM this is "
+                             "always on; for FMs only Chronos-2 supports it.")
     args = parser.parse_args()
 
-    with_covariates = args.model in ("lightgbm_cov", "lightgbm_direct")
+    with_covariates = args.with_covariates or args.model in ("lightgbm_cov", "lightgbm_direct")
 
     print(f"Loading {args.dataset}" + (f"/{args.task}" if args.task else "") + "...")
     df, metadata = load_dataset(
@@ -621,6 +678,7 @@ def main():
         train_fraction=args.train_fraction,
         train_window_days=args.train_window_days,
         wrmsse_paths=wrmsse_paths,
+        with_covariates=with_covariates,
     )
 
     tags = {"phase": "gap_filling", "eval_method": "rolling_origin", "paper": "meta-analysis"}
