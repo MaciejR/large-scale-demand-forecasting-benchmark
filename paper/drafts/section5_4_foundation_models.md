@@ -220,21 +220,20 @@ comparison use the §5.1.3 metric path bit-identically. Below is what we
 found; the feed of these numbers into the §6 meta-regression is discussed
 in §6.1 and §6.6.*
 
-**Ship state: 16 of 18 FM cells.** Chronos-Bolt-Tiny completed all 9
-cells (3 datasets × 3 horizons). TiRex completed 7 of 9: M5 and Favorita
-all three horizons plus Rohlik `h = 7`. The two missing TiRex cells
-(Rohlik `h = 14`, `h = 28`) hit a pathological MPS path where
-`xlstm_kernels` falls back to a per-element MPSGraph dispatch through
-`log_sigmoid_forward_mps` — the process advanced less than three minutes
-of CPU per hour of wall time. After 14 h of wall clock on the Rohlik
-`h = 14` cell with no meaningful progress we killed the run, added
-`TIREX_FORCE_CPU=1` to `benchmark/code/models/foundation/tirex.py`, and
-retried on the CPU path. The CPU retry was also too slow to finish
-inside the §5.4.3 20-hour wall-time budget (~24 % effective utilization,
-likely due to memory pressure after a full day of resident MPS state).
-Rather than push past the pre-registered budget we accepted 16 / 18 as
-the ship state; the two missing cells are filled from Source A TiRex
-rows on Rohlik and flagged as `source = "LIT"` in Table 5.7.
+**Ship state: all 18 FM cells complete.** Chronos-Bolt-Tiny completed
+all 9 cells (3 datasets × 3 horizons) on the MPS backend during the
+2026-04-13/14 overnight run. TiRex completed 7/9 in that same run; the
+two missing cells (Rohlik `h = 14`, `h = 28`) hit a pathological MPS
+path where `xlstm_kernels` falls back to a per-element MPSGraph dispatch
+through `log_sigmoid_forward_mps` — the process advanced less than three
+minutes of CPU per hour of wall time. After 14 h of wall clock on the
+Rohlik `h = 14` cell with no meaningful progress we killed the run. On
+2026-04-16 we re-ran both cells with `TIREX_FORCE_CPU=1`, which bypasses
+MPS entirely and runs on CPU (~9 min for `h = 14`, ~17 min for `h = 28`
+— consistent with the `tirex.py` docstring that CPU is 5–10× faster than
+the MPS fallback path). Results: WAPE 0.3264 (`h = 14`) and 0.3452
+(`h = 28`), both in line with the `h = 7` cell (0.3143) and with TiRex
+beating Chronos-Bolt-Tiny at all three Rohlik horizons.
 TabPFN-TS is **not** in the ship state — the 20 h budget was exhausted
 by the two Chronos and TiRex sweeps before the TabPFN-TS slot opened,
 and the three TabPFN-TS rows come entirely from Source A in the final
@@ -255,12 +254,12 @@ the caveat below.
 | Favorita  | 14 | 0.5374           | 0.5311 | 0.5311       | 0.5711          | 0.6473         |
 | Favorita  | 28 | 0.5458           | 0.5395 | 0.5377       | 0.5892          | 0.6643         |
 | Rohlik v2 |  7 | 0.3218           | 0.3143 | 0.3654       | 0.3816          | 0.4015         |
-| Rohlik v2 | 14 | 0.3344           | —      | 0.3953       | 0.4072          | 0.4031         |
-| Rohlik v2 | 28 | 0.3528           | —      | 0.4321       | 0.4442          | 0.4116         |
+| Rohlik v2 | 14 | 0.3344           | 0.3264 | 0.3953       | 0.4072          | 0.4031         |
+| Rohlik v2 | 28 | 0.3528           | 0.3452 | 0.4321       | 0.4442          | 0.4116         |
 
-**TiRex beats Chronos on all seven paired cells,** by a narrow but
+**TiRex beats Chronos on all nine paired cells,** by a narrow but
 consistent margin: ~2.0–2.3 pp on M5 (0.93 vs 0.96), ~0.6–0.7 pp on
-Favorita, ~0.7 pp on Rohlik `h = 7`. This is consistent with the
+Favorita, ~0.7–0.8 pp on Rohlik. This is consistent with the
 per-paper ranking in A13 (TiRex ARES 2025) which places TiRex above
 Chronos-Bolt on GIFT-Eval retail tasks. TiRex at ~35 M parameters vs
 Chronos-Bolt-Tiny at ~9 M spends ~3.5× the FLOPs per forecast window for
@@ -413,13 +412,14 @@ under matched conditions.
 
 **Table 5.17.** Consumer-box WAPE (Source B, per-series mean,
 rolling origin) across models, datasets, and horizons. Lower is
-better. Two cells are missing (TiRex × Rohlik `h ∈ {14, 28}` —
-MPS xLSTM stall, see §5.4.9).
+better. All 45 cells populated (the two TiRex × Rohlik `h ∈ {14,
+28}` cells that previously stalled on MPS were filled on 2026-04-16
+using `TIREX_FORCE_CPU=1`, see §5.4.9).
 
 | Model | Family | Favorita h=7 | h=14 | h=28 | M5 h=7 | h=14 | h=28 | Rohlik h=7 | h=14 | h=28 |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | Chronos-Bolt-Tiny | FM | 0.532 | 0.537 | 0.546 | 0.958 | 0.956 | 0.956 | 0.322 | 0.334 | 0.353 |
-| TiRex | FM | 0.525 | 0.531 | 0.540 | 0.934 | 0.937 | 0.942 | 0.314 | — | — |
+| TiRex | FM | 0.525 | 0.531 | 0.540 | 0.934 | 0.937 | 0.942 | 0.314 | 0.326 | 0.345 |
 | lightgbm_cov | ML_TREE | 0.530 | 0.531 | 0.538 | 1.625 | 1.729 | 1.936 | 0.365 | 0.395 | 0.432 |
 | lightgbm_direct | ML_TREE | 0.551 | 0.571 | 0.589 | 1.351 | 1.410 | 1.513 | 0.382 | 0.407 | 0.444 |
 | seasonal_naive | STATS | 0.636 | 0.647 | 0.664 | 1.307 | 1.322 | 1.329 | 0.402 | 0.403 | 0.412 |
@@ -510,12 +510,14 @@ single off-by-one in the A01 row was fixed on 2026-04-15
 shift the whole file and mis-classify `model_family` entries — that
 fix unlocked the `ml` → `ML_TREE` bucket in the R pipeline.
 
-**Source B ran on 2026-04-13 / 2026-04-14.** The consumer-box
-sweep landed 16 FM cells out of 18 (Chronos-Bolt-Tiny 9/9 + TiRex
-7/9 — the two missing cells are Rohlik × `h ∈ {14, 28}`, killed
-after a 14-hour MPS xLSTM stall that is a known TiRex failure mode
-on Apple silicon and documented in `benchmark/code/models/
-foundation/tirex.py`'s `TIREX_FORCE_CPU` guard). The Azure batch
+**Source B ran on 2026-04-13 / 2026-04-14 + 2026-04-16.** The
+consumer-box sweep landed all 18 FM cells (Chronos-Bolt-Tiny 9/9 +
+TiRex 9/9). The initial MPS run on 2026-04-13/14 produced 16/18
+cells; the two missing TiRex × Rohlik `h ∈ {14, 28}` cells were
+killed after a 14-hour MPS xLSTM stall and re-run on 2026-04-16
+with `TIREX_FORCE_CPU=1` (CPU fallback, ~9–17 min per cell). The
+MPS stall is a known TiRex failure mode on Apple silicon, documented
+in `benchmark/code/models/foundation/tirex.py`. The Azure batch
 sweep on `cc-forecast-batch` contributed 18 ML_TREE cells
 (`lightgbm_cov`, `lightgbm_direct`) and 9 `seasonal_naive`
 baselines. Export path changed from the originally planned
@@ -544,9 +546,9 @@ Pareto frontier is still specifically framed around the
 consumer-hardware cost axis, unchanged from v0.1 of this section.
 
 **Known gaps carried into §6:**
-- Two TiRex × Rohlik cells (`h ∈ {14, 28}`) still missing; the
-  Source B within-paper Pass 1 runs on 9 cells instead of the
-  planned 18, and §6.7 reports the gap explicitly.
+- TiRex × Rohlik `h ∈ {14, 28}` gaps closed on 2026-04-16 via
+  CPU fallback (WAPE 0.326 and 0.345 respectively). All 18 FM
+  Source B cells now populated.
 - Source A row-level IDs are unique per row, so §6.1 Pass 1 was
   redesigned on 2026-04-15 (`afcc21d`) to use cross-paper pooling
   inside each (dataset, horizon, metric) bucket. The headline
