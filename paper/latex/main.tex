@@ -15,6 +15,9 @@
 \usepackage{float}
 \usepackage{alltt}
 \usepackage[margin=1in]{geometry}
+\usepackage{chngcntr}
+\counterwithout{figure}{section}
+\counterwithout{table}{section}
 
 % --- Paths ---
 \graphicspath{{../../analysis/figures/}}
@@ -91,6 +94,33 @@ LightGBM \sep systematic review \sep retail \sep time series
 \input{appendix_d}
 \input{appendix_e}
 \input{appendix_f}
+
+% --- Declarations ---
+
+\section*{Declaration of competing interest}
+The author declares no competing financial interests or personal
+relationships that could have appeared to influence the work
+reported in this paper.
+
+\section*{CRediT authorship contribution statement}
+\textbf{[Author Name]:} Conceptualization, Methodology, Software,
+Formal analysis, Investigation, Data curation, Writing -- original
+draft, Writing -- review \& editing, Visualization.
+
+\section*{Data availability}
+The extraction table (\texttt{analysis/extraction\_schema.csv}),
+all analysis scripts, and experiment logs are available at
+\url{https://github.com/MaciejR/large-scale-demand-forecasting-benchmark}.
+The M5 dataset is publicly available via Kaggle; the Favorita
+dataset is publicly available via Kaggle; the Rohlik~v2 dataset
+is available at \url{https://github.com/Rohlik/rohlik-orders-forecasting-challenge}.
+
+\section*{Acknowledgements}
+Experiments were conducted on a consumer MacBook (Apple M-series,
+MPS backend) and Azure ML (E4DS\_V4 instances).  The author thanks
+the developers of \texttt{metafor} \citep{viechtbauer2010metafor}
+and the maintainers of the M5, Favorita, and Rohlik benchmark
+datasets.
 
 % --- Bibliography ---
 \bibliographystyle{elsarticle-harv}
