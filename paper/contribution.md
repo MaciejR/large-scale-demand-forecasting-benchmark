@@ -5,7 +5,7 @@
 - **RQ1:** Do time-series foundation models (zero-shot) outperform
   traditional ML models on retail demand forecasting tasks?
   **Answer (preliminary):** No, on smooth-demand retail datasets.
-  Cross-paper Δ̂(FM − ML_TREE) = −0.044 WAPE (n.s., p = 0.33) on
+  Cross-paper Δ̂(FM − ML_TREE) = −0.044 WAPE (n.s., p = 0.17) on
   Favorita + Rohlik. M5 shows a large FM advantage on WAPE
   (Δ ≈ −0.54 to −0.78) but this reverses on WRMSSE (+0.41) and
   is driven by per-series metric pathology, not model quality.
@@ -52,7 +52,7 @@
 3. **Cross-paper pooled meta-regression** (k = 10 bucket-level
    deltas, metafor::rma.mv REML with Knapp-Hartung) identifying
    a null FM-vs-ML_TREE effect on smooth-demand retail (Δ̂ =
-   −0.044, p = 0.33) and a M5-specific metric artefact.
+   −0.044, p = 0.17) and a M5-specific metric artefact.
 
 4. **Baseline reliability analysis** (§5.3): the LightGBM
    direct-vs-recursive protocol gap is conditional on demand

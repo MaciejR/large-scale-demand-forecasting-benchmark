@@ -153,10 +153,30 @@ document why:
   under the 27-job total local budget (3 models × 3 datasets ×
   3 horizons).
 
-The three omitted models' FM rows on Table 5.7 come from
+The four omitted models' FM rows on Table 5.7 come from
 Source A (literature extraction) instead. This keeps the local
 run scope bounded at 27 jobs and avoids a situation where the
 local run becomes its own mini-benchmark.
+
+**Implications for generalisation.** The retail-specific
+FM-vs-ML_TREE comparison (Table 5.17, §6.7) therefore rests on
+two small FMs: Chronos-Bolt-Tiny (9 M) and TiRex (35 M). The
+larger models — Chronos-2 (120 M), TimesFM 2.5 (200 M), and
+Moirai 2.0 (311 M) — achieve higher win rates on benchmark suites:
+81–84 % on GIFT-Eval WQL (A02, A04) and 69–91 % on fev-bench SQL
+(B02). However, **no Source A paper reports these larger models'
+per-series WAPE on M5, Favorita, or Rohlik under matched rolling-
+origin conditions** (§4.4). We cannot extrapolate from benchmark-
+suite win rates to per-dataset WAPE deltas because: (a) win rates
+aggregate across 28–100 tasks spanning multiple domains, not just
+retail; (b) per-series WAPE on intermittent demand behaves
+qualitatively differently from skill scores (§5.4.5); and (c) the
+baseline in each benchmark suite varies (statistical ensemble for
+fev-bench, Seasonal Naive for GIFT-Eval — neither is a well-tuned
+LightGBM with covariates). Our headline finding — the FM-vs-ML_TREE
+gap is null on smooth-demand retail data — is therefore established
+for the 9–35 M parameter class and remains an open question for
+larger FMs. We flag this as the highest-priority future work in §9.2.
 
 **Evaluation protocol matches §5.1.3 exactly** — same
 tail-evaluation window per dataset (`train_until = floor(0.8
@@ -238,6 +258,14 @@ TabPFN-TS is **not** in the ship state — the 20 h budget was exhausted
 by the two Chronos and TiRex sweeps before the TabPFN-TS slot opened,
 and the three TabPFN-TS rows come entirely from Source A in the final
 table. We note this as a protocol drift vs the §5.4.3 plan in §5.4.8.
+**H2 implication:** TabPFN-TS is the only covariate-aware FM in the
+Source B shortlist. Its absence from our local runs means that the H2
+moderator test (covariate richness) compares univariate FMs against
+covariate-aware LightGBM — a comparison that is directionally
+informative but cannot isolate whether the covariate channel itself
+closes the FM-vs-ML_TREE gap. A future replication that includes
+TabPFN-TS (or Chronos-2 v2 with exogenous inputs) would strengthen
+the H2 test materially.
 
 **Per-cell WAPE (paired with Azure baselines).** Numbers below are per-
 series WAPE means with `n_valid = 100` per cell (sampled with a fixed

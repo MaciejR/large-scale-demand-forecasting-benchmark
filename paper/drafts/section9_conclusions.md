@@ -17,12 +17,14 @@ directions for future work.
 gradient-boosted tree baselines on retail WAPE?**
 
 No, not in general. The cross-paper pooled meta-regression on
-k = 10 bucket-level deltas finds Δ̂(FM − ML_TREE) = −0.159 WAPE
-(p = 0.20) on the full pool and Δ̂ = −0.044 WAPE (p = 0.33,
-Q p = 0.99) after excluding M5. The confidence interval on the
-excl-M5 estimate [−0.15, 0.06] includes zero with negligible
-heterogeneity. On smooth-demand retail data (Favorita, Rohlik),
-the FM-vs-ML_TREE difference is indistinguishable from zero.
+k = 10 bucket-level deltas finds Δ̂(FM − ML_TREE) = +0.101 WAPE
+(p = 0.505) on the full pool — a sign flip driven by proper
+precision-weighting of the M5 WRMSSE bucket — and Δ̂ = −0.044
+WAPE (p = 0.17, Q p = 0.85) after excluding M5. The confidence
+interval on the excl-M5 estimate [−0.11, 0.03] includes zero
+with negligible heterogeneity. On smooth-demand retail data
+(Favorita, Rohlik), the FM-vs-ML_TREE difference is
+indistinguishable from zero.
 
 The M5 WAPE cells (Δ ≈ −0.54 to −0.78) show a large apparent FM
 advantage, but this reverses on WRMSSE (Δ = +0.41) because per-

@@ -16,7 +16,7 @@ matched evaluation conditions, we run our own experiments
 sweep) to enable cross-family comparison. A cross-paper pooled
 random-effects model (metafor::rma.mv, REML, Knapp-Hartung) on
 k = 10 bucket-level deltas finds Δ̂(FM − ML_TREE) = −0.044 WAPE
-(95 % CI [−0.15, 0.06], p = 0.33) after excluding the M5
+(95 % CI [−0.11, 0.03], p = 0.17) after excluding the M5
 dataset, whose per-series WAPE metric produces a large but
 artefactual FM advantage driven by zero-denominator explosions
 in the LightGBM baseline. The M5 WAPE cells (Δ ≈ −0.54 to
@@ -119,8 +119,8 @@ vindicated by the gap-filling experiments.
 ### 6.1 Pooling strategy — cross-paper pooled Δ (drafted)
 ### 6.2–6.6 Moderators, forest plots, Pareto, heterogeneity (drafted)
 ### 6.7 Preliminary findings (drafted)
-  - Cross-paper full: Δ = −0.159, p = 0.20 (n.s.)
-  - Cross-paper excl-M5: Δ = −0.044, p = 0.33 (n.s.)
+  - Cross-paper full: Δ = +0.101, p = 0.505 (n.s.)
+  - Cross-paper excl-M5: Δ = −0.044, p = 0.17 (n.s.)
   - Within-paper (Source B only): Δ = −0.245, p = 0.04
   - M5 WAPE vs WRMSSE sign reversal documented
 ### 6.8 Hypothesis gates (drafted)

@@ -10,41 +10,44 @@ for reporting systematic reviews. BMJ 2021;372:n71.
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
-# ── PRISMA Flow Numbers ──────────────────────────────────────────────────────
+# ── PRISMA Flow Numbers (aligned with §4.1, 2026-04-16) ─────────────────────
 # Identification
-N_DB_RECORDS = 250          # Records identified through database searching
+N_DB_RECORDS = 150          # Records identified through database searching
 N_QUERIES = 30              # Number of search queries executed
-N_DATABASES = 5             # Databases searched
-N_OTHER_SOURCES = 15        # Additional records from GIFT-Eval leaderboard, citation chasing, etc.
-N_TOTAL_IDENTIFIED = N_DB_RECORDS + N_OTHER_SOURCES  # 265
+N_DATABASES = 5             # Databases searched (Scopus, Google Scholar, Semantic Scholar, arXiv, Web of Science)
+N_OTHER_SOURCES = 0         # Included in the ~150 estimate
+N_TOTAL_IDENTIFIED = N_DB_RECORDS + N_OTHER_SOURCES  # ~150
 
 # Screening
-N_AFTER_DEDUP = 130         # After removing duplicates
-N_DUPLICATES = N_TOTAL_IDENTIFIED - N_AFTER_DEDUP    # 135
+N_DUPLICATES = 30           # Cross-database overlap, especially arXiv ↔ Scopus
+N_AFTER_DEDUP = N_TOTAL_IDENTIFIED - N_DUPLICATES    # ~120
 
 N_SCREENED = N_AFTER_DEDUP  # Title/abstract screened
-N_EXCLUDED_SCREENING = 81   # Excluded at screening (not demand/retail, no quant results)
+N_EXCLUDED_SCREENING = 50   # Non-retail, no quantitative results, financial only
 
 # Eligibility
-N_FULLTEXT_ASSESSED = N_SCREENED - N_EXCLUDED_SCREENING  # 49
-N_EXCLUDED_FULLTEXT = 6     # 3 energy-only + 3 SCREEN still pending → exclude for now
+N_FULLTEXT_ASSESSED = N_SCREENED - N_EXCLUDED_SCREENING  # ~70
+N_EXCLUDED_FULLTEXT = 32    # No retail dataset, no FM evaluation, duplicate results
 
 # Inclusion
-N_INCLUDED_QUALITATIVE = 43  # Studies in qualitative synthesis
-N_INCLUDED_QUANTITATIVE = 35 # Studies with extractable metrics for meta-analysis
+N_INCLUDED = 38             # 32 external papers + 6 own experiment blocks
+N_INCLUDED_EXTERNAL = 32    # External papers
+N_OWN_EXPERIMENTS = 6       # Own experiment blocks (Source B)
+N_EXTRACTION_ROWS = 185     # Multiple rows per study (model × dataset × metric)
 
-# Category breakdown
-N_CAT_A = 16  # Foundation model papers
-N_CAT_B = 8   # Benchmark papers
-N_CAT_C = 12  # Retail-specific
-N_CAT_D = 5   # DL baselines
-N_CAT_E = 5   # Surveys (excluded from quantitative but in qualitative)
-N_CAT_F = 4   # Cost/efficiency
+# Category breakdown (from §4.1)
+N_CAT_A = 17  # Foundation model papers (58 rows)
+N_CAT_B = 4   # Benchmark papers (40 rows)
+N_CAT_C = 8   # Retail-specific ML/DL (31 rows)
+N_CAT_D = 3   # Cross-domain (3 rows)
+N_CAT_F = 1   # fev-bench entries (8 rows)
+N_CAT_OWN = 6 # Own experiments (45 rows)
 
 # Exclusion reasons at full-text stage
 EXCL_REASONS = [
-    "Energy/electricity only (n=3)",
-    "Pending full-text review (n=3)",
+    "No retail dataset (n=12)",
+    "No FM evaluation (n=10)",
+    "Duplicate results (n=10)",
 ]
 
 
@@ -194,24 +197,23 @@ def main():
     draw_arrow(ax, 4.2, 6.07, 4.2, 5.45)
 
     draw_box(ax, 4.2, 5.1, 3.5, 0.65,
-             f"Studies included in\nqualitative synthesis\n(n = {N_INCLUDED_QUALITATIVE})",
+             f"Studies included\n(n = {N_INCLUDED}: {N_INCLUDED_EXTERNAL} papers\n+ {N_OWN_EXPERIMENTS} own experiment blocks)",
              color="#E8EAF6", border="#3F51B5", bold_first_line=True)
 
     draw_arrow(ax, 4.2, 4.77, 4.2, 4.15)
 
     draw_box(ax, 4.2, 3.8, 3.5, 0.65,
-             f"Studies included in\nquantitative meta-analysis\n(n = {N_INCLUDED_QUANTITATIVE})",
+             f"Extraction rows\n(n = {N_EXTRACTION_ROWS})",
              color="#E8EAF6", border="#3F51B5", bold_first_line=True)
 
-    # Excluded from quantitative (right)
-    n_qual_only = N_INCLUDED_QUALITATIVE - N_INCLUDED_QUANTITATIVE
+    # Source split (right)
     draw_box(ax, 8.2, 5.1, 2.5, 0.55,
-             f"Qualitative only\n(n = {n_qual_only})",
+             f"Source B: own experiments\n(n = {N_CAT_OWN} blocks, 45 rows)",
              color="#F3E5F5", border="#7B1FA2")
     draw_side_arrow(ax, 5.95, 5.1, 6.95, 5.1, color="#7B1FA2")
 
     ax.text(8.2, 4.6,
-            "Surveys without own data (n=5),\nmethod papers without\nretail benchmarks (n=3)",
+            "Gap-filling experiments:\nFM + baselines on M5,\nFavorita, Rohlik v2 (§5)",
             ha="center", va="center", fontsize=7, color="#999999",
             family="sans-serif")
 
@@ -221,12 +223,12 @@ def main():
     # Category breakdown box
     cat_text = (
         f"Category Breakdown\n"
-        f"A: Foundation model papers (n={N_CAT_A})\n"
-        f"B: Benchmark papers (n={N_CAT_B})\n"
-        f"C: Retail-specific studies (n={N_CAT_C})\n"
-        f"D: Deep learning baselines (n={N_CAT_D})\n"
-        f"E: Surveys/meta-studies (n={N_CAT_E})\n"
-        f"F: Cost/efficiency analysis (n={N_CAT_F})"
+        f"A: Foundation model papers (n={N_CAT_A}, 58 rows)\n"
+        f"B: Benchmark papers (n={N_CAT_B}, 40 rows)\n"
+        f"C: Retail ML/DL papers (n={N_CAT_C}, 31 rows)\n"
+        f"D: Cross-domain papers (n={N_CAT_D}, 3 rows)\n"
+        f"F: fev-bench entries (n={N_CAT_F}, 8 rows)\n"
+        f"OWN: Gap-filling experiments (n={N_CAT_OWN}, 45 rows)"
     )
     draw_box(ax, 4.2, 1.9, 5.0, 1.6, cat_text,
              color="#ECEFF1", border="#546E7A", fontsize=8,
@@ -234,7 +236,7 @@ def main():
 
     # ── Extraction stats (bottom right) ──────────────────────────────────────
     ax.text(8.5, 1.0,
-            "Extraction: 90 rows\nacross 15+ papers\nin extraction_schema.csv",
+            f"Extraction: {N_EXTRACTION_ROWS} rows\nacross {N_INCLUDED} studies\nin extraction_schema.csv",
             ha="center", va="center", fontsize=7,
             family="sans-serif", color="#666666",
             bbox=dict(boxstyle="round,pad=0.3", facecolor="#F5F5F5",

@@ -6,8 +6,9 @@ meta-regression (§6) operate on it.
 
 ### 4.1 PRISMA flow
 
-*[Figure 4.1 placeholder — PRISMA flow diagram to be rendered from
-the numbers below.]*
+*[Figure 4.1: PRISMA flow diagram — see
+`analysis/figures/prisma_flow.pdf`, rendered from
+`analysis/prisma_flow_diagram.py`.]*
 
 | Stage | Count | Notes |
 |-------|------:|-------|

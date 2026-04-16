@@ -130,6 +130,21 @@ gives a clean, reviewer-auditable split. Specifically:
   Favorita the fraction is negligible for LGBM and ~50 % for
   SN, an n_valid asymmetry we discuss in §5.3.5.
 
+**Sampling adequacy of n = 100 series per cell.** Source B FM
+cells sample 100 series per cell (98–100 after WAPE filtering).
+To verify that this sample size produces stable WAPE estimates,
+we ran a 10,000-iteration bootstrap on all 18 FM per-series CSV
+files. The bootstrap standard error of mean WAPE across cells
+ranges from 0.008 (Favorita h = 7) to 0.014 (Rohlik h = 28),
+with a median of 0.011. The widest 95 % bootstrap CI is
+±0.027 WAPE (Rohlik h = 28). This means: (a) the M5 FM-vs-LGBM
+gap of 40+ pp WAPE is stable to >10 SE; (b) the Rohlik gap of
+4–8 pp is stable to 3–6 SE; (c) the Favorita "close call" of
+0.3 pp at h = 7 is within 1 SE and should be interpreted as
+indistinguishable from zero at n = 100 — consistent with the
+meta-regression finding (§6.7). Full bootstrap results are in
+`analysis/figures/table_bootstrap_se.csv`.
+
 ### 5.1.4 Model families
 
 Three model families are evaluated per dataset in Phases B–E,

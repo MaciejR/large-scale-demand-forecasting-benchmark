@@ -87,12 +87,12 @@ Three findings motivate the sections that follow:
 
 1. **The FM advantage is null on smooth-demand retail data.**
    Excluding M5, the cross-paper pooled delta is Δ̂ = −0.044 WAPE
-   (95 % CI [−0.15, 0.06], p = 0.33). On Favorita, LightGBM
+   (95 % CI [−0.11, 0.03], p = 0.17). On Favorita, LightGBM
    with covariates matches Chronos-Bolt-Tiny within 0.3 pp at
    h = 7 — a marginal LGBM win. On Rohlik, FMs lead by 4–8 pp
    but the gap narrows with horizon and does not reach statistical
    significance in the meta-regression. The heterogeneity across
-   the six excl-M5 buckets collapses to zero (Q p = 0.99),
+   the six excl-M5 buckets collapses to near-zero (Q p = 0.85),
    meaning the null result is not masking opposing effects.
 
 2. **M5 is a dataset-specific finding, not a family-level effect.**

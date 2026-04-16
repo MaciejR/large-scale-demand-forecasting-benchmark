@@ -524,15 +524,20 @@ bucket with both families represented). Per-bucket Δ̂ values:
 | Rohlik   | medium  | WAPE   |    1 |         4 | −0.067  |
 | Rohlik   | long    | WAPE   |    1 |         4 | −0.085  |
 
-Cross-paper intercept (k = 10):
+Cross-paper intercept (k = 10, with per-bucket sampling variance
+`vi = (1/n_FM + 1/n_ML_TREE) / n_series_hm`, §3.4):
 
-&nbsp;&nbsp;&nbsp;&nbsp;**Δ̂ (FM − ML_TREE, cross-paper) = −0.1586 WAPE**, &nbsp;
-95 % CI [−0.418, 0.101], &nbsp; `t(9) = −1.38`, &nbsp; *p* = 0.200,
-&nbsp; `Q(9) = 114.74`, *p* < 10⁻⁴.
+&nbsp;&nbsp;&nbsp;&nbsp;**Δ̂ (FM − ML_TREE, cross-paper) = +0.101 WAPE**, &nbsp;
+95 % CI [−0.227, 0.429], &nbsp; `t(9) = 0.69`, &nbsp; *p* = 0.505,
+&nbsp; `Q(9) = 1055.3`, *p* < 10⁻⁴.
 
-**The effect is no longer significant at α = 0.05** once Source A
-literature rows enter the pool, even though the point estimate is
-still in FM's favour. The `Q` is enormous again, for the same
+**The effect is not significant and the point estimate is positive**
+(FM worse than ML_TREE on average) once proper precision weighting
+is applied. This sign flip relative to the uniform-variance
+sensitivity (where Δ̂ was negative) is driven by the M5 WRMSSE
+bucket (+0.41, FM worse): with n_series = 30,490 this bucket
+receives high precision weight, pulling the pooled estimate toward
+the ML_TREE side. The `Q` is enormous again, for the same
 reason as before: M5 WAPE cells carry a −0.54/−0.62/−0.78
 signature driven by Source B `lightgbm_cov` WAPE explosions
 (`WAPE_mean = inf` on several Azure runs, confirmed in MLflow), and
@@ -543,14 +548,14 @@ published competition numbers, not broken baselines).
 Excl-M5 cross-paper sensitivity (k = 6, Favorita + Rohlik WAPE
 cells only):
 
-&nbsp;&nbsp;&nbsp;&nbsp;**Δ̂ (cross-paper, excl. M5) = −0.0442 WAPE**, &nbsp;
-95 % CI [−0.149, 0.061], &nbsp; `t(5) = −1.08`, &nbsp; *p* = 0.329, &nbsp;
-`Q(5) = 0.52`, *p* = 0.99.
+&nbsp;&nbsp;&nbsp;&nbsp;**Δ̂ (cross-paper, excl. M5) = −0.0438 WAPE**, &nbsp;
+95 % CI [−0.115, 0.027], &nbsp; `t(5) = −1.58`, &nbsp; *p* = 0.174, &nbsp;
+`Q(5) = 2.00`, *p* = 0.849.
 
 The excl-M5 cross-paper result is **identical in sign and
 magnitude** to the within-paper excl-M5 result from the nine-cell
-Source-B-only run, and the heterogeneity collapses to zero
-(`σ² = 0`, `Q p = 0.99`). That is the cleanest signal from §6.7:
+Source-B-only run, and the heterogeneity remains low
+(`σ² ≈ 0.001`, `Q p = 0.85`). That is the cleanest signal from §6.7:
 **outside M5, FM and ML_TREE are indistinguishable on WAPE, and
 the apparent aggregate FM advantage is a M5 WAPE artefact of a
 broken baseline.** The within-paper vs cross-paper distinction
