@@ -39,7 +39,14 @@ We address four research questions across three complementary lenses
 
 ### 1.2 Approach
 
-We follow a two-source PRISMA-compliant protocol:
+This study combines a PRISMA-compliant systematic review with
+original gap-filling experiments. The two-source design is not a
+methodological refinement — it is structurally necessary: as §4.4
+documents, **no paper in the existing literature reports both
+foundation models and gradient-boosted trees on the same retail
+dataset under matched evaluation conditions.** Without our own
+experiments, the FM-vs-ML_TREE comparison on retail data is simply
+not possible from the literature alone.
 
 1. **Source A (literature extraction).** We screen ~150 papers
    (2020–2026) from Scopus, Google Scholar, Semantic Scholar, and
@@ -47,25 +54,32 @@ We follow a two-source PRISMA-compliant protocol:
    quantitative accuracy metric on at least one of M5, Favorita,
    Rohlik v2, GIFT-Eval retail tasks, fev-bench retail tasks, or
    Walmart). The extraction yields 185 rows in a structured CSV
-   with 23 fields per row (§3.2).
+   with 23 fields per row (§3.2). Source A provides the ML_TREE
+   and statistical baselines for the cross-paper pool and
+   contextualises our FM results against the published literature.
 
-2. **Source B (gap-filling experiments).** Where model–dataset–
-   horizon combinations are missing from Source A, we run our own
+2. **Source B (gap-filling experiments).** We run our own
    experiments under a unified evaluation protocol (§5.1): two
    foundation models (Chronos-Bolt-Tiny, TiRex) on a consumer
    MacBook (Apple silicon MPS), and three baselines
    (lightgbm_cov, lightgbm_direct, seasonal_naive) on an Azure ML
    batch cluster. Source B produces 45 rows with runtime, cost,
    and CO₂ metadata, keyed to Source A via a shared paper_id
-   scheme that enables within-paper and cross-paper meta-analytic
-   pairing (§6.1).
+   scheme that enables within-paper and cross-paper pairing (§6.1).
+   Source B provides the primary FM retail cells that no existing
+   paper covers.
 
-The meta-regression (§6) pools Source A and Source B into a
-cross-paper design: for each (dataset, horizon, metric) bucket,
+The cross-paper analysis (§6) pools Source A and Source B into a
+random-effects model: for each (dataset, horizon, metric) bucket,
 we compute mean(FM rows) − mean(ML_TREE rows) as a single
-bucket-level delta, then fit a random-effects model
-(metafor::rma.mv, REML, Knapp-Hartung) with k = 10 buckets
-clustered on dataset. This is the primary estimand of the paper.
+bucket-level delta, then fit `rma.mv` (REML, Knapp-Hartung) with
+k = 10 buckets clustered on dataset. **The FM side of this
+comparison is dominated by Source B** (our own experiments);
+Source A contributes the bulk of the ML_TREE side. This asymmetry
+is inherent to the current state of the literature and is a key
+finding in itself (§4.4). We report the pooled estimate with and
+without Source B to make the contribution of each source
+transparent.
 
 ### 1.3 Headline findings
 

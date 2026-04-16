@@ -149,21 +149,31 @@ WAPE, M5 × 3 horizons × WAPE, M5 × long × WRMSSE, Rohlik × 3
 horizons × WAPE). The model is:
 
 ```
-rma.mv(yi = delta, V = 0.01,
+rma.mv(yi = delta, V = vi,
        random = ~ 1 | dataset_norm,
        data = delta_cross,
        test = "t",         # Knapp-Hartung
        method = "REML")
 ```
 
+where `vi` is the per-bucket sampling variance proxy defined above.
+
 **Random effect.** `~ 1 | dataset_norm` clusters on dataset because
 each Δ mixes rows from multiple papers and the within-paper
 anchoring is lost by construction. The dataset level captures the
 primary source of heterogeneity (M5 vs smooth-demand datasets).
 
-**Variance.** `V = 0.01` is a placeholder uniform sampling variance.
-The pre-registered design (§6.2) specifies `vi = 1 / n_series` as a
-rough proxy; this is a known simplification flagged in §5.4.8.
+**Variance.** For the cross-paper pooled design, the per-bucket
+sampling variance is `vi = (1/n_FM + 1/n_ML_TREE) / n_series_hm`,
+where `n_FM` and `n_ML_TREE` are the number of FM and ML_TREE rows
+entering the bucket and `n_series_hm` is the harmonic mean of the
+per-row series counts within the bucket. This proxy weights buckets
+with more source rows and larger datasets more precisely than
+uniform variance. For within-paper paired Δ (Source B cells),
+`vi = 1/n_valid = 0.01` because each cell samples 100 series
+(§5.1.3). The proxy does not capture within-series error
+correlation or between-paper protocol heterogeneity; these are
+flagged as limitations in §8.4.
 
 **Small-sample adjustment.** `test = "t"` invokes the Knapp-Hartung
 adjustment, replacing the standard normal reference distribution with

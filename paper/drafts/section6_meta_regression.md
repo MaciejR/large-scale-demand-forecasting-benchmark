@@ -1,22 +1,20 @@
 # §6 Meta-Regression — DRAFT v0.2
 
 *Drop-in draft for §6 of the paper. This section is the analytic
-core of the meta-analysis. It combines the 25+ papers extracted in
-§4 (see `analysis/extraction_schema.csv`, 214 rows at time of
-writing) with our own gap-filling experiments (§5.2–§5.3) into a
-single moderator-aware comparison of foundation models and
-gradient-boosted-tree baselines on retail demand forecasting.
-Our own FM rows come from two sources defined in §5.4: the
-PRISMA literature extraction (Source A, primary) and the Source B
-local consumer-box run on a MacBook that was executed 2026-04-13
-/ 2026-04-14 (16 of 18 FM cells shipped; see §5.4.5 for the ship
-state and the per-cell WAPE table). §6.1–§6.5 are pre-registered
-against Source A alone; §6.7 reports the preliminary §6.1 paired-Δ
-estimate on the Source B paired cells that landed, which is the
-first real number this section has produced. Source B rows
-tighten the §6.5 Pareto frontier; they do not change the
-pre-registered hypotheses. No cloud-GPU FM work is planned; the
-v0.1 Phase F sweep has been dropped.*
+core of the study. It combines the 38 studies extracted in §4
+(see `analysis/extraction_schema.csv`, 185 rows) with our own
+gap-filling experiments (§5, 45 rows) into a cross-paper pooled
+comparison of foundation models and gradient-boosted-tree
+baselines on retail demand forecasting. As documented in §4.4,
+**the FM side of the retail comparison is populated almost
+entirely by Source B** (our own experiments), because no existing
+paper reports FM per-series WAPE on M5, Favorita, or Rohlik
+under matched conditions. Source A contributes the bulk of the
+ML_TREE side. This section therefore analyses a **systematic
+review augmented with original experiments**, not a classical
+meta-analysis of homogeneous published effect sizes. §6.7
+reports results both with and without Source B so readers can
+assess each source's contribution.*
 
 ---
 
@@ -383,12 +381,12 @@ family) to matched Azure `lightgbm_cov` + `lightgbm_direct` rows
 difference (not the relative-error framing of §6.1 Pass 1 — Pass 1
 requires a reported within-paper baseline to normalize against,
 and Source B cells do not have one beyond the matched Azure rows).
-Model is `rma.mv(yi = delta, V = 0.01, random = ~ 1 | paper_id /
+Model is `rma.mv(yi = delta, V = vi, random = ~ 1 | paper_id /
 dataset_norm, test = "t", method = "REML")` — Knapp-Hartung
 small-sample adjustment, REML, cluster on `paper_id / dataset_norm`.
-The `V = 0.01` is a placeholder for the Source-A-to-B handoff; the
-pre-registered §6.2 regression uses per-row sampling variance
-from the bootstrap residuals of the source rows.
+For the within-paper Source B cells, `vi = 1/n_valid = 0.01`
+(100 sampled series per cell, §5.1.3). For the cross-paper pool,
+`vi = (1/n_FM + 1/n_ML_TREE) / n_series_hm` as specified in §3.4.
 
 **Full-pool intercept.**
 
@@ -431,7 +429,7 @@ dataset-specific finding, not a family-level finding.
 **Horizon moderator.** We also fitted
 
 ```
-rma.mv(yi = delta, V = 0.01, mods = ~ horizon,
+rma.mv(yi = delta, V = vi, mods = ~ horizon,
        random = ~ 1 | paper_id / dataset_norm,
        data = delta, test = "t", method = "REML")
 ```
@@ -504,7 +502,7 @@ Pass 1. Random effect moves to `~ 1 | dataset_norm` because each Δ
 now mixes papers and within-paper anchoring is lost. Model:
 
 ```
-rma.mv(yi = delta, V = 0.01, random = ~ 1 | dataset_norm,
+rma.mv(yi = delta, V = vi, random = ~ 1 | dataset_norm,
        data = delta_cross, test = "t", method = "REML")
 ```
 

@@ -104,14 +104,16 @@ Source B data on GPU inference speed, batch throughput at scale
 (>100K series), or fine-tuned FM accuracy. The Azure batch cells
 are CPU-only ML_TREE and statistical baselines.
 
-**Placeholder sampling variance.** The meta-regression uses
-V = 0.01 (uniform) instead of per-row sampling variances derived
-from bootstrap residuals. This simplification is adequate for the
-intercept test (the Knapp-Hartung adjustment accounts for
-between-study variance) but may distort moderator coefficient
-standard errors. The pre-registered §6.2 design specifies
-vi = 1/n_series as a rough proxy; implementing proper bootstrap
-variances is flagged for the camera-ready revision.
+**Approximate sampling variance.** The cross-paper meta-regression
+uses a proxy variance `vi = (1/n_FM + 1/n_ML_TREE) / n_series_hm`
+based on within-bucket row counts and harmonic-mean series counts,
+rather than per-row bootstrap residuals. For within-paper Source B
+cells, `vi = 1/100` (sampled series). This proxy captures the
+precision difference between large-dataset buckets (M5, 30K series)
+and small-dataset buckets (Rohlik, 5K series) but does not model
+within-series autocorrelation or between-paper protocol differences.
+The Knapp-Hartung adjustment partially mitigates this by inflating
+standard errors when residual heterogeneity is high.
 
 **Evaluation protocol heterogeneity.** Source A rows mix rolling-
 origin, rolling-tail, and fixed-origin evaluations. Fixed-origin

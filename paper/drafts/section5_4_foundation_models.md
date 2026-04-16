@@ -18,7 +18,7 @@ Foundation model rows in Table 5.7 come from two sources, each
 serving a distinct purpose in the meta-regression (§6).
 
 **Source A — Literature extraction (primary).** The PRISMA
-corpus (§4, `analysis/extraction_schema.csv`, 214 rows) already
+corpus (§4, `analysis/extraction_schema.csv`, 185 rows) already
 contains zero-shot FM numbers on all three of our datasets,
 extracted from the source papers and anchored to their published
 MLflow runs or competition submissions. Between B01 (GIFT-Eval
@@ -268,8 +268,8 @@ picture depends strongly on the deployment horizon (see the cost and
 runtime footprint below; plotted in §6.5 Figure 6.4).
 
 **Paired Δ headline.** Feeding the 9 paired cells into the §6.1
-`rma.mv` pipeline (`V = 0.01` placeholder, cluster = paper_id/dataset,
-Knapp-Hartung `t` adjustment) yields
+`rma.mv` pipeline (`vi = 1/n_valid` for within-paper cells,
+cluster = paper_id/dataset, Knapp-Hartung `t` adjustment) yields
 
 &nbsp;&nbsp;&nbsp;&nbsp;**Δ̂ (FM − ML_TREE) = −0.2442 WAPE**, &nbsp;
 95 % CI [−0.482, −0.007], &nbsp; `t(8) = −2.37`, &nbsp; *p* = 0.045,

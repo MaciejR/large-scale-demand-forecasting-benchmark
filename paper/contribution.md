@@ -38,9 +38,11 @@
 ## Contributions
 
 1. **First PRISMA-compliant systematic review** of foundation
-   models for retail demand forecasting, synthesizing 185
+   models for retail demand forecasting, synthesising 185
    extraction rows (2020–2026) across M5, Favorita, Rohlik v2,
-   GIFT-Eval, and fev-bench.
+   GIFT-Eval, and fev-bench — and documenting the structural gap
+   that no existing paper reports both FM and ML_TREE on the same
+   retail dataset under matched conditions (§4.4).
 
 2. **Gap-filling experiments** (Source B, 45 rows): Chronos-Bolt-
    Tiny + TiRex on consumer hardware, LightGBM + seasonal_naive

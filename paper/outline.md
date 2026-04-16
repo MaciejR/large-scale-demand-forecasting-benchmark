@@ -4,24 +4,28 @@
 **When Do Foundation Models Pay Off for Retail Demand Forecasting? A Systematic Review and Cross-Benchmark Meta-Analysis**
 
 ## Abstract
-We present a PRISMA-compliant systematic review and meta-analysis
-of forecasting methods for short-term retail demand. We screen
-~150 papers (2020–2026), extract quantitative results from 185
-rows spanning M5, Favorita, and Rohlik v2, and run gap-filling
-experiments where model–dataset–horizon combinations are missing
-from the literature (Source B: 45 rows from a consumer MacBook +
-Azure ML batch sweep). A cross-paper pooled meta-regression
-(metafor::rma.mv, REML, Knapp-Hartung) on k = 10 bucket-level
-deltas finds Δ̂(FM − ML_TREE) = −0.044 WAPE (95 % CI [−0.15,
-0.06], p = 0.33) after excluding the M5 dataset, whose per-series
-WAPE metric produces a large but artefactual FM advantage driven
-by zero-denominator explosions in the LightGBM baseline. The M5
-WAPE cells (Δ ≈ −0.54 to −0.78) and M5 WRMSSE cell (Δ = +0.41,
-FM worse) are reported as a dataset-specific finding, not a
-family-level effect. We provide a practitioner-oriented cost-
-accuracy Pareto analysis and document that the LightGBM direct-
-vs-recursive protocol gap is conditional on demand intermittency
-(§5.3.6), a finding vindicated by the gap-filling experiments.
+We present a PRISMA-compliant systematic review of forecasting
+methods for short-term retail demand, combined with original
+gap-filling experiments that address structural holes in the
+literature. We screen ~150 papers (2020–2026) and extract
+quantitative results into 185 rows spanning M5, Favorita, and
+Rohlik v2. Because no existing paper reports both foundation
+models and gradient-boosted trees on these retail datasets under
+matched evaluation conditions, we run our own experiments
+(Source B: 45 rows from a consumer MacBook + Azure ML batch
+sweep) to enable cross-family comparison. A cross-paper pooled
+random-effects model (metafor::rma.mv, REML, Knapp-Hartung) on
+k = 10 bucket-level deltas finds Δ̂(FM − ML_TREE) = −0.044 WAPE
+(95 % CI [−0.15, 0.06], p = 0.33) after excluding the M5
+dataset, whose per-series WAPE metric produces a large but
+artefactual FM advantage driven by zero-denominator explosions
+in the LightGBM baseline. The M5 WAPE cells (Δ ≈ −0.54 to
+−0.78) and M5 WRMSSE cell (Δ = +0.41, FM worse) are reported
+as a dataset-specific finding, not a family-level effect. We
+provide a practitioner-oriented cost-accuracy Pareto analysis
+and document that the LightGBM direct-vs-recursive protocol gap
+is conditional on demand intermittency (§5.3.6), a finding
+vindicated by the gap-filling experiments.
 
 ## 1. Introduction (~2 pages)
 - The foundation model wave in time-series forecasting (2024–2026)
@@ -80,8 +84,10 @@ vs-recursive protocol gap is conditional on demand intermittency
 ### 3.4 Meta-Regression Specification
 - Cross-paper pooled Δ: mean(FM) − mean(ML_TREE) per
   (dataset, horizon, metric) bucket
-- `rma.mv(yi = delta, V = 0.01, random = ~1|dataset_norm,
+- `rma.mv(yi = delta, V = vi, random = ~1|dataset_norm,
   test = "t", method = "REML")`
+- Sampling variance: `vi = (1/n_FM + 1/n_ML_TREE) / n_series_hm`
+  for cross-paper pool; `vi = 1/n_valid` for within-paper
 - Moderators: dataset_norm, horizon_bucket, has_covariates
   (H1–H3). H4 (interaction) flagged as untestable at k = 10.
 - Sensitivity: excl-M5, within-paper-only (Source B)

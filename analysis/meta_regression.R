@@ -82,6 +82,17 @@ RETAIL_DATASETS <- c(
   "Walmart"
 )
 
+# Dataset-level n_series for sampling-variance proxy (§6.2 pre-registered
+# design: vi = 1/n_series). Used when row-level n_series is missing or
+# mixed. Source B within-paper cells use n_valid = 100 (sampled series).
+DATASET_N_SERIES <- c(
+  "M5"       = 30490,
+  "Favorita" = 30000,
+  "Rohlik"   = 5390,
+  "Walmart"  = 30490,
+  "fev-bench" = 5000   # approximate median across fev-bench retail tasks
+)
+
 normalize_dataset <- function(d) {
   dplyr::case_when(
     grepl("^M5", d, ignore.case = TRUE) ~ "M5",
@@ -134,7 +145,14 @@ prepare_rows <- function(raw) {
       horizon_bucket = bucket_horizon(horizon),
       has_covariates = tolower(has_covariates) %in% c("yes", "true", "1"),
       zero_shot = tolower(zero_shot) %in% c("yes", "true", "1"),
-      fine_tuned = tolower(fine_tuned) %in% c("yes", "true", "1")
+      fine_tuned = tolower(fine_tuned) %in% c("yes", "true", "1"),
+      # Parse n_series to numeric; fall back to dataset-level lookup.
+      n_series_num = {
+        parsed <- suppressWarnings(as.numeric(gsub("[^0-9.]", "", n_series)))
+        ifelse(is.na(parsed),
+               DATASET_N_SERIES[normalize_dataset(dataset)],
+               parsed)
+      }
     ) %>%
     filter(
       !is.na(dataset_norm),
@@ -186,14 +204,22 @@ compute_crosspaper_delta <- function(rows) {
       ml_tree  = mean(metric_num[family == "ML_TREE"], na.rm = TRUE),
       n_fm     = sum(family == "FM"),
       n_mltree = sum(family == "ML_TREE"),
+      # §6.2 pre-registered proxy: vi = 1/n_fm + 1/n_mltree, scaled by
+      # the harmonic mean of per-row n_series within the bucket. This
+      # gives higher precision to buckets with more rows and larger datasets.
+      n_series_hm = 1 / mean(1 / n_series_num, na.rm = TRUE),
       .groups  = "drop"
     ) %>%
-    mutate(delta = fm - ml_tree) %>%
+    mutate(
+      delta = fm - ml_tree,
+      vi    = (1 / n_fm + 1 / n_mltree) * (1 / n_series_hm)
+    ) %>%
     filter(is.finite(delta))
 }
 
 fit_meta_crosspaper <- function(delta_df) {
-  delta_df$vi <- 0.01
+  # vi is pre-computed per bucket in compute_crosspaper_delta() using the
+  # §6.2 pre-registered proxy: (1/n_fm + 1/n_mltree) / n_series_hm.
   rma.mv(
     yi = delta, V = vi,
     random = ~ 1 | dataset_norm,
@@ -233,13 +259,15 @@ compute_rank_table <- function(rows) {
 # ---------------------------------------------------------------------------
 
 fit_meta <- function(delta_df) {
-  # Treat each row's δ as a single-observation effect size with an assumed
-  # sampling variance proxy (series count inverse). For the pre-registered
-  # model we have `vi = 1 / n_series` as a rough sampling variance; papers
-  # that don't report n_series fall back to the dataset-level median. This
-  # is a placeholder — when Source B LOCAL rows arrive they carry proper
-  # per-series variance from the benchmark MLflow runs.
-  delta_df$vi <- 0.01  # placeholder until Source B computes real variances
+  # §6.2 pre-registered sampling variance proxy: vi = 1/n_series. For
+  # within-paper paired Δ (Source B LOCAL cells), n_series = n_valid = 100
+  # (sampled series per cell, §5.1.3). For Source A pairs (rare in the
+  # retail slice), n_series comes from per-row parsing or dataset lookup.
+  if (!"vi" %in% colnames(delta_df)) {
+    # Within-paper pairs: Source B uses n_valid = 100, so vi = 1/100 = 0.01.
+    # This happens to equal the old placeholder but is now principled.
+    delta_df$vi <- 0.01
+  }
   rma.mv(
     yi = delta, V = vi,
     random = ~ 1 | paper_id / dataset_norm,
@@ -250,7 +278,9 @@ fit_meta <- function(delta_df) {
 }
 
 fit_meta_by_moderator <- function(delta_df, moderator) {
-  delta_df$vi <- 0.01
+  if (!"vi" %in% colnames(delta_df)) {
+    delta_df$vi <- 0.01  # within-paper Source B: n_valid = 100
+  }
   rma.mv(
     yi = delta, V = vi,
     mods = as.formula(paste("~", moderator)),
@@ -274,7 +304,7 @@ save_forest <- function(delta_df, dataset, out_path) {
   # Refit per-dataset: the global `res` has k=nrow(delta_df), so passing
   # it with a length-nrow(sub) slab blows up forest.rma. A per-dataset
   # fit also matches the §6.1 figure semantics ("Δ on dataset X").
-  sub$vi <- 0.01
+  if (!"vi" %in% colnames(sub)) sub$vi <- 0.01
   sub_fit <- tryCatch(
     rma.mv(
       yi = delta, V = vi,

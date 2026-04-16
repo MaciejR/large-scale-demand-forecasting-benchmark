@@ -1,10 +1,13 @@
 # §9 Conclusions (v0.1 draft — 2026-04-16)
 
-We presented a PRISMA-compliant systematic review and cross-
-benchmark meta-analysis of foundation models for retail demand
-forecasting. The study synthesised 185 extraction rows from 38
-studies (2020–2026) with 45 gap-filling experiment rows across M5,
-Favorita, and Rohlik v2 under a unified rolling-origin protocol.
+We presented a PRISMA-compliant systematic review of foundation
+models for retail demand forecasting, augmented with original
+gap-filling experiments that fill a structural hole in the
+literature: no existing paper reports both FM and gradient-boosted
+tree results on the same retail dataset under matched conditions
+(§4.4). The study synthesised 185 extraction rows from 38
+studies (2020–2026) with 45 experiment rows across M5, Favorita,
+and Rohlik v2 under a unified rolling-origin protocol.
 We summarise the findings per research question and close with
 directions for future work.
 

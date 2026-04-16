@@ -130,11 +130,12 @@ direct FM-vs-NN comparison in the meta-regression. An FM-vs-NN
 analysis is possible on GIFT-Eval skill scores but is outside the
 retail scope of this paper.
 
-### 4.4 Structural limitation: no within-paper FM-vs-ML_TREE pairing
+### 4.4 Structural finding: no within-paper FM-vs-ML_TREE pairing in the retail literature
 
 The single most important observation from the extraction is
-negative: **no Source A paper in the retail slice reports both FM
-and ML_TREE results under a shared paper identifier and a common
+negative — and is itself a contribution of this review: **no
+Source A paper in the retail slice reports both FM and ML_TREE
+results under a shared paper identifier and a common per-series
 metric.** The FM papers (Category A) evaluate FMs against
 statistical baselines or against other FMs on benchmark suites,
 not against well-tuned LightGBM on individual retail datasets.
@@ -143,9 +144,16 @@ competition results without FM comparisons. The benchmark papers
 (Category B) include both families but on aggregate skill scores
 that cannot be decomposed to (dataset, horizon) cells.
 
-This gap is the reason Source B exists (§3.3) and the reason the
-meta-regression uses cross-paper pooling (§6.1) rather than the
-original within-paper Δ design. It also means that the paper's
-meta-analytic claim rests on a smaller pool (k = 10 bucket-level
-deltas) than a more mature literature would provide, and we
-report this as a limitation in §8.
+This gap has two consequences. First, it is the reason Source B
+exists (§3.3): answering "do FMs beat LightGBM on retail data?"
+requires original experiments because the literature does not
+contain the comparison. Second, it means the cross-paper pooled
+analysis (§6.1) is a **systematic review augmented with original
+experiments**, not a classical meta-analysis of homogeneous effect
+sizes. The FM side of the retail comparison is populated almost
+entirely by Source B; the ML_TREE side draws on both Source A
+(competition-grade results) and Source B (our own baselines).
+This asymmetry is inherent to the current state of the FM
+literature — it is the gap our study fills, not a design flaw.
+We report the pooled estimate with and without Source B rows
+in §6.7 so readers can assess each source's contribution.
