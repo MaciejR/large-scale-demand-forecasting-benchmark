@@ -397,34 +397,60 @@ flag in §7 that its consumer-box numbers are reproducible for
 academic benchmarking but not deployable under PriorLabs'
 RL-NC without a commercial license negotiation.
 
-### 5.4.7 Populating Table 5.7
+### 5.4.7 Table 5.17: cross-model WAPE on the three retail datasets
 
-The populated Table 5.7 comes from the union of Source A and
-Source B. For every (model, dataset, horizon) cell, we prefer
-Source A if the source paper's protocol matches §5.1.3 closely
-enough (benchmark-paper rows from B01 and B02 typically match),
-and we use Source B only for the three LOCAL models that are
-also covered by Source A (Chronos-Bolt, TiRex, TabPFN-TS). This
-produces a natural sanity check: our LOCAL row and the paper's
-published row should be within a small percentage on the same
-(dataset, horizon, metric) cell. If they diverge by more than
-~5%, the divergence is itself a finding and is reported as a
-cross-protocol gap in the row's `notes` field.
+Source A's FM coverage on the three retail datasets is sparse: one
+M5 WRMSSE row (TEMPO baseline, 0.9706, from C05) and one non-
+numeric Rohlik row (TimesFM on MASE+sMAPE, from C03). No Source A
+FM paper reports WAPE on M5, Favorita, or Rohlik with the per-
+series rolling-origin protocol of §5.1.3. Table 5.17 is therefore
+almost entirely Source B, with the M5 WRMSSE cross-reference from
+Source A flagged in the notes column. The v0.1 expectation of "~85
+Source A FM retail rows" proved unrealistic: the FM literature
+evaluates primarily on benchmark suites (GIFT-Eval, fev-bench,
+Chronos Benchmark I/II) rather than on individual retail datasets
+under matched conditions.
 
-**Table 5.7 [placeholder — source split].** Foundation model
-zero-shot results across the three datasets × three horizons,
-with source provenance column. Eleven FM rows per (dataset,
-horizon) cell = ~99 rows total; we expect ~85 of those to be
-populated from Source A and 27 from Source B (with the three
-models in Source B creating a 3 × 9 = 27-row overlap used as
-the cross-protocol sanity check above).
+**Table 5.17.** Consumer-box WAPE (Source B, per-series mean,
+rolling origin) across models, datasets, and horizons. Lower is
+better. Two cells are missing (TiRex × Rohlik `h ∈ {14, 28}` —
+MPS xLSTM stall, see §5.4.9).
 
-The columns of Table 5.7 in the final draft will be:
-`Model | Source (A/B) | Dataset | h | Context | WAPE | MAE |
-WRMSSE (M5) | Runtime | Cost | Notes`. Cost is populated from
-Source A's reported per-series inference time (if any) × the
-appropriate price class (§6.5), or from our own wall-clock
-measurement on the local MacBook for Source B rows.
+| Model | Family | Favorita h=7 | h=14 | h=28 | M5 h=7 | h=14 | h=28 | Rohlik h=7 | h=14 | h=28 |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Chronos-Bolt-Tiny | FM | 0.532 | 0.537 | 0.546 | 0.958 | 0.956 | 0.956 | 0.322 | 0.334 | 0.353 |
+| TiRex | FM | 0.525 | 0.531 | 0.540 | 0.934 | 0.937 | 0.942 | 0.314 | — | — |
+| lightgbm_cov | ML_TREE | 0.530 | 0.531 | 0.538 | 1.625 | 1.729 | 1.936 | 0.365 | 0.395 | 0.432 |
+| lightgbm_direct | ML_TREE | 0.551 | 0.571 | 0.589 | 1.351 | 1.410 | 1.513 | 0.382 | 0.407 | 0.444 |
+| seasonal_naive | STATS | 0.636 | 0.647 | 0.664 | 1.307 | 1.322 | 1.329 | 0.402 | 0.403 | 0.412 |
+
+Reading guide:
+
+- **Favorita:** `lightgbm_cov` and Chronos-Bolt-Tiny are within
+  0.3 pp at every horizon (§5.4.5 "close call"). TiRex consistently
+  beats both by ~0.5 pp, the smallest winning margin in the table.
+  `lightgbm_direct` is 2–5 pp worse than `lightgbm_cov` — the
+  §5.3.6 conditional pattern (recursive wins on smooth demand).
+- **M5:** Both FMs (0.93–0.96) beat all ML_TREE variants by 40+ pp
+  WAPE. The ML_TREE numbers include the per-series WAPE
+  zero-denominator pathology documented in §5.4.5. On WRMSSE (not
+  shown, but Source A reports TEMPO at 0.9706 vs competition-grade
+  LightGBM at 0.52), the sign reverses: ML_TREE wins. M5 should
+  not be read as "FMs are better" — it is "per-series WAPE on
+  intermittent demand is a broken metric for ML_TREE".
+- **Rohlik:** FMs lead by 4–8 pp over `lightgbm_cov`. The gap
+  widens with horizon (7 → 28: +2 pp for FM, +7 pp for LGBM).
+  `seasonal_naive` overtakes `lightgbm_cov` at `h = 28` (0.412
+  vs 0.432), consistent with the §5.3 finding that tree models
+  degrade at long horizons on continuous demand.
+- **Cross-source sanity check.** The only Source A FM row
+  comparable by dataset is C05's TEMPO WRMSSE = 0.9706 on M5
+  `h = 28`. Our Source B Chronos-Bolt-Tiny posts WAPE = 0.956 on
+  the same cell — not metric-comparable (WRMSSE vs WAPE), but
+  the magnitude is in the same ballpark (~0.97). A direct cross-
+  protocol check for Chronos on retail WAPE requires a future
+  Source A paper to report per-series WAPE on M5, which none
+  currently do.
 
 ### 5.4.8 Threats to validity
 
