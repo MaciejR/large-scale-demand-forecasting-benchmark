@@ -109,8 +109,8 @@ via MLflow to the workspace tracking server.  Cost and CO$_2$
 estimates are computed inside the job using Azure's published
 per-second pricing for \texttt{Standard\_E4ds\_v4} in
 \texttt{swedencentral} (\$0.38/hr at time of writing) and the
-region's marginal CO$_2$ intensity (0.274\,kgCO$_2$eq/kWh,
-swedencentral 2025 baseline).  The per-job runtime, cost, and
+region's marginal CO$_2$ intensity (0.041\,kgCO$_2$eq/kWh,
+swedencentral 2024 baseline; Nowtricity/Ember).  The per-job runtime, cost, and
 CO$_2$ columns in Tables~\ref{tab:t53}--\ref{tab:t55} are
 computed this way and are therefore comparable across datasets.
 
@@ -126,7 +126,7 @@ gives a clean, reviewer-auditable split.  Specifically:
   $\texttt{train\_until} = \lfloor 0.8 \times n_\text{days} \rfloor$.
   This gives a tail-eval window of 389 days on M5, 281 days on
   Rohlik, and 337 days on Favorita.  The choice of 0.8 follows
-  \citet{hewamalage2022forecast} and
+  \citet{hewamalage2023forecast} and
   \citet{shchur2025fevbench}.
 
 \item \textbf{Rolling origin:} within the tail window, forecast
@@ -373,20 +373,20 @@ by model family.  All values are 9-job totals per dataset.  Cost
 is computed in-job from Azure's published per-second pricing for
 \texttt{Standard\_E4ds\_v4} in \texttt{swedencentral} (\$0.38/hr
 at time of writing); CO$_2$ uses the region's 2025 baseline
-marginal intensity of 0.274\,kgCO$_2$eq/kWh.}
+marginal intensity of 0.041\,kgCO$_2$eq/kWh (Nowtricity/Ember, 2024).}
 \label{tab:t56}
 \small
 \begin{tabular}{lrrrrrl}
 \toprule
 Dataset & SN cost & \LGBM{}-rec cost & \LGBM{}-dir cost & Total cost & Total CO$_2$ (kg) & Dominant job \\
 \midrule
-M5 & \$0.146 & \$0.096 & \$0.571 & \$0.810 & 0.00250 &
+M5 & \$0.146 & \$0.096 & \$0.571 & \$0.810 & 0.00037 &
   \texttt{lgbm\_dir\_h28} (62\,min, \$0.394) \\
-Rohlik~v2 & \$0.0022 & \$0.0094 & \$0.0982 & \$0.120 & 0.00030 &
+Rohlik~v2 & \$0.0022 & \$0.0094 & \$0.0982 & \$0.120 & 0.00004 &
   \texttt{lgbm\_dir\_h28} (9\,min, \$0.055) \\
-Favorita & \$0.0161 & \$0.0734 & \$1.030 & \$1.119 & 0.00290 &
+Favorita & \$0.0161 & \$0.0734 & \$1.030 & \$1.119 & 0.00043 &
   \texttt{lgbm\_dir\_h28} (60\,min, \$0.379) \\
-\textbf{Total} & \$0.165 & \$0.179 & \$1.700 & \$2.049 & 0.00570 & --- \\
+\textbf{Total} & \$0.165 & \$0.179 & \$1.700 & \$2.049 & 0.00085 & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -452,12 +452,16 @@ Favorita with a mixed long tail, \S\ref{sec:favorita}), recursive
 matches or narrowly beats direct on \WAPE{} and MAE, and on
 Favorita the recursive advantage grows monotonically with horizon.
 The ``direct dominates recursive'' pattern reported on M5 and
-generalized to a protocol recommendation by
-\citet{hewamalage2022forecast}, and inherited implicitly by most
-FM-comparison papers, is therefore conditional on dataset
-properties --- specifically on the fraction of intermittent series
---- and not a property of multi-step LightGBM protocol choice in
-the abstract.  \S\ref{sec:synthesis} develops this synthesis
+widely adopted in FM-comparison papers is therefore conditional
+on dataset properties --- specifically on the fraction of
+intermittent series --- and not a property of multi-step LightGBM
+protocol choice in the abstract.  The established
+direct-vs-recursive literature \citep{bentaieb2014boosting,
+bentaieb2016bias} conditions the choice on model linearity and
+horizon length but not on demand intermittency; our finding that
+the gap sign flips at the intermittency boundary is, to our
+knowledge, a novel empirical observation requiring further
+investigation.  \S\ref{sec:synthesis} develops this synthesis
 across all three datasets.
 
 We instantiate this range with the three-variant sweep of
@@ -757,7 +761,7 @@ dataset like Favorita where the near-horizon signal is strong
 enough to hide the under-fitting at $h = 7$ but not at $h = 28$.
 Fair reporting of the direct-vs-recursive gap would either hold the
 training budget fixed (our setup, matching
-\citealp{hewamalage2022forecast}) and flag the artefact, or grow
+\citealp{hewamalage2023forecast}) and flag the artefact, or grow
 the budget with horizon.  We do the former but flag it explicitly
 in \S\ref{sec:threats} as a threat to validity on cross-dataset
 protocol claims.
@@ -933,7 +937,7 @@ worth stating because they bound the ceilings we report:
   \S\ref{sec:favorita} notes, this design choice hides a
   training-budget artefact in the direct-vs-recursive gap on
   Favorita: direct's horizon penalty shrinks if each head is given
-  more trees.  We match \citet{hewamalage2022forecast} on this
+  more trees.  We match \citet{hewamalage2023forecast} on this
   design choice for comparability with the existing literature, but
   the meta-analysis in \S6 carries a covariate recording whether a
   given reviewed paper's reported ``LightGBM direct'' keeps
@@ -1048,7 +1052,7 @@ have been making:
   is a training-budget artefact.}  Fair cross-paper comparison
   needs to ask whether the direct LightGBM uses a constant
   per-head budget (our setup, matching
-  \citealp{hewamalage2022forecast}) or scales the budget with
+  \citealp{hewamalage2023forecast}) or scales the budget with
   horizon (as the M5 winner does).  \S6's moderator table records
   this for every indexed paper.
 \end{enumerate}
@@ -1214,7 +1218,7 @@ beyond each model's own internal batch-size default) to match the
 Model & Params & Why local-feasible \\
 \midrule
 Chronos-Bolt-Tiny & ${\sim}9$\,M & Smallest public Chronos variant, MPS-supported, documented to hit ${\sim}100$ series-day/s on M1 by A11 supplementary table. \\
-TabPFN-TS & ${\sim}11$\,M & Tabular-FM with a published time-series head, covariate-aware, runs on MPS via PriorLabs' reference implementation (A14). \\
+TabPFN-TS & ${\sim}11$\,M & Tabular-FM with temporal featurization, covariate-aware, runs on MPS via PriorLabs' reference implementation (A14). \\
 TiRex & ${\sim}35$\,M & xLSTM-based, published MPS-compatible inference script (A13). Upper feasibility bound on a 16\,GB machine for serial single-series inference. \\
 \bottomrule
 \end{tabular}
@@ -1224,10 +1228,10 @@ We explicitly \textbf{exclude} four models from the local run and
 document why:
 
 \begin{itemize}
-\item \textbf{Moirai~2.0 large (${\sim}311$\,M)} --- exceeds
-  16\,GB unified memory budget when the masked-encoder attention
+\item \textbf{Moirai~2.0 large (${\sim}305$\,M)} --- exceeds
+  16\,GB unified memory budget when the decoder-only attention
   cache is loaded for Favorita's longest context.  Could run at
-  base (${\sim}91$\,M) with performance degradation, but the base
+  base (${\sim}87$\,M) with performance degradation, but the base
   variant is not the one the paper's headline numbers use, so
   comparability against literature rows would be broken.
 
@@ -1257,7 +1261,7 @@ becomes its own mini-benchmark.
 FM-vs-ML\_TREE comparison (Table~\ref{tab:t59}, \S6.7) therefore
 rests on two small FMs: Chronos-Bolt-Tiny (9\,M) and TiRex
 (35\,M).  The larger models --- Chronos-2 (120\,M), TimesFM~2.5
-(200\,M), and Moirai~2.0 (311\,M) --- achieve higher win rates on
+(200\,M), and Moirai~2.0 (305\,M) --- achieve higher win rates on
 benchmark suites: 81--84\,\% on GIFT-Eval WQL (A02, A04) and
 69--91\,\% on fev-bench SQL (B02).  However, \textbf{no Source~A
 paper reports these larger models' per-series \WAPE{} on M5,
@@ -1506,15 +1510,15 @@ Pareto frontier.
 
 \textbf{Cost and runtime footprint.}  The 16 FM cells ran in
 10.32\,h of MacBook wall time at an estimated marginal electricity
-cost of \$0.062 USD and a grid-mix CO$_2$ footprint of 0.201\,kg
-(Polish grid, \S\ref{sec:costconsequences}
+cost of \$0.062 USD and a grid-mix CO$_2$ footprint of 0.178\,kg
+(Polish grid at 0.62\,kgCO$_2$/kWh, \S\ref{sec:costconsequences}
 \texttt{M\_SERIES\_MAC} bucket).  The 27 matched baseline cells
 on Azure (\texttt{cc-forecast-batch}, \texttt{Standard\_E4ds\_v4})
 ran in 4.63\,h of compute at list-price \$1.76 USD and a
-Swedish-grid footprint of 0.0045\,kg CO$_2$.  The consumer-box is
+Swedish-grid footprint of 0.0007\,kg CO$_2$.  The consumer-box is
 therefore \textbf{16$\times$ cheaper per cell in dollars}
-(${\sim}$\$0.004 vs \$0.065) and \textbf{44$\times$ higher per
-cell in CO$_2$} (${\sim}0.013$\,kg vs $0.0002$\,kg), but
+(${\sim}$\$0.004 vs \$0.065) and \textbf{${\sim}370\times$ higher per
+cell in CO$_2$} (${\sim}0.011$\,kg vs $0.00003$\,kg), but
 \textbf{${\sim}4\times$ slower per cell in wall time}
 (${\sim}39$\,min vs ${\sim}10$\,min).  This is exactly the
 tradeoff that \S6.5 Figure~6.4 (consumer-HW Pareto) and
