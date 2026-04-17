@@ -67,10 +67,10 @@ large forecasting benchmarks (fev-bench, GIFT-Eval).
 
   \item \textbf{Source~B (gap-filling experiments).} We run our own
     experiments under a unified evaluation protocol
-    (\S\ref{sec:experimental-setup}): four foundation models
-    (Chronos-Bolt-Tiny, Moirai~2.0-Small, TiRex, Chronos-2;
-    9--120\,M parameters) on a consumer MacBook (Apple~Silicon MPS),
-    and three baselines
+    (\S\ref{sec:experimental-setup}): five foundation models
+    (Chronos-Bolt-Tiny, Moirai~2.0-Small, TiRex, Chronos-2,
+    TimesFM~2.5; 9--200\,M parameters) on a consumer MacBook
+    (Apple~Silicon MPS / CPU), and three baselines
     (lightgbm\_cov, lightgbm\_direct, seasonal\_naive) on Azure~ML.
     Source~B produces gap-filling rows with runtime, cost, and
     CO\textsubscript{2} metadata.
@@ -80,7 +80,7 @@ The meta-regression (\S\ref{sec:meta-regression}) pools Source~A and
 Source~B into a model-level random-effects model: for each
 (FM, baseline, task, metric) pair we compute
 $\Delta = \text{FM} - \text{baseline}$, then fit \texttt{rma.mv}
-(REML, Knapp--Hartung) with $k = 450$ pairs nested by dataset,
+(REML, Knapp--Hartung) with $k = 459$ pairs nested by dataset,
 paper, and model name.  Source~A provides both FM and baseline rows
 (via fev-bench and GIFT-Eval), contributing the majority of the
 paired comparisons.
@@ -93,7 +93,7 @@ Three findings motivate the sections that follow:
 \begin{enumerate}
   \item \textbf{The FM advantage is metric-dependent --- strong on
     distributional metrics, not significant on point forecasts.}
-    Across $k = 450$ pairs, the per-metric decomposition is the
+    Across $k = 459$ pairs, the per-metric decomposition is the
     primary finding: on Scaled Quantile Loss (SQL),
     $\Dhat = -0.278$ ($p < .0001$); on \WAPE{} (a point-forecast
     metric), $\Dhat = -0.070$ ($p = 0.14$, not significant).  The
@@ -103,12 +103,12 @@ Three findings motivate the sections that follow:
     distributions; their point forecasts trend in the same direction
     but the advantage is attenuated.
 
-  \item \textbf{Model scale is not a reliable predictor of retail
+  \item \textbf{Model scale is not a significant predictor of retail
     accuracy.}  Within Source~B (controlled protocol), the smallest FM
     (Moirai~2.0-Small, 11\,M) outperforms the largest (Chronos-2,
     120\,M) on M5.  The cross-paper model-scale moderator is
-    statistically significant but confounded with study and metric
-    effects, consistent with \citet{shchur2025fevbench}'s finding that
+    not significant ($p = 0.663$),
+    consistent with \citet{shchur2025fevbench}'s finding that
     architecture matters more than parameter count.
 
   \item \textbf{The LightGBM protocol gap is conditional on
@@ -129,9 +129,9 @@ Three findings motivate the sections that follow:
     models for retail demand forecasting (780+ extraction rows,
     9~datasets, 2020--2026).
   \item \textbf{Cross-benchmark extraction} from fev-bench and
-    GIFT-Eval, yielding 450 model-level paired comparisons across
+    GIFT-Eval, yielding 459 model-level paired comparisons across
     14~FMs and conventional baselines.
-  \item \textbf{Model-level meta-regression} ($k = 450$) identifying
+  \item \textbf{Model-level meta-regression} ($k = 459$) identifying
     a metric-dependent FM advantage: strong on distributional metrics
     (SQL), directionally favorable but not significant on point-forecast
     metrics (\WAPE{}).

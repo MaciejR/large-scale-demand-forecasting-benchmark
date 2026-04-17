@@ -6,7 +6,7 @@ We presented a PRISMA-informed systematic review of foundation models for
 retail demand forecasting, augmented with cross-benchmark extraction from
 fev-bench and GIFT-Eval and original gap-filling experiments.  The study
 synthesised 780+ extraction rows from 9~retail datasets (2020--2026) into a
-model-level meta-regression with $k = 450$ paired comparisons across
+model-level meta-regression with $k = 459$ paired comparisons across
 14~foundation models and conventional baselines.  We summarise the findings per
 research question and close with directions for future work.
 
@@ -17,7 +17,7 @@ research question and close with directions for future work.
 conventional baselines on retail demand forecasting?}
 
 Yes, on average --- but the answer depends critically on \emph{which metric}
-is used.  The pooled meta-regression on $k = 450$ model-level pairs finds
+is used.  The pooled meta-regression on $k = 459$ model-level pairs finds
 $\Dhat(\text{FM} - \text{baseline}) = -0.150$ ($p = 0.001$, 95\,\% CI
 $[-0.24, -0.06]$).  Foundation models are significantly better than tree
 and statistical baselines across the full pool.
@@ -33,7 +33,7 @@ distributions; their point forecasts trend in the same direction but the
 advantage is attenuated relative to distributional metrics.}
 
 The result is robust to excluding M5 ($\Dhat = -0.116$, $p = 0.004$,
-$k = 378$), confirming that the finding does not depend on the M5
+$k = 384$), confirming that the finding does not depend on the M5
 \WAPE{} artefact that inflates per-series denominators.
 
 \paragraph{RQ2 (Moderators): Which characteristics moderate the
@@ -44,11 +44,11 @@ Metric choice is the dominant moderator: the SQL/\WAPE{} split explains more
 heterogeneity than any data characteristic.  Beyond metric:
 
 \begin{itemize}
-  \item \textbf{Dataset:} Not significant as a moderator ($p = 0.652$) once
+  \item \textbf{Dataset:} Not significant as a moderator ($p = 0.535$) once
     the metric split is accounted for; the metric type drives heterogeneity,
     not the dataset.
-  \item \textbf{Model scale:} Statistically significant but confounded with
-    study and metric effects.  Within Source~B (controlled protocol),
+  \item \textbf{Model scale:} Not significant ($p = 0.663$).
+    Within Source~B (controlled protocol),
     Moirai~2.0-Small (11\,M) outperforms Chronos-2 (120\,M) on M5.
   \item \textbf{Horizon:} No significant horizon effect on $\Delta$.
   \item \textbf{Baseline family:} The FM advantage is larger against

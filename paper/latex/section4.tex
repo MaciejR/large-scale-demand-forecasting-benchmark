@@ -52,7 +52,7 @@ The 38 included studies break down as follows:
     meta-regression.
   \item \textbf{Category~F (fev-bench entries):} 1 paper, 8 rows.
   \item \textbf{OWN\_* (own experiments):} 7 experiment blocks,
-    63 rows.  Four FM models (\S5.4), LightGBM baselines (\S5.2--5.3),
+    72 rows.  Five FM models (\S5.4), LightGBM baselines (\S5.2--5.3),
     and Seasonal Naive across three datasets and three horizons.
 \end{itemize}
 
@@ -74,7 +74,7 @@ distribution is broad: 17 fev-bench tasks (18 rows each, ${\sim}$300
 rows total) and 4 GIFT-Eval retail tasks (${\sim}$107 rows) dominate,
 followed by M5 (40 rows, 6\%) and the remaining retail datasets.
 The per-task granularity enables model-level pairing within each
-(task, metric) cell, which is the basis of the $k = 450$ meta-regression.
+(task, metric) cell, which is the basis of the $k = 459$ meta-regression.
 
 \noindent\textbf{Model family distribution.}
 Foundation models account for 460 rows (71\%), followed by ML\_TREE
@@ -87,7 +87,7 @@ partially offset the imbalance.
 
 \noindent\textbf{Metric heterogeneity.}
 The extraction contains three primary metrics after re-extraction:
-\WAPE{} (174 rows), \MASE{} (169 rows), and SQL (155 rows), plus
+\WAPE{} (183 rows), \MASE{} (169 rows), and SQL (155 rows), plus
 \WRMSSE{} (23 rows, M5 only), win\_rate\_SQL (15 rows), and
 several minor metrics.  The meta-regression exploits this
 metric depth: SQL pairs drive the distributional-accuracy finding,
@@ -108,12 +108,12 @@ The 460 FM rows (71\% of the extraction) now span three tiers of
 granularity: (i)~per-paper aggregate results from Source~A Category~A
 (58 rows from 17 FM papers), (ii)~per-task per-model \WAPE{}/\MASE{}/SQL
 scores from the fev-bench and GIFT-Eval re-extraction (${\sim}$400 rows),
-and (iii)~per-cell \WAPE{} from our Source~B consumer-box runs (36 rows).
+and (iii)~per-cell \WAPE{} from our Source~B consumer-box runs (45 rows).
 On benchmark suites, Chronos-2, TimesFM~2.5, and Moirai~2.0 achieve
 win rates of 75--84\% against statistical baselines on GIFT-Eval,
 and normalised SQL scores of 20--35 on fev-bench.  The per-task
 extraction enables model-level FM-vs-baseline pairing within each
-(task, metric) cell --- the structural basis of the $k = 450$
+(task, metric) cell --- the structural basis of the $k = 459$
 meta-regression (\S6).
 
 \noindent\textbf{Gradient-boosted trees (ML\_TREE).}
@@ -157,7 +157,7 @@ and GIFT-Eval (B01) --- which report per-task SQL, \WAPE{}, and
 \MASE{} for FMs alongside LightGBM, CatBoost, and Auto~ETS.
 
 The per-task re-extraction from these suites (\S\ref{subsec:extraction})
-partially resolves the original gap: the $k = 450$ meta-regression now
+partially resolves the original gap: the $k = 459$ meta-regression now
 draws ${\sim}$75\% of its pairs from Source~A benchmark suites.
 Source~B (\S\ref{subsec:gapfilling}) remains necessary for two
 reasons: (1)~it adds the consumer-hardware cost dimension absent from

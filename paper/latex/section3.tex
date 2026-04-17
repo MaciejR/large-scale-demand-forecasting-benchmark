@@ -117,7 +117,7 @@ cross-paper pooling design of \S\ref{sec:literature}.
 \texttt{D} = cross-domain papers (3 papers, 3 rows),
 \texttt{F} = fev-bench entries (1 paper, 8 rows),
 \texttt{OWN\_*} = our own baseline runs from \S5.2--5.3 (7 experiment
-blocks, 63 rows).
+blocks, 72 rows).
 
 \noindent\textbf{Normalisation.}
 Raw \texttt{dataset} values are collapsed to five canonical names
@@ -141,10 +141,10 @@ under matched conditions with a shared \texttt{paper\_id}, so
 within-paper pairing (the original \S6.1 Pass~1 design) is
 structurally empty on Source~A.
 
-Source~B fills these gaps with 63 rows from two hardware backends:
+Source~B fills these gaps with 72 rows from two hardware backends:
 
 \noindent\textbf{Consumer MacBook (M\_SERIES\_MAC).}
-Apple M3 Air, 16~GB unified memory, PyTorch MPS backend.  Four FM
+Apple M3 Air, 16~GB unified memory, PyTorch MPS backend.  Five FM
 models:
 \begin{itemize}
   \item \textbf{Chronos-Bolt-Tiny} (9~M params, encoder-only): 9/9
@@ -155,7 +155,10 @@ models:
     completed on MPS; two (Rohlik $h=14$, $h=28$) required CPU fallback
     (\texttt{TIREX\_FORCE\_CPU=1}).
   \item \textbf{Chronos-2} ($\sim$120~M params, encoder-only T5):
-    9/9 cells, all on MPS.  Largest model in Source~B.
+    9/9 cells, all on MPS.
+  \item \textbf{TimesFM~2.5} ($\sim$200~M params, decoder-only,
+    continuous quantile head): 9/9 cells, CPU-only (MPS quantile
+    head ops unsupported).  Largest model in Source~B.
 \end{itemize}
 
 \noindent\textbf{Azure ML batch (AZURE\_E4DS\_V4).}
@@ -168,7 +171,7 @@ Standard\_E4ds\_v4 (4~vCPU, 32~GB), CPU-only.  Three baseline models:
   \item \textbf{seasonal\_naive}: 9~cells.
 \end{itemize}
 
-All 63 cells use the \S5.1.3 evaluation protocol: rolling-origin with
+All 72 cells use the \S5.1.3 evaluation protocol: rolling-origin with
 100 sampled series per cell, per-series \WAPE{} as the primary metric,
 and a fixed random seed for reproducibility.  Runtime, cost, and
 CO\textsubscript{2} are logged per run via MLflow (local file store
@@ -189,8 +192,8 @@ For each FM row $i$ and each baseline row $j$ that share the same
 $\delta_{ij} = \text{metric}(\text{FM}_i) - \text{metric}(\text{baseline}_j)$.
 \end{quote}
 
-\noindent This model-level pairing produces $k = 450$ observations
-(11~FM model entries $\times$ 8~datasets $\times$ multiple baselines
+\noindent This model-level pairing produces $k = 459$ observations
+(12~FM model entries $\times$ 8~datasets $\times$ multiple baselines
 $\times$ multiple metrics).  Appendix~\ref{app:sensitivity} also
 reports a coarser bucket-level analysis for comparison.
 

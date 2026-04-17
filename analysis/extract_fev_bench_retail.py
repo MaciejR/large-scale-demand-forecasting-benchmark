@@ -351,18 +351,28 @@ def main():
     print(f"  ML_TREE rows: {sum(1 for r in rows if r['model_family'] == 'ml_tree')}")
     print(f"  Pairable (task, metric) buckets: {len(common)}")
 
-    # Append to extraction_schema.csv.
+    # Replace fev-bench rows in extraction_schema.csv (idempotent).
     if not os.path.exists(SCHEMA_PATH):
         print(f"ERROR: {SCHEMA_PATH} not found. Run from repo root.")
         return
 
-    with open(SCHEMA_PATH, "a", newline="") as f:
-        f.write("\n# === fev-bench retail tasks (Shchur et al. 2025, extracted 2026-04-16) ===\n")
+    # Read existing rows, strip old fev-bench entries and comment lines.
+    with open(SCHEMA_PATH, newline="") as f:
+        reader = csv.DictReader(f)
+        existing = [r for r in reader
+                    if not r.get("paper_id", "").startswith("B02_fev")
+                    and not r.get("paper_id", "").startswith("# ")]
+
+    with open(SCHEMA_PATH, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=HEADER)
+        writer.writeheader()
+        for row in existing:
+            writer.writerow(row)
+        f.write("# === fev-bench retail tasks (Shchur et al. 2025, extracted 2026-04-18) ===\n")
         for row in rows:
             writer.writerow(row)
 
-    print(f"Appended {len(rows)} rows to {SCHEMA_PATH}")
+    print(f"Wrote {len(existing)} existing + {len(rows)} fev-bench = {len(existing)+len(rows)} rows to {SCHEMA_PATH}")
 
 
 if __name__ == "__main__":

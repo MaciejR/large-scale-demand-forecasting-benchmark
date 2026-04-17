@@ -35,12 +35,22 @@ class TimesFM25Forecaster:
         if self._model is None:
             import torch
             import timesfm
+            from huggingface_hub import hf_hub_download
+            from timesfm.timesfm_2p5.timesfm_2p5_torch import (
+                TimesFM_2p5_200M_torch as _Cls,
+            )
 
             torch.set_float32_matmul_precision("high")
             try:
-                self._model = timesfm.TimesFM_2p5_200M_torch.from_pretrained(
-                    self.model_id
+                # Manual loading to bypass huggingface_hub proxies kwarg bug
+                # in timesfm 2.0.0 _from_pretrained (passes **model_kwargs
+                # that include 'proxies' which __init__ doesn't accept).
+                weights = hf_hub_download(
+                    repo_id=self.model_id,
+                    filename=_Cls.WEIGHTS_FILENAME,
                 )
+                self._model = _Cls(torch_compile=False, config=None)
+                self._model.model.load_checkpoint(weights, torch_compile=False)
                 self._model.compile(
                     timesfm.ForecastConfig(
                         max_context=self.max_context,

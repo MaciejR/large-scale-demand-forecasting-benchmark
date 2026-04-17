@@ -22,14 +22,13 @@ in decreasing order of magnitude:
     four-model overlap between A and B is designed to quantify
     this drift, and \S5.4.7 treats $>$5\% gaps as findings.
 
-  \item \textbf{Local run covers models up to 120\,M params.}
-    TimesFM~2.5 (200\,M) and Moirai~2.0-Large (305\,M) cannot
-    be run locally (Python version and memory constraints,
-    respectively) and are represented only by Source~A. The four
+  \item \textbf{Local run covers models up to 200\,M params.}
+    Moirai~2.0-Large (305\,M) cannot
+    be run locally (memory constraints,
+    respectively) and is represented only by Source~A. The five
     local models (Chronos-Bolt-Tiny 9\,M, Moirai~2.0-Small 11\,M,
-    TiRex 35\,M, Chronos-2 120\,M) span an order of magnitude in
-    scale, partially mitigating the previous limitation of
-    testing only sub-35\,M models.
+    TiRex 35\,M, Chronos-2 120\,M, TimesFM~2.5 200\,M) span over an
+    order of magnitude in scale.
 
   \item \textbf{Covariate asymmetry.} Four of the six FM families in
     Table~5.7 are univariate and cannot consume the \S5.1.1

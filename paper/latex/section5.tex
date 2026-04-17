@@ -172,7 +172,7 @@ gives a clean, reviewer-auditable split.  Specifically:
 FM cells sample 100 series per cell (98--100 after \WAPE{}
 filtering).  To verify that this sample size produces stable
 \WAPE{} estimates, we ran a 10{,}000-iteration bootstrap on all
-36 FM per-series CSV files.  The bootstrap standard error of mean
+45 FM per-series CSV files.  The bootstrap standard error of mean
 \WAPE{} across cells ranges from 0.008 (Favorita $h = 7$) to
 0.014 (Rohlik $h = 28$), with a median of 0.011.  The widest
 95\,\% bootstrap CI is $\pm 0.027$ \WAPE{} (Rohlik $h = 28$).
@@ -415,7 +415,7 @@ Two observations on cost:
 
 Foundation model zero-shot results are reported separately in
 \S\ref{sec:fm}.  Table~\ref{tab:t59} (\S\ref{sec:table59})
-presents the full 36-cell FM grid (4~FMs $\times$ 3 datasets
+presents the full 45-cell FM grid (5~FMs $\times$ 3 datasets
 $\times$ 3 horizons) alongside the baseline
 rows from Tables~\ref{tab:t53}--\ref{tab:t55} for direct
 comparison.  The Pareto analysis of \S6.5 combines the baseline
@@ -554,9 +554,9 @@ FM rows come from two sources.  \textbf{Source~A} (primary) draws
 on the PRISMA extraction (\S4): 9~FM papers plus fev-bench (B02) and
 GIFT-Eval (B01) populate the FM grid entirely from published numbers.
 \textbf{Source~B} (secondary) adds a local consumer-box sensitivity
-run on a MacBook (M-series, 16\,GB, MPS backend) with four
-models (Chronos-Bolt-Tiny, Moirai~2.0-Small, TiRex, Chronos-2;
-9--120\,M parameters) to anchor the
+run on a MacBook (M-series, 16\,GB, MPS backend) with five
+models (Chronos-Bolt-Tiny, Moirai~2.0-Small, TiRex, Chronos-2,
+TimesFM~2.5; 9--200\,M parameters) to anchor the
 cost--accuracy Pareto of \S\ref{sec:cost-accuracy}.  The two sources
 are kept separate: extraction rows carry
 \texttt{paper\_id}~$\in$~\{A01\ldots A17, B01, B02\}, local runs
@@ -586,7 +586,7 @@ backend.  Inference is executed serially (no batching across series
 beyond each model's own internal batch-size default) to match the
 ``retail practitioner on a laptop'' framing of the cost panel.
 
-\textbf{Model selection.}  We run four models locally:
+\textbf{Model selection.}  We run five models locally:
 
 \begin{table}[htbp]
 \centering
@@ -600,21 +600,21 @@ Model & Params & Why local-feasible \\
 Chronos-Bolt-Tiny & ${\sim}9$\,M & Smallest public Chronos variant, MPS-supported \\
 Moirai~2.0-Small & ${\sim}11$\,M & Decoder-only MoE, smallest Moirai~2 variant \\
 TiRex & ${\sim}35$\,M & xLSTM-based, MPS-compatible (A13) \\
-Chronos-2 & ${\sim}120$\,M & Encoder-only T5, largest model in Source~B \\
+Chronos-2 & ${\sim}120$\,M & Encoder-only T5, MPS-supported \\
+TimesFM~2.5 & ${\sim}200$\,M & Decoder-only, continuous quantile head, CPU-only \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 TabPFN-TS (${\sim}11$\,M) was planned but excluded due to budget
-constraints.  TimesFM~2.5 (200\,M) requires Python~${<}3.12$
-(\texttt{lingvo} dependency); its rows come from Source~A only.
+constraints.
 The larger Chronos-Bolt and Moirai~2.0 variants ($>$16\,GB) were
 excluded due to memory constraints.
 
-Source~B thus spans 9--120\,M parameters, from the smallest
-(Chronos-Bolt-Tiny) to a mid-scale FM (Chronos-2).  Whether
-the largest FMs (TimesFM~2.5 at 200\,M, Moirai~2.0-Large at 305\,M)
-close the residual gap remains the highest-priority future
+Source~B thus spans 9--200\,M parameters, from the smallest
+(Chronos-Bolt-Tiny) to TimesFM~2.5 (200\,M).  Whether
+the largest remaining FMs (Moirai~2.0-Large at 305\,M)
+close the residual gap remains a priority for future
 work (\S\ref{subsec:future-work}).
 
 The evaluation protocol matches \S\ref{sec:evalprotocol} exactly
@@ -635,11 +635,12 @@ The Source~B FM cells are paired against matched baselines
 \texttt{seasonal\_naive}) re-run on Azure~ML with the same metric
 code path.
 
-All 36 FM cells (4 models $\times$ 3 datasets $\times$ 3 horizons)
+All 45 FM cells (5 models $\times$ 3 datasets $\times$ 3 horizons)
 completed.  Two TiRex/Rohlik cells stalled on MPS due to a
 pathological \texttt{xlstm\_kernels} fallback and were re-run on CPU
 (\texttt{TIREX\_FORCE\_CPU=1}); results are consistent with the
-$h = 7$ cell.  All four FMs are univariate in this sweep;
+$h = 7$ cell.  TimesFM~2.5 ran CPU-only (MPS quantile head ops
+unsupported).  All five FMs are univariate in this sweep;
 Chronos-2's covariate path is left for future work.
 
 \textbf{Per-cell \WAPE{} (paired with Azure baselines).}  Numbers
@@ -653,7 +654,7 @@ caveat below.
 \centering
 \caption{Consumer-box \WAPE{} (Source~B, per-series mean, rolling
 origin) across models, datasets, and horizons.  Lower is better.
-All 63 cells populated (4 FMs + 3 baselines $\times$ 3 datasets
+All 72 cells populated (5 FMs + 3 baselines $\times$ 3 datasets
 $\times$ 3 horizons).}
 \label{tab:t59}
 \small
@@ -674,7 +675,7 @@ Chronos-2 & FM & 0.525 & 0.533 & 0.542 & 0.932 & 0.934 & 0.938 & 0.314 & 0.327 &
 \end{tabular}
 \end{table*}
 
-\textbf{All four FMs are tightly clustered on smooth-demand datasets.}
+\textbf{All five FMs are tightly clustered on smooth-demand datasets.}
 On Favorita the full FM spread is $<$1\,pp at every horizon
 (0.525--0.532 at $h{=}7$); on Rohlik the spread is similarly narrow
 (0.314--0.322 at $h{=}7$).  TiRex, Chronos-2, and Moirai~2.0-Small
@@ -685,9 +686,9 @@ Chronos-2 (0.932--0.938), TiRex (0.934--0.942), and Chronos-Bolt-Tiny
 (0.956--0.958) --- a ${\sim}3$\,pp spread driven by the intermittent
 tail.  Notably, the smallest model (Moirai, 11\,M) beats the largest
 (Chronos-2, 120\,M) on M5, so model scale is not a predictor of
-retail forecasting accuracy in this 9--120\,M range.
+retail forecasting accuracy in this 9--200\,M range.
 
-\textbf{Paired $\Delta$ headline.}  Feeding the 36 Source~B FM cells
+\textbf{Paired $\Delta$ headline.}  Feeding the 45 Source~B FM cells
 into the \S\ref{subsec:metaspec} \texttt{rma.mv} pipeline
 ($v_i = 1/n_\text{valid}$ for within-paper cells,
 nesting $=$ \texttt{dataset\_norm/paper\_id},
@@ -723,12 +724,12 @@ materially worse even after deflation.
 \textbf{Favorita is the ``close call'' dataset.}
 \texttt{lightgbm\_cov} matches or beats Chronos-Bolt-Tiny at $h{=}7$
 (0.530 vs 0.532) and is within 0.5\,pp of the best FM (TiRex/Chronos-2
-at 0.525).  All four FMs cluster at 0.525--0.532, making the FM
+at 0.525).  All five FMs cluster at 0.525--0.532, making the FM
 advantage over a well-tuned covariate-aware \LGBM{} negligible on this
 smooth-demand dataset --- the cost column determines whether the narrow
 FM win is worth it in deployment.
 
-\textbf{Cost and runtime footprint.}  The 36 FM cells ran in
+\textbf{Cost and runtime footprint.}  The 45 FM cells ran in
 ${\sim}$14\,h on a MacBook at \$0.08 electricity ($16\times$ cheaper
 per cell than the Azure baselines at \$0.065/cell).  The consumer-box
 is ${\sim}4\times$ slower in wall time but dramatically cheaper in
@@ -765,7 +766,7 @@ Five threats are specific to the Source~B FM runs, detailed in
 Appendix~F.  In summary: (1) extraction selection bias --- only
 papers that chose a retail task are represented; (2) Source~A vs
 Source~B protocol drift --- as-reported vs our rolling-origin
-protocol; (3) local run covers four models up to 120\,M params
+protocol; (3) local run covers five models up to 200\,M params
 --- the largest FMs ($>$200\,M) are Source~A only; (4)
 covariate asymmetry --- univariate FMs vs covariate-aware
 LightGBM; (5) top-30k Favorita cap propagates velocity bias.  The

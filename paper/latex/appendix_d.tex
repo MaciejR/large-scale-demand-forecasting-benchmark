@@ -1,7 +1,7 @@
 % appendix_d.tex — Sensitivity Analyses
 \section{Sensitivity Analyses}\label{app:sensitivity}
 
-Five sensitivity variants of the primary $k = 450$ model-level
+Five sensitivity variants of the primary $k = 459$ model-level
 meta-regression are reported below.  All models use
 \texttt{metafor::rma.mv} \citep{viechtbauer2010metafor} with REML
 estimation, Knapp--Hartung $t$-distribution adjustment
@@ -13,17 +13,17 @@ estimation, Knapp--Hartung $t$-distribution adjustment
 \begin{table}[htbp]
 \centering
 \caption{Sensitivity variants of the model-level meta-regression
-  ($k = 450$ primary pool).}\label{tab:sensitivity-summary}
+  ($k = 459$ primary pool).}\label{tab:sensitivity-summary}
 \begin{tabular}{lrlllr}
 \toprule
 Variant & $k$ & $\Dhat$ & 95\% CI & $p$ & $Q$ \\
 \midrule
-Full pool         & 450 & $-0.150$ & $[-0.240,\; -0.060]$ & 0.001 & 48{,}672 \\
-Excl-M5           & 378 & $-0.116$ & $[-0.194,\; -0.038]$ & 0.004 &  17{,}311 \\
-\WAPE{}-only      & 174 & $-0.070$ & $[-0.164,\; +0.023]$ & 0.14  &  27{,}081 \\
+Full pool         & 459 & $-0.150$ & $[-0.240,\; -0.060]$ & 0.001 & 48{,}736 \\
+Excl-M5           & 384 & $-0.116$ & $[-0.193,\; -0.038]$ & 0.004 &  17{,}313 \\
+\WAPE{}-only      & 183 & $-0.070$ & $[-0.164,\; +0.023]$ & 0.14  &  27{,}149 \\
 SQL-only          & 138 & $-0.278$ & $[-0.378,\; -0.178]$ & $<.0001$ & 6{,}303 \\
-Source~B only     &  36 & $-0.229$ & $[-0.569,\; +0.110]$ & 0.180  &  20{,}572 \\
-Source~A only     & 414 & $-0.113$ & $[-0.159,\; -0.067]$ & $<.0001$ & 25{,}933 \\
+Source~B only     &  45 & $-0.229$ & $[-0.567,\; +0.108]$ & 0.178  &  20{,}626 \\
+Source~A only     & 414 & $-0.113$ & $[-0.161,\; -0.064]$ & $<.0001$ & 25{,}933 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -31,13 +31,13 @@ Source~A only     & 414 & $-0.113$ & $[-0.159,\; -0.067]$ & $<.0001$ & 25{,}933 
 \subsection{Interpretation}
 
 \begin{enumerate}
-  \item \textbf{Excl-M5 ($k = 378$):} Excluding all M5 pairs barely
+  \item \textbf{Excl-M5 ($k = 384$):} Excluding all M5 pairs barely
     changes the estimate ($-0.116$ vs $-0.150$) and remains
     significant ($p = 0.004$).  M5 is not driving the primary result
     (contrast with the bucket-level variant in Table~\ref{tab:sensitivity-old},
     where excluding M5 shifted the estimate substantially).
 
-  \item \textbf{\WAPE{}-only ($k = 174$):} The FM advantage is
+  \item \textbf{\WAPE{}-only ($k = 183$):} The FM advantage is
     directionally favorable but not statistically significant
     ($\hat{\Delta} = -0.070$, $p = 0.14$).  The effect is weaker than
     the SQL-only finding, confirming that the metric split documented in
@@ -48,8 +48,8 @@ Source~A only     & 414 & $-0.113$ & $[-0.159,\; -0.067]$ & $<.0001$ & 25{,}933 
     the lowest $Q$ of any slice, indicating relative homogeneity
     conditional on this metric.
 
-  \item \textbf{Source~B only ($k = 36$):} The 36 within-paper pairs
-    (4~FMs $\times$ 9~cells) show the right direction ($-0.229$) but
+  \item \textbf{Source~B only ($k = 45$):} The 45 within-paper pairs
+    (5~FMs $\times$ 9~cells) show the right direction ($-0.229$) but
     are insufficient for significance ($p = 0.18$) with only 3~dataset
     clusters.
 
@@ -79,7 +79,7 @@ Within-paper (B) & 9  & $-0.245$ & $[-0.482, -0.008]$ & 0.044 \\
 \end{tabular}
 \end{table}
 
-The model-level design ($k = 450$) differs from the bucket-level
+The model-level design ($k = 459$) differs from the bucket-level
 variant in two ways: (1)~it preserves within-task heterogeneity
 instead of averaging it away, and (2)~it includes the fev-bench SQL
 metric, which contributes substantial statistical mass.  Together,
