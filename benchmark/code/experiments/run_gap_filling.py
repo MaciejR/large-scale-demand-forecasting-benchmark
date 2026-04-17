@@ -9,6 +9,7 @@ import os
 import sys
 import tempfile
 import time
+from pathlib import Path
 
 import mlflow
 import numpy as np
@@ -682,6 +683,10 @@ def main():
     )
 
     tags = {"phase": "gap_filling", "eval_method": "rolling_origin", "paper": "meta-analysis"}
+    # Ensure MLflow writes to the benchmark repo's mlruns directory
+    # regardless of the shell's CWD (which may differ from the repo root).
+    _repo_root = Path(__file__).resolve().parent.parent.parent.parent
+    mlflow.set_tracking_uri(f"file://{_repo_root}/mlruns")
     mlflow.set_experiment("meta-analysis-gap-filling")
 
     with mlflow.start_run(run_name=f"{dataset_name}_h{horizon}"):

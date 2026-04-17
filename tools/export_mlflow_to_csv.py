@@ -23,7 +23,6 @@ Usage:
 
 import argparse
 from pathlib import Path
-from typing import Optional
 
 import mlflow
 import pandas as pd
@@ -58,7 +57,10 @@ MODEL_FAMILY = {
     "tirex": "foundation",
     "tabpfn_ts": "foundation",
     "timesfm": "foundation",
+    "timesfm25": "foundation",
     "moirai": "foundation",
+    "moirai2": "foundation",
+    "chronos2": "foundation",
     "lightgbm_cov": "ml_tree",
     "lightgbm_direct": "ml_tree",
     "lightgbm": "ml_tree",
@@ -194,43 +196,13 @@ def build_rows(leaf: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-def export(
-    out_path: Path,
-    local_uri: str,
-    azure_uri: Optional[str],
-    experiment_name: str,
-) -> int:
-    print(f"Pulling local MLflow runs from {local_uri}")
-    local = load_leaf_runs(local_uri, experiment_name, "local")
-
-    if azure_uri:
-        print(f"Pulling Azure MLflow runs from {azure_uri}")
-        azure = load_leaf_runs(azure_uri, experiment_name, "azure")
-    else:
-        azure = pd.DataFrame()
-
-    frames = [f for f in (local, azure) if not f.empty]
-    if not frames:
-        print("No runs found in any backend.")
-        return 0
-
-    combined = pd.concat(frames, ignore_index=True, sort=False)
-    out = build_rows(combined)
-    if out.empty:
-        print("No rows after family/dataset filtering.")
-        return 0
-
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out.to_csv(out_path, index=False)
-    print(f"Wrote {len(out)} rows to {out_path}")
-    print(f"  by family: {out['model_family'].value_counts().to_dict()}")
-    return len(out)
-
-
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--local-uri", default="file:./mlruns",
                    help="Local MLflow tracking URI (foundation models)")
+    p.add_argument("--extra-local-uri", default=None,
+                   help="Additional local MLflow tracking URI to merge "
+                        "(e.g. when sweep ran from a different CWD)")
     p.add_argument("--azure-uri", default=AZURE_MLFLOW_URI,
                    help="Azure ML workspace MLflow URI (ML_TREE + stats baselines). "
                         "Pass empty string to skip.")
@@ -238,12 +210,49 @@ def main() -> None:
     p.add_argument("--out", type=Path,
                    default=Path("benchmark/results/local_fm_sweep.csv"))
     args = p.parse_args()
-    export(
-        out_path=args.out,
-        local_uri=args.local_uri,
-        azure_uri=args.azure_uri or None,
-        experiment_name=args.experiment,
-    )
+
+    # If sweep ran from a different CWD, its MLflow file store may be
+    # at a different path. Merge both locations before deduplication.
+    if args.extra_local_uri:
+        print(f"Pulling extra local MLflow runs from {args.extra_local_uri}")
+        extra = load_leaf_runs(args.extra_local_uri, args.experiment, "local")
+    else:
+        extra = pd.DataFrame()
+
+    print(f"Pulling local MLflow runs from {args.local_uri}")
+    local = load_leaf_runs(args.local_uri, args.experiment, "local")
+
+    if not extra.empty:
+        local = pd.concat([local, extra], ignore_index=True, sort=False)
+        # Re-deduplicate after merge
+        local = local.sort_values("start_time", ascending=False)
+        local = local.drop_duplicates(
+            subset=["params.model", "params.dataset", "params.horizon"],
+            keep="first",
+        )
+        print(f"  After merge+dedup: {len(local)} local runs")
+
+    if args.azure_uri:
+        print(f"Pulling Azure MLflow runs from {args.azure_uri}")
+        azure = load_leaf_runs(args.azure_uri, args.experiment, "azure")
+    else:
+        azure = pd.DataFrame()
+
+    frames = [f for f in (local, azure) if not f.empty]
+    if not frames:
+        print("No runs found in any backend.")
+        return
+
+    combined = pd.concat(frames, ignore_index=True, sort=False)
+    out = build_rows(combined)
+    if out.empty:
+        print("No rows after family/dataset filtering.")
+        return
+
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    out.to_csv(args.out, index=False)
+    print(f"Wrote {len(out)} rows to {args.out}")
+    print(f"  by family: {out['model_family'].value_counts().to_dict()}")
 
 
 if __name__ == "__main__":

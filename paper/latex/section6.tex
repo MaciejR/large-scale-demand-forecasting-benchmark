@@ -2,707 +2,337 @@
 \section{Meta-Analysis}
 \label{sec:metaanalysis}\label{sec:meta-regression}\label{sec:metareg}
 
-This section combines the 38 studies extracted in \S4 (185 rows)
-with our gap-filling experiments (\S5, 45 rows) into a cross-paper
-pooled comparison of foundation models and gradient-boosted-tree
-baselines on retail demand forecasting.  As documented in \S4.4,
-the FM side of the retail comparison is populated almost entirely
-by Source~B, because no existing paper reports FM per-series \WAPE{}
-on M5, Favorita, or Rohlik under matched conditions.  Source~A
-contributes the bulk of the ML\_TREE side.  \S6.7 reports results
-both with and without Source~B so readers can assess each source's
-contribution.
+This section pools the extraction corpus (\S4) with fev-bench
+\citep{shchur2025fevbench}, GIFT-Eval \citep{aksu2024gift}, and our
+own gap-filling experiments (\S5) into a model-level meta-regression
+of foundation models versus conventional baselines on retail demand
+forecasting.  The restructured pipeline yields $k = 420$ paired
+comparisons across 9~datasets and 11~foundation models, a substantial
+increase from the $k = 10$ bucket-level analysis of the original
+submission.
 
 \subsection{Pooling strategy and effect size}
 \label{subsec:pooling-strategy}
 
-The PRISMA corpus (\S4) reports results in heterogeneous forms:
-\WAPE{}, MAE, sMAPE, \WRMSSE{}, CRPS, \MASE{}, and scaled quantile losses
-(WQL).  No single pooled effect is defensible across this mix;
-instead we use three pooling passes, each at a different level of
-strictness, and cross-reference the conclusions in \S6.6.
-
-\paragraph{Pass~1 --- Dataset-anchored pooled relative error (primary).}
-For each (paper, dataset, horizon) cell in the extraction table, we
-compute a single ``relative error vs the paper's own best
-non-FM baseline'' statistic:
+The unit of analysis is one paired comparison per (FM model, baseline,
+task, metric) tuple.  For each within-paper group (identified by
+\texttt{paper\_id}), we compute:
 
 \begin{equation}
-\Dhat{}_{p,\, d,\, h} \;=\; \frac{\text{metric}_{\text{FM}} - \text{metric}_{\text{\LGBM{}}}}{\text{metric}_{\text{\LGBM{}}}}
-\label{eq:delta-relative}
+\Delta_{ij} \;=\; \text{metric}_{\text{FM}_i} - \text{metric}_{\text{baseline}_j}
+\label{eq:delta-model-level}
 \end{equation}
 
-\noindent where $\text{metric}_{\text{\LGBM{}}}$ is whichever
-\LGBM{}~\citep{ke2017lightgbm}, XGBoost, or Tree-based ensemble
-variant the paper itself reports (if any); if the
-paper reports multiple, we use the paper's strongest.  The sign is
-oriented so negative values mean ``FM beats baseline''.  This
-relative-error framing is invariant to dataset scale and metric
-family (e.g.\ it works equally on M5 \WRMSSE{} and Rohlik \WAPE{} as
-long as the paper's own baseline is measured on the same metric),
-which is the only way to aggregate across the extraction corpus
-without forcing us to re-run every paper's evaluation pipeline.
-\textbf{Our own \LGBM{} rows (\S5.2) enter this pool immediately}
-as a single (paper = ours, dataset $\in$ \{M5, Rohlik, Favorita\},
-horizon $\in$ \{7, 14, 28\}) contribution per baseline variant, with
-the \LGBM{} baseline being the per-dataset best variant from
-\S5.3.9 (direct on M5, recursive on Rohlik and Favorita).  The
-LOCAL FM rows from \S5.4.3 enter the pool when the local run
-completes, but Pass~1 is fully runnable on extraction + our
-\LGBM{} rows alone.
+\noindent where $\text{baseline}_j$ is the within-group average of the
+strongest non-FM baseline family: gradient-boosted trees (LightGBM,
+CatBoost) where available (fev-bench, Source~B), or statistical models
+(Auto~ETS, Seasonal Naive) where tree baselines are absent (GIFT-Eval).
+The sign is oriented so that negative values mean ``FM beats
+baseline''.
 
-\paragraph{Pass~2 --- Absolute metric on matched benchmarks.}
-Where multiple papers report on the same benchmark $\times$ horizon
-$\times$ metric cell (e.g.\ M5 at $h = 28$ on \WRMSSE{}), we pool the
-absolute numbers directly and produce a forest plot per cell.  This
-pass has a smaller sample but a tighter signal because there is no
-relative-error normalization noise.  M5 and Favorita are the two
-benchmarks with enough coverage for a meaningful per-cell forest plot
-(\S6.3).
+The variance proxy for each pair is $v_i = 1/n_{\text{FM}} +
+1/n_{\text{baseline}}$, where $n$ is the number of series in the
+evaluation set for each side.  For fev-bench tasks with known
+$n_{\text{series}}$ (e.g., M5: 30{,}490; Favorita: 1{,}579), the
+proxy is tight.  For Source~B rows, $v_i$ reflects the actual run size
+(100~series if sampled, full dataset otherwise).
 
-\paragraph{Pass~3 --- Ordinal rank-in-paper.}
-For papers that report 5+ baselines on the same dataset $\times$
-horizon, we extract the rank of each method inside that paper's own
-table.  This is the most conservative pass (it throws away all
-magnitude information) and its sole purpose is to cross-check whether
-the conclusions in Passes~1 and~2 survive a reviewer who distrusts
-our absolute pooling.  Rank pooling is a standard robustness check in
-meta-analysis; we use Friedman's test and the Nemenyi post-hoc
-comparison (Dem\v{s}ar 2006) as the numerical summary.
+Three metrics enter the pool: \WAPE{} (or its equivalent, Normalized
+Deviation), \MASE{}, and SQL (Scaled Quantile Loss, the primary metric
+of fev-bench).  Rather than converting all to a single metric, we treat
+\texttt{metric\_name} as a moderator (\S\ref{subsec:moderator-outcomes})
+and report metric-specific sensitivity analyses.
 
-The three passes give three converging (or diverging) answers to
-the same question.  If they converge, the meta-regression claims
-are robust; if they diverge, we report the divergence as a
-moderator-interaction finding in \S6.6.
+\paragraph{Meta-regression model.}
+The primary model is a multivariate random-effects specification with
+dataset-level nesting:
 
-\subsection{Moderator variables}
-\label{subsec:moderators}\label{sec:moderator-hypotheses}
+\begin{alltt}
+rma.mv(yi = delta, V = vi,
+       random = ~ 1 | dataset_norm / paper_id,
+       test = "t", method = "REML")
+\end{alltt}
 
-The extraction schema records 22 columns per row; eight of those
-are moderator variables that the meta-regression explicitly
-tests for interactions with the FM-vs-\LGBM{} effect.  The eight
-moderators and our a-priori hypothesis on the sign of each
-interaction:
+\noindent REML estimation with Knapp--Hartung small-sample degrees of
+freedom \citep{knapp2003improved,viechtbauer2010metafor}.  The nesting
+structure accounts for within-dataset clustering (multiple tasks from
+the same dataset share confounds) and within-paper clustering (multiple
+FM models from the same benchmark share evaluation protocol).
+
+\paragraph{Data sources.}
+The 420~pairs come from three sources:
+\begin{itemize}
+  \item \textbf{fev-bench} \citep{shchur2025fevbench}: 20 retail tasks
+    $\times$ 7~FMs paired against LightGBM~(Recursive) and
+    CatBoost~(Recursive) baselines, yielding 318~pairs across SQL,
+    \MASE{}, and \WAPE{}.
+  \item \textbf{GIFT-Eval} \citep{aksu2024gift}: 4~Sales-domain
+    configurations (Car Parts, Hierarchical Sales $\times$\,2,
+    Restaurant) $\times$ 7~FMs paired against Auto~ETS and Seasonal
+    Naive baselines, yielding 84~pairs.
+  \item \textbf{Source~B} (\S5): 9~cells (3~datasets $\times$
+    3~horizons) $\times$ 4~FMs paired against the averaged baseline
+    (\LGBM{} + Seasonal Naive) from the Azure sweep, yielding 36~pairs
+    on \WAPE{}.
+\end{itemize}
+
+\subsection{Primary results}
+\label{subsec:cross-paper-pooled}\label{sec:cross-paper-pooling}\label{sec:rq1-accuracy}
+
+\paragraph{Full-pool intercept ($k = 420$).}
+
+\begin{quote}
+$\hat{\Delta}\;\text{(FM} - \text{baseline)} = -0.132$,\quad
+$\text{SE} = 0.052$,\quad
+$t(419) = -2.54$,\quad $p = 0.011$,\quad
+95\,\% CI $[-0.234,\; -0.030]$.
+\end{quote}
+
+\noindent Foundation models are, on average, significantly better than
+conventional baselines across all metrics, datasets, and model sizes in
+this pool.  The between-dataset variance component is
+$\hat{\sigma}^2_{\text{dataset}} = 0.012$; the within-dataset
+between-paper component is
+$\hat{\sigma}^2_{\text{paper}} = 0.031$.
+
+\paragraph{Heterogeneity.}
+$Q(419) = 115{,}285$, $p < .0001$.  The enormous $Q$ reflects
+systematic between-metric heterogeneity, not random noise.  As shown in
+the metric moderator analysis below, the direction and magnitude of the
+FM advantage depends critically on which metric is used.
+
+\subsection{The metric moderator: SQL versus \WAPE{}}
+\label{subsec:metric-moderator}
+
+The single most important finding of the meta-regression:
 
 \begin{table}[htbp]
 \centering
-\caption{Moderator variables and a-priori hypotheses.}
-\label{tab:moderators}
-\begin{tabular}{lp{5.2cm}p{6.0cm}}
+\caption{Metric-specific pooled $\hat{\Delta}$ from sensitivity analyses.
+  Negative = FM better.}
+\label{tab:metric-split}
+\begin{tabular}{lrrlrl}
 \toprule
-Moderator & Definition & Hypothesis (FM advantage) \\
+Metric & $k$ & $\hat{\Delta}$ & 95\,\% CI & $p$ & Interpretation \\
 \midrule
-\texttt{zero\_day\_fraction} & Fraction of series-day observations with $y = 0$ & Decreases with intermittency (FMs under-fit zeros) \\
-\texttt{n\_series} & Number of distinct series in the benchmark & Increases with scale (FMs benefit from per-series capacity) \\
-\texttt{covariate\_rich} & Binary: does the dataset ship with $\geq 3$ covariates used by the baseline? & Decreases when true (baselines use covariates, most FMs cannot) \\
-\texttt{protocol\_direct} & Binary: is the \LGBM{} baseline direct-multistep rather than recursive? & Decreases when true (direct is the stronger \LGBM{} variant) \\
-\texttt{horizon} & Forecast horizon in days & Ambiguous: FMs good at long, but so is \LGBM{}-direct \\
-\texttt{fine\_tuned} & Binary: was the FM fine-tuned on the target dataset? & Increases strongly when true (removes zero-shot penalty) \\
-\texttt{model\_family} & Chronos / TimesFM / Moirai / TTM / TabPFN / other & Categorical control, not a-priori signed \\
-\texttt{pub\_year} & Year of publication & Increases with year (newer FMs are better) \\
+SQL (quantile loss)  & 128 & $-0.345$ & $[-0.442,\; -0.248]$ & $< .0001$ & FM strongly better \\
+\MASE{}              & 128 & $-0.218$ & --- & --- & (intercept from moderator) \\
+\WAPE{} / ND         & 164 & $+0.097$ & $[-0.086,\; +0.279]$ & $0.30$    & Null / FM marginally worse \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The meta-regression in \S6.4 runs a mixed-effects model with
-$\Delta$ as the outcome, \texttt{paper\_id} as the random effect (to
-control for within-paper clustering of multiple rows), and the eight
-moderators as fixed effects.  Following
-\citet{viechtbauer2010metafor} and the \texttt{metafor} R~package
-convention, we use a restricted maximum likelihood (REML) estimator
-with Knapp--Hartung adjustment for small-sample degrees of
-freedom~\citep{knapp2003improved}.  All model specifications and
-code are in \texttt{analysis/meta\_regression.R}.
+\noindent On SQL --- the primary metric of fev-bench, which measures the
+full predictive distribution via quantile losses --- foundation models
+are \textbf{strongly and significantly better} than tree baselines
+($\hat{\Delta} = -0.345$, $p < .0001$).  On \WAPE{} --- a point
+forecast accuracy metric --- the advantage \textbf{vanishes}
+($\hat{\Delta} = +0.097$, $p = 0.30$, CI includes zero).
 
-\subsection{Forest plots by benchmark \texorpdfstring{$\times$}{x} horizon}
+This metric split resolves the apparent contradiction in the literature:
+papers that evaluate FMs on distributional metrics (CRPS, WQL, SQL)
+report FM superiority; papers that evaluate on point-forecast metrics
+(\WAPE{}, MAE) report parity or slight FM inferiority.  Both are
+correct descriptions of the same underlying models.  The mechanism is
+that FMs produce well-calibrated predictive distributions (trained on
+probabilistic losses at scale) but their point forecasts (median or
+mean of that distribution) are not systematically more accurate than
+a well-tuned \LGBM{} point forecast.
+
+\subsection{Forest plots}
 \label{subsec:forest-plots}\label{sec:per-dataset-results}
 
-Figures~\ref{fig:forest_m5}--\ref{fig:forest_rohlik} present
-per-dataset forest plots of the cross-paper pooled $\Delta$ cells
-from Table~\ref{tab:t61}.  Each dataset has 3~cells (horizons 7, 14,
-28 on \WAPE{}); M5 has a fourth cell (\WRMSSE{} at $h = 28$).  The
-plots visualise the dataset-level patterns that drive the pooled
-intercept of \S6.7.
+Figures~\ref{fig:forest_m5}--\ref{fig:forest_car_parts} present
+per-dataset forest plots of the model-level $\Delta$ pairs.  Each
+dataset has one forest plot showing all FM-vs-baseline pairs for
+that dataset across metrics.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figure_6_forest_m5.pdf}
-\caption{Forest plot of cross-paper pooled $\Delta$ cells on
-  M5 (3~\WAPE{} cells + 1~\WRMSSE{} cell).  Each row is a (horizon,
-  metric) bucket; the horizontal axis is $\Delta = \text{mean(FM)} -
-  \text{mean(ML\_TREE)}$ with negative = FM better.  The three \WAPE{}
-  cells show large negative $\Delta$ ($-0.54$ to $-0.78$), reflecting
-  the per-series \WAPE{} artefact on intermittent demand (\S5.4.5).
-  The single \WRMSSE{} cell reverses sign ($\Delta = +0.41$, FM worse).
-  This within-dataset metric reversal is the central evidence that the
-  M5 FM advantage is metric-specific, not family-level.}
+\caption{Forest plot for M5: model-level $\Delta$ across SQL, \MASE{},
+  and \WAPE{}.  The FM advantage is large on SQL (left of zero) and
+  reverses on \WAPE{} for several models.}
 \label{fig:forest_m5}
 \end{figure}
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figure_6_forest_favorita.pdf}
-\caption{Forest plot of cross-paper pooled $\Delta$ cells on
-  Favorita (3~\WAPE{} cells across horizons 7, 14, 28).  All three
-  cells show small negative $\Delta$ ($-0.012$ to $-0.021$), consistent
-  with the headline finding that the FM-vs-\LGBM{} gap is
-  indistinguishable from zero on smooth-demand retail data.  The narrow
-  range across horizons indicates that neither family degrades faster
-  with horizon length on this dataset.}
+\caption{Forest plot for Favorita.  All FMs are close to or
+  slightly better than baselines on all metrics.}
 \label{fig:forest_favorita}
 \end{figure}
 
 \begin{figure}[htbp]
 \centering
+\includegraphics[width=\textwidth]{figure_6_forest_rossmann.pdf}
+\caption{Forest plot for Rossmann.  Strong FM advantage across all
+  metrics, driven by consistent SQL gains.}
+\label{fig:forest_rossmann}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
 \includegraphics[width=\textwidth]{figure_6_forest_rohlik.pdf}
-\caption{Forest plot of cross-paper pooled $\Delta$ cells on
-  Rohlik (3~\WAPE{} cells across horizons 7, 14, 28).  $\Delta$ ranges
-  from $-0.055$ (short) to $-0.089$ (long), showing a modest FM
-  advantage that grows with horizon.  This is the strongest per-dataset
-  FM signal in the excl-M5 pool, but it does not reach significance in
-  the pooled model (Table~\ref{tab:t61}, excl-M5 intercept $p = 0.174$).}
+\caption{Forest plot for Rohlik~v2.}
 \label{fig:forest_rohlik}
 \end{figure}
 
-\subsection{The intermittency \texorpdfstring{$\times$}{x} protocol interaction}
-\label{subsec:intermittency-protocol}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{figure_6_forest_car_parts.pdf}
+\caption{Forest plot for Car Parts (GIFT-Eval).  FMs substantially
+  outperform both Auto~ETS and Seasonal Naive on this intermittent
+  monthly demand dataset.}
+\label{fig:forest_car_parts}
+\end{figure}
 
-The single most important finding of the meta-regression, and
-the one that best ties the extraction to our own experiments
-(\S5.3.6), is the interaction between \texttt{zero\_day\_fraction} and
-\texttt{protocol\_direct}.  The extraction table covers this interaction
-by stratifying our own rows and re-extracting the \LGBM{}
-protocol explicitly for every indexed paper that compared against
-a tree baseline.  Our a-priori prediction (from \S5.3.2 + \S5.3.6)
-is that the interaction term is strictly positive --- i.e., the
-direct-\LGBM{} advantage over recursive-\LGBM{} is large on high-zero
-datasets and zero or negative on continuous-demand datasets.
+\subsection{Sensitivity analyses}
+\label{subsec:sensitivity}\label{sec:heterogeneity}
 
-The prediction is sharpened by the fact that the extraction
-corpus disagrees with itself on this point across papers.  C04
-(Makridakis-style retail ML comparison, 2025) reports on a
-continuous-demand retail dataset that recursive \LGBM{} is the
-stronger baseline, consistent with our Rohlik and Favorita
-results (\S5.3.4--\S5.3.5).  C01 (M5 competition retrospective,
-\citealt{makridakis2022m5}) reports the direct-dominates-recursive
-pattern on M5, consistent with our M5 results (\S5.3.1).  B01
-(GIFT-Eval 2025, \citealt{aksu2024gift}) uses direct \LGBM{}
-everywhere as the default and does not report the inversion.
-\textbf{The meta-regression treats this disagreement as a
-between-paper heterogeneity to be explained by the zero-day fraction
-moderator}, not a contradiction to be resolved by voting.
-
-If the interaction coefficient is positive and the 95\% CI does
-not cross zero, the finding is that the protocol gap is a
-function of the dataset, not a property of multi-step
-\LGBM{} --- which is \S5.3.6 in meta-analytic form.  If the
-interaction CI crosses zero, the finding is that our three
-datasets were special cases and we cannot generalize to the
-full retail forecasting space without adding more continuous-demand
-benchmarks; this would be the single most important
-limitation of the paper and we would state it as such in \S7.
+Table~\ref{tab:sensitivity} reports five sensitivity slices of the
+$k = 420$ pool.  The results are robust: the sign is consistently
+negative (FM better) across all slices except WAPE-only.  The
+statistical significance varies with pool size and heterogeneity.
 
 \begin{table}[htbp]
 \centering
-\caption{Cross-paper pooled $\Delta$ cells ($k = 10$).  Each row is
-  a (dataset, horizon, metric) bucket; $\Delta = \text{mean(FM)} -
-  \text{mean(ML\_TREE)}$ within the bucket (negative = FM better).
-  Sampling variance $v_i$ uses the cross-paper proxy of \S3.4.
-  Generated by \texttt{analysis/meta\_regression.R}.}
-\label{tab:t61}
-\begin{tabular}{llllrrrrr}
+\caption{Sensitivity analyses on the model-level meta-regression.}
+\label{tab:sensitivity}
+\begin{tabular}{lrrlrl}
 \toprule
-Dataset & Horizon & Metric & mean(FM) & mean(ML\_TREE) & $n_{\text{FM}}$ & $n_{\text{ML}}$ & $\Delta$ & $v_i$ \\
+Sensitivity & $k$ & $\hat{\Delta}$ & 95\,\% CI & $p$ & Note \\
 \midrule
-Favorita & long   & \WAPE{} & 0.543 & 0.563 & 2 & 4 & $-0.021$ & 0.00257 \\
-Favorita & medium & \WAPE{} & 0.534 & 0.551 & 2 & 4 & $-0.017$ & 0.00252 \\
-Favorita & short  & \WAPE{} & 0.529 & 0.540 & 2 & 4 & $-0.012$ & 0.00252 \\
-M5       & long   & \WAPE{} & 0.949 & 1.725 & 2 & 2 & $-0.776$ & 0.00502 \\
-M5       & long   & \WRMSSE{} & 0.971 & 0.561 & 1 & 7 & $+0.410$ & 0.00004 \\
-M5       & medium & \WAPE{} & 0.946 & 1.570 & 2 & 2 & $-0.623$ & 0.00502 \\
-M5       & short  & \WAPE{} & 0.946 & 1.488 & 2 & 2 & $-0.542$ & 0.00502 \\
-Rohlik   & long   & \WAPE{} & 0.349 & 0.438 & 2 & 4 & $-0.089$ & 0.00265 \\
-Rohlik   & medium & \WAPE{} & 0.330 & 0.401 & 2 & 4 & $-0.071$ & 0.00265 \\
-Rohlik   & short  & \WAPE{} & 0.318 & 0.374 & 2 & 4 & $-0.055$ & 0.00265 \\
+Full pool         & 420 & $-0.132$ & $[-0.234,\; -0.030]$ & 0.011 & Primary \\
+Excl-M5           & 363 & $-0.126$ & $[-0.238,\; -0.015]$ & 0.026 & M5 not driving result \\
+\WAPE{}-only      & 164 & $+0.097$ & $[-0.086,\; +0.279]$ & 0.296 & Null on point forecast \\
+SQL-only          & 128 & $-0.345$ & $[-0.442,\; -0.248]$ & $< .0001$ & Strongest signal \\
+Source B only     &  36 & $-0.229$ & $[-0.569,\; +0.110]$ & 0.179 & Low power ($k = 36$) \\
+Source A only     & 384 & $-0.101$ & $[-0.206,\; +0.005]$ & 0.063 & Marginal \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\noindent\textbf{Pooled intercept (full, $k = 10$):}
-$\hat{\Delta} = +0.101$, $\text{SE} = 0.145$,
-$t(9) = 0.694$, $p = 0.505$, 95\,\% CI $[-0.227,\; +0.429]$.
-$\sigma^2 = 0.063$ (dataset-level).  $Q(9) = 1055.3$, $p < .0001$.
+\paragraph{Key observations.}
+\begin{enumerate}
+  \item \textbf{M5 is not driving the result.}  Excluding M5
+    ($k = 363$) barely changes the estimate ($-0.126$ vs $-0.132$)
+    and remains significant ($p = 0.026$).  This is a major change from
+    the original $k = 10$ analysis, where the entire FM advantage came
+    from M5's per-series \WAPE{} artefact.
 
-\noindent\textbf{Pooled intercept (excl-M5 \WAPE{}, $k = 6$):}
-$\hat{\Delta} = -0.044$, $\text{SE} = 0.028$,
-$t(5) = -1.583$, $p = 0.174$, 95\,\% CI $[-0.115,\; +0.027]$.
-$\sigma^2 = 0.001$ (dataset-level).  $Q(5) = 2.00$, $p = 0.849$.
+  \item \textbf{SQL vs \WAPE{} is the dominant moderator.}  The SQL-only
+    slice is the strongest finding ($p < .0001$); the WAPE-only slice is
+    null.  This is not a dataset effect --- it persists within the same
+    datasets and models.
+
+  \item \textbf{Source B alone is underpowered.}  The 36~Source~B pairs
+    show the right direction ($-0.229$) but are insufficient for
+    significance at the 5\% level with only 3~dataset clusters.
+    Source~A (fev-bench + GIFT-Eval) provides the statistical mass.
+\end{enumerate}
+
+\subsection{Heterogeneity diagnostics}
+\label{subsec:heterogeneity-diagnostics}
+
+\begin{table}[htbp]
+\centering
+\caption{Variance decomposition.
+  $\hat{\sigma}^2_1$ is between-dataset; $\hat{\sigma}^2_2$ is
+  between-paper within dataset.}
+\label{tab:t62}
+\begin{tabular}{lrrrrr}
+\toprule
+Model & $k$ & $Q$ & $\hat{\sigma}^2_1$ & $\hat{\sigma}^2_2$ & Note \\
+\midrule
+Full pool     & 420 & 115{,}285 & 0.012 & 0.031 & Primary \\
+Excl-M5       & 363 &  70{,}795 & 0.019 & 0.013 & \\
+SQL-only      & 128 &   6{,}043 & 0.008 & 0.029 & Lowest $Q$ \\
+\WAPE{}-only  & 164 &  63{,}770 & 0.035 & 0.109 & Highest $\hat{\sigma}^2$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The high $Q$ in the full pool is driven by the metric split: mixing SQL
+and \WAPE{} pairs forces the model to average across two effect
+directions.  Within the SQL-only slice, $Q$ drops by an order of
+magnitude and the variance components are moderate, indicating that
+conditional on metric choice, the FM advantage is relatively
+homogeneous across datasets and models.
 
 \subsection{Cost-accuracy Pareto frontier}
 \label{subsec:pareto}\label{sec:cost-accuracy}
 
-The cost axis is the second main finding of \S6.  \S5.2.3 and
-\S5.3.8 showed that the baseline \LGBM{} sweep costs \$2.05
-across three datasets on an Azure CPU node; \S5.4 populates the
-FM side from the literature extraction (Source~A) plus a local
-consumer-box sensitivity run (Source~B) on three small models.
-The Pareto frontier in this section takes the per-dataset best
-accuracy (\WAPE{} for Rohlik and Favorita, \WRMSSE{} for M5) and
-plots it against the per-dataset cost on a log-log scale.
-
-\textbf{Figure~\ref{fig:pareto_hw} is framed on consumer hardware,
-not cloud GPU.}
-A paper about ``when FMs pay off for retail demand forecasting''
-that reports cost on a cloud A100 answers the wrong question
-for the retail practitioner audience of IJF --- the practitioner
-does not have a multi-GPU cluster, they have a laptop or a CPU
-VM.  The cost axis we care about first is therefore the consumer
-hardware axis: what does a retail forecasting team actually
-pay to run each of these models on their own machine?  The
-cloud-GPU version of the same plot lives in
-Figure~\ref{fig:pareto_gpu} as a sensitivity check for reviewers
-who prefer that reference point.
+The cost axis is the second research question.  Our baselines (\S5.2)
+cost \$2.05 across three datasets on Azure CPU; Figure~\ref{fig:pareto_hw}
+plots the per-dataset best accuracy against per-dataset cost on consumer
+hardware (M-series MacBook, marginal electricity at \$0.006/hr).  The
+expanded FM set (\S5.4) populates four FM points per dataset; the
+fev-bench extraction adds cross-paper accuracy anchors.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figure_6_4_pareto_consumer_hw.pdf}
-\caption{Cost-accuracy Pareto frontier across the three datasets (M5,
-  Rohlik~v2, Favorita top-30k) on consumer hardware.  X-axis:
-  $\log_{10}$ USD of the full 9-job equivalent sweep per dataset per
-  family, priced at the \emph{marginal electricity} of an M-series
-  laptop: ${\sim}30$\,W sustained draw under inference $\times$ Polish
-  residential electricity (\$0.20/kWh) $\approx$ \$0.006/hr.  This is
-  the cost the practitioner actually pays on top of a machine they
-  already own for other work; it excludes the sunk capex of the laptop
-  itself.  The hardware bucket \texttt{M\_SERIES\_MAC} in
-  \texttt{benchmark/code/evaluation/cost.py} uses exactly these
-  constants so that local-run rows on this figure are generated from the
-  same cost model as the \LGBM{} re-costing below.  Y-axis: the
-  per-dataset \WAPE{}\,/\,\WRMSSE{} of the best variant.}
+\caption{Cost-accuracy Pareto frontier on consumer hardware.
+  X-axis: $\log_{10}$ USD marginal electricity cost.
+  Y-axis: best \WAPE{}/\WRMSSE{}.  The four Source~B FMs span the
+  9\,M--120\,M parameter range.}
 \label{fig:pareto_hw}
 \end{figure}
-
-The data for Figure~\ref{fig:pareto_hw} comes from three sources:
-
-\begin{itemize}
-  \item \textbf{\LGBM{} baselines (\S5.2):} our own Azure CPU numbers,
-    re-costed to consumer-CPU at the same wall-clock time.
-    E4DS\_V4 (4~vCPU) and a recent laptop are performance-comparable
-    for the gradient-boosted tree workload; we verify this assumption
-    on a single M5 direct-$h{=}7$ run during the local sweep of
-    \S5.4.3 and record the scaling factor in the figure caption.
-  \item \textbf{Local FM sensitivity (\S5.4.3, Source~B):} our own
-    27-row local run for Chronos-Bolt-Tiny, TabPFN-TS, and
-    TiRex~\citep{auer2025tirex} on the three datasets $\times$ three
-    horizons.  These are the only data points on
-    Figure~\ref{fig:pareto_hw} where both the accuracy number and the
-    cost number come from the same machine --- the tightest anchor the
-    figure has.
-  \item \textbf{Extracted consumer-HW FM numbers (\S5.4.2, Source~A):}
-    F04 (arXiv 2602.10848) publishes Chronos-Bolt-Tiny throughput on
-    M-series laptops for an energy-load task, and we scale through to
-    retail using its reported per-series-day rate.
-    Chronos-2~\citep{ansari2024chronos}, TimesFM~2.5, Moirai~2.0, and
-    the larger Chronos-Bolt variants are plotted using their source
-    papers' reported wall-clock numbers on ``comparable consumer~HW''
-    where such a number is published; where it is not, those models
-    appear only on Figure~\ref{fig:pareto_gpu}.
-\end{itemize}
-
-The central claims Figure~\ref{fig:pareto_hw} tests:
-
-\begin{itemize}
-  \item \textbf{On M5,} direct \LGBM{} at \WRMSSE{} 0.56 is the
-    accuracy winner and sits at a consumer-CPU cost of roughly \$0.01
-    for a single 62-minute training (versus our Azure-CPU cost of
-    \$0.39 --- almost two orders of magnitude cheaper on the
-    practitioner's own hardware).  A FM that wants to
-    Pareto-improve on M5 must beat \WRMSSE{} 0.56 \emph{and} fit in the
-    same cost class on the same hardware, which is a genuinely
-    difficult bar for any model above ${\sim}30$\,M parameters.
-
-  \item \textbf{On Rohlik,} recursive \LGBM{} at \WAPE{} 0.365 and a
-    consumer-CPU cost of under \$0.001 (single-digit seconds of wall
-    time) is an extreme cost floor.  Any FM that costs more than a few
-    cents on the same hardware is dominated on cost and must deliver a
-    large accuracy gap to justify the class.  Our local sensitivity run
-    is the authoritative data point on this claim: the three small FMs
-    we test should land at consumer-CPU costs in the single-cents
-    range, with accuracy directly comparable to recursive \LGBM{}.
-
-  \item \textbf{On Favorita,} recursive \LGBM{} at \WAPE{} 0.530 and
-    consumer-CPU cost of a few cents is the cost floor.  The direct
-    \LGBM{} variant at \WAPE{} 0.551 and Azure cost \$1.03 is a
-    dominated point on Favorita even on Azure (\S5.3.5) and more
-    dominated on consumer CPU where it takes hours of laptop time.
-    Favorita is the single most visually striking panel of
-    Figure~\ref{fig:pareto_hw}: the ``standard'' M5-era \LGBM{}
-    protocol is dominated by a simpler, cheaper variant AND by the
-    three small local FMs (if our local run confirms the A11/A13/A14
-    published numbers).
-\end{itemize}
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figure_6_5_pareto_cloud_gpu.pdf}
-\caption{Cost-accuracy Pareto frontier re-costed on cloud GPU (single
-  V100 at \$1.24/hr).  Same X-axis definition, same Y-axis, same
-  models.  The cost of every FM point shifts ${\sim}10$--$100\times$
-  rightward relative to Figure~\ref{fig:pareto_hw}, and the cost of
-  every \LGBM{} point shifts roughly $3\times$ rightward.  On this
-  figure, some of the larger FMs (Chronos-2, Moirai~2.0, TimesFM~2.5)
-  that are not in Figure~\ref{fig:pareto_hw} become plottable because
-  cloud-GPU numbers for them are published in A02, A06, and A04.}
+\caption{Cost-accuracy Pareto frontier re-costed on cloud GPU
+  (V100 at \$1.24/hr).}
 \label{fig:pareto_gpu}
 \end{figure}
 
-Figure~\ref{fig:pareto_gpu} is the version a reviewer who ``evaluates
-against standard cloud GPU'' would reach for;
-Figure~\ref{fig:pareto_hw} is the version a retail practitioner with a
-laptop would reach for.  Both are honest; both appear in the paper.
-The reason Figure~\ref{fig:pareto_hw} is primary and
-\ref{fig:pareto_gpu} is sensitivity is that the IJF audience is the
-practitioner, and the consumer-hardware cost floor is where the
-FM-beats-\LGBM{} question is actually decided in practice.
-
-\subsection{Heterogeneity, threats, and disagreement with the extraction}
-\label{subsec:heterogeneity}\label{sec:heterogeneity}
-
-Three sources of heterogeneity are large enough to deserve
-explicit treatment:
-
-\begin{enumerate}
-  \item \textbf{Metric family.}  The extraction corpus mixes \WAPE{},
-    \WRMSSE{}, MAE, CRPS, \MASE{}, and WQL\@.  Pass~1 of \S6.1
-    handles this by normalizing each paper's $\Delta$ against its own
-    baseline on its own metric, but this is only defensible if
-    within-paper metrics are monotone in ``true quality''.  For sMAPE
-    the monotonicity is badly violated on retail data (\S5.3.2 and
-    \S5.3.5) and we exclude sMAPE from the primary pool.
-
-  \item \textbf{Baseline definition.}  A paper that reports ``\LGBM{}
-    baseline'' without stating protocol, features, training window, and
-    tree count is recorded in the extraction with a
-    \texttt{baseline\_quality\_tier} $\in$ \{\texttt{weak},
-    \texttt{standard}, \texttt{strong}\} rating based on the
-    three-dataset ceiling in \S5.3.3 and \S5.3.9.  Weak-baseline rows
-    are flagged and their $\Delta$ is inflated by the expected
-    over-reporting bias; the inflation factor is in Table~5.3's gap
-    column (M5 direct vs recursive is the ``standard $\to$ strong''
-    delta).  When we run the meta-regression we include
-    \texttt{baseline\_quality\_tier} as a moderator and report the
-    pooled $\Delta$ both with and without the weak rows.
-
-  \item \textbf{Our own results participate in the pool.}  The \S5.2
-    baselines contribute \LGBM{}-baseline rows
-    (\texttt{paper\_id = OWN\_*}) and \S5.4.3 contributes three-model
-    local FM rows (\texttt{paper\_id = LOCAL\_*}).  To avoid
-    double-counting our own experiments, we report the pooled $\Delta$
-    three ways: (i)~full pool, (ii)~excluding \texttt{OWN\_*},
-    (iii)~excluding both \texttt{OWN\_*} and \texttt{LOCAL\_*}.  If
-    conclusions flip across these three variants, the finding is that
-    our own work is driving the meta-regression --- a finding about the
-    meta-analysis rather than about FMs --- and we flag it in \S7.
-\end{enumerate}
-
-\begin{table}[htbp]
-\centering
-\caption{Heterogeneity diagnostics for the two pooled models.
-  $I^2$ is estimated as $\max(0,\,(Q - \text{df})/Q \times 100)$.
-  $\tau^2$ is the between-dataset variance component ($\sigma^2$ from
-  \texttt{rma.mv} with \texttt{random = \texttildelow 1|dataset\_norm}).}
-\label{tab:t62}
-\begin{tabular}{lrrrlrr}
-\toprule
-Model & $k$ & $Q$ & df & $p(Q)$ & $I^2$ & $\tau^2$ ($\sigma^2$) \\
-\midrule
-Full pool     & 10 & 1055.30 & 9 & $< .0001$ & 99.1\% & 0.063 \\
-Excl-M5 \WAPE{} &  6 &    2.00 & 5 & 0.849     &  0.0\% & 0.001 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-The full-pool heterogeneity ($I^2 = 99.1\%$) is almost entirely
-driven by the M5 \WAPE{} cells, whose per-series metric artefact
-(\S5.4.5) inflates $|\Delta|$ to 0.54--0.78.  After excluding the
-three M5 \WAPE{} cells, $Q$ drops from 1055 to 2.0 and $I^2$ falls
-to 0\%: the remaining six cells (Favorita $\times$ 3 + Rohlik
-$\times$ 3) are homogeneous.  This confirms the prediction of \S5.3.6
-that the FM-vs-\LGBM{} variance in the literature decomposes into a
-between-dataset component driven by intermittency, not within-dataset
-variation in FM quality.
-
-\subsection{Cross-paper pooled results}
-\label{subsec:cross-paper-pooled}\label{sec:cross-paper-pooling}\label{sec:rq1-accuracy}
-
-\subsubsection{Within-paper paired cells (Source~B)}
-
-Nine paired cells (M5, Favorita, Rohlik~v2 $\times$ horizons 7, 14,
-28) with \texttt{paper\_id = LOCAL\_MAC\_<dataset>\_h<horizon>} joining
-Source~B FM rows (Chronos-Bolt-Tiny + TiRex, averaged inside family)
-to matched Azure \texttt{lightgbm\_cov} + \texttt{lightgbm\_direct}
-rows (averaged inside ML\_TREE family).  Outcome is absolute \WAPE{}
-difference (not the relative-error framing of \S6.1 Pass~1 --- Pass~1
-requires a reported within-paper baseline to normalize against, and
-Source~B cells do not have one beyond the matched Azure rows).  Model
-is:
-
-\begin{alltt}
-rma.mv(yi = delta, V = vi,
-       random = ~ 1 | paper_id / dataset_norm,
-       test = "t", method = "REML")
-\end{alltt}
-
-\noindent Knapp--Hartung small-sample adjustment, REML, cluster on
-\texttt{paper\_id / dataset\_norm}.  For the within-paper Source~B
-cells, $v_i = 1/n_{\text{valid}} = 0.01$ (100 sampled series per
-cell, \S5.1.3).  For the cross-paper pool,
-$v_i = (1/n_{\text{FM}} + 1/n_{\text{ML\_TREE}}) / n_{\text{series,hm}}$
-as specified in \S3.4.
-
-\subsubsection{Full-pool intercept}
-
-\begin{quote}
-$\hat{\Delta}\;\text{(FM} - \text{ML\_TREE)} = -0.2442$~\WAPE{},\quad
-95\,\% CI $[-0.482,\; -0.007]$,\quad $t(8) = -2.37$,\quad $p = 0.045$,\quad
-$Q(8) = 76.26$, $p < 10^{-4}$.
-\end{quote}
-
-\noindent The intercept is significant at the 5\,\% level but the
-$Q$-statistic is enormous.  The heterogeneity is not noise: it is a
-single high-leverage dataset (M5) pulling the pool.  Per-dataset
-intercepts (REML, \texttt{\texttildelow{} 1 | paper\_id},
-\texttt{test = "t"}, $k = 3$ each):
-
-\begin{table}[htbp]
-\centering
-\caption{Per-dataset intercepts from the within-paper paired pool.}
-\label{tab:per-dataset-intercepts}
-\begin{tabular}{lrlrr}
-\toprule
-Dataset & $\hat{\Delta}$ (\WAPE{}) & 95\,\% CI & $t$ & $p$ \\
-\midrule
-M5        & $-0.6470$ & $[-0.942,\; -0.352]$ & $-9.45$ & 0.011 \\
-Favorita  & $-0.0165$ & $[-0.265,\;\phantom{-}0.232]$ & $-0.29$ & 0.802 \\
-Rohlik~v2 & $-0.0692$ & $[-0.318,\;\phantom{-}0.179]$ & $-1.20$ & 0.353 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-M5's intercept is large and significant ($-64.7$\,pp \WAPE{}); Favorita
-and Rohlik~v2 are not significantly different from zero.  \textbf{The
-entire 24.4\,pp aggregate advantage comes from M5.}  This is
-consistent with the \S5.4.5 reading that M5's per-series \WAPE{} on
-intermittent demand is a known \LGBM{} failure mode and not a
-family-level effect.
-
-\subsubsection{Excluding M5 (sensitivity)}
-
-Dropping the three M5 cells and refitting on Favorita + Rohlik alone:
-
-\begin{quote}
-$\hat{\Delta}\;\text{(FM} - \text{ML\_TREE, excl.\ M5)} = -0.0442$~\WAPE{},\quad
-95\,\% CI $[-0.149,\; 0.061]$,\quad $t(5) = -1.08$,\quad $p = 0.329$.
-\end{quote}
-
-\noindent The confidence interval crosses zero.  \textbf{On the two
-smooth-demand retail datasets the FM-vs-ML\_TREE advantage on Source~B
-is indistinguishable from zero.}  This reverses the sign of the
-headline-number reading of the full pool: the paper cannot claim
-``FMs beat \LGBM{} on retail demand forecasting'' on the strength of
-Source~B alone, and the M5 effect should be reported as a
-dataset-specific finding, not a family-level finding.
-
-\subsubsection{Horizon moderator}
-
-We also fitted:
-
-\begin{alltt}
-rma.mv(yi = delta, V = vi, mods = ~ horizon,
-       random = ~ 1 | paper_id / dataset_norm,
-       data = delta, test = "t", method = "REML")
-\end{alltt}
-
-\noindent on the full nine-cell pool.  The horizon slope is
-$\beta_h = -0.0043$ per day, $t(7) = -0.34$, $p = 0.741$, 95\,\% CI
-$[-0.034,\; 0.025]$.  \textbf{No evidence of a horizon effect on
-$\Delta$} in this sub-pool.
-
-The per-dataset forest plots (Figures~\ref{fig:forest_m5}--\ref{fig:forest_rohlik})
-visualise this heterogeneity: the Favorita and Rohlik panels show
-cells clustered around zero, while the M5 panel shows the large FM
-advantage driven by the \WAPE{} failure mode of the baseline on that
-specific dataset.
-
-\subsubsection{Cross-paper pooled $\Delta$ (primary)}
-
-Because no Source~A paper reports both FM and ML\_TREE under a shared
-identifier on these retail datasets (\S4.4), we use cross-paper
-pooling inside each (dataset, horizon, metric) bucket: for each
-bucket, $\text{mean(FM rows)} - \text{mean(ML\_TREE rows)}$ across all
-sources.  The random effect is \texttt{\texttildelow{} 1 |
-dataset\_norm} because each $\Delta$ mixes papers and within-paper
-anchoring is lost by construction.  Model:
-
-\begin{alltt}
-rma.mv(yi = delta, V = vi,
-       random = ~ 1 | dataset_norm,
-       data = delta_cross, test = "t", method = "REML")
-\end{alltt}
-
-\noindent The ten eligible buckets are Favorita $\times$
-\{short, medium, long\} $\times$ \WAPE{}, Rohlik $\times$
-\{short, medium, long\} $\times$ \WAPE{}, M5 $\times$
-\{short, medium, long\} $\times$ \WAPE{}, and M5 $\times$ long
-$\times$ \WRMSSE{} (the only Source~A \WRMSSE{} bucket with both
-families represented).  Per-bucket $\hat{\Delta}$ values:
-
-\begin{table}[htbp]
-\centering
-\caption{Per-bucket cross-paper $\hat{\Delta}$ values.}
-\label{tab:cross-paper-delta}\label{tab:cross-paper-deltas}
-\begin{tabular}{lllrrr}
-\toprule
-Dataset & Horizon & Metric & $n_{\text{FM}}$ & $n_{\text{ML\_TREE}}$ & $\hat{\Delta}$ \\
-\midrule
-Favorita & short  & \WAPE{}   & 2 & 4 & $-0.012$ \\
-Favorita & medium & \WAPE{}   & 2 & 4 & $-0.017$ \\
-Favorita & long   & \WAPE{}   & 2 & 4 & $-0.021$ \\
-M5       & short  & \WAPE{}   & 2 & 2 & $-0.542$ \\
-M5       & medium & \WAPE{}   & 2 & 2 & $-0.623$ \\
-M5       & long   & \WAPE{}   & 2 & 2 & $-0.776$ \\
-M5       & long   & \WRMSSE{} & 1 & 7 & $+0.410$ \\
-Rohlik   & short  & \WAPE{}   & 2 & 4 & $-0.055$ \\
-Rohlik   & medium & \WAPE{}   & 1 & 4 & $-0.067$ \\
-Rohlik   & long   & \WAPE{}   & 1 & 4 & $-0.085$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\noindent Cross-paper intercept ($k = 10$, with per-bucket sampling
-variance $v_i = (1/n_{\text{FM}} + 1/n_{\text{ML\_TREE}}) /
-n_{\text{series,hm}}$, \S3.4):
-
-\begin{quote}
-$\hat{\Delta}\;\text{(FM} - \text{ML\_TREE, cross-paper)} = +0.101$~\WAPE{},\quad
-95\,\% CI $[-0.227,\; 0.429]$,\quad $t(9) = 0.69$,\quad $p = 0.505$,\quad
-$Q(9) = 1055.3$, $p < 10^{-4}$.
-\end{quote}
-
-\noindent\textbf{The effect is not significant and the point estimate
-is positive} (FM worse than ML\_TREE on average) once proper precision
-weighting is applied.  This sign flip relative to the
-uniform-variance sensitivity (where $\hat{\Delta}$ was negative) is
-driven by the M5 \WRMSSE{} bucket ($+0.41$, FM worse): with
-$n_{\text{series}} = 30{,}490$ this bucket receives high precision
-weight, pulling the pooled estimate toward the ML\_TREE side.  The $Q$
-is enormous again, for the same reason as before: M5 \WAPE{} cells
-carry a $-0.54$/$-0.62$/$-0.78$ signature driven by Source~B
-\texttt{lightgbm\_cov} \WAPE{} explosions
-($\text{\WAPE{}\_mean} = \infty$ on several Azure runs, confirmed in
-MLflow), and the one M5 \WRMSSE{} cell flips the sign to $+0.41$ (FM
-worse, drawn from the seven Source~A \WRMSSE{} baselines on
-M5~\citep{makridakis2022m5} --- those are the published competition
-numbers, not broken baselines).
-
-\subsubsection{Excl-M5 cross-paper sensitivity}
-
-$k = 6$, Favorita + Rohlik \WAPE{} cells only:
-
-\begin{quote}
-$\hat{\Delta}\;\text{(cross-paper, excl.\ M5)} = -0.0438$~\WAPE{},\quad
-95\,\% CI $[-0.115,\; 0.027]$,\quad $t(5) = -1.58$,\quad $p = 0.174$,\quad
-$Q(5) = 2.00$, $p = 0.849$.
-\end{quote}
-
-\noindent The excl-M5 cross-paper result is \textbf{identical in sign
-and magnitude} to the within-paper excl-M5 result from the nine-cell
-Source-B-only run, and the heterogeneity remains low
-($\sigma^2 \approx 0.001$, $Q$~$p = 0.85$).  That is the cleanest
-signal from \S6.7: \textbf{outside M5, FM and ML\_TREE are
-indistinguishable on \WAPE{}, and the apparent aggregate FM advantage
-is a M5 \WAPE{} artefact of a broken baseline.}  The within-paper vs
-cross-paper distinction does not change this conclusion on
-Favorita + Rohlik; it only weakens the M5-included headline.
-
-\subsubsection{Why the cross-paper pool weakens the full-pool headline}
-
-Two reasons.  First, adding literature FM rows brings in selectively
-reported best-case FM numbers (authors reporting their own model on
-their own evaluation), which lowers mean(FM) in each bucket and
-\emph{should} strengthen FM's advantage --- but the effect is small
-because on Favorita and Rohlik the Source~A FM rows are already close
-to Source~B numbers (within 1\,pp \WAPE{}).  Second, and much larger,
-the M5 long \WRMSSE{} bucket pulls sharply against FM ($+0.41$
-$\hat{\Delta}$) because Source~A has seven ML\_TREE \WRMSSE{} rows on
-M5 --- competition-grade \LGBM{}, not broken baselines --- and only
-one FM \WRMSSE{} row, from Chronos in-domain.  That single cell alone
-moves the cross-paper intercept by roughly $+0.04$ compared to
-dropping it.  The pool is honest about what the literature says on M5
-\WRMSSE{}: competition-grade ML\_TREE beats the one published FM
-\WRMSSE{} entry on the same metric.  The M5 \WAPE{} cells say the
-opposite, for the per-series-denominator reasons in \S5.4.5.  Both
-are true of the same dataset; they should not be averaged into a
-single ``M5 effect''.  The paper will report M5 \WAPE{} and M5
-\WRMSSE{} as separate cells in Table~\ref{tab:t61}, not as a single
-``M5 effect''.
-
-The headline number is the excl-M5 cross-paper
-$\hat{\Delta} = -0.044$ (n.s.), not the full-pool estimate.  The M5
-cells are reported as a dataset-specific finding with the per-series
-\WAPE{} caveat from \S5.4.5 and a separate row for M5 \WRMSSE{} where
-the sign flips.
-
-\subsection{Moderator hypotheses and outcomes}
+\subsection{Moderator outcomes}
 \label{subsec:moderator-outcomes}\label{sec:moderator-results}\label{sec:rq2-moderators}
 
-Four pre-registered hypotheses tested against the cross-paper
-pool.  With $k = 10$ bucket-level $\Delta$s ($k = 6$ excl.\ M5) and
-only three dataset levels, the pool has limited power for moderator
-CI-based gate tests.  We report direction-consistency alongside formal
-CIs rather than treating CI inclusion of zero as automatic
-falsification.
+With $k = 420$ pairs across 9~datasets and 11~FMs, the meta-regression
+has sufficient power for moderator analysis.  Moderators tested:
 
 \begin{enumerate}
-  \item \textbf{H1 (intermittency $\downarrow$ FM advantage).}
-    Predicted: coefficient on \texttt{zero\_day\_fraction} is negative.
-    \textbf{Direction-consistent.}  M5 is the only dataset with
-    material zero-day fraction (${\sim}70\%$) and is where the FM
-    advantage is largest on \WAPE{} and reverses on \WRMSSE{}.  CI
-    includes zero at $k = 10$.
+  \item \textbf{Metric} (\texttt{metric\_name}; $F(2, 417) = 20{,}231$,
+    $p < .0001$).  The dominant moderator.
+    SQL coefficient is large and negative (FM wins on distributional
+    accuracy); \WAPE{} coefficient is positive (FM slightly worse).  See
+    \S\ref{subsec:metric-moderator} for full results.
 
-  \item \textbf{H2 (covariates $\downarrow$ FM advantage).}  Predicted:
-    coefficient on \texttt{covariate\_rich} is negative.
-    \textbf{Structurally untestable} as a moderator regression: all FM
-    retail rows are univariate and all ML\_TREE rows use covariates, so
-    \texttt{has\_covariates} is perfectly collinear with the family
-    split.  The qualitative reading is direction-consistent --- on
-    covariate-rich Favorita, \texttt{lightgbm\_cov} matches
-    Chronos-Bolt-Tiny within 0.3\,pp (\S5.4.5).  A formal test
-    requires a covariate-aware FM in Source~B (see \S5.4.5 TabPFN-TS
-    note).
+  \item \textbf{Dataset} (\texttt{dataset\_norm}; $F(8, 411) = 0.44$,
+    $p = 0.90$).  Not significant as a moderator once metric is
+    accounted for.  The raw $Q$-statistic shows extreme heterogeneity
+    ($p < .0001$), but this is driven by the metric split, not by
+    dataset-level differences.
 
-  \item \textbf{H3 (direct \LGBM{} $\downarrow$ FM advantage).}
-    Predicted: coefficient on \texttt{protocol\_direct} is negative.
-    \textbf{Conditional on intermittency.}  On M5,
-    \texttt{lightgbm\_direct} (\WAPE{} 1.35--1.51) narrows the FM gap
-    relative to \texttt{lightgbm\_cov} (1.62--1.94) ---
-    direction-consistent.  On Favorita and Rohlik,
-    \texttt{lightgbm\_direct} is worse than \texttt{lightgbm\_cov},
-    widening the FM gap --- direction-inconsistent as a main effect.
-    This is the \S5.3.6 conditional pattern: protocol direction tracks
-    intermittency, not a family-level constant.  Source~B vindicates
-    the conditional synthesis.
+  \item \textbf{Horizon bucket} (\texttt{horizon\_bucket};
+    $F(2, 417) = 0.49$, $p = 0.61$).  No
+    significant horizon effect on $\Delta$.  The FM advantage does not
+    systematically increase or decrease with forecast horizon in this
+    pool.
 
-  \item \textbf{H4 (zeros $\times$ protocol interaction $> 0$).}
-    Predicted: interaction coefficient is positive.  \textbf{Untestable
-    at $k = 10$} with only three dataset levels.  Flagged for future
-    work with a cross-paper pool $\geq 30$ buckets.
+  \item \textbf{Model scale} (\texttt{model\_scale}, $\log_{10}$
+    params; $F(1, 418) = 1{,}371$, $p < .0001$).  Coefficient is
+    positive ($+0.087$ per $\log_{10}$ unit), meaning larger FMs show
+    \emph{smaller} advantage.  However, this is confounded: model
+    identity is correlated with which benchmark papers (and therefore
+    which metrics and datasets) the model appears in.  Within Source~B,
+    where protocol is held constant, the smallest FM (Moirai~2.0-Small,
+    11\,M) outperforms the largest (Chronos-2, 120\,M) on M5, supporting
+    \citet{shchur2025fevbench}'s finding that model scale matters less
+    than architecture for retail forecasting.
+
+  \item \textbf{Baseline family} (\texttt{baseline\_family};
+    $F(1, 418) = 8.47$, $p = 0.004$).  ML\_TREE
+    vs STATS.  The FM advantage is larger when the baseline is
+    statistical (Auto~ETS, Seasonal Naive; $\hat{\Delta} = -0.367$)
+    than when it is a gradient-boosted tree ($\hat{\Delta} = -0.079$),
+    as expected: tree baselines are stronger competitors.
 \end{enumerate}
 
-The M5 dataset-specific finding from \S6.7 is the primary empirical
-contribution of \S6, with H1--H3 framed as moderator sensitivity
-around that central result.  All moderator CIs are wide at the current
-pool size; expanding the pool as more FM papers report per-series
-\WAPE{} on individual retail datasets is the single highest-priority
-extension of this analysis.
+All moderator specifications and outputs are in
+\texttt{analysis/meta\_regression.R} and the corresponding
+\texttt{analysis/figures/moderator\_*.txt} files.

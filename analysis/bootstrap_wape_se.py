@@ -13,51 +13,70 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 
-MLRUNS_DIR = Path("mlruns/769029842106652215")
 N_BOOT = 10_000
 SEED = 42
 OUT_PATH = Path("analysis/figures/table_bootstrap_se.csv")
+
+# All MLflow experiment directories that may contain Source B runs.
+# The sweep may have logged to different locations depending on CWD.
+MLRUNS_DIRS = [
+    Path("mlruns/769029842106652215"),                       # benchmark repo CWD
+    Path("../research/mlruns/946781664516745098"),            # research/ CWD fallback
+    Path.home() / "Documents/Repos/research/mlruns/946781664516745098",  # absolute
+]
 
 
 def load_runs():
     """Load all per-series CSVs with their MLflow metadata."""
     rows = []
-    for run_dir in MLRUNS_DIR.iterdir():
-        if not run_dir.is_dir():
+    seen_keys = set()
+    for mlruns_dir in MLRUNS_DIRS:
+        if not mlruns_dir.exists():
             continue
-        csv_path = run_dir / "artifacts" / "per_series_metrics.csv"
-        params_dir = run_dir / "params"
-        if not csv_path.exists() or not params_dir.exists():
-            continue
+        for run_dir in mlruns_dir.iterdir():
+            if not run_dir.is_dir():
+                continue
+            csv_path = run_dir / "artifacts" / "per_series_metrics.csv"
+            params_dir = run_dir / "params"
+            if not csv_path.exists() or not params_dir.exists():
+                continue
 
-        dataset = ""
-        horizon = ""
-        model_name = ""
-        for pname in ["dataset", "horizon", "model_name"]:
-            pfile = params_dir / pname
-            if pfile.exists():
-                val = pfile.read_text().strip()
-                if pname == "dataset":
-                    dataset = val
-                elif pname == "horizon":
-                    horizon = val
-                elif pname == "model_name":
-                    model_name = val
+            dataset = ""
+            horizon = ""
+            model_name = ""
+            # MLflow stores params as individual files; check both
+            # "model_name" (old runs) and "model" (new runs)
+            for pname in ["dataset", "horizon", "model_name", "model"]:
+                pfile = params_dir / pname
+                if pfile.exists():
+                    val = pfile.read_text().strip()
+                    if pname == "dataset":
+                        dataset = val
+                    elif pname == "horizon":
+                        horizon = val
+                    elif pname in ("model_name", "model") and not model_name:
+                        model_name = val
 
-        df = pd.read_csv(csv_path)
-        if "WAPE" not in df.columns or len(df) < 50:
-            continue  # skip partial test runs
+            df = pd.read_csv(csv_path)
+            if "WAPE" not in df.columns or len(df) < 50:
+                continue  # skip partial test runs
 
-        wape_values = df["WAPE"].dropna().values
-        rows.append({
-            "run_id": run_dir.name,
-            "model": model_name,
-            "dataset": dataset,
-            "horizon": int(horizon) if horizon else 0,
-            "n_valid": len(wape_values),
-            "wape_values": wape_values,
-            "wape_mean": np.mean(wape_values),
-        })
+            # Dedup: keep only the first (newest) run per key
+            key = (model_name, dataset, horizon)
+            if key in seen_keys:
+                continue
+            seen_keys.add(key)
+
+            wape_values = df["WAPE"].dropna().values
+            rows.append({
+                "run_id": run_dir.name,
+                "model": model_name,
+                "dataset": dataset,
+                "horizon": int(horizon) if horizon else 0,
+                "n_valid": len(wape_values),
+                "wape_values": wape_values,
+                "wape_mean": np.mean(wape_values),
+            })
     return rows
 
 

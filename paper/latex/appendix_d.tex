@@ -1,124 +1,72 @@
 % appendix_d.tex — Sensitivity Analyses
 \section{Sensitivity Analyses}\label{app:sensitivity}
 
-Three variants of the meta-regression are reported to assess
-robustness of the headline finding (\S6.7). All models use
+Five sensitivity variants of the primary $k = 420$ model-level
+meta-regression are reported below.  All models use
 \texttt{metafor::rma.mv} \citep{viechtbauer2010metafor} with REML
-estimation and Knapp--Hartung $t$-distribution adjustment
-\citep{knapp2003improved}.
+estimation, Knapp--Hartung $t$-distribution adjustment
+\citep{knapp2003improved}, and nesting
+\texttt{\~{}1\,|\,dataset\_norm/paper\_id}.
 
-\subsection{Full Cross-Paper Pool ($k = 10$)}
-
-Model: \texttt{rma.mv(yi = delta, V = vi, random = \~{}1|dataset\_norm,
-test = "t", method = "REML")} on the 10 cells of Table~6.1.
+\subsection{Summary Table}
 
 \begin{table}[htbp]
 \centering
-\caption{Full cross-paper pool ($k = 10$).}\label{tab:sensitivity-full}
-\begin{tabular}{ll}
+\caption{Sensitivity variants of the model-level meta-regression
+  ($k = 420$ primary pool).}\label{tab:sensitivity-summary}
+\begin{tabular}{lrlllr}
 \toprule
-Parameter & Value \\
+Variant & $k$ & $\Dhat$ & 95\% CI & $p$ & $Q$ \\
 \midrule
-$k$                    & 10 \\
-Intercept ($\Dhat$)    & $+0.101$ \\
-SE                     & 0.145 \\
-$t(9)$                 & 0.694 \\
-$p$-value              & 0.505 \\
-95\% CI                & $[-0.227, +0.429]$ \\
-$\sigma^2$ (dataset)   & 0.063 \\
-$Q(9)$                 & 1055.3, $p < .0001$ \\
-$I^2$                  & 99.1\% \\
+Full pool         & 420 & $-0.132$ & $[-0.234,\; -0.030]$ & 0.011  & 115{,}285 \\
+Excl-M5           & 363 & $-0.126$ & $[-0.238,\; -0.015]$ & 0.026  &  70{,}795 \\
+\WAPE{}-only      & 164 & $+0.097$ & $[-0.086,\; +0.279]$ & 0.296  &  63{,}770 \\
+SQL-only          & 128 & $-0.345$ & $[-0.442,\; -0.248]$ & $<.0001$ & 6{,}043 \\
+Source~B only     &  36 & $-0.229$ & $[-0.569,\; +0.110]$ & 0.179  &     203 \\
+Source~A only     & 384 & $-0.101$ & $[-0.206,\; +0.005]$ & 0.063  & 114{,}943 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\textbf{Interpretation.} The full-pool intercept is positive
-(FM worse on average) but far from significant. The extreme
-heterogeneity ($I^2 = 99.1\%$) is driven by the three M5 \WAPE{}
-cells ($\Delta = -0.54$ to $-0.78$), which are artefactual (\S5.4.5),
-and the M5 \WRMSSE{} cell ($\Delta = +0.41$), which goes in the
-opposite direction.
+\subsection{Interpretation}
 
-\subsection{Excluding M5 \WAPE{} ($k = 6$)}
+\begin{enumerate}
+  \item \textbf{Excl-M5 ($k = 363$):} Excluding all M5 pairs barely
+    changes the estimate ($-0.126$ vs $-0.132$) and remains significant
+    ($p = 0.026$).  M5 is not driving the primary result, unlike in the
+    original $k = 10$ analysis.
 
-Same model specification, dropping the three M5 \WAPE{} cells
-but retaining M5 \WRMSSE{}.
+  \item \textbf{\WAPE{}-only ($k = 164$):} The FM advantage
+    \emph{vanishes} on this point-forecast metric ($\hat{\Delta} =
+    +0.097$, $p = 0.30$).  This is the mirror of the SQL-only finding
+    and confirms that the metric split documented in
+    \S\ref{subsec:metric-moderator} is robust.
 
-\textbf{Note:} The $k = 6$ pool in this table excludes only the three
-M5 \WAPE{} cells. The M5 \WRMSSE{} cell ($k = 1$) is retained because
-\WRMSSE{} does not suffer from the per-series denominator
-pathology. However, because the M5 \WRMSSE{} cell is the only
-non-\WAPE{} cell in the pool, the excl-M5 intercept is reported
-as the primary result to avoid conflating metric effects.
+  \item \textbf{SQL-only ($k = 128$):} The strongest signal in the
+    pool: FMs beat baselines by 0.345 SQL units ($p < .0001$), with
+    the lowest $Q$ of any slice, indicating relative homogeneity
+    conditional on this metric.
 
-\begin{table}[htbp]
-\centering
-\caption{Excluding M5 \WAPE{} ($k = 6$).}\label{tab:sensitivity-exclm5}
-\begin{tabular}{ll}
-\toprule
-Parameter & Value \\
-\midrule
-$k$                    & 6 \\
-Intercept ($\Dhat$)    & $-0.044$ \\
-SE                     & 0.028 \\
-$t(5)$                 & $-1.583$ \\
-$p$-value              & 0.174 \\
-95\% CI                & $[-0.115, +0.027]$ \\
-$\sigma^2$ (dataset)   & 0.001 \\
-$Q(5)$                 & 2.00, $p = 0.849$ \\
-$I^2$                  & 0.0\% \\
-\bottomrule
-\end{tabular}
-\end{table}
+  \item \textbf{Source~B only ($k = 36$):} The 36 within-paper pairs
+    (4~FMs $\times$ 9~cells) show the right direction ($-0.229$) but
+    are insufficient for significance ($p = 0.18$) with only 3~dataset
+    clusters.
 
-\textbf{Interpretation.} After removing the M5 \WAPE{} artefact, the
-intercept is small and negative (FM slightly better) but not
-significant. Heterogeneity drops to zero: the six remaining
-cells (Favorita $\times$ 3 + Rohlik $\times$ 3) are homogeneous. This is
-the primary result reported in the Abstract and \S9.
+  \item \textbf{Source~A only ($k = 384$):} Marginal significance
+    ($p = 0.063$).  The cross-benchmark pairs from fev-bench and
+    GIFT-Eval carry most of the statistical mass.
+\end{enumerate}
 
-\subsection{Within-Paper Only --- Source B ($k = 9$)}
+\subsection{Comparison with Original $k = 10$ Analysis}
 
-Model: \texttt{rma.mv(yi = delta, V = vi, random = \~{}1|paper\_id +
-\~{}1|paper\_id/dataset\_norm, test = "t", method = "REML")} on the
-9 Source~B paired cells (3 datasets $\times$ 3 horizons, paper\_id =
-LOCAL\_MAC\_*). Variance proxy: $v_i = 1/n_\text{valid} = 0.01$.
+For reference, the original submission used bucket-level aggregation
+(mean FM vs mean ML\_TREE per dataset--horizon--metric cell), yielding
+$k = 10$:
 
 \begin{table}[htbp]
 \centering
-\caption{Within-paper only --- Source~B ($k = 9$).}\label{tab:sensitivity-within}
-\begin{tabular}{ll}
-\toprule
-Parameter & Value \\
-\midrule
-$k$                          & 9 \\
-Intercept ($\Dhat$)          & $-0.245$ \\
-SE                           & 0.103 \\
-$t(8)$                       & $-2.386$ \\
-$p$-value                    & 0.044 \\
-95\% CI                      & $[-0.482, -0.008]$ \\
-$\sigma^2_1$ (paper\_id)     & 0.043 \\
-$\sigma^2_2$ (paper/dataset) & 0.043 \\
-$Q(8)$                       & 76.00, $p < .0001$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\textbf{Interpretation.} The within-paper model reaches significance
-($p = 0.044$) with a substantial negative intercept (FM better
-by $\sim$25 pp on average across all 9 cells). However, this result
-is dominated by the three M5 cells ($\Delta = -0.54$ to $-0.78$). After
-mentally excluding M5, the Favorita and Rohlik cells contribute
-$\Delta \in [-0.01, -0.09]$, consistent with the cross-paper excl-M5
-finding. The within-paper model is not used as the primary
-result because (i) it has only one paper\_id (no between-study
-variation) and (ii) the M5 \WAPE{} artefact inflates the intercept.
-
-\subsection{Summary Across Sensitivity Variants}
-
-\begin{table}[htbp]
-\centering
-\caption{Summary of sensitivity variants.}\label{tab:sensitivity-summary}
+\caption{Original $k = 10$ bucket-level analysis
+  (retained for comparison).}\label{tab:sensitivity-old}
 \begin{tabular}{lrlll}
 \toprule
 Variant & $k$ & $\Dhat$ & 95\% CI & $p$ \\
@@ -130,8 +78,9 @@ Within-paper (B) & 9  & $-0.245$ & $[-0.482, -0.008]$ & 0.044 \\
 \end{tabular}
 \end{table}
 
-The three variants tell a consistent story: the apparent FM
-advantage in the full pool is a composition effect driven by the
-M5 \WAPE{} artefact. Once M5 \WAPE{} is excluded, the FM-vs-\LGBM{}
-gap is small ($-0.044$ \WAPE{}), not significant ($p = 0.174$), and
-homogeneous ($I^2 = 0\%$).
+The expansion from $k = 10$ to $k = 420$ (via fev-bench and GIFT-Eval
+re-extraction and Source~B expansion from 2 to 4~FMs) changes the
+primary conclusion from ``null, heterogeneous'' to ``significantly
+better on average, metric-dependent.''  The key driver is the
+fev-bench SQL metric, which was not represented in the original
+extraction.

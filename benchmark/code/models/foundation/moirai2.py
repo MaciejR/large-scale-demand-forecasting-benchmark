@@ -105,7 +105,10 @@ class Moirai2Forecaster:
         with torch.no_grad():
             forecast_samples = self._model.predict(past_target)
 
-        samples = forecast_samples.squeeze().numpy()
+        samples = forecast_samples.squeeze()
+        if hasattr(samples, 'numpy'):
+            samples = samples.numpy()
+        samples = np.asarray(samples)
         if samples.ndim == 1:
             point_forecast = samples
         else:
@@ -137,7 +140,10 @@ class Moirai2Forecaster:
         with torch.no_grad():
             forecast_samples = self._model.predict(past_target)
 
-        samples = forecast_samples.squeeze().numpy()
+        samples = forecast_samples.squeeze()
+        if hasattr(samples, 'numpy'):
+            samples = samples.numpy()
+        samples = np.asarray(samples)
         if samples.ndim == 1:
             samples = samples.reshape(1, -1)
 

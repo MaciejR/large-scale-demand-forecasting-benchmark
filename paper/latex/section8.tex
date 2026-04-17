@@ -21,10 +21,10 @@ The practical consequence for our meta-regression: Source~A FM rows may be
 slightly optimistic (the FM saw something like the test distribution during
 pre-training), while Source~A ML\_TREE rows have no such advantage (they are
 trained from scratch on each dataset).  If this bias is present, it works
-\emph{against} our headline finding --- it would inflate FM performance in the
-cross-paper pool, and we still find a null effect on smooth-demand data.  This
-means the null finding is conservative: the true FM-vs-ML\_TREE gap may be even
-closer to zero than $\Dhat = -0.044$ suggests.
+\emph{against} our SQL finding --- it would inflate FM performance in the
+cross-paper pool, making the $\Dhat = -0.345$ SQL advantage an upper bound.
+Conversely, the \WAPE{} null finding ($\Dhat = +0.10$) is conservative:
+the true FM point-forecast gap may be even closer to zero.
 
 \subsection{The covariate gap}
 \label{subsec:covariate-gap}
@@ -82,21 +82,21 @@ analysis exposes.
 \subsection{Limitations}
 \label{subsec:limitations}\label{sec:limitations}
 
-\paragraph{Small pool.}
-The cross-paper meta-regression operates on $k = 10$ bucket-level deltas
-($k = 6$ excluding M5).  This is sufficient for an intercept test with
-Knapp--Hartung adjustment but leaves moderator regressions underpowered ---
-95\% CIs on H1--H3 are wide, and H4 (interaction) is untestable.  A future
-meta-analysis with more retail FM papers and standardised per-series \WAPE{}
-reporting would substantially tighten the estimates.
+\paragraph{Single author.}
+A single-author PRISMA review lacks the double-screening and inter-rater
+reliability that a multi-reviewer team provides.  We mitigate this with
+structured extraction from fev-bench and GIFT-Eval (whose data are
+machine-readable) and report the study as ``PRISMA-informed'' rather than
+``PRISMA-compliant''.
 
-\paragraph{Three datasets.}
-The retail meta-regression covers M5, Favorita, and Rohlik~v2 --- one
-intermittent-demand US retail dataset and two smooth-demand European grocery
-datasets.  The findings may not generalise to fashion retail (highly seasonal,
-short life cycles), e-commerce (long tail, promotional spikes), or fresh
-produce (short shelf life, weather-driven).  Each of these domains has
-different demand characteristics that could shift the FM-vs-ML\_TREE balance.
+\paragraph{Retail domain coverage.}
+The meta-regression covers 9~datasets spanning grocery (M5, Favorita),
+convenience (Rohlik), drug (Rossmann), general retail (Walmart, Hermes),
+restaurant, and intermittent parts (Car Parts).  Fashion retail (highly
+seasonal, short life cycles), e-commerce (long tail, promotional spikes),
+and fresh produce (short shelf life, weather-driven) are not represented.
+Each of these domains has different demand characteristics that could shift
+the FM-vs-baseline balance.
 
 \paragraph{Consumer-HW-only Source~B.}
 All FM Source~B cells ran on a MacBook M3 Air (16~GB, MPS backend).  This is
@@ -124,12 +124,12 @@ conditioned on the same amount of history), which could systematically favour
 Source~A FM rows over Source~B rolling-origin rows.  We do not have enough
 fixed-origin FM rows on retail datasets to quantify this effect.
 
-\paragraph{No probabilistic metrics.}
-The primary analysis is on point-forecast \WAPE{}.  Several FMs (Chronos,
-Moirai, Lag-Llama) produce full predictive distributions, and their value may
-lie in calibration and quantile accuracy rather than point-forecast \WAPE{}.
-CRPS and quantile-loss comparisons are outside the scope of this paper but
-would be a natural extension.
+\paragraph{Distributional metric interpretation.}
+The SQL finding ($\Dhat = -0.345$, $p < .0001$) is based on fev-bench's
+Scaled Quantile Loss, which aggregates across quantile levels.  We do not
+decompose by quantile level (e.g., upper tail vs median).  The FM advantage
+on SQL could be driven by better tail calibration rather than overall
+distribution quality.  Per-quantile analysis would clarify this.
 
 \subsection{Generalisability beyond retail}
 \label{subsec:generalisability}
@@ -144,7 +144,8 @@ high-frequency, covariate-rich) that map more closely to Favorita/Rohlik,
 where our finding is that FMs and well-tuned ML are indistinguishable.
 
 We do not claim that FMs are useless --- we claim that their value proposition
-in retail is narrower than the literature's aggregate benchmark scores suggest,
-and that the decision of whether to deploy one depends on data characteristics
-and infrastructure constraints that are knowable before running a single
-experiment.
+in retail depends on \emph{what you measure}: distributional accuracy (SQL,
+CRPS) strongly favours FMs, while point-forecast accuracy (\WAPE{}, MAE) does
+not.  The decision of whether to deploy an FM depends on the business metric,
+data characteristics, and infrastructure constraints --- all of which are
+knowable before running a single experiment.

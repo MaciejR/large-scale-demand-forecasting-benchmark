@@ -1,38 +1,40 @@
 
-Multivariate Meta-Analysis Model (k = 318; method: REML)
+Multivariate Meta-Analysis Model (k = 420; method: REML)
 
 Variance Components:
 
             estim    sqrt  nlvls  fixed                 factor 
-sigma^2.1  0.0555  0.2356      8     no           dataset_norm 
-sigma^2.2  0.0362  0.1903     29     no  dataset_norm/paper_id 
+sigma^2.1  0.0452  0.2126      9     no           dataset_norm 
+sigma^2.2  0.0312  0.1766     33     no  dataset_norm/paper_id 
 
 Test for Residual Heterogeneity:
-QE(df = 310) = 104746.7271, p-val < .0001
+QE(df = 411) = 105538.4459, p-val < .0001
 
-Test of Moderators (coefficients 2:8):
-F(df1 = 7, df2 = 310) = 0.2371, p-val = 0.9759
+Test of Moderators (coefficients 2:9):
+F(df1 = 8, df2 = 411) = 0.4427, p-val = 0.8951
 
 Model Results:
 
                                 estimate      se     tval   df    pval    ci.lb 
-intrcpt                          -0.0004  0.2446  -0.0015  310  0.9988  -0.4816 
-dataset_normHermes               -0.1862  0.3893  -0.4782  310  0.6328  -0.9522 
-dataset_normHierarchical Sales   -0.0348  0.3661  -0.0950  310  0.9244  -0.7551 
-dataset_normM5                   -0.3032  0.3489  -0.8688  310  0.3856  -0.9898 
-dataset_normRestaurant           -0.0764  0.3895  -0.1962  310  0.8446  -0.8428 
-dataset_normRohlik                0.0075  0.3485   0.0214  310  0.9829  -0.6782 
-dataset_normRossmann              0.0805  0.3654   0.2203  310  0.8258  -0.6384 
-dataset_normWalmart              -0.1873  0.3893  -0.4809  310  0.6309  -0.9534 
+intrcpt                          -0.4832  0.2765  -1.7477  411  0.0813  -1.0267 
+dataset_normFavorita              0.4719  0.3540   1.3330  411  0.1833  -0.2240 
+dataset_normHermes                0.2967  0.3910   0.7588  411  0.4484  -0.4719 
+dataset_normHierarchical Sales    0.2896  0.3601   0.8042  411  0.4217  -0.4183 
+dataset_normM5                    0.2116  0.3565   0.5935  411  0.5532  -0.4892 
+dataset_normRestaurant            0.3168  0.3706   0.8549  411  0.3931  -0.4117 
+dataset_normRohlik                0.4858  0.3562   1.3639  411  0.1733  -0.2144 
+dataset_normRossmann              0.5633  0.3706   1.5202  411  0.1292  -0.1651 
+dataset_normWalmart               0.2956  0.3910   0.7559  411  0.4501  -0.4731 
                                  ci.ub    
-intrcpt                         0.4808    
-dataset_normHermes              0.5798    
-dataset_normHierarchical Sales  0.6855    
-dataset_normM5                  0.3834    
-dataset_normRestaurant          0.6900    
-dataset_normRohlik              0.6931    
-dataset_normRossmann            0.7994    
-dataset_normWalmart             0.5789    
+intrcpt                         0.0603  . 
+dataset_normFavorita            1.1677    
+dataset_normHermes              1.0653    
+dataset_normHierarchical Sales  0.9976    
+dataset_normM5                  0.9123    
+dataset_normRestaurant          1.0453    
+dataset_normRohlik              1.1859    
+dataset_normRossmann            1.2918    
+dataset_normWalmart             1.0643    
 
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1

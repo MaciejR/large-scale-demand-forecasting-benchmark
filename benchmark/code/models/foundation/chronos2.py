@@ -70,15 +70,20 @@ class Chronos2Forecaster:
         import torch
 
         self._load_model()
-        context = torch.tensor(train.values, dtype=torch.float32).unsqueeze(0)
+        # Chronos-2 expects 3D: (n_series, n_variates, history_length)
+        context = torch.tensor(
+            train.values, dtype=torch.float32
+        ).reshape(1, 1, -1)
 
-        quantiles, mean = self._pipeline.predict_quantiles(
-            context=context,
+        quantiles_list, mean_list = self._pipeline.predict_quantiles(
+            inputs=context,
             prediction_length=horizon,
             quantile_levels=[0.1, 0.5, 0.9],
         )
-        # Use median (q0.5) as point forecast, matching chronos_bolt_tiny.py.
-        median = quantiles[0, :, 1]
+        # quantiles_list[0] shape: (n_series=1, prediction_length, n_quantiles)
+        # q0.5 is at quantile index 1.
+        q_tensor = quantiles_list[0]
+        median = q_tensor[0, :, 1]  # (prediction_length,)
         if hasattr(median, "cpu"):
             median = median.cpu()
         return pd.Series(median.numpy()[:horizon])
@@ -129,12 +134,17 @@ class Chronos2Forecaster:
 
         # Chronos-2 predict_quantiles with DataFrame context.
         # The pipeline auto-detects covariate columns (non-target).
-        quantiles, mean = self._pipeline.predict_quantiles(
-            context=context_df,
+        quantiles_list, mean_list = self._pipeline.predict_quantiles(
+            inputs=context_df,
             prediction_length=horizon,
             quantile_levels=[0.1, 0.5, 0.9],
         )
-        median = quantiles[0, :, 1]
+        q_tensor = quantiles_list[0]
+        # Shape may be (1, pred_len, n_q) or (pred_len, n_q)
+        if q_tensor.ndim == 3:
+            median = q_tensor[0, :, 1]
+        else:
+            median = q_tensor[:, 1]
         if hasattr(median, "cpu"):
             median = median.cpu()
         return pd.Series(median.numpy()[:horizon])
@@ -149,15 +159,20 @@ class Chronos2Forecaster:
         if levels is None:
             levels = [0.1, 0.25, 0.5, 0.75, 0.9]
 
-        context = torch.tensor(train.values, dtype=torch.float32).unsqueeze(0)
-        quantiles, mean = self._pipeline.predict_quantiles(
-            context=context,
+        context = torch.tensor(
+            train.values, dtype=torch.float32
+        ).reshape(1, 1, -1)
+        quantiles_list, mean_list = self._pipeline.predict_quantiles(
+            inputs=context,
             prediction_length=horizon,
             quantile_levels=levels,
         )
 
-        q_arr = quantiles[0].cpu().numpy() if hasattr(quantiles, "cpu") else quantiles[0].numpy()
+        # Shape: (n_series=1, prediction_length, n_quantiles)
+        q_tensor = quantiles_list[0][0]  # (prediction_length, n_quantiles)
+        q_arr = q_tensor.cpu().numpy() if hasattr(q_tensor, "cpu") else np.asarray(q_tensor)
         df = pd.DataFrame(q_arr[:horizon], columns=[f"q{q}" for q in levels])
-        m_arr = mean[0].cpu().numpy() if hasattr(mean, "cpu") else mean[0].numpy()
+        m_tensor = mean_list[0][0]  # (prediction_length,)
+        m_arr = m_tensor.cpu().numpy() if hasattr(m_tensor, "cpu") else np.asarray(m_tensor)
         df["mean"] = m_arr[:horizon]
         return df

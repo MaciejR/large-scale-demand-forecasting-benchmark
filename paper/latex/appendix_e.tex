@@ -1,9 +1,10 @@
 % appendix_e.tex — Extraction Table (Abbreviated)
 \section{Extraction Table (Abbreviated)}\label{app:extraction}
 
-The full extraction table (\texttt{analysis/extraction\_schema.csv}, 185
-data rows + 1 header) records one row per (paper $\times$ model $\times$
-dataset $\times$ metric) observation. The complete CSV is available in the
+The full extraction table (\texttt{analysis/extraction\_schema.csv} +
+\texttt{benchmark/results/local\_fm\_sweep.csv}, 700+ data rows)
+records one row per (paper $\times$ model $\times$ dataset $\times$
+metric) observation. The complete CSVs are available in the
 supplementary materials. Table~\ref{tab:extraction-columns} shows the
 key columns; columns omitted for space include
 \texttt{dataset\_variant}, \texttt{n\_series},
@@ -46,16 +47,15 @@ Column & Description \\
 \toprule
 Category & Description & Rows \\
 \midrule
-A     & Foundation model papers            & 48 \\
-B     & Benchmark papers                   & 42 \\
-C     & M5 competition and retail-specific & 38 \\
-D     & Deep learning baselines            & 12 \\
-E     & Surveys and meta-studies           & 7 \\
-F     & Cost/efficiency analysis           & 8 \\
-OWN   & Our LightGBM baselines (Source~B)  & 12 \\
-LOCAL & Our FM experiments (Source~B)       & 18 \\
+A     & Foundation model papers              & 58 \\
+B     & Benchmark papers (incl.\ fev-bench, GIFT-Eval) & 507 \\
+C     & M5 competition and retail-specific   & 31 \\
+D     & Cross-domain papers                  & 3 \\
+F     & fev-bench entry papers               & 8 \\
+OWN   & Our baselines (Source~B, Azure)       & 45 \\
+LOCAL & Our Source~B cells (4~FMs + 3~baselines, MacBook/Azure) & 63 \\
 \midrule
-\textbf{Total} & & \textbf{185} \\
+\textbf{Total} & & \textbf{${\sim}$720} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -64,12 +64,13 @@ LOCAL & Our FM experiments (Source~B)       & 18 \\
 
 \begin{itemize}[nosep]
   \item \textbf{Source~A} (literature extraction): categories A--F
-    (155 rows from 38 studies). These rows report accuracy numbers as
-    published by the original authors.
+    (${\sim}$607 rows from 38+ studies, including per-task fev-bench
+    and GIFT-Eval re-extraction). These rows report accuracy numbers
+    as published by the original authors.
   \item \textbf{Source~B} (gap-filling experiments): OWN + LOCAL
-    (30 rows). These rows are from our own experiments on consumer
-    hardware (MacBook M-series MPS) and Azure ML (E4DS\_V4), using the
-    shared protocol of \S5.1.
+    (${\sim}$81 rows). These rows are from our own experiments on
+    consumer hardware (MacBook M-series MPS) and Azure ML (E4DS\_V4),
+    using the shared protocol of \S5.1.
 \end{itemize}
 
 The extraction table is frozen at the version used for the

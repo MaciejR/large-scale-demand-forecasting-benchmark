@@ -66,7 +66,7 @@ RETAIL_DATASETS <- c(
   "M5", "Favorita", "Rohlik v2", "VN1 Forecasting (Rohlik)",
   "fev-bench", "retail (unnamed)", "Rossmann", "Walmart",
   "SE Europe retail (proprietary)", "M5 + 3 external",
-  "Restaurant", "Hierarchical Sales", "Hermes"
+  "Restaurant", "Hierarchical Sales", "Hermes", "Car Parts"
 )
 
 # Dataset-level n_series for variance proxy.
@@ -75,6 +75,7 @@ DATASET_N_SERIES <- c(
   "Favorita" = 30000,
   "Rohlik"   = 5390,
   "Walmart"  = 2936,
+  "Car Parts" = 2674,
   "Rossmann" = 1115,
   "Restaurant" = 813,
   "Hierarchical Sales" = 118,
@@ -110,6 +111,10 @@ normalize_dataset <- function(d) {
     grepl("fev-bench/restaurant", d, ignore.case = TRUE) ~ "Restaurant",
     grepl("fev-bench/hierarchical", d, ignore.case = TRUE) ~ "Hierarchical Sales",
     grepl("fev-bench/hermes", d, ignore.case = TRUE) ~ "Hermes",
+    # GIFT-Eval Sales domain datasets
+    grepl("GIFT-Eval.*Car Parts", d, ignore.case = TRUE) ~ "Car Parts",
+    grepl("GIFT-Eval.*Hierarchical", d, ignore.case = TRUE) ~ "Hierarchical Sales",
+    grepl("GIFT-Eval.*Restaurant", d, ignore.case = TRUE) ~ "Restaurant",
     # Legacy aggregate fev-bench rows
     grepl("^fev-bench$", d, ignore.case = TRUE) ~ "fev-bench",
     # Standard datasets
@@ -181,20 +186,26 @@ prepare_rows <- function(raw) {
 # ---------------------------------------------------------------------------
 
 compute_model_level_delta <- function(rows) {
-  # Within each paper_id (= task for fev-bench, = dataset×horizon for Source B),
-  # pair each FM row with the average ML_TREE metric in that group.
+  # Within each paper_id (= task for fev-bench/GIFT-Eval, = dataset×horizon
+  # for Source B), pair each FM row with the best available baseline.
+  # Baseline priority: ML_TREE if present, else STATS.
+  # This allows GIFT-Eval (STATS baselines) and fev-bench (ML_TREE baselines)
+  # to both contribute paired comparisons.
+  baseline_families <- c("ML_TREE", "STATS")
+
   by_group <- rows %>%
-    filter(family %in% c("FM", "ML_TREE")) %>%
+    filter(family %in% c("FM", baseline_families)) %>%
     group_by(paper_id, dataset_norm, horizon_bucket, metric_name) %>%
-    filter(any(family == "FM"), any(family == "ML_TREE")) %>%
+    filter(any(family == "FM"), any(family %in% baseline_families)) %>%
     ungroup()
 
-  # Compute baseline per group.
+  # Compute baseline per group: prefer ML_TREE, fall back to STATS.
   baselines <- by_group %>%
-    filter(family == "ML_TREE") %>%
+    filter(family %in% baseline_families) %>%
     group_by(paper_id, dataset_norm, horizon_bucket, metric_name) %>%
     summarise(
       baseline_metric = mean(metric_num, na.rm = TRUE),
+      baseline_family = first(family),
       n_baseline = n(),
       baseline_n_series = mean(n_series_num, na.rm = TRUE),
       .groups = "drop"
@@ -215,8 +226,6 @@ compute_model_level_delta <- function(rows) {
                          (metric_num - baseline_metric) / baseline_metric,
                          NA_real_),
       # Variance proxy: 1/n_series for each side, summed.
-      # For fev-bench rows: n_series from task metadata.
-      # For Source B: n_series from the run (100 if sampled, full if not).
       vi = (1 / pmax(n_series_num, 1)) + (1 / pmax(baseline_n_series, 1)),
       # Unique pair ID for clustering.
       pair_id = paste(paper_id, model_name, metric_name, sep = "__")
@@ -224,7 +233,8 @@ compute_model_level_delta <- function(rows) {
     filter(is.finite(delta)) %>%
     select(pair_id, paper_id, dataset_norm, horizon_bucket, metric_name,
            model_name, model_scale, has_covariates, zero_shot,
-           metric_num, baseline_metric, delta, delta_rel, vi, source,
+           metric_num, baseline_metric, baseline_family,
+           delta, delta_rel, vi, source,
            n_series_num, baseline_n_series)
 }
 
@@ -313,7 +323,7 @@ save_forest <- function(delta_df, dataset, out_path) {
   slab_labels <- paste0(sub$model_name, " (", sub$metric_name, ")")
   pdf(out_path, width = 8, height = max(4, 0.35 * nrow(sub) + 2))
   forest(sub_fit, slab = slab_labels,
-         xlab = "FM - ML_TREE delta", main = dataset)
+         xlab = "FM - baseline delta", main = dataset)
   dev.off()
   message("Wrote ", out_path)
 }
@@ -433,6 +443,11 @@ main <- function() {
     # model_scale only for FM rows that have it.
     if (any(!is.na(model_delta$model_scale))) {
       moderators <- c(moderators, "model_scale")
+    }
+    # baseline_family moderator (ML_TREE vs STATS) — if both types present.
+    if ("baseline_family" %in% colnames(model_delta) &&
+        n_distinct(model_delta$baseline_family) > 1) {
+      moderators <- c(moderators, "baseline_family")
     }
     for (mod in moderators) {
       mod_results[[mod]] <- tryCatch(
