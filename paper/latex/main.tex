@@ -3,6 +3,7 @@
 % --- Packages ---
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
+\usepackage{lmodern}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 \usepackage{booktabs}
@@ -48,20 +49,21 @@ We present a PRISMA-informed systematic review of forecasting methods
 for short-term retail demand, combined with original gap-filling
 experiments and cross-benchmark extraction from fev-bench and
 GIFT-Eval.  We screen approximately 150 papers (2020--2026) and extract
-quantitative results into 720+ rows spanning 9~retail datasets.
+quantitative results into 780+ rows spanning 9~retail datasets.
 A model-level meta-regression (\texttt{metafor::rma.mv}, REML,
-Knapp--Hartung) on $k = 420$ paired comparisons across 9~foundation
-models and conventional baselines finds
-$\Dhat(\text{FM} - \text{baseline}) = -0.132$
-(95\% CI $[-0.23, -0.03]$, $p = 0.011$): foundation models are, on
-average, significantly better than tree and statistical baselines.
-However, this advantage is \emph{metric-dependent}: on Scaled Quantile
-Loss (SQL), the FM advantage is strong ($\hat{\Delta} = -0.345$,
-$p < .0001$); on \WAPE{}, it vanishes ($\hat{\Delta} = +0.10$,
-$p = 0.28$).  Foundation models produce well-calibrated predictive
-distributions but their point forecasts do not systematically
-outperform a well-tuned LightGBM.  Model scale (9\,M--200\,M
-parameters) is not a significant moderator in the retail domain.
+Knapp--Hartung) on $k = 450$ paired comparisons across foundation
+models and conventional baselines reveals a \emph{metric-dependent}
+advantage: on Scaled Quantile Loss (SQL), foundation models are
+strongly and significantly better than baselines
+($\hat{\Delta} = -0.278$, $p < .0001$); on \WAPE{}, the advantage
+is directionally favorable but not statistically significant
+($\hat{\Delta} = -0.070$, $p = 0.14$).  The full-pool aggregate
+($\Dhat = -0.150$, $p = 0.001$) confirms a net FM advantage, but
+the per-metric decomposition is the primary finding.
+Foundation models produce well-calibrated predictive distributions;
+their point forecasts trend in the same direction but the advantage
+is attenuated.  Model scale (9\,M--200\,M parameters) is not a
+significant moderator in the retail domain.
 We provide a practitioner-oriented cost--accuracy Pareto analysis on
 consumer hardware and document that the LightGBM direct-vs-recursive
 protocol gap is conditional on demand intermittency.

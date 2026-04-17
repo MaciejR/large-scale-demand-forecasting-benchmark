@@ -1,7 +1,7 @@
 % appendix_d.tex — Sensitivity Analyses
 \section{Sensitivity Analyses}\label{app:sensitivity}
 
-Five sensitivity variants of the primary $k = 420$ model-level
+Five sensitivity variants of the primary $k = 450$ model-level
 meta-regression are reported below.  All models use
 \texttt{metafor::rma.mv} \citep{viechtbauer2010metafor} with REML
 estimation, Knapp--Hartung $t$-distribution adjustment
@@ -13,17 +13,17 @@ estimation, Knapp--Hartung $t$-distribution adjustment
 \begin{table}[htbp]
 \centering
 \caption{Sensitivity variants of the model-level meta-regression
-  ($k = 420$ primary pool).}\label{tab:sensitivity-summary}
+  ($k = 450$ primary pool).}\label{tab:sensitivity-summary}
 \begin{tabular}{lrlllr}
 \toprule
 Variant & $k$ & $\Dhat$ & 95\% CI & $p$ & $Q$ \\
 \midrule
-Full pool         & 420 & $-0.132$ & $[-0.234,\; -0.030]$ & 0.011  & 115{,}285 \\
-Excl-M5           & 363 & $-0.126$ & $[-0.238,\; -0.015]$ & 0.026  &  70{,}795 \\
-\WAPE{}-only      & 164 & $+0.097$ & $[-0.086,\; +0.279]$ & 0.296  &  63{,}770 \\
-SQL-only          & 128 & $-0.345$ & $[-0.442,\; -0.248]$ & $<.0001$ & 6{,}043 \\
-Source~B only     &  36 & $-0.229$ & $[-0.569,\; +0.110]$ & 0.179  &     203 \\
-Source~A only     & 384 & $-0.101$ & $[-0.206,\; +0.005]$ & 0.063  & 114{,}943 \\
+Full pool         & 450 & $-0.150$ & $[-0.240,\; -0.060]$ & 0.001 & 48{,}672 \\
+Excl-M5           & 378 & $-0.116$ & $[-0.194,\; -0.038]$ & 0.004 &  17{,}311 \\
+\WAPE{}-only      & 174 & $-0.070$ & $[-0.164,\; +0.023]$ & 0.14  &  27{,}081 \\
+SQL-only          & 138 & $-0.278$ & $[-0.378,\; -0.178]$ & $<.0001$ & 6{,}303 \\
+Source~B only     &  36 & $-0.229$ & $[-0.569,\; +0.110]$ & 0.180  &  20{,}572 \\
+Source~A only     & 414 & $-0.113$ & $[-0.159,\; -0.067]$ & $<.0001$ & 25{,}933 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -31,19 +31,20 @@ Source~A only     & 384 & $-0.101$ & $[-0.206,\; +0.005]$ & 0.063  & 114{,}943 \
 \subsection{Interpretation}
 
 \begin{enumerate}
-  \item \textbf{Excl-M5 ($k = 363$):} Excluding all M5 pairs barely
-    changes the estimate ($-0.126$ vs $-0.132$) and remains significant
-    ($p = 0.026$).  M5 is not driving the primary result, unlike in the
-    original $k = 10$ analysis.
+  \item \textbf{Excl-M5 ($k = 378$):} Excluding all M5 pairs barely
+    changes the estimate ($-0.116$ vs $-0.150$) and remains
+    significant ($p = 0.004$).  M5 is not driving the primary result
+    (contrast with the bucket-level variant in Table~\ref{tab:sensitivity-old},
+    where excluding M5 shifted the estimate substantially).
 
-  \item \textbf{\WAPE{}-only ($k = 164$):} The FM advantage
-    \emph{vanishes} on this point-forecast metric ($\hat{\Delta} =
-    +0.097$, $p = 0.30$).  This is the mirror of the SQL-only finding
-    and confirms that the metric split documented in
+  \item \textbf{\WAPE{}-only ($k = 174$):} The FM advantage is
+    directionally favorable but not statistically significant
+    ($\hat{\Delta} = -0.070$, $p = 0.14$).  The effect is weaker than
+    the SQL-only finding, confirming that the metric split documented in
     \S\ref{subsec:metric-moderator} is robust.
 
-  \item \textbf{SQL-only ($k = 128$):} The strongest signal in the
-    pool: FMs beat baselines by 0.345 SQL units ($p < .0001$), with
+  \item \textbf{SQL-only ($k = 138$):} The strongest signal in the
+    pool: FMs beat baselines by 0.278 SQL units ($p < .0001$), with
     the lowest $Q$ of any slice, indicating relative homogeneity
     conditional on this metric.
 
@@ -52,21 +53,21 @@ Source~A only     & 384 & $-0.101$ & $[-0.206,\; +0.005]$ & 0.063  & 114{,}943 \
     are insufficient for significance ($p = 0.18$) with only 3~dataset
     clusters.
 
-  \item \textbf{Source~A only ($k = 384$):} Marginal significance
-    ($p = 0.063$).  The cross-benchmark pairs from fev-bench and
+  \item \textbf{Source~A only ($k = 414$):} Highly significant
+    ($p < .0001$).  The cross-benchmark pairs from fev-bench and
     GIFT-Eval carry most of the statistical mass.
 \end{enumerate}
 
-\subsection{Comparison with Original $k = 10$ Analysis}
+\subsection{Bucket-Level Variant ($k = 10$)}
 
-For reference, the original submission used bucket-level aggregation
-(mean FM vs mean ML\_TREE per dataset--horizon--metric cell), yielding
+For comparison, a coarser bucket-level aggregation
+(mean FM vs mean ML\_TREE per dataset--horizon--metric cell) yields
 $k = 10$:
 
 \begin{table}[htbp]
 \centering
-\caption{Original $k = 10$ bucket-level analysis
-  (retained for comparison).}\label{tab:sensitivity-old}
+\caption{Bucket-level variant ($k = 10$),
+  retained for comparison.}\label{tab:sensitivity-old}
 \begin{tabular}{lrlll}
 \toprule
 Variant & $k$ & $\Dhat$ & 95\% CI & $p$ \\
@@ -78,9 +79,9 @@ Within-paper (B) & 9  & $-0.245$ & $[-0.482, -0.008]$ & 0.044 \\
 \end{tabular}
 \end{table}
 
-The expansion from $k = 10$ to $k = 420$ (via fev-bench and GIFT-Eval
-re-extraction and Source~B expansion from 2 to 4~FMs) changes the
-primary conclusion from ``null, heterogeneous'' to ``significantly
-better on average, metric-dependent.''  The key driver is the
-fev-bench SQL metric, which was not represented in the original
-extraction.
+The model-level design ($k = 450$) differs from the bucket-level
+variant in two ways: (1)~it preserves within-task heterogeneity
+instead of averaging it away, and (2)~it includes the fev-bench SQL
+metric, which contributes substantial statistical mass.  Together,
+these shift the conclusion from ``null, heterogeneous'' to
+``significantly better on average, metric-dependent.''

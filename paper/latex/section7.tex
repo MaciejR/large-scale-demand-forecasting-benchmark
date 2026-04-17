@@ -23,7 +23,7 @@ Q1: Does your dataset have >15\% zero-day fraction
 \(\mid\)         \(\mid\)
 \(\mid\)         \(\mid\)-- YES \(\to\) START WITH: LightGBM direct + covariates
 \(\mid\)         \(\mid\)         WHY: On intermittent data, direct LGBM wins
-\(\mid\)         \(\mid\)         by 17--22\% over recursive (\S5.3.6 Table 5.8),
+\(\mid\)         \(\mid\)         by 17--22\% over recursive (\S5.3.6, Table~\ref{tab:t58}),
 \(\mid\)         \(\mid\)         and per-series WAPE is unreliable as a metric
 \(\mid\)         \(\mid\)         (\S5.4.5). Use WRMSSE or aggregate WAPE for
 \(\mid\)         \(\mid\)         model selection. FMs post lower per-series
@@ -65,8 +65,8 @@ Q1: Does your dataset have >15\% zero-day fraction
               \(\mid\)-- YES \(\to\) START WITH: Chronos-Bolt-Tiny
               \(\mid\)         WHY: 9M params, \(\sim\)0.6s per series on
               \(\mid\)         consumer CPU, competitive with LGBM
-              \(\mid\)         on Rohlik within 4--8 pp WAPE (\S5.4.7
-              \(\mid\)         Table 5.9). No feature pipeline needed.
+              \(\mid\)         on Rohlik within 4--8 pp WAPE (\S5.4.7,
+              \(\mid\)         Table~\ref{tab:t59}). No feature pipeline needed.
               \(\mid\)         RISK: On Rohlik h=28, seasonal\_naive
               \(\mid\)         overtakes lightgbm\_cov (0.412 vs 0.432)
               \(\mid\)         --- at long horizons on smooth data, even
@@ -155,7 +155,7 @@ retail forecasting system:
 \begin{itemize}
   \item The FM ``pays off'' when your team does not have the bandwidth to build
     and maintain a covariate feature pipeline.  The accuracy sacrifice on
-    smooth-demand data is $<$1~pp \WAPE{} (Table~5.9, Favorita row) --- likely
+    smooth-demand data is $<$1~pp \WAPE{} (Table~\ref{tab:t59}, Favorita row) --- likely
     within the noise floor of most business KPIs.
   \item The FM does NOT pay off when you already have a production \LGBM{}
     pipeline with promotions and calendar features: swapping to an FM loses the

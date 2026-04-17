@@ -7,8 +7,9 @@
 #
 # Unit of analysis: one row per (FM_i, baseline_j, task, metric) pair.
 # Effect size: delta_ij = FM_metric - baseline_metric (absolute difference).
-# Nesting: ~1 | dataset_norm / paper_id to account for dataset-level
-# correlation and within-task clustering.
+# Nesting: list(~1|dataset_norm/paper_id, ~1|model_name) to account for
+# dataset-level correlation, within-task clustering, and non-independence
+# of pairs from the same FM model.
 #
 # Inputs:
 #   analysis/extraction_schema.csv  — Source A (literature) + fev-bench rows.
@@ -35,9 +36,10 @@ suppressPackageStartupMessages({
   library(knitr)
 })
 
-SCHEMA_PATH <- "analysis/extraction_schema.csv"
-LOCAL_PATH  <- "benchmark/results/local_fm_sweep.csv"
-FIG_DIR     <- "analysis/figures"
+SCHEMA_PATH    <- "analysis/extraction_schema.csv"
+LOCAL_PATH     <- "benchmark/results/local_fm_sweep.csv"
+BOOTSTRAP_PATH <- "analysis/figures/table_bootstrap_se.csv"
+FIG_DIR        <- "analysis/figures"
 dir.create(FIG_DIR, showWarnings = FALSE, recursive = TRUE)
 
 # ---------------------------------------------------------------------------
@@ -185,7 +187,32 @@ prepare_rows <- function(raw) {
 # This is the new unit of analysis.
 # ---------------------------------------------------------------------------
 
-compute_model_level_delta <- function(rows) {
+load_bootstrap_se <- function(path = BOOTSTRAP_PATH) {
+  if (!file.exists(path)) {
+    message("Bootstrap SE file not found: ", path)
+    return(NULL)
+  }
+  bse <- read_csv(path, show_col_types = FALSE) %>%
+    mutate(
+      dataset_norm = case_when(
+        dataset == "m5"       ~ "M5",
+        dataset == "favorita" ~ "Favorita",
+        dataset == "rohlik"   ~ "Rohlik",
+        TRUE ~ NA_character_
+      ),
+      horizon_bucket = case_when(
+        horizon <= 7  ~ "short",
+        horizon <= 14 ~ "medium",
+        TRUE          ~ "long"
+      )
+    ) %>%
+    select(dataset_norm, horizon_bucket, model_name = model,
+           bootstrap_se) %>%
+    filter(!is.na(dataset_norm))
+  bse
+}
+
+compute_model_level_delta <- function(rows, bootstrap_se_df = NULL) {
   # Within each paper_id (= task for fev-bench/GIFT-Eval, = dataset×horizon
   # for Source B), pair each FM row with the best available baseline.
   # Baseline priority: ML_TREE if present, else STATS.
@@ -218,19 +245,37 @@ compute_model_level_delta <- function(rows) {
                                   "horizon_bucket", "metric_name"))
 
   # Compute delta and variance proxy.
-  fm_rows %>%
+  result <- fm_rows %>%
     mutate(
       delta = metric_num - baseline_metric,
       # Relative delta: (FM - baseline) / baseline. Used for moderator plots.
       delta_rel = ifelse(baseline_metric > 0,
                          (metric_num - baseline_metric) / baseline_metric,
                          NA_real_),
-      # Variance proxy: 1/n_series for each side, summed.
+      # Default variance proxy: 1/n_series for each side, summed.
       vi = (1 / pmax(n_series_num, 1)) + (1 / pmax(baseline_n_series, 1)),
       # Unique pair ID for clustering.
       pair_id = paste(paper_id, model_name, metric_name, sep = "__")
     ) %>%
-    filter(is.finite(delta)) %>%
+    filter(is.finite(delta))
+
+  # For Source B WAPE pairs: replace vi with bootstrap SE² if available.
+  if (!is.null(bootstrap_se_df) && nrow(bootstrap_se_df) > 0) {
+    result <- result %>%
+      left_join(bootstrap_se_df,
+                by = c("dataset_norm", "horizon_bucket",
+                       "model_name" = "model_name"),
+                suffix = c("", ".bse")) %>%
+      mutate(
+        vi = ifelse(source == "LOCAL" & metric_name == "WAPE" &
+                      !is.na(bootstrap_se),
+                    bootstrap_se^2,
+                    vi)
+      ) %>%
+      select(-bootstrap_se)
+  }
+
+  result %>%
     select(pair_id, paper_id, dataset_norm, horizon_bucket, metric_name,
            model_name, model_scale, has_covariates, zero_shot,
            metric_num, baseline_metric, baseline_family,
@@ -267,11 +312,13 @@ compute_crosspaper_delta <- function(rows) {
 # ---------------------------------------------------------------------------
 
 fit_model_level <- function(delta_df) {
-  # Primary model: model-level deltas with dataset-level nesting.
+  # Primary model: model-level deltas with three-level random effects.
+  # (1) ~1|dataset_norm/paper_id: dataset-level and within-task clustering.
+  # (2) ~1|model_name: non-independence of pairs from the same FM.
   # k = nrow(delta_df), typically ≥50 with fev-bench expansion.
   rma.mv(
     yi = delta, V = vi,
-    random = ~ 1 | dataset_norm / paper_id,
+    random = list(~ 1 | dataset_norm / paper_id, ~ 1 | model_name),
     data = delta_df,
     test = "t",
     method = "REML"
@@ -282,7 +329,7 @@ fit_model_level_mods <- function(delta_df, moderator) {
   rma.mv(
     yi = delta, V = vi,
     mods = as.formula(paste("~", moderator)),
-    random = ~ 1 | dataset_norm / paper_id,
+    random = list(~ 1 | dataset_norm / paper_id, ~ 1 | model_name),
     data = delta_df,
     test = "t",
     method = "REML"
@@ -338,17 +385,30 @@ pareto_plot <- function(rows, cost_axis, out_path) {
     return(invisible(NULL))
   }
   have <- rows %>%
-    filter(!is.na(metric_num), !is.na(cost_usd))
+    filter(!is.na(metric_num), !is.na(cost_usd), cost_usd > 0)
   if (nrow(have) < 2) {
     message(sprintf("Skipping %s Pareto — need Source B cost rows", cost_axis))
     return(invisible(NULL))
   }
-  p <- ggplot(have, aes(cost_usd, metric_num, colour = family)) +
-    geom_point(size = 2) +
-    scale_x_log10() +
-    labs(x = sprintf("log10 USD (%s)", cost_axis),
-         y = "WAPE / WRMSSE",
-         title = sprintf("Cost-accuracy Pareto (%s)", cost_axis))
+  # Use shape to distinguish hardware cost basis (MacBook vs Azure).
+  has_hw <- "hardware" %in% colnames(have) && n_distinct(have$hardware) > 1
+  if (has_hw) {
+    p <- ggplot(have, aes(cost_usd, metric_num, colour = family, shape = hardware)) +
+      geom_point(size = 2.5) +
+      scale_x_log10() +
+      labs(x = "Cost (USD, log scale)",
+           y = "WAPE",
+           colour = "Model family",
+           shape = "Hardware")
+  } else {
+    p <- ggplot(have, aes(cost_usd, metric_num, colour = family)) +
+      geom_point(size = 2.5) +
+      scale_x_log10() +
+      labs(x = "Cost (USD, log scale)",
+           y = "WAPE",
+           colour = "Model family")
+  }
+  p <- p + theme_minimal(base_size = 11)
   ggsave(out_path, p, width = 7, height = 5)
   message("Wrote ", out_path)
 }
@@ -405,8 +465,11 @@ main <- function() {
                   nrow(rows), n_distinct(rows$paper_id),
                   n_distinct(rows$dataset_norm)))
 
+  # ---- Load bootstrap SEs for Source B (if available) ----
+  bse_df <- load_bootstrap_se()
+
   # ---- Model-level deltas (PRIMARY, k≥50) ----
-  model_delta <- compute_model_level_delta(rows)
+  model_delta <- compute_model_level_delta(rows, bootstrap_se_df = bse_df)
   message(sprintf("\nModel-level Δ: %d pairs across %d datasets, %d unique FMs.",
                   nrow(model_delta), n_distinct(model_delta$dataset_norm),
                   n_distinct(model_delta$model_name)))
@@ -515,6 +578,43 @@ main <- function() {
                file.path(FIG_DIR, "legacy_crosspaper_intercept.txt"))
     write_csv(delta_cross,
               file.path(FIG_DIR, "legacy_crosspaper_cells.csv"))
+  }
+
+  # ---- Funnel plot + Egger's test (PRISMA Item 14: publication bias) ----
+  sql_delta <- model_delta %>% filter(metric_name == "SQL")
+  if (nrow(sql_delta) >= 10) {
+    sql_fit <- tryCatch(fit_model_level(sql_delta), error = function(e) NULL)
+    if (!is.null(sql_fit)) {
+      # Funnel plot (SQL-only)
+      pdf(file.path(FIG_DIR, "figure_funnel_sql.pdf"), width = 7, height = 5)
+      funnel(sql_fit, main = "Funnel plot: SQL-only (k = 138)",
+             xlab = expression(hat(Delta)), ylab = "SE")
+      dev.off()
+      message("Wrote ", file.path(FIG_DIR, "figure_funnel_sql.pdf"))
+
+      # Regression-based test for funnel asymmetry (Egger-type).
+      # Add sqrt(vi) as a moderator in the rma.mv model.
+      sql_delta_egger <- sql_delta %>% mutate(sei = sqrt(vi))
+      egger_fit <- tryCatch(
+        rma.mv(yi = delta, V = vi,
+               mods = ~ sei,
+               random = list(~ 1 | dataset_norm / paper_id, ~ 1 | model_name),
+               data = sql_delta_egger,
+               test = "t", method = "REML"),
+        error = function(e) {
+          message("Egger-type test failed: ", e$message)
+          NULL
+        }
+      )
+      if (!is.null(egger_fit)) {
+        egger_out <- capture.output(print(egger_fit))
+        writeLines(egger_out, file.path(FIG_DIR, "egger_sql.txt"))
+        # The coefficient on sei tests for funnel asymmetry.
+        sei_row <- which(rownames(egger_fit$beta) == "sei")
+        message(sprintf("Egger-type test (SQL): sei coef = %.3f, p = %.4f",
+                        egger_fit$beta[sei_row], egger_fit$pval[sei_row]))
+      }
+    }
   }
 
   # ---- Pareto plots ----

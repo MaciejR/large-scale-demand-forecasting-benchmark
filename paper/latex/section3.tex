@@ -189,10 +189,10 @@ For each FM row $i$ and each baseline row $j$ that share the same
 $\delta_{ij} = \text{metric}(\text{FM}_i) - \text{metric}(\text{baseline}_j)$.
 \end{quote}
 
-\noindent This model-level pairing produces $k = 420$ observations
-(9~FMs $\times$ 9~datasets $\times$ multiple baselines $\times$
-multiple metrics), a substantial increase from the $k = 10$
-bucket-level design of the original analysis.
+\noindent This model-level pairing produces $k = 450$ observations
+(11~FM model entries $\times$ 8~datasets $\times$ multiple baselines
+$\times$ multiple metrics).  Appendix~\ref{app:sensitivity} also
+reports a coarser bucket-level analysis for comparison.
 
 \noindent\textbf{Notation convention.}
 Throughout this paper, $\Dhat$ denotes the pooled estimate of the
@@ -206,7 +206,8 @@ The model is:
 
 \begin{alltt}
 rma.mv(yi = delta, V = vi,
-       random = ~ 1 | dataset_norm / paper_id,
+       random = list(~ 1 | dataset_norm / paper_id,
+                     ~ 1 | model_name),
        data = delta_model,
        test = "t",         # Knapp-Hartung
        method = "REML")
@@ -214,10 +215,12 @@ rma.mv(yi = delta, V = vi,
 
 \noindent\textbf{Random effects.}
 \texttt{\~{} 1 | dataset\_norm / paper\_id} nests papers within
-datasets.  The dataset level captures the primary source of
-heterogeneity (M5 vs smooth-demand, benchmark suite vs individual
-dataset); the paper level accounts for protocol-specific effects
-within each dataset.
+datasets.  A crossed \texttt{\~{} 1 | model\_name} random effect
+accounts for non-independence when the same FM appears across
+multiple papers and datasets.  The dataset level captures the primary
+source of heterogeneity (M5 vs smooth-demand, benchmark suite vs
+individual dataset); the paper level accounts for protocol-specific
+effects within each dataset.
 
 \noindent\textbf{Variance.}
 For Source~A pairs, $v_i = 1/\sqrt{n_{\mathrm{series}}}$ where
@@ -234,8 +237,10 @@ correlation; this is flagged as a limitation in \S8.4.
 distribution with a $t$-distribution whose degrees of freedom equal
 $k - p$.
 
-\noindent\textbf{Moderator regressions.}
-We test three moderators individually:
+\noindent\textbf{Moderator regressions (exploratory).}
+We test three moderators individually.  These analyses are exploratory
+--- no multiplicity adjustment is applied, and results are
+hypothesis-generating rather than confirmatory:
 
 \begin{enumerate}
   \item \texttt{mods = \~{} dataset\_norm} --- tests whether the

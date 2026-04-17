@@ -5,9 +5,9 @@
 We presented a PRISMA-informed systematic review of foundation models for
 retail demand forecasting, augmented with cross-benchmark extraction from
 fev-bench and GIFT-Eval and original gap-filling experiments.  The study
-synthesised 720+ extraction rows from 9~retail datasets (2020--2026) into a
-model-level meta-regression with $k = 420$ paired comparisons across
-9~foundation models and conventional baselines.  We summarise the findings per
+synthesised 780+ extraction rows from 9~retail datasets (2020--2026) into a
+model-level meta-regression with $k = 450$ paired comparisons across
+14~foundation models and conventional baselines.  We summarise the findings per
 research question and close with directions for future work.
 
 \subsection{Answers to the research questions}
@@ -17,32 +17,34 @@ research question and close with directions for future work.
 conventional baselines on retail demand forecasting?}
 
 Yes, on average --- but the answer depends critically on \emph{which metric}
-is used.  The pooled meta-regression on $k = 420$ model-level pairs finds
-$\Dhat(\text{FM} - \text{baseline}) = -0.132$ ($p = 0.011$, 95\,\% CI
-$[-0.23, -0.03]$).  Foundation models are significantly better than tree
+is used.  The pooled meta-regression on $k = 450$ model-level pairs finds
+$\Dhat(\text{FM} - \text{baseline}) = -0.150$ ($p = 0.001$, 95\,\% CI
+$[-0.24, -0.06]$).  Foundation models are significantly better than tree
 and statistical baselines across the full pool.
 
 However, this aggregate masks a critical metric split
 (\S\ref{subsec:metric-moderator}): on Scaled Quantile Loss (SQL), which
 measures the full predictive distribution, the FM advantage is large and
-highly significant ($\Dhat = -0.345$, $p < .0001$).  On \WAPE{}, a
-point-forecast metric, the advantage vanishes ($\Dhat = +0.10$,
-$p = 0.30$).  \textbf{Foundation models produce well-calibrated predictive
-distributions but their point forecasts do not systematically outperform a
-well-tuned LightGBM or CatBoost.}
+highly significant ($\Dhat = -0.278$, $p < .0001$).  On \WAPE{}, a
+point-forecast metric, the FM advantage is directionally favorable but not
+statistically significant ($\Dhat = -0.070$, $p = 0.14$).
+\textbf{Foundation models produce well-calibrated predictive
+distributions; their point forecasts trend in the same direction but the
+advantage is attenuated relative to distributional metrics.}
 
-The result is robust to excluding M5 ($\Dhat = -0.126$, $p = 0.026$,
-$k = 363$), resolving a concern from the original $k = 10$ analysis where
-the M5 \WAPE{} artefact dominated the pool.
+The result is robust to excluding M5 ($\Dhat = -0.116$, $p = 0.004$,
+$k = 378$), confirming that the finding does not depend on the M5
+\WAPE{} artefact that inflates per-series denominators.
 
 \paragraph{RQ2 (Moderators): Which characteristics moderate the
 FM-vs-baseline gap?}
 
+All moderator tests are exploratory (no multiplicity adjustment).
 Metric choice is the dominant moderator: the SQL/\WAPE{} split explains more
 heterogeneity than any data characteristic.  Beyond metric:
 
 \begin{itemize}
-  \item \textbf{Dataset:} Not significant as a moderator ($p = 0.90$) once
+  \item \textbf{Dataset:} Not significant as a moderator ($p = 0.652$) once
     the metric split is accounted for; the metric type drives heterogeneity,
     not the dataset.
   \item \textbf{Model scale:} Statistically significant but confounded with
@@ -77,7 +79,7 @@ conditions where the FM pays off:
   \item \textbf{When distributional forecasts matter.}  If the business uses
     quantile forecasts for safety-stock calculation or scenario planning,
     FMs provide significantly better calibration than tree models
-    ($\Dhat = -0.345$ on SQL).
+    ($\Dhat = -0.278$ on SQL).
 
   \item \textbf{No feature engineering capacity.}  Zero-shot FM inference on
     consumer hardware delivers competitive point-forecast accuracy ($<$1~pp

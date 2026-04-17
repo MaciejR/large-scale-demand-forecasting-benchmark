@@ -2,7 +2,7 @@
 \section{Extraction Table (Abbreviated)}\label{app:extraction}
 
 The full extraction table (\texttt{analysis/extraction\_schema.csv} +
-\texttt{benchmark/results/local\_fm\_sweep.csv}, 700+ data rows)
+\texttt{benchmark/results/local\_fm\_sweep.csv}, 780+ data rows)
 records one row per (paper $\times$ model $\times$ dataset $\times$
 metric) observation. The complete CSVs are available in the
 supplementary materials. Table~\ref{tab:extraction-columns} shows the
@@ -48,14 +48,14 @@ Column & Description \\
 Category & Description & Rows \\
 \midrule
 A     & Foundation model papers              & 58 \\
-B     & Benchmark papers (incl.\ fev-bench, GIFT-Eval) & 507 \\
+B     & Benchmark papers (incl.\ fev-bench, GIFT-Eval) & 574 \\
 C     & M5 competition and retail-specific   & 31 \\
 D     & Cross-domain papers                  & 3 \\
 F     & fev-bench entry papers               & 8 \\
 OWN   & Our baselines (Source~B, Azure)       & 45 \\
 LOCAL & Our Source~B cells (4~FMs + 3~baselines, MacBook/Azure) & 63 \\
 \midrule
-\textbf{Total} & & \textbf{${\sim}$720} \\
+\textbf{Total} & & \textbf{${\sim}$780} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -64,11 +64,11 @@ LOCAL & Our Source~B cells (4~FMs + 3~baselines, MacBook/Azure) & 63 \\
 
 \begin{itemize}[nosep]
   \item \textbf{Source~A} (literature extraction): categories A--F
-    (${\sim}$607 rows from 38+ studies, including per-task fev-bench
+    (${\sim}$674 rows from 38+ studies, including per-task fev-bench
     and GIFT-Eval re-extraction). These rows report accuracy numbers
     as published by the original authors.
   \item \textbf{Source~B} (gap-filling experiments): OWN + LOCAL
-    (${\sim}$81 rows). These rows are from our own experiments on
+    (${\sim}$108 rows). These rows are from our own experiments on
     consumer hardware (MacBook M-series MPS) and Azure ML (E4DS\_V4),
     using the shared protocol of \S5.1.
 \end{itemize}
