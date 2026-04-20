@@ -22,14 +22,15 @@
 \newlabel{sec:headline-findings}{{1.3}{3}{Headline findings}{subsection.1.3}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {1.4}Contributions}{3}{subsection.1.4}\protected@file@percent }
 \newlabel{sec:contributions}{{1.4}{3}{Contributions}{subsection.1.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.5}Paper structure}{4}{subsection.1.5}\protected@file@percent }
-\newlabel{sec:paper-structure}{{1.5}{4}{Paper structure}{subsection.1.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.5}Paper structure}{3}{subsection.1.5}\protected@file@percent }
+\newlabel{sec:paper-structure}{{1.5}{3}{Paper structure}{subsection.1.5}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {2}Background}{4}{section.2}\protected@file@percent }
 \newlabel{sec:background}{{2}{4}{Background}{section.2}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Taxonomy of forecasting approaches}{4}{subsection.2.1}\protected@file@percent }
 \newlabel{sec:taxonomy}{{2.1}{4}{Taxonomy of forecasting approaches}{subsection.2.1}{}}
 \@writefile{toc}{\contentsline {paragraph}{Statistical models.}{4}{section*.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Gradient-boosted trees (ML\_TREE).}{4}{section*.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Deep learning (NN).}{4}{section*.3}\protected@file@percent }
 \citation{ansari2024chronos,ansari2025chronos2}
 \citation{das2025timesfm2}
 \citation{liu2025moirai2}
@@ -39,7 +40,7 @@
 \citation{garza2023timegpt}
 \citation{makridakis2022m5}
 \citation{aksu2024gift}
-\@writefile{toc}{\contentsline {paragraph}{Deep learning (NN).}{5}{section*.3}\protected@file@percent }
+\citation{shchur2025fevbench}
 \@writefile{toc}{\contentsline {paragraph}{Foundation models (FM).}{5}{section*.4}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Foundation models in scope.}}{5}{table.1}\protected@file@percent }
 \newlabel{tab:fm-scope}{{1}{5}{Foundation models in scope}{table.1}{}}
@@ -47,9 +48,8 @@
 \newlabel{sec:existing-benchmarks}{{2.2}{5}{Existing benchmarks}{subsection.2.2}{}}
 \newlabel{sec:m5-benchmark}{{2.2}{5}{M5 Competition \citep {makridakis2022m5}}{section*.5}{}}
 \@writefile{toc}{\contentsline {paragraph}{M5 Competition \citep  {makridakis2022m5}.}{5}{section*.5}\protected@file@percent }
-\citation{shchur2025fevbench}
+\@writefile{toc}{\contentsline {paragraph}{GIFT-Eval \citep  {aksu2024gift}.}{5}{section*.6}\protected@file@percent }
 \citation{page2021prisma}
-\@writefile{toc}{\contentsline {paragraph}{GIFT-Eval \citep  {aksu2024gift}.}{6}{section*.6}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{fev-bench \citep  {shchur2025fevbench}.}{6}{section*.7}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Meta-analyses in forecasting}{6}{subsection.2.3}\protected@file@percent }
 \newlabel{sec:meta-analyses}{{2.3}{6}{Meta-analyses in forecasting}{subsection.2.3}{}}
@@ -61,10 +61,10 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Data extraction (Source~A)}{7}{subsection.3.2}\protected@file@percent }
 \newlabel{subsec:extraction}{{3.2}{7}{Data extraction (Source~A)}{subsection.3.2}{}}
 \newlabel{sec:extraction-schema}{{3.2}{7}{Data extraction (Source~A)}{subsection.3.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Gap-filling experiments (Source~B)}{7}{subsection.3.3}\protected@file@percent }
+\newlabel{subsec:gapfilling}{{3.3}{7}{Gap-filling experiments (Source~B)}{subsection.3.3}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Extraction schema fields (Source~A).}}{8}{table.2}\protected@file@percent }
 \newlabel{tab:extraction-schema}{{2}{8}{Extraction schema fields (Source~A)}{table.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Gap-filling experiments (Source~B)}{9}{subsection.3.3}\protected@file@percent }
-\newlabel{subsec:gapfilling}{{3.3}{9}{Gap-filling experiments (Source~B)}{subsection.3.3}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Meta-regression specification}{9}{subsection.3.4}\protected@file@percent }
 \newlabel{subsec:metaspec}{{3.4}{9}{Meta-regression specification}{subsection.3.4}{}}
 \citation{knapp2003improved}
@@ -80,6 +80,7 @@
 \newlabel{subsec:descriptive}{{4.2}{12}{Descriptive statistics}{subsection.4.2}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Narrative synthesis by model family}{12}{subsection.4.3}\protected@file@percent }
 \newlabel{subsec:narrative}{{4.3}{12}{Narrative synthesis by model family}{subsection.4.3}{}}
+\citation{makridakis2022m5}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Structural finding: FM-vs-ML\_TREE pairing requires benchmark suites or original experiments}{13}{subsection.4.4}\protected@file@percent }
 \newlabel{subsec:structural-finding}{{4.4}{13}{Structural finding: FM-vs-ML\_TREE pairing requires benchmark suites or original experiments}{subsection.4.4}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {5}Gap-Filling Experiments}{13}{section.5}\protected@file@percent }
@@ -89,7 +90,6 @@
 \newlabel{sec:experimental-setup}{{5.1}{13}{Experimental Setup}{subsection.5.1}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.1}Datasets}{13}{subsubsection.5.1.1}\protected@file@percent }
 \newlabel{sec:datasets}{{5.1.1}{13}{Datasets}{subsubsection.5.1.1}{}}
-\citation{makridakis2022m5}
 \@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Datasets used in the gap-filling experiments. \texttt  {Zero-day fraction} is the fraction of series-day observations with $y = 0$ in the training portion, a core moderator variable in \S  6.}}{14}{table.4}\protected@file@percent }
 \newlabel{tab:t51}{{4}{14}{Datasets used in the gap-filling experiments. \texttt {Zero-day fraction} is the fraction of series-day observations with $y = 0$ in the training portion, a core moderator variable in \S 6}{table.4}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.2}Compute and Tracking}{14}{subsubsection.5.1.2}\protected@file@percent }
@@ -116,9 +116,9 @@
 \newlabel{sec:costenvelope}{{5.2.3}{18}{Cost and Compute Envelope}{subsubsection.5.2.3}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Baseline-sweep cost envelope across the three datasets, by model family. All values are 9-job totals per dataset. Cost is computed in-job from Azure's published per-second pricing for \texttt  {Standard\_E4ds\_v4} in \texttt  {swedencentral} (\$0.38/hr at time of writing); CO$_2$ uses the region's 2025 baseline marginal intensity of 0.041\,kgCO$_2$eq/kWh (Nowtricity/Ember, 2024).}}{18}{table.6}\protected@file@percent }
 \newlabel{tab:t56}{{6}{18}{Baseline-sweep cost envelope across the three datasets, by model family. All values are 9-job totals per dataset. Cost is computed in-job from Azure's published per-second pricing for \texttt {Standard\_E4ds\_v4} in \texttt {swedencentral} (\$0.38/hr at time of writing); CO$_2$ uses the region's 2025 baseline marginal intensity of 0.041\,kgCO$_2$eq/kWh (Nowtricity/Ember, 2024)}{table.6}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.4}Foundation Model Results}{18}{subsubsection.5.2.4}\protected@file@percent }
+\newlabel{sec:fmresults_pointer}{{5.2.4}{18}{Foundation Model Results}{subsubsection.5.2.4}{}}
 \citation{bentaieb2014boosting,bentaieb2016bias}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.4}Foundation Model Results}{19}{subsubsection.5.2.4}\protected@file@percent }
-\newlabel{sec:fmresults_pointer}{{5.2.4}{19}{Foundation Model Results}{subsubsection.5.2.4}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Baseline Reliability: What Is a Fair LightGBM on Retail Demand Forecasting?}{19}{subsection.5.3}\protected@file@percent }
 \newlabel{sec:baseline}{{5.3}{19}{Baseline Reliability: What Is a Fair LightGBM on Retail Demand Forecasting?}{subsection.5.3}{}}
 \newlabel{sec:baseline-reliability}{{5.3}{19}{Baseline Reliability: What Is a Fair LightGBM on Retail Demand Forecasting?}{subsection.5.3}{}}
@@ -132,14 +132,14 @@
 \newlabel{sec:threats}{{5.3.1}{19}{Cross-Dataset Results}{subsubsection.5.3.1}{}}
 \newlabel{sec:costconsequences}{{5.3.1}{19}{Cross-Dataset Results}{subsubsection.5.3.1}{}}
 \newlabel{sec:takeaways}{{5.3.1}{19}{Cross-Dataset Results}{subsubsection.5.3.1}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Cross-dataset summary of the direct-vs-recursive LightGBM gap with matched protocol (\textsc  {wape}{}-based; positive = direct wins, negative = recursive wins).}}{20}{table.7}\protected@file@percent }
-\newlabel{tab:t58}{{7}{20}{Cross-dataset summary of the direct-vs-recursive LightGBM gap with matched protocol (\WAPE {}-based; positive = direct wins, negative = recursive wins)}{table.7}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Cross-dataset summary of the direct-vs-recursive LightGBM gap with matched protocol (\textsc  {wape}{}-based; positive = direct wins, negative = recursive wins).}}{19}{table.7}\protected@file@percent }
+\newlabel{tab:t58}{{7}{19}{Cross-dataset summary of the direct-vs-recursive LightGBM gap with matched protocol (\WAPE {}-based; positive = direct wins, negative = recursive wins)}{table.7}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Foundation Model Protocol}{20}{subsection.5.4}\protected@file@percent }
 \newlabel{sec:fm}{{5.4}{20}{Foundation Model Protocol}{subsection.5.4}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.1}Scope and Two-Source Strategy}{20}{subsubsection.5.4.1}\protected@file@percent }
 \newlabel{sec:fm_scope}{{5.4.1}{20}{Scope and Two-Source Strategy}{subsubsection.5.4.1}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.2}Literature-Extraction Protocol (Source~A)}{21}{subsubsection.5.4.2}\protected@file@percent }
-\newlabel{sec:fm_extraction}{{5.4.2}{21}{Literature-Extraction Protocol (Source~A)}{subsubsection.5.4.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.2}Literature-Extraction Protocol (Source~A)}{20}{subsubsection.5.4.2}\protected@file@percent }
+\newlabel{sec:fm_extraction}{{5.4.2}{20}{Literature-Extraction Protocol (Source~A)}{subsubsection.5.4.2}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.3}Local Consumer-Box Protocol (Source~B)}{21}{subsubsection.5.4.3}\protected@file@percent }
 \newlabel{sec:fm_local}{{5.4.3}{21}{Local Consumer-Box Protocol (Source~B)}{subsubsection.5.4.3}{}}
 \newlabel{sec:fm-consumer-box}{{5.4.3}{21}{Local Consumer-Box Protocol (Source~B)}{subsubsection.5.4.3}{}}
@@ -164,19 +164,19 @@
 \newlabel{sec:metaanalysis}{{6}{23}{Meta-Analysis}{section.6}{}}
 \newlabel{sec:meta-regression}{{6}{23}{Meta-Analysis}{section.6}{}}
 \newlabel{sec:metareg}{{6}{23}{Meta-Analysis}{section.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Pooling strategy and effect size}{23}{subsection.6.1}\protected@file@percent }
+\newlabel{subsec:pooling-strategy}{{6.1}{23}{Pooling strategy and effect size}{subsection.6.1}{}}
+\newlabel{eq:delta-model-level}{{1}{23}{Pooling strategy and effect size}{equation.1}{}}
 \citation{knapp2003improved,viechtbauer2010metafor}
 \citation{shchur2025fevbench}
 \citation{aksu2024gift}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Pooling strategy and effect size}{24}{subsection.6.1}\protected@file@percent }
-\newlabel{subsec:pooling-strategy}{{6.1}{24}{Pooling strategy and effect size}{subsection.6.1}{}}
-\newlabel{eq:delta-model-level}{{1}{24}{Pooling strategy and effect size}{equation.1}{}}
 \@writefile{toc}{\contentsline {paragraph}{Meta-regression model.}{24}{section*.8}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Data sources.}{24}{section*.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Primary results}{25}{subsection.6.2}\protected@file@percent }
-\newlabel{subsec:cross-paper-pooled}{{6.2}{25}{Primary results}{subsection.6.2}{}}
-\newlabel{sec:cross-paper-pooling}{{6.2}{25}{Primary results}{subsection.6.2}{}}
-\newlabel{sec:rq1-accuracy}{{6.2}{25}{Primary results}{subsection.6.2}{}}
-\@writefile{toc}{\contentsline {paragraph}{Full-pool intercept ($k = 459$).}{25}{section*.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Primary results}{24}{subsection.6.2}\protected@file@percent }
+\newlabel{subsec:cross-paper-pooled}{{6.2}{24}{Primary results}{subsection.6.2}{}}
+\newlabel{sec:cross-paper-pooling}{{6.2}{24}{Primary results}{subsection.6.2}{}}
+\newlabel{sec:rq1-accuracy}{{6.2}{24}{Primary results}{subsection.6.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{Full-pool intercept ($k = 543$).}{24}{section*.10}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Variance components.}{25}{section*.11}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Heterogeneity.}{25}{section*.12}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Per-metric decomposition: SQL versus \textsc  {wape}{}}{25}{subsection.6.3}\protected@file@percent }
@@ -186,6 +186,9 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Forest plots}{25}{subsection.6.4}\protected@file@percent }
 \newlabel{subsec:forest-plots}{{6.4}{25}{Forest plots}{subsection.6.4}{}}
 \newlabel{sec:per-dataset-results}{{6.4}{25}{Forest plots}{subsection.6.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Sensitivity analyses}{25}{subsection.6.5}\protected@file@percent }
+\newlabel{subsec:sensitivity}{{6.5}{25}{Sensitivity analyses}{subsection.6.5}{}}
+\newlabel{sec:heterogeneity}{{6.5}{25}{Sensitivity analyses}{subsection.6.5}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Forest plot for M5: model-level $\Delta $ across SQL, \textsc  {mase}{}, and \textsc  {wape}{}. The FM advantage is large on SQL (left of zero) and reverses on \textsc  {wape}{} for several models.}}{26}{figure.1}\protected@file@percent }
 \newlabel{fig:forest_m5}{{1}{26}{Forest plot for M5: model-level $\Delta $ across SQL, \MASE {}, and \WAPE {}. The FM advantage is large on SQL (left of zero) and reverses on \WAPE {} for several models}{figure.1}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Forest plot for Favorita. All FMs are close to or slightly better than baselines on all metrics.}}{27}{figure.2}\protected@file@percent }
@@ -196,9 +199,6 @@
 \newlabel{fig:forest_rohlik}{{4}{29}{Forest plot for Rohlik~v2}{figure.4}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Forest plot for Car Parts (GIFT-Eval). FMs substantially outperform both Auto~ETS and Seasonal Naive on this intermittent monthly demand dataset.}}{30}{figure.5}\protected@file@percent }
 \newlabel{fig:forest_car_parts}{{5}{30}{Forest plot for Car Parts (GIFT-Eval). FMs substantially outperform both Auto~ETS and Seasonal Naive on this intermittent monthly demand dataset}{figure.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Sensitivity analyses}{31}{subsection.6.5}\protected@file@percent }
-\newlabel{subsec:sensitivity}{{6.5}{31}{Sensitivity analyses}{subsection.6.5}{}}
-\newlabel{sec:heterogeneity}{{6.5}{31}{Sensitivity analyses}{subsection.6.5}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {11}{\ignorespaces Sensitivity analyses on the model-level meta-regression.}}{31}{table.11}\protected@file@percent }
 \newlabel{tab:sensitivity}{{11}{31}{Sensitivity analyses on the model-level meta-regression}{table.11}{}}
 \@writefile{toc}{\contentsline {paragraph}{Key observations.}{31}{section*.13}\protected@file@percent }
@@ -207,8 +207,8 @@
 \@writefile{lot}{\contentsline {table}{\numberline {12}{\ignorespaces Variance decomposition. $\hat  {\sigma }^2_1$ is between-dataset; $\hat  {\sigma }^2_2$ is between-paper within dataset; $\hat  {\sigma }^2_3$ is between-model within paper.}}{31}{table.12}\protected@file@percent }
 \newlabel{tab:t62}{{12}{31}{Variance decomposition. $\hat {\sigma }^2_1$ is between-dataset; $\hat {\sigma }^2_2$ is between-paper within dataset; $\hat {\sigma }^2_3$ is between-model within paper}{table.12}{}}
 \@writefile{toc}{\contentsline {paragraph}{Publication bias (PRISMA Item~14).}{32}{section*.14}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Funnel plot for SQL-only slice ($k = 138$). No evidence of asymmetry (Egger-type test $p = 0.46$).}}{32}{figure.6}\protected@file@percent }
-\newlabel{fig:funnel_sql}{{6}{32}{Funnel plot for SQL-only slice ($k = 138$). No evidence of asymmetry (Egger-type test $p = 0.46$)}{figure.6}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Funnel plot for SQL-only slice ($k = 166$). No evidence of asymmetry (Egger-type test $p = 0.79$).}}{32}{figure.6}\protected@file@percent }
+\newlabel{fig:funnel_sql}{{6}{32}{Funnel plot for SQL-only slice ($k = 166$). No evidence of asymmetry (Egger-type test $p = 0.79$)}{figure.6}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {6.7}Cost-accuracy Pareto frontier}{32}{subsection.6.7}\protected@file@percent }
 \newlabel{subsec:pareto}{{6.7}{32}{Cost-accuracy Pareto frontier}{subsection.6.7}{}}
 \newlabel{sec:cost-accuracy}{{6.7}{32}{Cost-accuracy Pareto frontier}{subsection.6.7}{}}
@@ -300,8 +300,8 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~D.2}Interpretation}{46}{subsection.D.2}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {C.15}{\ignorespaces Bootstrap standard error and 95\% CI for Source~B FM cells (5~FMs $\times $ 3~datasets $\times $ 3~horizons = 45~cells, $B = 10{,}000$).}}{47}{table.15}\protected@file@percent }
 \newlabel{tab:bootstrap-se}{{C.15}{47}{Bootstrap standard error and 95\% CI for Source~B FM cells (5~FMs $\times $ 3~datasets $\times $ 3~horizons = 45~cells, $B = 10{,}000$)}{table.15}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {D.16}{\ignorespaces Sensitivity variants of the model-level meta-regression ($k = 459$ primary pool).}}{48}{table.16}\protected@file@percent }
-\newlabel{tab:sensitivity-summary}{{D.16}{48}{Sensitivity variants of the model-level meta-regression ($k = 459$ primary pool)}{table.16}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {D.16}{\ignorespaces Sensitivity variants of the model-level meta-regression ($k = 543$ primary pool).}}{48}{table.16}\protected@file@percent }
+\newlabel{tab:sensitivity-summary}{{D.16}{48}{Sensitivity variants of the model-level meta-regression ($k = 543$ primary pool)}{table.16}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~D.3}Bucket-Level Variant ($k = 10$)}{48}{subsection.D.3}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {D.17}{\ignorespaces Bucket-level variant ($k = 10$), retained for comparison.}}{48}{table.17}\protected@file@percent }
 \newlabel{tab:sensitivity-old}{{D.17}{48}{Bucket-level variant ($k = 10$), retained for comparison}{table.17}{}}

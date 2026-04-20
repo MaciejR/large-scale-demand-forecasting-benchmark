@@ -6,9 +6,9 @@ This section pools the extraction corpus (\S4) with fev-bench
 \citep{shchur2025fevbench}, GIFT-Eval \citep{aksu2024gift}, and our
 own gap-filling experiments (\S5) into a model-level meta-regression
 of foundation models versus conventional baselines on retail demand
-forecasting.  The pipeline yields $k = 459$ paired comparisons across
-8~datasets and 12~foundation model entries.  Appendix~\ref{app:sensitivity}
-retains a bucket-level $k = 10$ variant for comparison with coarser
+forecasting.  The pipeline yields $k = 543$ paired comparisons across
+9~datasets and 12~foundation model entries.  Appendix~\ref{app:sensitivity}
+retains a bucket-level variant for comparison with coarser
 pooling approaches.
 
 \subsection{Pooling strategy and effect size}
@@ -64,16 +64,16 @@ non-independence from the same FM appearing across multiple papers
 and datasets.
 
 \paragraph{Data sources.}
-The 459~pairs come from three sources:
+The 543~pairs come from three sources:
 \begin{itemize}
   \item \textbf{fev-bench} \citep{shchur2025fevbench}: 20 retail tasks
     $\times$ 7~FMs paired against LightGBM~(Recursive) and
-    CatBoost~(Recursive) baselines, yielding 318~pairs across SQL,
+    CatBoost~(Recursive) baselines, yielding 414~pairs across SQL,
     \MASE{}, and \WAPE{}.
   \item \textbf{GIFT-Eval} \citep{aksu2024gift}: 4~Sales-domain
     configurations (Car Parts, Hierarchical Sales $\times$\,2,
     Restaurant) $\times$ 7~FMs paired against Auto~ETS and Seasonal
-    Naive baselines, yielding 84~pairs.
+    Naive baselines, yielding 84~pairs across SQL, \MASE{}, and \WAPE{}.
   \item \textbf{Source~B} (\S5): 9~cells (3~datasets $\times$
     3~horizons) $\times$ 5~FMs paired against the averaged baseline
     (\LGBM{} + Seasonal Naive) from the Azure sweep, yielding 45~pairs
@@ -83,33 +83,33 @@ The 459~pairs come from three sources:
 \subsection{Primary results}
 \label{subsec:cross-paper-pooled}\label{sec:cross-paper-pooling}\label{sec:rq1-accuracy}
 
-\paragraph{Full-pool intercept ($k = 459$).}
+\paragraph{Full-pool intercept ($k = 543$).}
 
 \begin{quote}
-$\hat{\Delta}\;\text{(FM} - \text{baseline)} = -0.150$,\quad
-$\text{SE} = 0.045$,\quad
-$t(458) = -3.33$,\quad $p = 0.001$,\quad
-95\,\% CI $[-0.240,\; -0.060]$.
+$\hat{\Delta}\;\text{(FM} - \text{baseline)} = -0.190$,\quad
+$\text{SE} = 0.043$,\quad
+$t(542) = -4.41$,\quad $p < .0001$,\quad
+95\,\% CI $[-0.275,\; -0.105]$.
 \end{quote}
 
 \noindent Foundation models are, on average, significantly better than
 conventional baselines across all metrics, datasets, and model sizes in
-this pool.  However, this aggregate combines metrics with heterogeneous
-effect directions and should not be interpreted in isolation --- the
-per-metric decomposition below is the primary finding.
+this pool.  The per-metric decomposition below reveals that this
+advantage is significant on both distributional and point-forecast
+metrics, but substantially stronger on the former.
 
 \paragraph{Variance components.}
 The between-dataset variance component is
 $\hat{\sigma}^2_{\text{dataset}} = 0.0072$; the within-dataset
 between-paper component is
-$\hat{\sigma}^2_{\text{paper}} = 0.0221$; the crossed model-name
+$\hat{\sigma}^2_{\text{paper}} = 0.0248$; the crossed model-name
 component is
 $\hat{\sigma}^2_{\text{model}} = 0.0003$.  The near-zero model
 variance confirms that non-independence of pairs from the same FM does
 not inflate the primary estimate.
 
 \paragraph{Heterogeneity.}
-$Q(458) = 48{,}736$, $p < .0001$.  The enormous $Q$ reflects
+$Q(542) = 53{,}038$, $p < .0001$.  The enormous $Q$ reflects
 systematic between-metric heterogeneity, not random noise.  The
 per-metric decomposition below explains the dominant source.
 
@@ -128,30 +128,31 @@ decomposition of the FM advantage:
 \toprule
 Metric & $k$ & $\hat{\Delta}$ & 95\,\% CI & $p$ & Interpretation \\
 \midrule
-SQL (quantile loss)  & 138 & $-0.278$ & $[-0.378,\; -0.178]$ & $< .0001$ & FM strongly better \\
-\MASE{}              & 138 & $-0.218$ & --- & --- & (intercept from moderator) \\
-\WAPE{} / ND         & 183 & $-0.070$ & $[-0.164,\; +0.023]$ & $0.14$    & Directionally favorable, n.s. \\
+SQL (quantile loss)  & 166 & $-0.318$ & $[-0.395,\; -0.240]$ & $< .0001$ & FM strongly better \\
+\MASE{}              & 166 & $-0.151$ & --- & --- & (intercept from moderator) \\
+\WAPE{} / ND         & 211 & $-0.112$ & $[-0.204,\; -0.019]$ & $0.019$   & FM significantly better \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \noindent On SQL --- the primary metric of fev-bench, which measures the
 full predictive distribution via quantile losses --- foundation models
-are \textbf{strongly and significantly better} than tree baselines
-($\hat{\Delta} = -0.278$, $p < .0001$).  On \WAPE{} --- a point
-forecast accuracy metric --- the FM advantage is \textbf{directionally
-favorable but not statistically significant}
-($\hat{\Delta} = -0.070$, $p = 0.14$, CI includes zero).
+are \textbf{strongly and significantly better} than tree and statistical
+baselines ($\hat{\Delta} = -0.318$, $p < .0001$).  On \WAPE{} --- a
+point-forecast accuracy metric --- the FM advantage is also
+\textbf{statistically significant} ($\hat{\Delta} = -0.112$,
+$p = 0.019$), but the effect size is roughly one-third of the SQL
+finding.
 
-This metric split resolves the apparent contradiction in the literature:
+This metric gradient clarifies the pattern in the literature:
 papers that evaluate FMs on distributional metrics (CRPS, WQL, SQL)
-report FM superiority; papers that evaluate on point-forecast metrics
-(\WAPE{}, MAE) report smaller or non-significant gains.  Both are
-correct descriptions of the same underlying models.  The mechanism is
-that FMs produce well-calibrated predictive distributions (trained on
-probabilistic losses at scale); their point forecasts (median or
-mean of that distribution) trend in the same direction but the
-advantage is attenuated relative to distributional metrics.
+report large FM superiority; papers that evaluate on point-forecast
+metrics (\WAPE{}, MAE) report smaller but still meaningful gains.
+The mechanism is that FMs produce well-calibrated predictive
+distributions (trained on probabilistic losses at scale); their point
+forecasts (median or mean of that distribution) are also significantly
+better but the advantage is attenuated relative to distributional
+metrics.
 
 \subsection{Forest plots}
 \label{subsec:forest-plots}\label{sec:per-dataset-results}
@@ -206,9 +207,9 @@ that dataset across metrics.
 \label{subsec:sensitivity}\label{sec:heterogeneity}
 
 Table~\ref{tab:sensitivity} reports five sensitivity slices of the
-$k = 459$ pool.  The results are robust: the sign is consistently
-negative (FM better) across all slices.  The
-statistical significance varies with pool size and heterogeneity.
+$k = 543$ pool.  The results are robust: the sign is consistently
+negative (FM better) and statistically significant across all slices
+except Source~B alone (underpowered with $k = 45$).
 
 \begin{table}[htbp]
 \centering
@@ -218,12 +219,12 @@ statistical significance varies with pool size and heterogeneity.
 \toprule
 Sensitivity & $k$ & $\hat{\Delta}$ & 95\,\% CI & $p$ & Note \\
 \midrule
-Full pool         & 459 & $-0.150$ & $[-0.240,\; -0.060]$ & 0.001 & Primary \\
-Excl-M5           & 384 & $-0.116$ & $[-0.193,\; -0.038]$ & 0.004 & M5 not driving result \\
-\WAPE{}-only      & 183 & $-0.070$ & $[-0.164,\; +0.023]$ & 0.14 & Directionally favorable, n.s. \\
-SQL-only          & 138 & $-0.278$ & $[-0.378,\; -0.178]$ & $< .0001$ & Strongest signal \\
+Full pool         & 543 & $-0.190$ & $[-0.275,\; -0.105]$ & $< .0001$ & Primary \\
+Excl-M5           & 468 & $-0.180$ & $[-0.276,\; -0.084]$ & 0.0003 & M5 not driving result \\
+\WAPE{}-only      & 211 & $-0.112$ & $[-0.204,\; -0.019]$ & 0.019 & Significant \\
+SQL-only          & 166 & $-0.318$ & $[-0.395,\; -0.240]$ & $< .0001$ & Strongest signal \\
 Source B only     &  45 & $-0.229$ & $[-0.567,\; +0.108]$ & 0.178 & Low power ($k = 45$) \\
-Source A only     & 414 & $-0.113$ & $[-0.161,\; -0.064]$ & $< .0001$ & Significant \\
+Source A only     & 498 & $-0.168$ & $[-0.242,\; -0.093]$ & $< .0001$ & Significant \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -231,16 +232,15 @@ Source A only     & 414 & $-0.113$ & $[-0.161,\; -0.064]$ & $< .0001$ & Signific
 \paragraph{Key observations.}
 \begin{enumerate}
   \item \textbf{M5 is not driving the result.}  Excluding M5
-    ($k = 384$) barely changes the estimate ($-0.116$ vs $-0.150$)
-    and remains significant ($p = 0.004$).  A coarser bucket-level
-    pooling ($k = 10$, Appendix~\ref{app:sensitivity}) yielded a null
-    result because M5's per-series \WAPE{} artefact dominated the
-    small pool; the model-level design resolves this.
+    ($k = 468$) barely changes the estimate ($-0.180$ vs $-0.190$)
+    and remains highly significant ($p = 0.0003$).
 
   \item \textbf{SQL vs \WAPE{} is the dominant moderator.}  The SQL-only
-    slice is the strongest finding ($p < .0001$); the WAPE-only slice is
-    directionally favorable but not significant ($p = 0.14$).  This is
-    not a dataset effect --- it persists within the same datasets and models.
+    slice is the strongest finding ($\Dhat = -0.318$, $p < .0001$);
+    the WAPE-only slice is also significant ($\Dhat = -0.112$,
+    $p = 0.019$) but with a smaller effect.  This metric gradient is
+    not a dataset effect --- it persists within the same datasets and
+    models.
 
   \item \textbf{Source B alone is underpowered.}  The 45~Source~B pairs
     show the right direction ($-0.229$) but are insufficient for
@@ -263,10 +263,10 @@ Source A only     & 414 & $-0.113$ & $[-0.161,\; -0.064]$ & $< .0001$ & Signific
 \toprule
 Model & $k$ & $Q$ & $\hat{\sigma}^2_1$ & $\hat{\sigma}^2_2$ & $\hat{\sigma}^2_3$ & Note \\
 \midrule
-Full pool     & 459 & 48{,}736 & 0.0072 & 0.0222 & 0.0003 & Primary \\
-Excl-M5       & 384 &  17{,}313 & --- & --- & --- & \\
-SQL-only      & 138 &   6{,}303 & --- & --- & --- & Lowest $Q$ \\
-\WAPE{}-only  & 183 &  27{,}149 & --- & --- & --- & \\
+Full pool     & 543 & 53{,}038 & 0.0072 & 0.0248 & 0.0003 & Primary \\
+Excl-M5       & 468 &  21{,}469 & --- & --- & --- & \\
+SQL-only      & 166 &   7{,}467 & --- & --- & --- & Lowest $Q$ \\
+\WAPE{}-only  & 211 &  28{,}693 & --- & --- & --- & \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -280,16 +280,16 @@ homogeneous across datasets and models.
 
 The \texttt{model\_name} variance component
 ($\hat{\sigma}^2_3 = 0.0003$) is negligible relative to the dataset
-($\hat{\sigma}^2_1 = 0.0072$) and paper ($\hat{\sigma}^2_2 = 0.0221$)
+($\hat{\sigma}^2_1 = 0.0072$) and paper ($\hat{\sigma}^2_2 = 0.0248$)
 components.  This confirms that model-level non-independence ---
 the same FM appearing across multiple papers and datasets --- does
 not materially inflate the pooled estimate or its standard error.
 
 \paragraph{Publication bias (PRISMA Item~14).}
 Figure~\ref{fig:funnel_sql} shows the funnel plot for the SQL-only
-slice ($k = 138$).  A regression-based asymmetry test (Egger-type:
+slice ($k = 166$).  A regression-based asymmetry test (Egger-type:
 \texttt{rma.mv} with $\sqrt{v_i}$ as moderator) yields
-$\hat{\beta}_{\text{SE}} = 0.228$, $p = 0.46$, providing no evidence
+$\hat{\beta}_{\text{SE}} = 0.094$, $p = 0.79$, providing no evidence
 of funnel asymmetry.  This is expected because the pool is dominated
 by a single multi-task benchmark suite (fev-bench), not by selective
 reporting across independent studies.
@@ -297,8 +297,8 @@ reporting across independent studies.
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.7\textwidth]{figure_funnel_sql.pdf}
-\caption{Funnel plot for SQL-only slice ($k = 138$).  No evidence of
-  asymmetry (Egger-type test $p = 0.46$).}
+\caption{Funnel plot for SQL-only slice ($k = 166$).  No evidence of
+  asymmetry (Egger-type test $p = 0.79$).}
 \label{fig:funnel_sql}
 \end{figure}
 
@@ -336,34 +336,34 @@ fev-bench extraction adds cross-paper accuracy anchors.
 \subsection{Moderator outcomes}
 \label{subsec:moderator-outcomes}\label{sec:moderator-results}\label{sec:rq2-moderators}
 
-With $k = 459$ pairs across 9~datasets and 14~FMs, the meta-regression
+With $k = 543$ pairs across 9~datasets and 14~FMs, the meta-regression
 has sufficient power for moderator analysis.  \textbf{All moderator
 tests are exploratory; we do not adjust $p$-values for multiple
 comparisons.}  Results should be interpreted as hypothesis-generating
 rather than confirmatory.  Moderators tested:
 
 \begin{enumerate}
-  \item \textbf{Metric} (\texttt{metric\_name}; $F(2, 456) = 6{,}695$,
+  \item \textbf{Metric} (\texttt{metric\_name}; $F(2, 540) = 6{,}792$,
     $p < .0001$).  The dominant moderator.
-    SQL coefficient is large and negative (FM wins on distributional
-    accuracy); \WAPE{} coefficient is negative but not significant
-    (FM directionally better).  See \S\ref{subsec:metric-moderator}
-    for full results.
+    SQL coefficient is large and negative ($-0.203$, FM wins on
+    distributional accuracy); \WAPE{} coefficient is positive relative
+    to the MASE intercept ($+0.031$), confirming that point-forecast
+    metrics show a smaller FM advantage.  See
+    \S\ref{subsec:metric-moderator} for full results.
 
-  \item \textbf{Dataset} (\texttt{dataset\_norm}; $F(7, 451) = 0.86$,
-    $p = 0.535$).  Not significant as a moderator once metric is
-    accounted for.  The raw $Q$-statistic shows extreme heterogeneity
-    ($p < .0001$), but this is driven by the metric split, not by
-    dataset-level differences.
+  \item \textbf{Dataset} (\texttt{dataset\_norm}; $F(8, 534) = 1.02$,
+    $p = 0.422$).  Not significant as a moderator.  The raw
+    $Q$-statistic shows extreme heterogeneity ($p < .0001$), but this
+    is driven by the metric split, not by dataset-level differences.
 
   \item \textbf{Horizon bucket} (\texttt{horizon\_bucket};
-    $F(2, 456) = 0.10$, $p = 0.904$).  No
+    $F(2, 540) = 0.28$, $p = 0.754$).  No
     significant horizon effect on $\Delta$.  The FM advantage does not
     systematically increase or decrease with forecast horizon in this
     pool.
 
   \item \textbf{Model scale} (\texttt{model\_scale}, $\log_{10}$
-    params; $F(1, 457) = 0.19$, $p = 0.663$).  Not significant.
+    params; $F(1, 541) = 0.24$, $p = 0.627$).  Not significant.
     Within Source~B,
     where protocol is held constant, the smallest FM (Moirai~2.0-Small,
     11\,M) outperforms the largest (Chronos-2, 120\,M) on M5, supporting
@@ -371,10 +371,10 @@ rather than confirmatory.  Moderators tested:
     than architecture for retail forecasting.
 
   \item \textbf{Baseline family} (\texttt{baseline\_family};
-    $F(1, 418) = 8.47$, $p = 0.004$).  ML\_TREE
+    $F(1, 541) = 6.27$, $p = 0.013$).  ML\_TREE
     vs STATS.  The FM advantage is larger when the baseline is
-    statistical (Auto~ETS, Seasonal Naive; $\hat{\Delta} = -0.367$)
-    than when it is a gradient-boosted tree ($\hat{\Delta} = -0.079$),
+    statistical (Auto~ETS, Seasonal Naive; $\hat{\Delta} = -0.379$)
+    than when it is a gradient-boosted tree ($\hat{\Delta} = -0.152$),
     as expected: tree baselines are stronger competitors.
 \end{enumerate}
 

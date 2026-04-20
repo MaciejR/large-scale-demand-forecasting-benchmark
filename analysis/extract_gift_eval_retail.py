@@ -236,18 +236,28 @@ def main():
     print(f"  Statistical rows: {sum(1 for r in rows if r['model_family'] == 'statistical')}")
     print(f"  Pairable (task, metric) buckets: {len(common)}")
 
-    # Append to extraction_schema.csv.
+    # Idempotent write: read existing rows, strip old B03_gift rows and
+    # comment lines, then rewrite with new GIFT-Eval rows at the end.
     if not os.path.exists(SCHEMA_PATH):
         print(f"ERROR: {SCHEMA_PATH} not found. Run from repo root.")
         return
 
-    with open(SCHEMA_PATH, "a", newline="") as f:
-        f.write("\n# === GIFT-Eval Sales domain (Aksu et al. 2024, extracted 2026-04-16) ===\n")
+    with open(SCHEMA_PATH, newline="") as f:
+        reader = csv.DictReader(f)
+        existing = [r for r in reader
+                    if not r.get("paper_id", "").startswith("B03_gift")
+                    and not r.get("paper_id", "").startswith("# ")]
+
+    with open(SCHEMA_PATH, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=HEADER)
+        writer.writeheader()
+        for r in existing:
+            writer.writerow(r)
         for row in rows:
             writer.writerow(row)
 
-    print(f"Appended {len(rows)} rows to {SCHEMA_PATH}")
+    total = len(existing) + len(rows)
+    print(f"Wrote {total} rows to {SCHEMA_PATH} ({len(existing)} existing + {len(rows)} GIFT-Eval)")
 
 
 if __name__ == "__main__":

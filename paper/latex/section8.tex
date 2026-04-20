@@ -22,9 +22,10 @@ slightly optimistic (the FM saw something like the test distribution during
 pre-training), while Source~A ML\_TREE rows have no such advantage (they are
 trained from scratch on each dataset).  If this bias is present, it works
 \emph{against} our SQL finding --- it would inflate FM performance in the
-cross-paper pool, making the $\Dhat = -0.278$ SQL advantage an upper bound.
-Conversely, the \WAPE{} finding ($\Dhat = -0.070$, n.s.) is conservative:
-the true FM point-forecast advantage may be larger than observed.
+cross-paper pool, making the $\Dhat = -0.318$ SQL advantage an upper bound.
+The \WAPE{} finding ($\Dhat = -0.112$, $p = 0.019$) may similarly be
+inflated; the true FM point-forecast advantage could be smaller than
+observed.
 
 \subsection{The covariate gap}
 \label{subsec:covariate-gap}

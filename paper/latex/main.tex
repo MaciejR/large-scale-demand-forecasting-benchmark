@@ -49,20 +49,18 @@ We present a PRISMA-informed systematic review of forecasting methods
 for short-term retail demand, combined with original gap-filling
 experiments and cross-benchmark extraction from fev-bench and
 GIFT-Eval.  We screen approximately 150 papers (2020--2026) and extract
-quantitative results into 780+ rows spanning 9~retail datasets.
+quantitative results into 800+ rows spanning 9~retail datasets.
 A model-level meta-regression (\texttt{metafor::rma.mv}, REML,
-Knapp--Hartung) on $k = 459$ paired comparisons across foundation
-models and conventional baselines reveals a \emph{metric-dependent}
-advantage: on Scaled Quantile Loss (SQL), foundation models are
-strongly and significantly better than baselines
-($\hat{\Delta} = -0.278$, $p < .0001$); on \WAPE{}, the advantage
-is directionally favorable but not statistically significant
-($\hat{\Delta} = -0.070$, $p = 0.14$).  The full-pool aggregate
-($\Dhat = -0.150$, $p = 0.001$) confirms a net FM advantage, but
-the per-metric decomposition is the primary finding.
+Knapp--Hartung) on $k = 543$ paired comparisons across foundation
+models and conventional baselines reveals a significant FM advantage
+on both distributional and point-forecast metrics, with a
+substantially stronger signal on the former: on Scaled Quantile Loss
+(SQL), $\hat{\Delta} = -0.318$ ($p < .0001$); on \WAPE{},
+$\hat{\Delta} = -0.112$ ($p = 0.019$).  The full-pool aggregate
+($\Dhat = -0.190$, $p < .0001$) confirms a net FM advantage.
 Foundation models produce well-calibrated predictive distributions;
-their point forecasts trend in the same direction but the advantage
-is attenuated.  Model scale (9\,M--200\,M parameters) is not a
+their point forecasts are also significantly better but the advantage
+is attenuated relative to distributional metrics.  Model scale (9\,M--200\,M parameters) is not a
 significant moderator in the retail domain.
 We provide a practitioner-oriented cost--accuracy Pareto analysis on
 consumer hardware and document that the LightGBM direct-vs-recursive

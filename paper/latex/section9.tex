@@ -5,8 +5,8 @@
 We presented a PRISMA-informed systematic review of foundation models for
 retail demand forecasting, augmented with cross-benchmark extraction from
 fev-bench and GIFT-Eval and original gap-filling experiments.  The study
-synthesised 780+ extraction rows from 9~retail datasets (2020--2026) into a
-model-level meta-regression with $k = 459$ paired comparisons across
+synthesised 800+ extraction rows from 9~retail datasets (2020--2026) into a
+model-level meta-regression with $k = 543$ paired comparisons across
 14~foundation models and conventional baselines.  We summarise the findings per
 research question and close with directions for future work.
 
@@ -16,24 +16,25 @@ research question and close with directions for future work.
 \paragraph{RQ1 (Accuracy): Do zero-shot foundation models outperform
 conventional baselines on retail demand forecasting?}
 
-Yes, on average --- but the answer depends critically on \emph{which metric}
-is used.  The pooled meta-regression on $k = 459$ model-level pairs finds
-$\Dhat(\text{FM} - \text{baseline}) = -0.150$ ($p = 0.001$, 95\,\% CI
-$[-0.24, -0.06]$).  Foundation models are significantly better than tree
+Yes --- and the answer is significant on both distributional and
+point-forecast metrics.  The pooled meta-regression on $k = 543$
+model-level pairs finds
+$\Dhat(\text{FM} - \text{baseline}) = -0.190$ ($p < .0001$, 95\,\% CI
+$[-0.275, -0.105]$).  Foundation models are significantly better than tree
 and statistical baselines across the full pool.
 
-However, this aggregate masks a critical metric split
-(\S\ref{subsec:metric-moderator}): on Scaled Quantile Loss (SQL), which
-measures the full predictive distribution, the FM advantage is large and
-highly significant ($\Dhat = -0.278$, $p < .0001$).  On \WAPE{}, a
-point-forecast metric, the FM advantage is directionally favorable but not
-statistically significant ($\Dhat = -0.070$, $p = 0.14$).
+The per-metric decomposition (\S\ref{subsec:metric-moderator}) reveals a
+metric gradient: on Scaled Quantile Loss (SQL), which measures the full
+predictive distribution, the FM advantage is large and highly significant
+($\Dhat = -0.318$, $p < .0001$).  On \WAPE{}, a point-forecast metric,
+the FM advantage is also statistically significant but smaller
+($\Dhat = -0.112$, $p = 0.019$).
 \textbf{Foundation models produce well-calibrated predictive
-distributions; their point forecasts trend in the same direction but the
+distributions; their point forecasts are also significantly better but the
 advantage is attenuated relative to distributional metrics.}
 
-The result is robust to excluding M5 ($\Dhat = -0.116$, $p = 0.004$,
-$k = 384$), confirming that the finding does not depend on the M5
+The result is robust to excluding M5 ($\Dhat = -0.180$, $p = 0.0003$,
+$k = 468$), confirming that the finding does not depend on the M5
 \WAPE{} artefact that inflates per-series denominators.
 
 \paragraph{RQ2 (Moderators): Which characteristics moderate the
@@ -44,10 +45,9 @@ Metric choice is the dominant moderator: the SQL/\WAPE{} split explains more
 heterogeneity than any data characteristic.  Beyond metric:
 
 \begin{itemize}
-  \item \textbf{Dataset:} Not significant as a moderator ($p = 0.535$) once
-    the metric split is accounted for; the metric type drives heterogeneity,
-    not the dataset.
-  \item \textbf{Model scale:} Not significant ($p = 0.663$).
+  \item \textbf{Dataset:} Not significant as a moderator ($p = 0.422$);
+    the metric type drives heterogeneity, not the dataset.
+  \item \textbf{Model scale:} Not significant ($p = 0.627$).
     Within Source~B (controlled protocol),
     Moirai~2.0-Small (11\,M) outperforms Chronos-2 (120\,M) on M5.
   \item \textbf{Horizon:} No significant horizon effect on $\Delta$.
@@ -89,8 +89,9 @@ conditions where the FM pays off:
     zero-shot FMs produce reasonable forecasts from day one.
 \end{enumerate}
 
-The FM does NOT pay off when: (a)~the team has rich covariates and only
-needs point forecasts (\LGBM{} matches or beats FM on \WAPE{}), (b)~batch
+The FM does NOT pay off when: (a)~the team has rich covariates and
+a tuned feature pipeline (\LGBM{} with covariates can match FM on
+\WAPE{}), (b)~batch
 throughput at scale is the constraint (\LGBM{} on CPU is faster per series
 than FM on MPS for $>$10K series).
 
@@ -115,7 +116,7 @@ are untested on retail data; if their SQL advantage translates to improved
 point forecasts, the model-scale moderator could become significant.
 
 \paragraph{Beyond retail.}
-The metric-dependent finding (FM wins on SQL, null on \WAPE{}) should be
-tested on spare-parts, pharmaceutical, and e-commerce demand datasets to
-determine whether it is a universal property of current FMs or specific to
-the retail domain.
+The metric gradient (FM wins strongly on SQL, smaller but significant
+advantage on \WAPE{}) should be tested on spare-parts, pharmaceutical,
+and e-commerce demand datasets to determine whether it is a universal
+property of current FMs or specific to the retail domain.

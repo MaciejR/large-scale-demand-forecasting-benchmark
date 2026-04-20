@@ -63,8 +63,8 @@ and pre-FM baselines; the upper bound is the extraction lock date.
 \label{subsec:extraction}\label{sec:extraction-schema}
 
 Each included study is extracted into one or more rows of the
-structured CSV \texttt{analysis/extraction\_schema.csv} (650+ rows as of
-2026-04-15).  The schema has 23 fields per row:
+structured CSV \texttt{analysis/extraction\_schema.csv} (800+ rows as of
+2026-04-20).  The schema has 23 fields per row:
 
 \begin{table}[htbp]
 \centering
@@ -192,8 +192,8 @@ For each FM row $i$ and each baseline row $j$ that share the same
 $\delta_{ij} = \text{metric}(\text{FM}_i) - \text{metric}(\text{baseline}_j)$.
 \end{quote}
 
-\noindent This model-level pairing produces $k = 459$ observations
-(12~FM model entries $\times$ 8~datasets $\times$ multiple baselines
+\noindent This model-level pairing produces $k = 543$ observations
+(12~FM model entries $\times$ 9~datasets $\times$ multiple baselines
 $\times$ multiple metrics).  Appendix~\ref{app:sensitivity} also
 reports a coarser bucket-level analysis for comparison.
 

@@ -3,7 +3,7 @@
 \label{sec:literature}\label{sec:prisma-results}
 
 This section reports the outcome of the PRISMA search and describes
-the 650+ row extraction (including per-task re-extraction from
+the 800+ row extraction (including per-task re-extraction from
 fev-bench and GIFT-Eval) before the gap-filling experiments (\S5)
 and meta-regression (\S6) operate on it.
 
@@ -29,7 +29,7 @@ Excluded at screening    & $\sim$50  & Non-retail, no quantitative results, fina
 Full-text assessed       & $\sim$70  & \\
 Excluded at full-text    & $\sim$32  & No retail dataset, no FM evaluation, duplicate results \\
 Studies included         & 38        & 32 external papers + 6 own experiment blocks \\
-Extraction rows          & 650+      & Multiple rows per study; incl.\ per-task fev-bench/GIFT-Eval \\
+Extraction rows          & 800+      & Multiple rows per study; incl.\ per-task fev-bench/GIFT-Eval \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -74,7 +74,7 @@ distribution is broad: 17 fev-bench tasks (18 rows each, ${\sim}$300
 rows total) and 4 GIFT-Eval retail tasks (${\sim}$107 rows) dominate,
 followed by M5 (40 rows, 6\%) and the remaining retail datasets.
 The per-task granularity enables model-level pairing within each
-(task, metric) cell, which is the basis of the $k = 459$ meta-regression.
+(task, metric) cell, which is the basis of the $k = 543$ meta-regression.
 
 \noindent\textbf{Model family distribution.}
 Foundation models account for 460 rows (71\%), followed by ML\_TREE
@@ -113,7 +113,7 @@ On benchmark suites, Chronos-2, TimesFM~2.5, and Moirai~2.0 achieve
 win rates of 75--84\% against statistical baselines on GIFT-Eval,
 and normalised SQL scores of 20--35 on fev-bench.  The per-task
 extraction enables model-level FM-vs-baseline pairing within each
-(task, metric) cell --- the structural basis of the $k = 459$
+(task, metric) cell --- the structural basis of the $k = 543$
 meta-regression (\S6).
 
 \noindent\textbf{Gradient-boosted trees (ML\_TREE).}
@@ -157,7 +157,7 @@ and GIFT-Eval (B01) --- which report per-task SQL, \WAPE{}, and
 \MASE{} for FMs alongside LightGBM, CatBoost, and Auto~ETS.
 
 The per-task re-extraction from these suites (\S\ref{subsec:extraction})
-partially resolves the original gap: the $k = 459$ meta-regression now
+partially resolves the original gap: the $k = 543$ meta-regression now
 draws ${\sim}$75\% of its pairs from Source~A benchmark suites.
 Source~B (\S\ref{subsec:gapfilling}) remains necessary for two
 reasons: (1)~it adds the consumer-hardware cost dimension absent from
