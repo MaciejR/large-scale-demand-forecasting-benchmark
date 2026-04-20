@@ -494,15 +494,50 @@ recursive-beats-direct margin may be different than on the full
 long tail.  We flag this as a limitation for \S7 (threats to
 validity) and a candidate for future work on larger hardware.
 
+\subsubsection{Cost Envelope Detail}\label{app:cost-envelope}
+
+\begin{table}[htbp]
+\centering
+\caption{Baseline-sweep cost envelope across the three datasets,
+by model family.  All values are 9-job totals per dataset.  Cost
+is computed in-job from Azure's published per-second pricing for
+\texttt{Standard\_E4ds\_v4} in \texttt{swedencentral} (\$0.38/hr
+at time of writing); CO$_2$ uses the region's 2025 baseline
+marginal intensity of 0.041\,kgCO$_2$eq/kWh (Nowtricity/Ember, 2024).}
+\label{tab:t56}
+\small
+\begin{tabular}{lrrrrrl}
+\toprule
+Dataset & SN cost & \LGBM{}-rec cost & \LGBM{}-dir cost & Total cost & Total CO$_2$ (kg) & Dominant job \\
+\midrule
+M5 & \$0.146 & \$0.096 & \$0.571 & \$0.810 & 0.00037 &
+  \texttt{lgbm\_dir\_h28} (62\,min, \$0.394) \\
+Rohlik~v2 & \$0.0022 & \$0.0094 & \$0.0982 & \$0.120 & 0.00004 &
+  \texttt{lgbm\_dir\_h28} (9\,min, \$0.055) \\
+Favorita & \$0.0161 & \$0.0734 & \$1.030 & \$1.119 & 0.00043 &
+  \texttt{lgbm\_dir\_h28} (60\,min, \$0.379) \\
+\textbf{Total} & \$0.165 & \$0.179 & \$1.700 & \$2.049 & 0.00085 & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Reproducibility Detail}\label{app:reproducibility}
+
+Every result reported in \S5 is tied to:
+(1)~a git commit SHA (in per-job MLflow metadata);
+(2)~an Azure ML pipeline run name (\texttt{mighty\_*},
+\texttt{goofy\_*}, \texttt{loyal\_*} in table captions);
+(3)~a registered data asset version (\texttt{azureml:m5-sales:1},
+\texttt{azureml:rohlik-train-v2:1}, \texttt{azureml:favorita-train:1});
+(4)~a versioned environment (\texttt{forecast-benchmark-cpu-env:1},
+Python~3.11, \texttt{lightgbm==4.6.0}, \texttt{pandas==2.2.0},
+\texttt{numpy<2}).
+
 \subsubsection{Protocol-Conditional Cost
 Consequences}
 
-The per-dataset cost and CO$_2$ envelope is reported once in
-\S\ref{sec:costenvelope} (Table~\ref{tab:t56}) so that all budget
-numbers in \S\ref{sec:experiments} live in a single place.  Two
-consequences of that table are specific to the
-\S\ref{sec:rohlik}/\S\ref{sec:favorita} accuracy findings and
-belong here rather than in \S\ref{sec:costenvelope}:
+Table~\ref{tab:t56} above gives the full cost breakdown.  Two
+consequences are specific to the per-dataset accuracy findings:
 
 First, the recursive-LightGBM sweeps cost \$0.090 (M5), \$0.009
 (Rohlik), and \$0.073 (Favorita), i.e.\ under 10 cents for a

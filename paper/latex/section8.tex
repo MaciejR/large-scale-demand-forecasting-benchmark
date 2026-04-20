@@ -107,16 +107,11 @@ have no Source~B data on GPU inference speed, batch throughput at scale
 CPU-only ML\_TREE and statistical baselines.
 
 \paragraph{Approximate sampling variance.}
-The cross-paper meta-regression uses a proxy variance
-$v_i = (1/n_\text{FM} + 1/n_\text{ML\_TREE}) / n_\text{series,hm}$ based on
-within-bucket row counts and harmonic-mean series counts, rather than per-row
-bootstrap residuals.  For within-paper Source~B cells,
-$v_i = 1/100$ (sampled series).  This proxy captures the precision difference
-between large-dataset buckets (M5, 30K series) and small-dataset buckets
-(Rohlik, 5K series) but does not model within-series autocorrelation or
-between-paper protocol differences.  The Knapp--Hartung adjustment partially
-mitigates this by inflating standard errors when residual heterogeneity is
-high.
+The meta-regression uses a proxy variance
+$v_i = 1/n_\text{FM} + 1/n_\text{baseline}$ rather than per-row bootstrap
+SEs.  This captures the precision difference between large (M5, 30K series)
+and small (Rohlik, 5K) datasets but does not model within-series
+autocorrelation.  The Knapp--Hartung adjustment partially mitigates this.
 
 \paragraph{Evaluation protocol heterogeneity.}
 Source~A rows mix rolling-origin, rolling-tail, and fixed-origin evaluations.
@@ -135,18 +130,9 @@ distribution quality.  Per-quantile analysis would clarify this.
 \subsection{Generalisability beyond retail}
 \label{subsec:generalisability}
 
-The conditional finding --- FM advantage depends on demand intermittency and
-metric choice, not on model family per~se --- likely extends to other domains
-with similar demand structures.  Spare-parts forecasting, pharmaceutical
-demand, and agricultural supply chains share M5's intermittent-demand profile
-and would face the same per-series \WAPE{} pathology.  Energy load forecasting
-and financial time series have different characteristics (smooth,
-high-frequency, covariate-rich) that map more closely to Favorita/Rohlik,
-where our finding is that FMs and well-tuned ML are indistinguishable.
-
-We do not claim that FMs are useless --- we claim that their value proposition
-in retail depends on \emph{what you measure}: distributional accuracy (SQL,
-CRPS) strongly favours FMs, while point-forecast accuracy (\WAPE{}, MAE) does
-not.  The decision of whether to deploy an FM depends on the business metric,
-data characteristics, and infrastructure constraints --- all of which are
-knowable before running a single experiment.
+The conditional finding --- FM advantage depends on metric choice and demand
+characteristics, not model family --- likely extends to domains with similar
+demand structures (spare-parts, pharmaceutical, agricultural supply chains).
+The decision of whether to deploy an FM depends on the business metric, data
+characteristics, and infrastructure constraints --- all knowable before
+running a single experiment.

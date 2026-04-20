@@ -239,35 +239,10 @@ context-length choices, and hardware configuration are in
 
 \subsubsection{Reproducibility}\label{sec:reproducibility}
 
-Every result reported in \S\ref{sec:results}--\S\ref{sec:baseline}
-is tied to:
-
-\begin{itemize}
-\item \textbf{A git commit} --- the commit SHA appears in the
-  per-job MLflow run and in the caption of each results table.
-
-\item \textbf{An Azure ML pipeline run name} --- these are the
-  \texttt{mighty\_*}, \texttt{goofy\_*}, and \texttt{loyal\_*} job
-  names referenced in the table captions
-  (\S\ref{sec:results}, \S\ref{sec:baseline}).  Every job can be
-  re-invoked exactly from the pipeline YAML and the registered
-  data asset version.
-
-\item \textbf{A registered data asset version} ---
-  \texttt{azureml:m5-sales:1}, \texttt{azureml:rohlik-train-v2:1},
-  \texttt{azureml:favorita-train:1}, plus per-dataset covariate
-  assets.  Data is immutable once registered; the \texttt{:1}
-  suffix binds the job to the exact snapshot.
-
-\item \textbf{A versioned environment} ---
-  \texttt{forecast-benchmark-cpu-env:1}.
-  The environment specifies Python~3.11,
-  \texttt{lightgbm==4.6.0}, \texttt{pandas==2.2.0},
-  \texttt{numpy<2}, and the loader code path.
-\end{itemize}
-
-Code and data-asset manifests are released in the paper's
-reproducibility appendix and at the repository linked in \S9.
+Every result is tied to a git commit SHA, Azure ML pipeline run
+name, registered data asset version, and a versioned environment
+(\texttt{forecast-benchmark-cpu-env:1}).  Full reproducibility
+details are in Appendix~\ref{app:reproducibility}.
 
 
 % -----------------------------------------------------------------
@@ -361,55 +336,11 @@ reader can jump to:
 \subsubsection{Cost and Compute Envelope}\label{sec:costenvelope}
 
 Total runtime across the three baseline sweeps is 4\,h 23\,min of
-E4DS\_V4 wall time at a combined cost of \textbf{\$2.049 and
-0.00570\,kg CO$_2$eq}.  Table~\ref{tab:t56} below gives the
-breakdown by dataset and by model family; per-job numbers
-(runtime, cost, CO$_2$) appear in
-Tables~\ref{tab:t53}--\ref{tab:t55}.
-
-\begin{table}[htbp]
-\centering
-\caption{Baseline-sweep cost envelope across the three datasets,
-by model family.  All values are 9-job totals per dataset.  Cost
-is computed in-job from Azure's published per-second pricing for
-\texttt{Standard\_E4ds\_v4} in \texttt{swedencentral} (\$0.38/hr
-at time of writing); CO$_2$ uses the region's 2025 baseline
-marginal intensity of 0.041\,kgCO$_2$eq/kWh (Nowtricity/Ember, 2024).}
-\label{tab:t56}
-\small
-\begin{tabular}{lrrrrrl}
-\toprule
-Dataset & SN cost & \LGBM{}-rec cost & \LGBM{}-dir cost & Total cost & Total CO$_2$ (kg) & Dominant job \\
-\midrule
-M5 & \$0.146 & \$0.096 & \$0.571 & \$0.810 & 0.00037 &
-  \texttt{lgbm\_dir\_h28} (62\,min, \$0.394) \\
-Rohlik~v2 & \$0.0022 & \$0.0094 & \$0.0982 & \$0.120 & 0.00004 &
-  \texttt{lgbm\_dir\_h28} (9\,min, \$0.055) \\
-Favorita & \$0.0161 & \$0.0734 & \$1.030 & \$1.119 & 0.00043 &
-  \texttt{lgbm\_dir\_h28} (60\,min, \$0.379) \\
-\textbf{Total} & \$0.165 & \$0.179 & \$1.700 & \$2.049 & 0.00085 & --- \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Two observations on cost:
-
-\begin{enumerate}
-\item \textbf{Recursive LightGBM is cheap even at scale.}  The
-  combined recursive sweep (3 datasets $\times$ 3 horizons $= 9$
-  jobs) cost under \textbf{\$0.18} across the full baseline.
-  Per-dataset recursive sweeps are \$0.01--0.08, i.e.\ two orders
-  of magnitude below the direct sweep on the same dataset.
-
-\item \textbf{LightGBM-direct dominates the cost envelope
-  (83\,\% of total, \$1.70 of \$2.05)} despite being the losing
-  protocol on two of the three datasets.  This is the central
-  cost observation that \S\ref{sec:costconsequences} develops for
-  the Pareto analysis in \S6.3: on continuous-demand retail
-  (Rohlik and Favorita) the strongest baseline is also the
-  cheapest, and direct LightGBM is a dominated variant on both
-  axes simultaneously.
-\end{enumerate}
+E4DS\_V4 wall time at a combined cost of \textbf{\$2.05 and
+0.006\,kg CO$_2$eq}.  Recursive LightGBM is two orders of magnitude
+cheaper than direct (\$0.18 vs \$1.70 total); direct dominates the
+cost envelope (83\%) despite losing on two of three datasets.  The
+full cost breakdown is in Appendix~\ref{app:cost-envelope}.
 
 \subsubsection{Foundation Model Results}\label{sec:fmresults_pointer}
 
@@ -748,19 +679,7 @@ logged in per-run JSON sidecars.  Moirai~2.0-Small carries a
 non-commercial license (CC-BY-NC-4.0), flagged in
 \S\ref{sec:framework}.
 
-\subsubsection{Reading Table~\ref{tab:t59}}\label{sec:table59}
-
-Table~\ref{tab:t59} is almost entirely Source~B; no Source~A paper
-reports per-series \WAPE{} on these three datasets under matched
-rolling-origin conditions.  Key patterns: (1)~on Favorita,
-\texttt{lightgbm\_cov} and Chronos-Bolt-Tiny are within 0.3\,pp at
-every horizon --- the ``close call'' that motivates the cost
-analysis; (2)~on M5, FMs win by 40+\,pp on per-series \WAPE{} but
-this is a metric pathology (\S\ref{subsec:perseries-vs-aggregate})
---- on \WRMSSE{} the sign reverses; (3)~on Rohlik, FMs lead by
-4--8\,pp, with the gap widening at longer horizons.
-
-\subsubsection{Threats to Validity}\label{sec:fm_threats}
+\subsubsection{Threats to Validity}\label{sec:fm_threats}\label{sec:table59}
 
 Five threats are specific to the Source~B FM runs, detailed in
 Appendix~F.  In summary: (1) extraction selection bias --- only

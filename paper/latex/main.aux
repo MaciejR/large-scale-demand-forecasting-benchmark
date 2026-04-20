@@ -104,245 +104,248 @@
 \newlabel{sec:modelfamilies}{{5.1.4}{16}{Model Families}{subsubsection.5.1.4}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.5}Reproducibility}{16}{subsubsection.5.1.5}\protected@file@percent }
 \newlabel{sec:reproducibility}{{5.1.5}{16}{Reproducibility}{subsubsection.5.1.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Gap-Filling Results}{17}{subsection.5.2}\protected@file@percent }
-\newlabel{sec:results}{{5.2}{17}{Gap-Filling Results}{subsection.5.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.1}Cross-Dataset Summary}{17}{subsubsection.5.2.1}\protected@file@percent }
-\newlabel{sec:crossdataset}{{5.2.1}{17}{Cross-Dataset Summary}{subsubsection.5.2.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Gap-Filling Results}{16}{subsection.5.2}\protected@file@percent }
+\newlabel{sec:results}{{5.2}{16}{Gap-Filling Results}{subsection.5.2}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Cross-dataset summary of the baseline LightGBM gap-filling sweeps at $h = 7$. ``Best \textsc  {lgbm}{}'' is the \textsc  {wape}{}-best LightGBM variant per dataset; the protocol column records whether it is direct or recursive. Cost is the total 9-job sweep cost on \texttt  {cc-forecast-batch} (E4DS\_V4). Full per-horizon numbers are in Tables~\ref {tab:t53}--\ref {tab:t55} of \S  \ref {sec:baseline}.}}{17}{table.5}\protected@file@percent }
 \newlabel{tab:t52}{{5}{17}{Cross-dataset summary of the baseline LightGBM gap-filling sweeps at $h = 7$. ``Best \LGBM {}'' is the \WAPE {}-best LightGBM variant per dataset; the protocol column records whether it is direct or recursive. Cost is the total 9-job sweep cost on \texttt {cc-forecast-batch} (E4DS\_V4). Full per-horizon numbers are in Tables~\ref {tab:t53}--\ref {tab:t55} of \S \ref {sec:baseline}}{table.5}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.2}Per-Dataset Baseline Tables}{18}{subsubsection.5.2.2}\protected@file@percent }
-\newlabel{sec:perdataset}{{5.2.2}{18}{Per-Dataset Baseline Tables}{subsubsection.5.2.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.3}Cost and Compute Envelope}{18}{subsubsection.5.2.3}\protected@file@percent }
-\newlabel{sec:costenvelope}{{5.2.3}{18}{Cost and Compute Envelope}{subsubsection.5.2.3}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Baseline-sweep cost envelope across the three datasets, by model family. All values are 9-job totals per dataset. Cost is computed in-job from Azure's published per-second pricing for \texttt  {Standard\_E4ds\_v4} in \texttt  {swedencentral} (\$0.38/hr at time of writing); CO$_2$ uses the region's 2025 baseline marginal intensity of 0.041\,kgCO$_2$eq/kWh (Nowtricity/Ember, 2024).}}{18}{table.6}\protected@file@percent }
-\newlabel{tab:t56}{{6}{18}{Baseline-sweep cost envelope across the three datasets, by model family. All values are 9-job totals per dataset. Cost is computed in-job from Azure's published per-second pricing for \texttt {Standard\_E4ds\_v4} in \texttt {swedencentral} (\$0.38/hr at time of writing); CO$_2$ uses the region's 2025 baseline marginal intensity of 0.041\,kgCO$_2$eq/kWh (Nowtricity/Ember, 2024)}{table.6}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.1}Cross-Dataset Summary}{17}{subsubsection.5.2.1}\protected@file@percent }
+\newlabel{sec:crossdataset}{{5.2.1}{17}{Cross-Dataset Summary}{subsubsection.5.2.1}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.2}Per-Dataset Baseline Tables}{17}{subsubsection.5.2.2}\protected@file@percent }
+\newlabel{sec:perdataset}{{5.2.2}{17}{Per-Dataset Baseline Tables}{subsubsection.5.2.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.3}Cost and Compute Envelope}{17}{subsubsection.5.2.3}\protected@file@percent }
+\newlabel{sec:costenvelope}{{5.2.3}{17}{Cost and Compute Envelope}{subsubsection.5.2.3}{}}
+\citation{bentaieb2014boosting,bentaieb2016bias}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.4}Foundation Model Results}{18}{subsubsection.5.2.4}\protected@file@percent }
 \newlabel{sec:fmresults_pointer}{{5.2.4}{18}{Foundation Model Results}{subsubsection.5.2.4}{}}
-\citation{bentaieb2014boosting,bentaieb2016bias}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Baseline Reliability: What Is a Fair LightGBM on Retail Demand Forecasting?}{19}{subsection.5.3}\protected@file@percent }
-\newlabel{sec:baseline}{{5.3}{19}{Baseline Reliability: What Is a Fair LightGBM on Retail Demand Forecasting?}{subsection.5.3}{}}
-\newlabel{sec:baseline-reliability}{{5.3}{19}{Baseline Reliability: What Is a Fair LightGBM on Retail Demand Forecasting?}{subsection.5.3}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.1}Cross-Dataset Results}{19}{subsubsection.5.3.1}\protected@file@percent }
-\newlabel{sec:m5results}{{5.3.1}{19}{Cross-Dataset Results}{subsubsection.5.3.1}{}}
-\newlabel{sec:dirvsr}{{5.3.1}{19}{Cross-Dataset Results}{subsubsection.5.3.1}{}}
-\newlabel{sec:m5distance}{{5.3.1}{19}{Cross-Dataset Results}{subsubsection.5.3.1}{}}
-\newlabel{sec:rohlik}{{5.3.1}{19}{Cross-Dataset Results}{subsubsection.5.3.1}{}}
-\newlabel{sec:favorita}{{5.3.1}{19}{Cross-Dataset Results}{subsubsection.5.3.1}{}}
-\newlabel{sec:synthesis}{{5.3.1}{19}{Cross-Dataset Results}{subsubsection.5.3.1}{}}
-\newlabel{sec:threats}{{5.3.1}{19}{Cross-Dataset Results}{subsubsection.5.3.1}{}}
-\newlabel{sec:costconsequences}{{5.3.1}{19}{Cross-Dataset Results}{subsubsection.5.3.1}{}}
-\newlabel{sec:takeaways}{{5.3.1}{19}{Cross-Dataset Results}{subsubsection.5.3.1}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Cross-dataset summary of the direct-vs-recursive LightGBM gap with matched protocol (\textsc  {wape}{}-based; positive = direct wins, negative = recursive wins).}}{19}{table.7}\protected@file@percent }
-\newlabel{tab:t58}{{7}{19}{Cross-dataset summary of the direct-vs-recursive LightGBM gap with matched protocol (\WAPE {}-based; positive = direct wins, negative = recursive wins)}{table.7}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Foundation Model Protocol}{20}{subsection.5.4}\protected@file@percent }
-\newlabel{sec:fm}{{5.4}{20}{Foundation Model Protocol}{subsection.5.4}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.1}Scope and Two-Source Strategy}{20}{subsubsection.5.4.1}\protected@file@percent }
-\newlabel{sec:fm_scope}{{5.4.1}{20}{Scope and Two-Source Strategy}{subsubsection.5.4.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Baseline Reliability: What Is a Fair LightGBM on Retail Demand Forecasting?}{18}{subsection.5.3}\protected@file@percent }
+\newlabel{sec:baseline}{{5.3}{18}{Baseline Reliability: What Is a Fair LightGBM on Retail Demand Forecasting?}{subsection.5.3}{}}
+\newlabel{sec:baseline-reliability}{{5.3}{18}{Baseline Reliability: What Is a Fair LightGBM on Retail Demand Forecasting?}{subsection.5.3}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.1}Cross-Dataset Results}{18}{subsubsection.5.3.1}\protected@file@percent }
+\newlabel{sec:m5results}{{5.3.1}{18}{Cross-Dataset Results}{subsubsection.5.3.1}{}}
+\newlabel{sec:dirvsr}{{5.3.1}{18}{Cross-Dataset Results}{subsubsection.5.3.1}{}}
+\newlabel{sec:m5distance}{{5.3.1}{18}{Cross-Dataset Results}{subsubsection.5.3.1}{}}
+\newlabel{sec:rohlik}{{5.3.1}{18}{Cross-Dataset Results}{subsubsection.5.3.1}{}}
+\newlabel{sec:favorita}{{5.3.1}{18}{Cross-Dataset Results}{subsubsection.5.3.1}{}}
+\newlabel{sec:synthesis}{{5.3.1}{18}{Cross-Dataset Results}{subsubsection.5.3.1}{}}
+\newlabel{sec:threats}{{5.3.1}{18}{Cross-Dataset Results}{subsubsection.5.3.1}{}}
+\newlabel{sec:costconsequences}{{5.3.1}{18}{Cross-Dataset Results}{subsubsection.5.3.1}{}}
+\newlabel{sec:takeaways}{{5.3.1}{18}{Cross-Dataset Results}{subsubsection.5.3.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Cross-dataset summary of the direct-vs-recursive LightGBM gap with matched protocol (\textsc  {wape}{}-based; positive = direct wins, negative = recursive wins).}}{19}{table.6}\protected@file@percent }
+\newlabel{tab:t58}{{6}{19}{Cross-dataset summary of the direct-vs-recursive LightGBM gap with matched protocol (\WAPE {}-based; positive = direct wins, negative = recursive wins)}{table.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Foundation Model Protocol}{19}{subsection.5.4}\protected@file@percent }
+\newlabel{sec:fm}{{5.4}{19}{Foundation Model Protocol}{subsection.5.4}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.1}Scope and Two-Source Strategy}{19}{subsubsection.5.4.1}\protected@file@percent }
+\newlabel{sec:fm_scope}{{5.4.1}{19}{Scope and Two-Source Strategy}{subsubsection.5.4.1}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.2}Literature-Extraction Protocol (Source~A)}{20}{subsubsection.5.4.2}\protected@file@percent }
 \newlabel{sec:fm_extraction}{{5.4.2}{20}{Literature-Extraction Protocol (Source~A)}{subsubsection.5.4.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.3}Local Consumer-Box Protocol (Source~B)}{21}{subsubsection.5.4.3}\protected@file@percent }
-\newlabel{sec:fm_local}{{5.4.3}{21}{Local Consumer-Box Protocol (Source~B)}{subsubsection.5.4.3}{}}
-\newlabel{sec:fm-consumer-box}{{5.4.3}{21}{Local Consumer-Box Protocol (Source~B)}{subsubsection.5.4.3}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Local consumer-box model selection.}}{21}{table.8}\protected@file@percent }
-\newlabel{tab:fm_models}{{8}{21}{Local consumer-box model selection}{table.8}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.4}Evaluation and Metrics}{21}{subsubsection.5.4.4}\protected@file@percent }
-\newlabel{sec:fm_metrics}{{5.4.4}{21}{Evaluation and Metrics}{subsubsection.5.4.4}{}}
-\newlabel{sec:fm-m5-metric}{{5.4.4}{21}{Evaluation and Metrics}{subsubsection.5.4.4}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.5}Consumer-Box Run: Results}{21}{subsubsection.5.4.5}\protected@file@percent }
-\newlabel{sec:fm_results}{{5.4.5}{21}{Consumer-Box Run: Results}{subsubsection.5.4.5}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Consumer-box \textsc  {wape}{} (Source~B, per-series mean, rolling origin) across models, datasets, and horizons. Lower is better. All 72 cells populated (5 FMs + 3 baselines $\times $ 3 datasets $\times $ 3 horizons).}}{22}{table.9}\protected@file@percent }
-\newlabel{tab:t59}{{9}{22}{Consumer-box \WAPE {} (Source~B, per-series mean, rolling origin) across models, datasets, and horizons. Lower is better. All 72 cells populated (5 FMs + 3 baselines $\times $ 3 datasets $\times $ 3 horizons)}{table.9}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.3}Local Consumer-Box Protocol (Source~B)}{20}{subsubsection.5.4.3}\protected@file@percent }
+\newlabel{sec:fm_local}{{5.4.3}{20}{Local Consumer-Box Protocol (Source~B)}{subsubsection.5.4.3}{}}
+\newlabel{sec:fm-consumer-box}{{5.4.3}{20}{Local Consumer-Box Protocol (Source~B)}{subsubsection.5.4.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Local consumer-box model selection.}}{20}{table.7}\protected@file@percent }
+\newlabel{tab:fm_models}{{7}{20}{Local consumer-box model selection}{table.7}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.4}Evaluation and Metrics}{20}{subsubsection.5.4.4}\protected@file@percent }
+\newlabel{sec:fm_metrics}{{5.4.4}{20}{Evaluation and Metrics}{subsubsection.5.4.4}{}}
+\newlabel{sec:fm-m5-metric}{{5.4.4}{20}{Evaluation and Metrics}{subsubsection.5.4.4}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.5}Consumer-Box Run: Results}{20}{subsubsection.5.4.5}\protected@file@percent }
+\newlabel{sec:fm_results}{{5.4.5}{20}{Consumer-Box Run: Results}{subsubsection.5.4.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Consumer-box \textsc  {wape}{} (Source~B, per-series mean, rolling origin) across models, datasets, and horizons. Lower is better. All 72 cells populated (5 FMs + 3 baselines $\times $ 3 datasets $\times $ 3 horizons).}}{21}{table.8}\protected@file@percent }
+\newlabel{tab:t59}{{8}{21}{Consumer-box \WAPE {} (Source~B, per-series mean, rolling origin) across models, datasets, and horizons. Lower is better. All 72 cells populated (5 FMs + 3 baselines $\times $ 3 datasets $\times $ 3 horizons)}{table.8}{}}
 \citation{shchur2025fevbench}
 \citation{aksu2024gift}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.6}Reproducibility}{23}{subsubsection.5.4.6}\protected@file@percent }
-\newlabel{sec:fm_repro}{{5.4.6}{23}{Reproducibility}{subsubsection.5.4.6}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.7}Reading Table~\ref {tab:t59}}{23}{subsubsection.5.4.7}\protected@file@percent }
-\newlabel{sec:table59}{{5.4.7}{23}{Reading Table~\ref {tab:t59}}{subsubsection.5.4.7}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.8}Threats to Validity}{23}{subsubsection.5.4.8}\protected@file@percent }
-\newlabel{sec:fm_threats}{{5.4.8}{23}{Threats to Validity}{subsubsection.5.4.8}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6}Meta-Analysis}{23}{section.6}\protected@file@percent }
-\newlabel{sec:metaanalysis}{{6}{23}{Meta-Analysis}{section.6}{}}
-\newlabel{sec:meta-regression}{{6}{23}{Meta-Analysis}{section.6}{}}
-\newlabel{sec:metareg}{{6}{23}{Meta-Analysis}{section.6}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Pooling strategy and effect size}{23}{subsection.6.1}\protected@file@percent }
-\newlabel{subsec:pooling-strategy}{{6.1}{23}{Pooling strategy and effect size}{subsection.6.1}{}}
-\newlabel{eq:delta-model-level}{{1}{23}{Pooling strategy and effect size}{equation.1}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.6}Reproducibility}{22}{subsubsection.5.4.6}\protected@file@percent }
+\newlabel{sec:fm_repro}{{5.4.6}{22}{Reproducibility}{subsubsection.5.4.6}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.7}Threats to Validity}{22}{subsubsection.5.4.7}\protected@file@percent }
+\newlabel{sec:fm_threats}{{5.4.7}{22}{Threats to Validity}{subsubsection.5.4.7}{}}
+\newlabel{sec:table59}{{5.4.7}{22}{Threats to Validity}{subsubsection.5.4.7}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Meta-Analysis}{22}{section.6}\protected@file@percent }
+\newlabel{sec:metaanalysis}{{6}{22}{Meta-Analysis}{section.6}{}}
+\newlabel{sec:meta-regression}{{6}{22}{Meta-Analysis}{section.6}{}}
+\newlabel{sec:metareg}{{6}{22}{Meta-Analysis}{section.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Pooling strategy and effect size}{22}{subsection.6.1}\protected@file@percent }
+\newlabel{subsec:pooling-strategy}{{6.1}{22}{Pooling strategy and effect size}{subsection.6.1}{}}
+\newlabel{eq:delta-model-level}{{1}{22}{Pooling strategy and effect size}{equation.1}{}}
 \citation{knapp2003improved,viechtbauer2010metafor}
 \citation{shchur2025fevbench}
 \citation{aksu2024gift}
-\@writefile{toc}{\contentsline {paragraph}{Meta-regression model.}{24}{section*.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Data sources.}{24}{section*.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Primary results}{24}{subsection.6.2}\protected@file@percent }
-\newlabel{subsec:cross-paper-pooled}{{6.2}{24}{Primary results}{subsection.6.2}{}}
-\newlabel{sec:cross-paper-pooling}{{6.2}{24}{Primary results}{subsection.6.2}{}}
-\newlabel{sec:rq1-accuracy}{{6.2}{24}{Primary results}{subsection.6.2}{}}
-\@writefile{toc}{\contentsline {paragraph}{Full-pool intercept ($k = 543$).}{24}{section*.10}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Variance components.}{25}{section*.11}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Heterogeneity.}{25}{section*.12}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Per-metric decomposition: SQL versus \textsc  {wape}{}}{25}{subsection.6.3}\protected@file@percent }
-\newlabel{subsec:metric-moderator}{{6.3}{25}{Per-metric decomposition: SQL versus \WAPE {}}{subsection.6.3}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {10}{\ignorespaces Metric-specific pooled $\hat  {\Delta }$ from sensitivity analyses. Negative = FM better.}}{25}{table.10}\protected@file@percent }
-\newlabel{tab:metric-split}{{10}{25}{Metric-specific pooled $\hat {\Delta }$ from sensitivity analyses. Negative = FM better}{table.10}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Forest plots}{25}{subsection.6.4}\protected@file@percent }
-\newlabel{subsec:forest-plots}{{6.4}{25}{Forest plots}{subsection.6.4}{}}
-\newlabel{sec:per-dataset-results}{{6.4}{25}{Forest plots}{subsection.6.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Sensitivity analyses}{25}{subsection.6.5}\protected@file@percent }
-\newlabel{subsec:sensitivity}{{6.5}{25}{Sensitivity analyses}{subsection.6.5}{}}
-\newlabel{sec:heterogeneity}{{6.5}{25}{Sensitivity analyses}{subsection.6.5}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Forest plot for M5: model-level $\Delta $ across SQL, \textsc  {mase}{}, and \textsc  {wape}{}. The FM advantage is large on SQL (left of zero) and reverses on \textsc  {wape}{} for several models.}}{26}{figure.1}\protected@file@percent }
-\newlabel{fig:forest_m5}{{1}{26}{Forest plot for M5: model-level $\Delta $ across SQL, \MASE {}, and \WAPE {}. The FM advantage is large on SQL (left of zero) and reverses on \WAPE {} for several models}{figure.1}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Forest plot for Favorita. All FMs are close to or slightly better than baselines on all metrics.}}{27}{figure.2}\protected@file@percent }
-\newlabel{fig:forest_favorita}{{2}{27}{Forest plot for Favorita. All FMs are close to or slightly better than baselines on all metrics}{figure.2}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Forest plot for Rossmann. Strong FM advantage across all metrics, driven by consistent SQL gains.}}{28}{figure.3}\protected@file@percent }
-\newlabel{fig:forest_rossmann}{{3}{28}{Forest plot for Rossmann. Strong FM advantage across all metrics, driven by consistent SQL gains}{figure.3}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Forest plot for Rohlik~v2.}}{29}{figure.4}\protected@file@percent }
-\newlabel{fig:forest_rohlik}{{4}{29}{Forest plot for Rohlik~v2}{figure.4}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Forest plot for Car Parts (GIFT-Eval). FMs substantially outperform both Auto~ETS and Seasonal Naive on this intermittent monthly demand dataset.}}{30}{figure.5}\protected@file@percent }
-\newlabel{fig:forest_car_parts}{{5}{30}{Forest plot for Car Parts (GIFT-Eval). FMs substantially outperform both Auto~ETS and Seasonal Naive on this intermittent monthly demand dataset}{figure.5}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {11}{\ignorespaces Sensitivity analyses on the model-level meta-regression.}}{31}{table.11}\protected@file@percent }
-\newlabel{tab:sensitivity}{{11}{31}{Sensitivity analyses on the model-level meta-regression}{table.11}{}}
-\@writefile{toc}{\contentsline {paragraph}{Key observations.}{31}{section*.13}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.6}Heterogeneity diagnostics}{31}{subsection.6.6}\protected@file@percent }
-\newlabel{subsec:heterogeneity-diagnostics}{{6.6}{31}{Heterogeneity diagnostics}{subsection.6.6}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {12}{\ignorespaces Variance decomposition. $\hat  {\sigma }^2_1$ is between-dataset; $\hat  {\sigma }^2_2$ is between-paper within dataset; $\hat  {\sigma }^2_3$ is between-model within paper.}}{31}{table.12}\protected@file@percent }
-\newlabel{tab:t62}{{12}{31}{Variance decomposition. $\hat {\sigma }^2_1$ is between-dataset; $\hat {\sigma }^2_2$ is between-paper within dataset; $\hat {\sigma }^2_3$ is between-model within paper}{table.12}{}}
-\@writefile{toc}{\contentsline {paragraph}{Publication bias (PRISMA Item~14).}{32}{section*.14}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Funnel plot for SQL-only slice ($k = 166$). No evidence of asymmetry (Egger-type test $p = 0.79$).}}{32}{figure.6}\protected@file@percent }
-\newlabel{fig:funnel_sql}{{6}{32}{Funnel plot for SQL-only slice ($k = 166$). No evidence of asymmetry (Egger-type test $p = 0.79$)}{figure.6}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.7}Cost-accuracy Pareto frontier}{32}{subsection.6.7}\protected@file@percent }
-\newlabel{subsec:pareto}{{6.7}{32}{Cost-accuracy Pareto frontier}{subsection.6.7}{}}
-\newlabel{sec:cost-accuracy}{{6.7}{32}{Cost-accuracy Pareto frontier}{subsection.6.7}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.8}Moderator outcomes}{32}{subsection.6.8}\protected@file@percent }
-\newlabel{subsec:moderator-outcomes}{{6.8}{32}{Moderator outcomes}{subsection.6.8}{}}
-\newlabel{sec:moderator-results}{{6.8}{32}{Moderator outcomes}{subsection.6.8}{}}
-\newlabel{sec:rq2-moderators}{{6.8}{32}{Moderator outcomes}{subsection.6.8}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Cost-accuracy Pareto frontier. X-axis: USD cost (log scale); FM costs are marginal electricity on consumer MacBook (M-series MPS), baseline costs are Azure E4DS\_V4 list price. Y-axis: \textsc  {wape}{}. Shape distinguishes hardware cost basis. The five FMs span 9\,M--200\,M parameters; baselines include LightGBM (recursive and direct) and Seasonal Naive.}}{33}{figure.7}\protected@file@percent }
-\newlabel{fig:pareto_hw}{{7}{33}{Cost-accuracy Pareto frontier. X-axis: USD cost (log scale); FM costs are marginal electricity on consumer MacBook (M-series MPS), baseline costs are Azure E4DS\_V4 list price. Y-axis: \WAPE {}. Shape distinguishes hardware cost basis. The five FMs span 9\,M--200\,M parameters; baselines include LightGBM (recursive and direct) and Seasonal Naive}{figure.7}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Cost-accuracy Pareto frontier re-costed on cloud GPU (V100 at \$1.24/hr).}}{34}{figure.8}\protected@file@percent }
-\newlabel{fig:pareto_gpu}{{8}{34}{Cost-accuracy Pareto frontier re-costed on cloud GPU (V100 at \$1.24/hr)}{figure.8}{}}
+\@writefile{toc}{\contentsline {paragraph}{Meta-regression model.}{23}{section*.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Data sources.}{23}{section*.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Primary results}{23}{subsection.6.2}\protected@file@percent }
+\newlabel{subsec:cross-paper-pooled}{{6.2}{23}{Primary results}{subsection.6.2}{}}
+\newlabel{sec:cross-paper-pooling}{{6.2}{23}{Primary results}{subsection.6.2}{}}
+\newlabel{sec:rq1-accuracy}{{6.2}{23}{Primary results}{subsection.6.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{Full-pool intercept ($k = 543$).}{23}{section*.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Variance components.}{24}{section*.11}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Heterogeneity.}{24}{section*.12}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Per-metric decomposition: SQL versus \textsc  {wape}{}}{24}{subsection.6.3}\protected@file@percent }
+\newlabel{subsec:metric-moderator}{{6.3}{24}{Per-metric decomposition: SQL versus \WAPE {}}{subsection.6.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Metric-specific pooled $\hat  {\Delta }$ from sensitivity analyses. Negative = FM better.}}{24}{table.9}\protected@file@percent }
+\newlabel{tab:metric-split}{{9}{24}{Metric-specific pooled $\hat {\Delta }$ from sensitivity analyses. Negative = FM better}{table.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Forest plots}{24}{subsection.6.4}\protected@file@percent }
+\newlabel{subsec:forest-plots}{{6.4}{24}{Forest plots}{subsection.6.4}{}}
+\newlabel{sec:per-dataset-results}{{6.4}{24}{Forest plots}{subsection.6.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Sensitivity analyses}{24}{subsection.6.5}\protected@file@percent }
+\newlabel{subsec:sensitivity}{{6.5}{24}{Sensitivity analyses}{subsection.6.5}{}}
+\newlabel{sec:heterogeneity}{{6.5}{24}{Sensitivity analyses}{subsection.6.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Forest plot for M5: model-level $\Delta $ across SQL, \textsc  {mase}{}, and \textsc  {wape}{}. The FM advantage is large on SQL (left of zero) and reverses on \textsc  {wape}{} for several models.}}{25}{figure.1}\protected@file@percent }
+\newlabel{fig:forest_m5}{{1}{25}{Forest plot for M5: model-level $\Delta $ across SQL, \MASE {}, and \WAPE {}. The FM advantage is large on SQL (left of zero) and reverses on \WAPE {} for several models}{figure.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Forest plot for Favorita. All FMs are close to or slightly better than baselines on all metrics.}}{26}{figure.2}\protected@file@percent }
+\newlabel{fig:forest_favorita}{{2}{26}{Forest plot for Favorita. All FMs are close to or slightly better than baselines on all metrics}{figure.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Forest plot for Rossmann. Strong FM advantage across all metrics, driven by consistent SQL gains.}}{27}{figure.3}\protected@file@percent }
+\newlabel{fig:forest_rossmann}{{3}{27}{Forest plot for Rossmann. Strong FM advantage across all metrics, driven by consistent SQL gains}{figure.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Forest plot for Rohlik~v2.}}{28}{figure.4}\protected@file@percent }
+\newlabel{fig:forest_rohlik}{{4}{28}{Forest plot for Rohlik~v2}{figure.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Forest plot for Car Parts (GIFT-Eval). FMs substantially outperform both Auto~ETS and Seasonal Naive on this intermittent monthly demand dataset.}}{29}{figure.5}\protected@file@percent }
+\newlabel{fig:forest_car_parts}{{5}{29}{Forest plot for Car Parts (GIFT-Eval). FMs substantially outperform both Auto~ETS and Seasonal Naive on this intermittent monthly demand dataset}{figure.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {10}{\ignorespaces Sensitivity analyses on the model-level meta-regression.}}{30}{table.10}\protected@file@percent }
+\newlabel{tab:sensitivity}{{10}{30}{Sensitivity analyses on the model-level meta-regression}{table.10}{}}
+\@writefile{toc}{\contentsline {paragraph}{Key observations.}{30}{section*.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.6}Heterogeneity diagnostics}{30}{subsection.6.6}\protected@file@percent }
+\newlabel{subsec:heterogeneity-diagnostics}{{6.6}{30}{Heterogeneity diagnostics}{subsection.6.6}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {11}{\ignorespaces Variance decomposition. $\hat  {\sigma }^2_1$ is between-dataset; $\hat  {\sigma }^2_2$ is between-paper within dataset; $\hat  {\sigma }^2_3$ is between-model within paper.}}{30}{table.11}\protected@file@percent }
+\newlabel{tab:t62}{{11}{30}{Variance decomposition. $\hat {\sigma }^2_1$ is between-dataset; $\hat {\sigma }^2_2$ is between-paper within dataset; $\hat {\sigma }^2_3$ is between-model within paper}{table.11}{}}
+\@writefile{toc}{\contentsline {paragraph}{Publication bias (PRISMA Item~14).}{31}{section*.14}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Funnel plot for SQL-only slice ($k = 166$). No evidence of asymmetry (Egger-type test $p = 0.79$).}}{31}{figure.6}\protected@file@percent }
+\newlabel{fig:funnel_sql}{{6}{31}{Funnel plot for SQL-only slice ($k = 166$). No evidence of asymmetry (Egger-type test $p = 0.79$)}{figure.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.7}Cost-accuracy Pareto frontier}{31}{subsection.6.7}\protected@file@percent }
+\newlabel{subsec:pareto}{{6.7}{31}{Cost-accuracy Pareto frontier}{subsection.6.7}{}}
+\newlabel{sec:cost-accuracy}{{6.7}{31}{Cost-accuracy Pareto frontier}{subsection.6.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.8}Moderator outcomes}{31}{subsection.6.8}\protected@file@percent }
+\newlabel{subsec:moderator-outcomes}{{6.8}{31}{Moderator outcomes}{subsection.6.8}{}}
+\newlabel{sec:moderator-results}{{6.8}{31}{Moderator outcomes}{subsection.6.8}{}}
+\newlabel{sec:rq2-moderators}{{6.8}{31}{Moderator outcomes}{subsection.6.8}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Cost-accuracy Pareto frontier. X-axis: USD cost (log scale); FM costs are marginal electricity on consumer MacBook (M-series MPS), baseline costs are Azure E4DS\_V4 list price. Y-axis: \textsc  {wape}{}. Shape distinguishes hardware cost basis. The five FMs span 9\,M--200\,M parameters; baselines include LightGBM (recursive and direct) and Seasonal Naive.}}{32}{figure.7}\protected@file@percent }
+\newlabel{fig:pareto_hw}{{7}{32}{Cost-accuracy Pareto frontier. X-axis: USD cost (log scale); FM costs are marginal electricity on consumer MacBook (M-series MPS), baseline costs are Azure E4DS\_V4 list price. Y-axis: \WAPE {}. Shape distinguishes hardware cost basis. The five FMs span 9\,M--200\,M parameters; baselines include LightGBM (recursive and direct) and Seasonal Naive}{figure.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Cost-accuracy Pareto frontier re-costed on cloud GPU (V100 at \$1.24/hr).}}{33}{figure.8}\protected@file@percent }
+\newlabel{fig:pareto_gpu}{{8}{33}{Cost-accuracy Pareto frontier re-costed on cloud GPU (V100 at \$1.24/hr)}{figure.8}{}}
 \citation{shchur2025fevbench}
-\@writefile{toc}{\contentsline {section}{\numberline {7}Decision Framework}{35}{section.7}\protected@file@percent }
-\newlabel{sec:framework}{{7}{35}{Decision Framework}{section.7}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}The decision tree}{35}{subsection.7.1}\protected@file@percent }
-\newlabel{subsec:decision-tree}{{7.1}{35}{The decision tree}{subsection.7.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Cost thresholds}{37}{subsection.7.2}\protected@file@percent }
-\newlabel{subsec:cost-thresholds}{{7.2}{37}{Cost thresholds}{subsection.7.2}{}}
-\@writefile{toc}{\contentsline {paragraph}{Consumer hardware (MacBook M-series MPS).}{37}{section*.15}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{When the FM ``pays off'' in \$ terms:}{37}{section*.16}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{When the FM does NOT pay off:}{37}{section*.17}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.3}Recommendations by role}{37}{subsection.7.3}\protected@file@percent }
-\newlabel{subsec:recommendations-role}{{7.3}{37}{Recommendations by role}{subsection.7.3}{}}
-\@writefile{toc}{\contentsline {paragraph}{Data scientist / ML engineer}{37}{section*.18}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Engineering manager}{38}{section*.19}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{VP / Director}{38}{section*.20}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {8}Discussion}{38}{section.8}\protected@file@percent }
-\newlabel{sec:discussion}{{8}{38}{Discussion}{section.8}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Data leakage: the elephant in FM evaluation}{38}{subsection.8.1}\protected@file@percent }
-\newlabel{subsec:data-leakage}{{8.1}{38}{Data leakage: the elephant in FM evaluation}{subsection.8.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}The covariate gap}{39}{subsection.8.2}\protected@file@percent }
-\newlabel{subsec:covariate-gap}{{8.2}{39}{The covariate gap}{subsection.8.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}Per-series vs aggregate WAPE}{39}{subsection.8.3}\protected@file@percent }
-\newlabel{subsec:perseries-vs-aggregate}{{8.3}{39}{Per-series vs aggregate WAPE}{subsection.8.3}{}}
-\@writefile{toc}{\contentsline {paragraph}{Recommendation for future benchmarks:}{39}{section*.21}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.4}Limitations}{39}{subsection.8.4}\protected@file@percent }
-\newlabel{subsec:limitations}{{8.4}{39}{Limitations}{subsection.8.4}{}}
-\newlabel{sec:limitations}{{8.4}{39}{Limitations}{subsection.8.4}{}}
-\@writefile{toc}{\contentsline {paragraph}{Single author.}{39}{section*.22}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Retail domain coverage.}{40}{section*.23}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Consumer-HW-only Source~B.}{40}{section*.24}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Approximate sampling variance.}{40}{section*.25}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Evaluation protocol heterogeneity.}{40}{section*.26}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Distributional metric interpretation.}{40}{section*.27}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.5}Generalisability beyond retail}{40}{subsection.8.5}\protected@file@percent }
-\newlabel{subsec:generalisability}{{8.5}{40}{Generalisability beyond retail}{subsection.8.5}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {9}Conclusions}{41}{section.9}\protected@file@percent }
-\newlabel{sec:conclusions}{{9}{41}{Conclusions}{section.9}{}}
-\newlabel{sec:conclusion}{{9}{41}{Conclusions}{section.9}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {9.1}Answers to the research questions}{41}{subsection.9.1}\protected@file@percent }
-\newlabel{subsec:answers-rq}{{9.1}{41}{Answers to the research questions}{subsection.9.1}{}}
-\@writefile{toc}{\contentsline {paragraph}{RQ1 (Accuracy): Do zero-shot foundation models outperform conventional baselines on retail demand forecasting?}{41}{section*.28}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{RQ2 (Moderators): Which characteristics moderate the FM-vs-baseline gap?}{41}{section*.29}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Decision Framework}{34}{section.7}\protected@file@percent }
+\newlabel{sec:framework}{{7}{34}{Decision Framework}{section.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}The decision tree}{34}{subsection.7.1}\protected@file@percent }
+\newlabel{subsec:decision-tree}{{7.1}{34}{The decision tree}{subsection.7.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Cost thresholds}{36}{subsection.7.2}\protected@file@percent }
+\newlabel{subsec:cost-thresholds}{{7.2}{36}{Cost thresholds}{subsection.7.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{Consumer hardware (MacBook M-series MPS).}{36}{section*.15}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{When the FM ``pays off'' in \$ terms:}{36}{section*.16}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{When the FM does NOT pay off:}{36}{section*.17}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.3}Recommendations by role}{36}{subsection.7.3}\protected@file@percent }
+\newlabel{subsec:recommendations-role}{{7.3}{36}{Recommendations by role}{subsection.7.3}{}}
+\@writefile{toc}{\contentsline {paragraph}{Data scientist / ML engineer}{36}{section*.18}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Engineering manager}{37}{section*.19}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{VP / Director}{37}{section*.20}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8}Discussion}{37}{section.8}\protected@file@percent }
+\newlabel{sec:discussion}{{8}{37}{Discussion}{section.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Data leakage: the elephant in FM evaluation}{37}{subsection.8.1}\protected@file@percent }
+\newlabel{subsec:data-leakage}{{8.1}{37}{Data leakage: the elephant in FM evaluation}{subsection.8.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}The covariate gap}{38}{subsection.8.2}\protected@file@percent }
+\newlabel{subsec:covariate-gap}{{8.2}{38}{The covariate gap}{subsection.8.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}Per-series vs aggregate WAPE}{38}{subsection.8.3}\protected@file@percent }
+\newlabel{subsec:perseries-vs-aggregate}{{8.3}{38}{Per-series vs aggregate WAPE}{subsection.8.3}{}}
+\@writefile{toc}{\contentsline {paragraph}{Recommendation for future benchmarks:}{38}{section*.21}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.4}Limitations}{38}{subsection.8.4}\protected@file@percent }
+\newlabel{subsec:limitations}{{8.4}{38}{Limitations}{subsection.8.4}{}}
+\newlabel{sec:limitations}{{8.4}{38}{Limitations}{subsection.8.4}{}}
+\@writefile{toc}{\contentsline {paragraph}{Single author.}{38}{section*.22}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Retail domain coverage.}{39}{section*.23}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Consumer-HW-only Source~B.}{39}{section*.24}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Approximate sampling variance.}{39}{section*.25}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Evaluation protocol heterogeneity.}{39}{section*.26}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Distributional metric interpretation.}{39}{section*.27}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.5}Generalisability beyond retail}{39}{subsection.8.5}\protected@file@percent }
+\newlabel{subsec:generalisability}{{8.5}{39}{Generalisability beyond retail}{subsection.8.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {9}Conclusions}{39}{section.9}\protected@file@percent }
+\newlabel{sec:conclusions}{{9}{39}{Conclusions}{section.9}{}}
+\newlabel{sec:conclusion}{{9}{39}{Conclusions}{section.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.1}Answers to the research questions}{40}{subsection.9.1}\protected@file@percent }
+\newlabel{subsec:answers-rq}{{9.1}{40}{Answers to the research questions}{subsection.9.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{RQ1 (Accuracy): Do zero-shot foundation models outperform conventional baselines on retail demand forecasting?}{40}{section*.28}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{RQ2 (Moderators): Which characteristics moderate the FM-vs-baseline gap?}{40}{section*.29}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{RQ3 (Cost): What is the cost-accuracy Pareto frontier?}{40}{section*.30}\protected@file@percent }
 \citation{page2021prisma}
-\@writefile{toc}{\contentsline {paragraph}{RQ3 (Cost): What is the cost-accuracy Pareto frontier?}{42}{section*.30}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{RQ4 (Guidance): When should a retail team deploy a foundation model?}{42}{section*.31}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {9.2}Future work}{42}{subsection.9.2}\protected@file@percent }
-\newlabel{subsec:future-work}{{9.2}{42}{Future work}{subsection.9.2}{}}
-\@writefile{toc}{\contentsline {paragraph}{Covariate-aware FM evaluation.}{42}{section*.32}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Fine-tuned FM evaluation.}{42}{section*.33}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Larger models.}{42}{section*.34}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Beyond retail.}{42}{section*.35}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{RQ4 (Guidance): When should a retail team deploy a foundation model?}{41}{section*.31}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.2}Future work}{41}{subsection.9.2}\protected@file@percent }
+\newlabel{subsec:future-work}{{9.2}{41}{Future work}{subsection.9.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{Covariate-aware FM evaluation.}{41}{section*.32}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Fine-tuned FM evaluation.}{41}{section*.33}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Larger models.}{41}{section*.34}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Beyond retail.}{41}{section*.35}\protected@file@percent }
 \@writefile{toc}{\let\numberline\tmptocnumberline}
-\@writefile{lot}{\contentsline {table}{\numberline {A.13}{\ignorespaces PRISMA 2020 checklist mapping.}}{43}{table.13}\protected@file@percent }
-\newlabel{tab:prisma-checklist}{{A.13}{43}{PRISMA 2020 checklist mapping}{table.13}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {Appendix~A}PRISMA 2020 Checklist}{44}{appendix.A}\protected@file@percent }
-\newlabel{app:prisma}{{Appendix~A}{44}{PRISMA 2020 Checklist}{appendix.A}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {Appendix~B}Search Protocol}{44}{appendix.B}\protected@file@percent }
-\newlabel{app:search}{{Appendix~B}{44}{Search Protocol}{appendix.B}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~B.1}Research Questions}{44}{subsection.B.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~B.2}Databases}{44}{subsection.B.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~B.3}Primary Search Query}{44}{subsection.B.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~B.4}Date Range}{44}{subsection.B.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~B.5}Inclusion Criteria}{44}{subsection.B.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~B.6}Exclusion Criteria}{45}{subsection.B.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~B.7}Search Execution Log}{45}{subsection.B.7}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {B.14}{\ignorespaces Search execution log.}}{45}{table.14}\protected@file@percent }
-\newlabel{tab:search-log}{{B.14}{45}{Search execution log}{table.14}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~B.8}PRISMA Flow Summary}{45}{subsection.B.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {Appendix~C}Per-Series Metric Distributions}{45}{appendix.C}\protected@file@percent }
-\newlabel{app:metrics}{{Appendix~C}{45}{Per-Series Metric Distributions}{appendix.C}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~C.1}Bootstrap Standard Errors for Source B FM Cells}{45}{subsection.C.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {Appendix~A}PRISMA 2020 Checklist}{41}{appendix.A}\protected@file@percent }
+\newlabel{app:prisma}{{Appendix~A}{41}{PRISMA 2020 Checklist}{appendix.A}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {A.12}{\ignorespaces PRISMA 2020 checklist mapping.}}{42}{table.12}\protected@file@percent }
+\newlabel{tab:prisma-checklist}{{A.12}{42}{PRISMA 2020 checklist mapping}{table.12}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {Appendix~B}Search Protocol}{43}{appendix.B}\protected@file@percent }
+\newlabel{app:search}{{Appendix~B}{43}{Search Protocol}{appendix.B}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~B.1}Research Questions}{43}{subsection.B.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~B.2}Databases}{43}{subsection.B.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~B.3}Primary Search Query}{43}{subsection.B.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~B.4}Date Range}{43}{subsection.B.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~B.5}Inclusion Criteria}{43}{subsection.B.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~B.6}Exclusion Criteria}{43}{subsection.B.6}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {B.13}{\ignorespaces Search execution log.}}{44}{table.13}\protected@file@percent }
+\newlabel{tab:search-log}{{B.13}{44}{Search execution log}{table.13}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~B.7}Search Execution Log}{44}{subsection.B.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~B.8}PRISMA Flow Summary}{44}{subsection.B.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {Appendix~C}Per-Series Metric Distributions}{44}{appendix.C}\protected@file@percent }
+\newlabel{app:metrics}{{Appendix~C}{44}{Per-Series Metric Distributions}{appendix.C}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~C.1}Bootstrap Standard Errors for Source B FM Cells}{44}{subsection.C.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {C.14}{\ignorespaces Bootstrap standard error and 95\% CI for Source~B FM cells (5~FMs $\times $ 3~datasets $\times $ 3~horizons = 45~cells, $B = 10{,}000$).}}{45}{table.14}\protected@file@percent }
+\newlabel{tab:bootstrap-se}{{C.14}{45}{Bootstrap standard error and 95\% CI for Source~B FM cells (5~FMs $\times $ 3~datasets $\times $ 3~horizons = 45~cells, $B = 10{,}000$)}{table.14}{}}
 \citation{viechtbauer2010metafor}
 \citation{knapp2003improved}
 \@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~C.2}M5 Per-Series \textsc  {wape}{} Tail Analysis}{46}{subsection.C.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {Appendix~D}Sensitivity Analyses}{46}{appendix.D}\protected@file@percent }
 \newlabel{app:sensitivity}{{Appendix~D}{46}{Sensitivity Analyses}{appendix.D}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~D.1}Summary Table}{46}{subsection.D.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {D.15}{\ignorespaces Sensitivity variants of the model-level meta-regression ($k = 543$ primary pool).}}{46}{table.15}\protected@file@percent }
+\newlabel{tab:sensitivity-summary}{{D.15}{46}{Sensitivity variants of the model-level meta-regression ($k = 543$ primary pool)}{table.15}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~D.2}Interpretation}{46}{subsection.D.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {C.15}{\ignorespaces Bootstrap standard error and 95\% CI for Source~B FM cells (5~FMs $\times $ 3~datasets $\times $ 3~horizons = 45~cells, $B = 10{,}000$).}}{47}{table.15}\protected@file@percent }
-\newlabel{tab:bootstrap-se}{{C.15}{47}{Bootstrap standard error and 95\% CI for Source~B FM cells (5~FMs $\times $ 3~datasets $\times $ 3~horizons = 45~cells, $B = 10{,}000$)}{table.15}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {D.16}{\ignorespaces Sensitivity variants of the model-level meta-regression ($k = 543$ primary pool).}}{48}{table.16}\protected@file@percent }
-\newlabel{tab:sensitivity-summary}{{D.16}{48}{Sensitivity variants of the model-level meta-regression ($k = 543$ primary pool)}{table.16}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~D.3}Bucket-Level Variant ($k = 10$)}{48}{subsection.D.3}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {D.17}{\ignorespaces Bucket-level variant ($k = 10$), retained for comparison.}}{48}{table.17}\protected@file@percent }
-\newlabel{tab:sensitivity-old}{{D.17}{48}{Bucket-level variant ($k = 10$), retained for comparison}{table.17}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {Appendix~E}Extraction Table (Abbreviated)}{48}{appendix.E}\protected@file@percent }
-\newlabel{app:extraction}{{Appendix~E}{48}{Extraction Table (Abbreviated)}{appendix.E}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~E.1}Column Definitions}{49}{subsection.E.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {E.18}{\ignorespaces Key columns in the extraction table.}}{49}{table.18}\protected@file@percent }
-\newlabel{tab:extraction-columns}{{E.18}{49}{Key columns in the extraction table}{table.18}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~E.2}Row Counts by Category}{49}{subsection.E.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {E.19}{\ignorespaces Extraction table row counts by category.}}{49}{table.19}\protected@file@percent }
-\newlabel{tab:extraction-counts}{{E.19}{49}{Extraction table row counts by category}{table.19}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~E.3}Source A vs Source B}{49}{subsection.E.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~D.3}Bucket-Level Variant ($k = 10$)}{47}{subsection.D.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {D.16}{\ignorespaces Bucket-level variant ($k = 10$), retained for comparison.}}{47}{table.16}\protected@file@percent }
+\newlabel{tab:sensitivity-old}{{D.16}{47}{Bucket-level variant ($k = 10$), retained for comparison}{table.16}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {Appendix~E}Extraction Table (Abbreviated)}{47}{appendix.E}\protected@file@percent }
+\newlabel{app:extraction}{{Appendix~E}{47}{Extraction Table (Abbreviated)}{appendix.E}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~E.1}Column Definitions}{47}{subsection.E.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~E.2}Row Counts by Category}{47}{subsection.E.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~E.3}Source A vs Source B}{47}{subsection.E.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {E.17}{\ignorespaces Key columns in the extraction table.}}{48}{table.17}\protected@file@percent }
+\newlabel{tab:extraction-columns}{{E.17}{48}{Key columns in the extraction table}{table.17}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {E.18}{\ignorespaces Extraction table row counts by category.}}{48}{table.18}\protected@file@percent }
+\newlabel{tab:extraction-counts}{{E.18}{48}{Extraction table row counts by category}{table.18}{}}
 \citation{makridakis2022m5}
-\@writefile{toc}{\contentsline {section}{\numberline {Appendix~F}Threats to Validity}{50}{appendix.F}\protected@file@percent }
-\newlabel{app:threats}{{Appendix~F}{50}{Threats to Validity}{appendix.F}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {Appendix~G}Detailed Baseline Reliability Analysis}{50}{appendix.G}\protected@file@percent }
-\newlabel{app:baseline-detail}{{Appendix~G}{50}{Detailed Baseline Reliability Analysis}{appendix.G}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {Appendix~G.0.1}M5 Results}{50}{subsubsection.G.0.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {G.20}{\ignorespaces Seasonal Naive vs LightGBM recursive vs LightGBM direct on the M5 tail-eval window (pipeline \texttt  {mighty\_morning\_6qz5c4jmwm}, commit \texttt  {d26dff9}). Bold = best per horizon.}}{51}{table.20}\protected@file@percent }
-\newlabel{tab:t53}{{G.20}{51}{Seasonal Naive vs LightGBM recursive vs LightGBM direct on the M5 tail-eval window (pipeline \texttt {mighty\_morning\_6qz5c4jmwm}, commit \texttt {d26dff9}). Bold = best per horizon}{table.20}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {Appendix~G.0.2}Direct vs Recursive: a 14\% \textsc  {wrmsse}{} Gap with the Same Model}{51}{subsubsection.G.0.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {Appendix~F}Threats to Validity}{49}{appendix.F}\protected@file@percent }
+\newlabel{app:threats}{{Appendix~F}{49}{Threats to Validity}{appendix.F}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {Appendix~G}Detailed Baseline Reliability Analysis}{49}{appendix.G}\protected@file@percent }
+\newlabel{app:baseline-detail}{{Appendix~G}{49}{Detailed Baseline Reliability Analysis}{appendix.G}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {Appendix~G.0.1}M5 Results}{49}{subsubsection.G.0.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {G.19}{\ignorespaces Seasonal Naive vs LightGBM recursive vs LightGBM direct on the M5 tail-eval window (pipeline \texttt  {mighty\_morning\_6qz5c4jmwm}, commit \texttt  {d26dff9}). Bold = best per horizon.}}{50}{table.19}\protected@file@percent }
+\newlabel{tab:t53}{{G.19}{50}{Seasonal Naive vs LightGBM recursive vs LightGBM direct on the M5 tail-eval window (pipeline \texttt {mighty\_morning\_6qz5c4jmwm}, commit \texttt {d26dff9}). Bold = best per horizon}{table.19}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {Appendix~G.0.2}Direct vs Recursive: a 14\% \textsc  {wrmsse}{} Gap with the Same Model}{50}{subsubsection.G.0.2}\protected@file@percent }
 \citation{makridakis2022m5}
 \citation{makridakis2022m5}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {Appendix~G.0.3}The Distance Between ``Vanilla LightGBM'' and the M5 Winner}{52}{subsubsection.G.0.3}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {G.21}{\ignorespaces Intermediate ladder from Seasonal Naive to M5 winner.}}{52}{table.21}\protected@file@percent }
-\newlabel{tab:t53b}{{G.21}{52}{Intermediate ladder from Seasonal Naive to M5 winner}{table.21}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {Appendix~G.0.4}Rohlik Replication: Does the Protocol Gap Reverse on Continuous Demand?}{52}{subsubsection.G.0.4}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {G.22}{\ignorespaces Seasonal Naive vs LightGBM recursive vs LightGBM direct on the Rohlik~v2 tail-eval window. Bold = best per horizon among LightGBM variants.}}{53}{table.22}\protected@file@percent }
-\newlabel{tab:t54}{{G.22}{53}{Seasonal Naive vs LightGBM recursive vs LightGBM direct on the Rohlik~v2 tail-eval window. Bold = best per horizon among LightGBM variants}{table.22}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {Appendix~G.0.5}Favorita Replication: the Recursive Advantage Grows with Horizon}{53}{subsubsection.G.0.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {Appendix~G.0.3}The Distance Between ``Vanilla LightGBM'' and the M5 Winner}{51}{subsubsection.G.0.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {G.20}{\ignorespaces Intermediate ladder from Seasonal Naive to M5 winner.}}{51}{table.20}\protected@file@percent }
+\newlabel{tab:t53b}{{G.20}{51}{Intermediate ladder from Seasonal Naive to M5 winner}{table.20}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {Appendix~G.0.4}Rohlik Replication: Does the Protocol Gap Reverse on Continuous Demand?}{51}{subsubsection.G.0.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {G.21}{\ignorespaces Seasonal Naive vs LightGBM recursive vs LightGBM direct on the Rohlik~v2 tail-eval window. Bold = best per horizon among LightGBM variants.}}{52}{table.21}\protected@file@percent }
+\newlabel{tab:t54}{{G.21}{52}{Seasonal Naive vs LightGBM recursive vs LightGBM direct on the Rohlik~v2 tail-eval window. Bold = best per horizon among LightGBM variants}{table.21}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {Appendix~G.0.5}Favorita Replication: the Recursive Advantage Grows with Horizon}{52}{subsubsection.G.0.5}\protected@file@percent }
 \citation{hewamalage2023forecast}
-\@writefile{lot}{\contentsline {table}{\numberline {G.23}{\ignorespaces Seasonal Naive vs LightGBM recursive vs LightGBM direct on the Favorita top-30k tail-eval window ($\texttt  {train\_until} = 1347$). Bold = best per horizon among LightGBM variants.}}{54}{table.23}\protected@file@percent }
-\newlabel{tab:t55}{{G.23}{54}{Seasonal Naive vs LightGBM recursive vs LightGBM direct on the Favorita top-30k tail-eval window ($\texttt {train\_until} = 1347$). Bold = best per horizon among LightGBM variants}{table.23}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {Appendix~G.0.6}Cross-Dataset Synthesis: the Direct-vs-Recursive Gap Is Conditional on Intermittency}{55}{subsubsection.G.0.6}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {G.24}{\ignorespaces Cross-dataset summary of the direct-vs-recursive LightGBM gap with matched protocol (\textsc  {wape}{}-based; positive = direct wins, negative = recursive wins). Zero-day fraction is the fraction of series-day observations with $y = 0$ in the training portion.}}{55}{table.24}\protected@file@percent }
-\newlabel{tab:t58-appendix}{{G.24}{55}{Cross-dataset summary of the direct-vs-recursive LightGBM gap with matched protocol (\WAPE {}-based; positive = direct wins, negative = recursive wins). Zero-day fraction is the fraction of series-day observations with $y = 0$ in the training portion}{table.24}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {G.22}{\ignorespaces Seasonal Naive vs LightGBM recursive vs LightGBM direct on the Favorita top-30k tail-eval window ($\texttt  {train\_until} = 1347$). Bold = best per horizon among LightGBM variants.}}{53}{table.22}\protected@file@percent }
+\newlabel{tab:t55}{{G.22}{53}{Seasonal Naive vs LightGBM recursive vs LightGBM direct on the Favorita top-30k tail-eval window ($\texttt {train\_until} = 1347$). Bold = best per horizon among LightGBM variants}{table.22}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {Appendix~G.0.6}Cross-Dataset Synthesis: the Direct-vs-Recursive Gap Is Conditional on Intermittency}{54}{subsubsection.G.0.6}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {G.23}{\ignorespaces Cross-dataset summary of the direct-vs-recursive LightGBM gap with matched protocol (\textsc  {wape}{}-based; positive = direct wins, negative = recursive wins). Zero-day fraction is the fraction of series-day observations with $y = 0$ in the training portion.}}{54}{table.23}\protected@file@percent }
+\newlabel{tab:t58-appendix}{{G.23}{54}{Cross-dataset summary of the direct-vs-recursive LightGBM gap with matched protocol (\WAPE {}-based; positive = direct wins, negative = recursive wins). Zero-day fraction is the fraction of series-day observations with $y = 0$ in the training portion}{table.23}{}}
 \citation{hewamalage2023forecast}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {Appendix~G.0.7}Method Note and Threats to Validity}{56}{subsubsection.G.0.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {Appendix~G.0.8}Protocol-Conditional Cost Consequences}{57}{subsubsection.G.0.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {Appendix~G.0.7}Method Note and Threats to Validity}{55}{subsubsection.G.0.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {Appendix~G.0.8}Cost Envelope Detail}{56}{subsubsection.G.0.8}\protected@file@percent }
+\newlabel{app:cost-envelope}{{Appendix~G.0.8}{56}{Cost Envelope Detail}{subsubsection.G.0.8}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {G.24}{\ignorespaces Baseline-sweep cost envelope across the three datasets, by model family. All values are 9-job totals per dataset. Cost is computed in-job from Azure's published per-second pricing for \texttt  {Standard\_E4ds\_v4} in \texttt  {swedencentral} (\$0.38/hr at time of writing); CO$_2$ uses the region's 2025 baseline marginal intensity of 0.041\,kgCO$_2$eq/kWh (Nowtricity/Ember, 2024).}}{56}{table.24}\protected@file@percent }
+\newlabel{tab:t56}{{G.24}{56}{Baseline-sweep cost envelope across the three datasets, by model family. All values are 9-job totals per dataset. Cost is computed in-job from Azure's published per-second pricing for \texttt {Standard\_E4ds\_v4} in \texttt {swedencentral} (\$0.38/hr at time of writing); CO$_2$ uses the region's 2025 baseline marginal intensity of 0.041\,kgCO$_2$eq/kWh (Nowtricity/Ember, 2024)}{table.24}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {Appendix~G.0.9}Reproducibility Detail}{56}{subsubsection.G.0.9}\protected@file@percent }
+\newlabel{app:reproducibility}{{Appendix~G.0.9}{56}{Reproducibility Detail}{subsubsection.G.0.9}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {Appendix~G.0.10}Protocol-Conditional Cost Consequences}{57}{subsubsection.G.0.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {Appendix~G.0.11}Takeaways for the Rest of the Paper}{57}{subsubsection.G.0.11}\protected@file@percent }
 \citation{hewamalage2023forecast}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {Appendix~G.0.9}Takeaways for the Rest of the Paper}{58}{subsubsection.G.0.9}\protected@file@percent }
 \citation{viechtbauer2010metafor}
 \bibstyle{elsarticle-harv}
 \bibdata{../references}
