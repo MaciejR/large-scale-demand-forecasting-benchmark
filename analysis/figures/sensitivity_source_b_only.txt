@@ -4,17 +4,17 @@ Multivariate Meta-Analysis Model (k = 45; method: REML)
 Variance Components:
 
             estim    sqrt  nlvls  fixed                 factor 
-sigma^2.1  0.0834  0.2887      3     no           dataset_norm 
-sigma^2.2  0.0022  0.0468      9     no  dataset_norm/paper_id 
-sigma^2.3  0.0000  0.0039      5     no             model_name 
+sigma^2.1  0.0922  0.3037      3     no           dataset_norm 
+sigma^2.2  0.0020  0.0442      9     no  dataset_norm/paper_id 
+sigma^2.3  0.0002  0.0123      5     no             model_name 
 
 Test for Heterogeneity:
-Q(df = 44) = 20626.1500, p-val < .0001
+Q(df = 44) = 22557.7130, p-val < .0001
 
 Model Results:
 
 estimate      se     tval  df    pval    ci.lb   ci.ub    
- -0.2291  0.1674  -1.3680  44  0.1782  -0.5665  0.1084    
+ -0.2513  0.1761  -1.4272  44  0.1606  -0.6061  0.1035    
 
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
