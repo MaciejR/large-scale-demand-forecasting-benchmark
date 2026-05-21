@@ -394,16 +394,92 @@ Reading guide:
   on M5 under matched rolling-origin, so direct cross-source comparison
   remains future work.
 
-### 5.4.8 Threats to validity
+### 5.4.8 Local MPS inference protocol
+
+This subsection documents the exact inference configuration for
+Source B so the results in §5.4.5 are reproducible without
+re-running the full sweep.
+
+**Hardware and software environment.**
+
+| Item | Value |
+|---|---|
+| Machine | Apple MacBook Air, M-series (arm64), 16 GB unified memory |
+| OS | macOS 26.3.1 (Darwin arm64) |
+| Python | 3.12 in dedicated venv (`~/venvs/fm-local/`) |
+| PyTorch | 2.7.1 with MPS backend |
+| MLflow | 2.22.4 (local tracking, `./mlruns/`) |
+| pandas | 2.1.4 |
+| numpy | 1.26.4 |
+
+**Per-model checkpoints and inference settings.**
+
+| Model | HuggingFace repo | Context | Samples/mode | MPS status |
+|---|---|---|---|---|
+| Chronos-Bolt-Tiny | `amazon/chronos-bolt-tiny` | default | median over 20 samples | native MPS, no fallback |
+| Chronos-2 | `amazon/chronos-2` | default | quantile median (T5 backbone) | MPS via PyTorch 2.3+ T5; CPU fallback if MPS load fails |
+| Moirai-2 | `Salesforce/moirai-2.0-R-small` | 512 steps | 100 samples, median | MPS probe on init; auto-falls-back to CPU on MoE routing errors |
+| TiRex | `NX-AI/TiRex` | default | deterministic | MPS-attempted; Rohlik cells forced to CPU (`TIREX_FORCE_CPU=1`) due to `xlstm_kernels` fallback hang |
+| TimesFM 2.5 | `google/timesfm-2.5-200m-pytorch` | default | point forecast | CPU-only (TimesFM 2.5 does not support MPS via the PyTorch backend) |
+
+All five wrappers (`benchmark/code/models/foundation/*.py`) follow the
+same MPS-fallback pattern: attempt MPS load, run a probe inference on
+a synthetic input, fall back to CPU silently if the probe raises or
+hangs. The fallback is logged to the per-run MLflow `hardware_actual`
+tag so the downstream cost calculation uses the correct electricity
+constant (MPS: 30 W, CPU-only: 15 W, both under the `M_SERIES_MAC`
+hardware bucket).
+
+**Series ordering and sampling.** Each dataset's series are presented
+to the model in the order they appear after the data loader's
+deterministic sort (series_id lexicographic). The `--max-series` cap
+takes the first N series in that order, not a random sample — this
+propagates a velocity-rank bias into capped runs (Chronos-2 at n=3 000,
+TiRex at n=1 000, TimesFM 2.5 at n=500). Bias direction: the top-N
+series by sort order tend to be higher-velocity on all three datasets,
+so capped runs underestimate WAPE relative to full-series runs. This is
+recorded as threat (5) in §5.4.9.
+
+**Rolling-origin windows.** Evaluation uses `benchmark/code/
+evaluation/rolling.py` — same code path as the Azure LightGBM sweep.
+The train/test split is `floor(0.8 × n_days)` with non-overlapping
+horizons. Each model sees only the training portion up to the split;
+no leakage from the held-out window.
+
+**Reproducibility anchors.**
+
+1. Git commit SHA — recorded in MLflow parameter `git_sha` at run time.
+2. HuggingFace revision SHA — the `transformers` library pins the
+   resolved commit hash on first download; logged as `hf_revision`
+   per model.
+3. `pip freeze` snapshot — written to
+   `benchmark/runs/local/<date>/requirements.txt` at sweep start.
+4. Machine fingerprint — macOS version, PyTorch version, MPS runtime
+   version — logged as MLflow tags.
+
+The local MLflow tracking server (`./mlruns/`, experiment ID
+`769029842106652215`) is the authoritative record. Results are
+exported to `benchmark/results/local_fm_sweep.csv` via
+`tools/export_mlflow_to_csv.py`, which deduplicates on
+`(model_name, dataset, horizon)` keeping the most recent run.
+
+### 5.4.9 Threats to validity
 
 Five threats are specific to the Source B FM runs, detailed in
-Appendix F. In summary: (1) extraction selection bias — only
-papers that chose a retail task are represented; (2) Source A
-vs Source B protocol drift — as-reported vs our rolling-origin
-protocol; (3) local run covers only three small models (<35 M
-params) — large FMs are Source A only; (4) covariate asymmetry
-— univariate FMs vs covariate-aware LightGBM; (5) top-30k
-Favorita cap propagates velocity bias. The largest residual risk
-is threat (3): any claim about FM-family performance rests on
-two small models in Source B and extracted numbers in Source A.
+Appendix F. In summary: (1) **tuning asymmetry** — LightGBM uses the
+§5.3.3 pre-registered grid without dataset-specific tuning; a properly
+tuned LGBM on Favorita might close the FM gap; (2) **Source A vs
+Source B protocol drift** — as-reported numbers vs our rolling-origin
+protocol; (3) **covariate asymmetry** — all five Source B FMs are
+univariate; covariate-aware LightGBM is their comparator, so the H2
+moderator test is directionally informative but cannot isolate the
+covariate channel; (4) **velocity-rank bias in capped runs** — Chronos-2
+(n=3 000), TiRex (n=1 000), and TimesFM 2.5 (n=500) evaluate on higher-
+velocity series, underestimating their true full-dataset WAPE; (5)
+**top-30k Favorita cap** — the 30 000 series ceiling excludes the
+long tail of very-low-velocity Favorita SKUs, consistent with §5.1.1
+but not directly comparable to papers that use the full 174 k series.
+The largest residual risk is threat (4) for TimesFM 2.5: at n=500 the
+cap is severe enough that the reported WAPE may not generalise to
+full-series evaluation.
 
