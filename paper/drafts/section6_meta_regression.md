@@ -219,44 +219,29 @@ pay to run each of these models on their own machine? The
 cloud-GPU version of the same plot lives in Figure 6.5 as a
 sensitivity check for reviewers who prefer that reference point.
 
-**Figure 6.4 [placeholder — primary: consumer-hardware Pareto].**
-Cost-accuracy Pareto frontier across the three datasets (M5,
-Rohlik v2, Favorita top-30k) on consumer hardware. X-axis:
-log₁₀ USD of the full 9-job equivalent sweep per dataset per
-family, priced at the *marginal electricity* of an M-series
-laptop: ~30 W sustained draw under inference × Polish
-residential electricity ($0.20/kWh) ≈ $0.006/hr. This is the
-cost the practitioner actually pays on top of a machine they
-already own for other work; it excludes the sunk capex of the
-laptop itself. The hardware bucket `M_SERIES_MAC` in
-`benchmark/code/evaluation/cost.py` uses exactly these
-constants so that local-run rows on Figure 6.4 are generated
-from the same cost model as the LightGBM re-costing below.
-Y-axis: the per-dataset WAPE / WRMSSE of the best variant. The
-data for this figure comes from three sources:
+**Figure 6.4 (primary: consumer-hardware Pareto).** Cost-accuracy
+Pareto frontier across the three datasets (M5, Rohlik v2,
+Favorita top-30k) on consumer hardware. X-axis: log₁₀ USD of
+the full 9-job equivalent sweep per dataset per family, priced
+at the *marginal electricity* of an M-series laptop: ~30 W
+sustained draw under inference × Polish residential electricity
+($0.20/kWh) ≈ $0.006/hr. This is the cost the practitioner
+actually pays on top of a machine they already own; it excludes
+the sunk capex of the laptop itself. The hardware bucket
+`M_SERIES_MAC` in `benchmark/code/evaluation/cost.py` uses
+exactly these constants. Y-axis: per-dataset WAPE / WRMSSE of
+the best variant. The data for this figure comes from two sources:
 
-- **LightGBM baselines (§5.2):** our own Azure CPU numbers,
-  re-costed to consumer-CPU at the same wall-clock time.
-  E4DS_V4 (4 vCPU) and a recent laptop are performance-
-  comparable for the gradient-boosted tree workload; we verify
-  this assumption on a single M5 direct-h=7 run during the
-  local sweep of §5.4.3 and record the scaling factor in the
-  figure caption.
-- **Local FM sensitivity (§5.4.3, Source B):** our own 27-row
-  local run for Chronos-Bolt-Tiny, TabPFN-TS, and TiRex on the
-  three datasets × three horizons. These are the only data
-  points on Figure 6.4 where both the accuracy number and the
-  cost number come from the same machine — the tightest
-  anchor the figure has.
-- **Extracted consumer-HW FM numbers (§5.4.2, Source A):** F04
-  (arXiv 2602.10848) publishes Chronos-Bolt-Tiny throughput on
-  M-series laptops for an energy-load task, and we scale
-  through to retail using its reported per-series-day rate.
-  Chronos-2, TimesFM 2.5, Moirai 2.0, and the larger
-  Chronos-Bolt variants are plotted using their source papers'
-  reported wall-clock numbers on "comparable consumer HW"
-  where such a number is published; where it is not, those
-  models appear only on Figure 6.5.
+- **LightGBM baselines (§5.2):** Azure CPU numbers re-costed to
+  consumer-CPU at the same wall-clock time. E4DS_V4 (4 vCPU) and
+  a recent laptop are performance-comparable for tree workloads.
+- **Local FM sensitivity (§5.4.3, Source B):** our own 45-cell
+  local run for five models (Chronos-Bolt-Tiny, Chronos-2,
+  Moirai-2, TiRex, TimesFM 2.5) on the three datasets × three
+  horizons. Both the accuracy number and the cost number come
+  from the same machine — the tightest anchor the figure has.
+  F04 (arXiv 2602.10848) is cited as a prior precedent for the
+  consumer-box framing but our own runs are the primary data.
 
 The central claims Figure 6.4 tests:
 
@@ -281,25 +266,23 @@ The central claims Figure 6.4 tests:
 
 - **On Favorita,** recursive LightGBM at WAPE 0.530 and
   consumer-CPU cost of a few cents is the cost floor. The
-  direct LGBM variant at WAPE 0.551 and Azure cost $1.03 is a
-  dominated point on Favorita even on Azure (§5.3.5) and more
-  dominated on consumer CPU where it takes hours of laptop
-  time. Favorita is the single most visually striking panel of
+  direct LGBM variant at WAPE 0.551 and Azure cost $1.03 is
+  dominated even on Azure (§5.3.5) and more so on consumer
+  CPU. Favorita is the single most visually striking panel of
   Figure 6.4: the "standard" M5-era LightGBM protocol is
-  dominated by a simpler, cheaper variant AND by the three
-  small local FMs (if our local run confirms the A11/A13/A14
-  published numbers).
+  dominated by a simpler variant AND by all five local FMs.
+  Chronos-2 and Moirai-2 beat recursive LGBM by ~5 pp WAPE
+  at a comparable consumer-CPU cost of $0.01–0.02 per
+  9-horizon sweep (§5.4.5 Table 5.9).
 
-**Figure 6.5 [placeholder — sensitivity: cloud-GPU Pareto].** The
-same Pareto frontier re-costed on cloud GPU (single V100 at
-$1.24/hr). Same X-axis
-definition, same Y-axis, same models. The cost of every FM
-point shifts ~10–100× rightward relative to Figure 6.4, and
+**Figure 6.5 (sensitivity: cloud-GPU Pareto).** The same Pareto
+frontier re-costed on cloud GPU (single V100 at $1.24/hr). Same
+X-axis definition, same Y-axis, same models. The cost of every
+FM point shifts ~10–100× rightward relative to Figure 6.4, and
 the cost of every LightGBM point shifts roughly 3× rightward.
-On this figure, some of the larger FMs (Chronos-2, Moirai 2.0,
-TimesFM 2.5) that are not in Figure 6.4 become plottable
-because cloud-GPU numbers for them are published in A02, A06,
-and A04.
+Since all five Source B FMs also appear in Figure 6.5 re-costed
+from their wall-clock times, the figure provides a complete
+cross-axis view of the same 45 FM cells.
 
 Figure 6.5 is the version a reviewer who "evaluates against
 standard cloud GPU" would reach for; Figure 6.4 is the version
