@@ -86,10 +86,10 @@ The 543~pairs come from three sources:
 \paragraph{Full-pool intercept ($k = 543$).}
 
 \begin{quote}
-$\hat{\Delta}\;\text{(FM} - \text{baseline)} = -0.190$,\quad
-$\text{SE} = 0.043$,\quad
-$t(542) = -4.41$,\quad $p < .0001$,\quad
-95\,\% CI $[-0.275,\; -0.105]$.
+$\hat{\Delta}\;\text{(FM} - \text{baseline)} = -0.195$,\quad
+$\text{SE} = 0.045$,\quad
+$t(542) = -4.36$,\quad $p < .0001$,\quad
+95\,\% CI $[-0.283,\; -0.107]$.
 \end{quote}
 
 \noindent Foundation models are, on average, significantly better than
@@ -100,16 +100,16 @@ metrics, but substantially stronger on the former.
 
 \paragraph{Variance components.}
 The between-dataset variance component is
-$\hat{\sigma}^2_{\text{dataset}} = 0.0072$; the within-dataset
+$\hat{\sigma}^2_{\text{dataset}} = 0.0077$; the within-dataset
 between-paper component is
-$\hat{\sigma}^2_{\text{paper}} = 0.0248$; the crossed model-name
+$\hat{\sigma}^2_{\text{paper}} = 0.0267$; the crossed model-name
 component is
 $\hat{\sigma}^2_{\text{model}} = 0.0003$.  The near-zero model
 variance confirms that non-independence of pairs from the same FM does
 not inflate the primary estimate.
 
 \paragraph{Heterogeneity.}
-$Q(542) = 53{,}038$, $p < .0001$.  The enormous $Q$ reflects
+$Q(542) = 56{,}301$, $p < .0001$.  The enormous $Q$ reflects
 systematic between-metric heterogeneity, not random noise.  The
 per-metric decomposition below explains the dominant source.
 
@@ -129,8 +129,8 @@ decomposition of the FM advantage:
 Metric & $k$ & $\hat{\Delta}$ & 95\,\% CI & $p$ & Interpretation \\
 \midrule
 SQL (quantile loss)  & 166 & $-0.318$ & $[-0.395,\; -0.240]$ & $< .0001$ & FM strongly better \\
-\MASE{}              & 166 & $-0.151$ & --- & --- & (intercept from moderator) \\
-\WAPE{} / ND         & 211 & $-0.112$ & $[-0.204,\; -0.019]$ & $0.019$   & FM significantly better \\
+\MASE{}              & 166 & $-0.156$ & --- & --- & (intercept from moderator) \\
+\WAPE{} / ND         & 211 & $-0.116$ & $[-0.212,\; -0.020]$ & $0.018$   & FM significantly better \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -140,8 +140,8 @@ full predictive distribution via quantile losses --- foundation models
 are \textbf{strongly and significantly better} than tree and statistical
 baselines ($\hat{\Delta} = -0.318$, $p < .0001$).  On \WAPE{} --- a
 point-forecast accuracy metric --- the FM advantage is also
-\textbf{statistically significant} ($\hat{\Delta} = -0.112$,
-$p = 0.019$), but the effect size is roughly one-third of the SQL
+\textbf{statistically significant} ($\hat{\Delta} = -0.116$,
+$p = 0.018$), but the effect size is roughly one-third of the SQL
 finding.
 
 This metric gradient clarifies the pattern in the literature:
@@ -219,11 +219,11 @@ except Source~B alone (underpowered with $k = 45$).
 \toprule
 Sensitivity & $k$ & $\hat{\Delta}$ & 95\,\% CI & $p$ & Note \\
 \midrule
-Full pool         & 543 & $-0.190$ & $[-0.275,\; -0.105]$ & $< .0001$ & Primary \\
-Excl-M5           & 468 & $-0.180$ & $[-0.276,\; -0.084]$ & 0.0003 & M5 not driving result \\
-\WAPE{}-only      & 211 & $-0.112$ & $[-0.204,\; -0.019]$ & 0.019 & Significant \\
+Full pool         & 543 & $-0.195$ & $[-0.283,\; -0.107]$ & $< .0001$ & Primary \\
+Excl-M5           & 468 & $-0.183$ & $[-0.278,\; -0.087]$ & 0.0002 & M5 not driving result \\
+\WAPE{}-only      & 211 & $-0.116$ & $[-0.212,\; -0.020]$ & 0.018 & Significant \\
 SQL-only          & 166 & $-0.318$ & $[-0.395,\; -0.240]$ & $< .0001$ & Strongest signal \\
-Source B only     &  45 & $-0.229$ & $[-0.567,\; +0.108]$ & 0.178 & Low power ($k = 45$) \\
+Source B only     &  45 & $-0.251$ & $[-0.606,\; +0.104]$ & 0.161 & Low power ($k = 45$) \\
 Source A only     & 498 & $-0.168$ & $[-0.242,\; -0.093]$ & $< .0001$ & Significant \\
 \bottomrule
 \end{tabular}
@@ -232,18 +232,18 @@ Source A only     & 498 & $-0.168$ & $[-0.242,\; -0.093]$ & $< .0001$ & Signific
 \paragraph{Key observations.}
 \begin{enumerate}
   \item \textbf{M5 is not driving the result.}  Excluding M5
-    ($k = 468$) barely changes the estimate ($-0.180$ vs $-0.190$)
-    and remains highly significant ($p = 0.0003$).
+    ($k = 468$) barely changes the estimate ($-0.183$ vs $-0.195$)
+    and remains highly significant ($p = 0.0002$).
 
   \item \textbf{SQL vs \WAPE{} is the dominant moderator.}  The SQL-only
     slice is the strongest finding ($\Dhat = -0.318$, $p < .0001$);
-    the WAPE-only slice is also significant ($\Dhat = -0.112$,
-    $p = 0.019$) but with a smaller effect.  This metric gradient is
+    the WAPE-only slice is also significant ($\Dhat = -0.116$,
+    $p = 0.018$) but with a smaller effect.  This metric gradient is
     not a dataset effect --- it persists within the same datasets and
     models.
 
   \item \textbf{Source B alone is underpowered.}  The 45~Source~B pairs
-    show the right direction ($-0.229$) but are insufficient for
+    show the right direction ($-0.251$) but are insufficient for
     significance at the 5\% level with only 3~dataset clusters.
     Source~A (fev-bench + GIFT-Eval) provides the statistical mass
     and is now independently significant ($p < .0001$).
@@ -263,7 +263,7 @@ Source A only     & 498 & $-0.168$ & $[-0.242,\; -0.093]$ & $< .0001$ & Signific
 \toprule
 Model & $k$ & $Q$ & $\hat{\sigma}^2_1$ & $\hat{\sigma}^2_2$ & $\hat{\sigma}^2_3$ & Note \\
 \midrule
-Full pool     & 543 & 53{,}038 & 0.0072 & 0.0248 & 0.0003 & Primary \\
+Full pool     & 543 & 56{,}301 & 0.0077 & 0.0267 & 0.0003 & Primary \\
 Excl-M5       & 468 &  21{,}469 & --- & --- & --- & \\
 SQL-only      & 166 &   7{,}467 & --- & --- & --- & Lowest $Q$ \\
 \WAPE{}-only  & 211 &  28{,}693 & --- & --- & --- & \\
@@ -280,7 +280,7 @@ homogeneous across datasets and models.
 
 The \texttt{model\_name} variance component
 ($\hat{\sigma}^2_3 = 0.0003$) is negligible relative to the dataset
-($\hat{\sigma}^2_1 = 0.0072$) and paper ($\hat{\sigma}^2_2 = 0.0248$)
+($\hat{\sigma}^2_1 = 0.0077$) and paper ($\hat{\sigma}^2_2 = 0.0267$)
 components.  This confirms that model-level non-independence ---
 the same FM appearing across multiple papers and datasets --- does
 not materially inflate the pooled estimate or its standard error.
@@ -336,14 +336,14 @@ fev-bench extraction adds cross-paper accuracy anchors.
 \subsection{Moderator outcomes}
 \label{subsec:moderator-outcomes}\label{sec:moderator-results}\label{sec:rq2-moderators}
 
-With $k = 543$ pairs across 9~datasets and 14~FMs, the meta-regression
+With $k = 543$ pairs across 9~datasets and 12~FMs, the meta-regression
 has sufficient power for moderator analysis.  \textbf{All moderator
 tests are exploratory; we do not adjust $p$-values for multiple
 comparisons.}  Results should be interpreted as hypothesis-generating
 rather than confirmatory.  Moderators tested:
 
 \begin{enumerate}
-  \item \textbf{Metric} (\texttt{metric\_name}; $F(2, 540) = 6{,}792$,
+  \item \textbf{Metric} (\texttt{metric\_name}; $F(2, 540) = 6791.6$,
     $p < .0001$).  The dominant moderator.
     SQL coefficient is large and negative ($-0.203$, FM wins on
     distributional accuracy); \WAPE{} coefficient is positive relative
@@ -351,19 +351,19 @@ rather than confirmatory.  Moderators tested:
     metrics show a smaller FM advantage.  See
     \S\ref{subsec:metric-moderator} for full results.
 
-  \item \textbf{Dataset} (\texttt{dataset\_norm}; $F(8, 534) = 1.02$,
-    $p = 0.422$).  Not significant as a moderator.  The raw
+  \item \textbf{Dataset} (\texttt{dataset\_norm}; $F(8, 534) = 1.01$,
+    $p = 0.431$).  Not significant as a moderator.  The raw
     $Q$-statistic shows extreme heterogeneity ($p < .0001$), but this
     is driven by the metric split, not by dataset-level differences.
 
   \item \textbf{Horizon bucket} (\texttt{horizon\_bucket};
-    $F(2, 540) = 0.28$, $p = 0.754$).  No
+    $F(2, 540) = 0.30$, $p = 0.739$).  No
     significant horizon effect on $\Delta$.  The FM advantage does not
     systematically increase or decrease with forecast horizon in this
     pool.
 
   \item \textbf{Model scale} (\texttt{model\_scale}, $\log_{10}$
-    params; $F(1, 541) = 0.24$, $p = 0.627$).  Not significant.
+    params; $F(1, 541) = 0.03$, $p = 0.867$).  Not significant.
     Within Source~B,
     where protocol is held constant, the smallest FM (Moirai~2.0-Small,
     11\,M) outperforms the largest (Chronos-2, 120\,M) on M5, supporting

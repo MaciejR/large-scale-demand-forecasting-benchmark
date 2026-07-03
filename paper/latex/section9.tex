@@ -19,8 +19,8 @@ conventional baselines on retail demand forecasting?}
 Yes --- and the answer is significant on both distributional and
 point-forecast metrics.  The pooled meta-regression on $k = 543$
 model-level pairs finds
-$\Dhat(\text{FM} - \text{baseline}) = -0.190$ ($p < .0001$, 95\,\% CI
-$[-0.275, -0.105]$).  Foundation models are significantly better than tree
+$\Dhat(\text{FM} - \text{baseline}) = -0.195$ ($p < .0001$, 95\,\% CI
+$[-0.283, -0.107]$).  Foundation models are significantly better than tree
 and statistical baselines across the full pool.
 
 The per-metric decomposition (\S\ref{subsec:metric-moderator}) reveals a
@@ -28,12 +28,12 @@ metric gradient: on Scaled Quantile Loss (SQL), which measures the full
 predictive distribution, the FM advantage is large and highly significant
 ($\Dhat = -0.318$, $p < .0001$).  On \WAPE{}, a point-forecast metric,
 the FM advantage is also statistically significant but smaller
-($\Dhat = -0.112$, $p = 0.019$).
+($\Dhat = -0.116$, $p = 0.018$).
 \textbf{Foundation models produce well-calibrated predictive
 distributions; their point forecasts are also significantly better but the
 advantage is attenuated relative to distributional metrics.}
 
-The result is robust to excluding M5 ($\Dhat = -0.180$, $p = 0.0003$,
+The result is robust to excluding M5 ($\Dhat = -0.183$, $p = 0.0002$,
 $k = 468$), confirming that the finding does not depend on the M5
 \WAPE{} artefact that inflates per-series denominators.
 
@@ -45,9 +45,9 @@ Metric choice is the dominant moderator: the SQL/\WAPE{} split explains more
 heterogeneity than any data characteristic.  Beyond metric:
 
 \begin{itemize}
-  \item \textbf{Dataset:} Not significant as a moderator ($p = 0.422$);
+  \item \textbf{Dataset:} Not significant as a moderator ($p = 0.431$);
     the metric type drives heterogeneity, not the dataset.
-  \item \textbf{Model scale:} Not significant ($p = 0.627$).
+  \item \textbf{Model scale:} Not significant ($p = 0.867$).
     Within Source~B (controlled protocol),
     Moirai~2.0-Small (11\,M) outperforms Chronos-2 (120\,M) on M5.
   \item \textbf{Horizon:} No significant horizon effect on $\Delta$.

@@ -266,7 +266,7 @@ see \S\ref{sec:m5results} (M5, Table~\ref{tab:t53}),
 \centering
 \caption{Cross-dataset summary of the baseline LightGBM
 gap-filling sweeps at $h = 7$.  ``Best \LGBM{}'' is the
-\WAPE{}-best LightGBM variant per dataset; the protocol column
+primary-metric-best LightGBM variant per dataset; the protocol column
 records whether it is direct or recursive.  Cost is the total
 9-job sweep cost on \texttt{cc-forecast-batch} (E4DS\_V4).  Full
 per-horizon numbers are in Tables~\ref{tab:t53}--\ref{tab:t55}
@@ -275,7 +275,7 @@ of \S\ref{sec:baseline}.}
 \footnotesize
 \begin{tabular}{llllllll}
 \toprule
-Dataset & Zero-day frac & SN \WAPE{} $h{=}7$ & Best \LGBM{} \WAPE{} $h{=}7$ & Best \LGBM{} protocol & \LGBM{} vs SN & 9-job sweep cost & Pipeline \\
+Dataset & Zero-day frac & SN primary metric $h{=}7$ & Best \LGBM{} primary metric $h{=}7$ & Best \LGBM{} protocol & \LGBM{} vs SN & 9-job sweep cost & Pipeline \\
 \midrule
 M5 & ${\sim}70\,\%$ & 1.3072 & \textbf{0.5598} (\WRMSSE{}) & direct &
   direct ${\sim}12\,\%$ better on \WRMSSE{} vs recursive (17\,\% on \WAPE{}) &

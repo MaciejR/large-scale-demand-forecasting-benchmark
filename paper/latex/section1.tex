@@ -96,8 +96,8 @@ Three findings motivate the sections that follow:
     former.}
     Across $k = 543$ pairs, on Scaled Quantile Loss (SQL),
     $\Dhat = -0.318$ ($p < .0001$); on \WAPE{} (a point-forecast
-    metric), $\Dhat = -0.112$ ($p = 0.019$).  The
-    full-pool aggregate ($\Dhat = -0.190$, $p < .0001$) confirms a
+    metric), $\Dhat = -0.116$ ($p = 0.018$).  The
+    full-pool aggregate ($\Dhat = -0.195$, $p < .0001$) confirms a
     net FM advantage.  FMs produce well-calibrated predictive
     distributions; their point forecasts are also significantly better
     but the advantage is attenuated relative to distributional metrics.
@@ -106,7 +106,7 @@ Three findings motivate the sections that follow:
     accuracy.}  Within Source~B (controlled protocol), the smallest FM
     (Moirai~2.0-Small, 11\,M) outperforms the largest (Chronos-2,
     120\,M) on M5.  The cross-paper model-scale moderator is
-    not significant ($p = 0.627$),
+    not significant ($p = 0.867$),
     consistent with \citet{shchur2025fevbench}'s finding that
     architecture matters more than parameter count.
 
@@ -129,11 +129,11 @@ Three findings motivate the sections that follow:
     9~datasets, 2020--2026).
   \item \textbf{Cross-benchmark extraction} from fev-bench and
     GIFT-Eval, yielding 543 model-level paired comparisons across
-    14~FMs and conventional baselines.
+    12~FMs and conventional baselines.
   \item \textbf{Model-level meta-regression} ($k = 543$) identifying
     a significant FM advantage on both distributional metrics
     (SQL, $p < .0001$) and point-forecast metrics
-    (\WAPE{}, $p = 0.019$), with a substantially stronger signal on
+    (\WAPE{}, $p = 0.018$), with a substantially stronger signal on
     the former.
   \item \textbf{Baseline reliability analysis} documenting the
     conditional direct-vs-recursive LightGBM gap across three
