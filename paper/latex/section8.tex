@@ -12,10 +12,11 @@ public time-series datasets.  The Chronos papers distinguish ``in-domain''
 Benchmark~I/II splits reflect this --- but intermediate degrees of leakage
 (e.g., same source domain, different temporal slice) are harder to verify.
 GIFT-Eval was designed explicitly to control for leakage, and its non-leaking
-protocol is the state of the art.  Our Source~B runs sidestep the issue by
-running on held-out rolling-origin windows that postdate any plausible training
-cutoff, but we cannot make the same claim for Source~A rows drawn from FM
-papers' self-reported evaluations.
+protocol is the state of the art.  Our Source~B runs control train/test leakage
+within each dataset by using held-out rolling-origin windows, but they cannot
+rule out FM pre-training exposure to public benchmark datasets such as M5 or
+Favorita.  We therefore treat Source~B as a cleaner evaluation protocol, not as
+a definitive solution to benchmark memorisation.
 
 The practical consequence for our meta-regression: Source~A FM rows may be
 slightly optimistic (the FM saw something like the test distribution during
@@ -23,7 +24,7 @@ pre-training), while Source~A ML\_TREE rows have no such advantage (they are
 trained from scratch on each dataset).  If this bias is present, it works
 \emph{against} our SQL finding --- it would inflate FM performance in the
 cross-paper pool, making the $\Dhat = -0.318$ SQL advantage an upper bound.
-The \WAPE{} finding ($\Dhat = -0.112$, $p = 0.019$) may similarly be
+The \WAPE{} finding ($\Dhat = -0.116$, $p = 0.018$) may similarly be
 inflated; the true FM point-forecast advantage could be smaller than
 observed.
 
@@ -121,7 +122,7 @@ Source~A FM rows over Source~B rolling-origin rows.  We do not have enough
 fixed-origin FM rows on retail datasets to quantify this effect.
 
 \paragraph{Distributional metric interpretation.}
-The SQL finding ($\Dhat = -0.278$, $p < .0001$) is based on fev-bench's
+The SQL finding ($\Dhat = -0.318$, $p < .0001$) is based on fev-bench's
 Scaled Quantile Loss, which aggregates across quantile levels.  We do not
 decompose by quantile level (e.g., upper tail vs median).  The FM advantage
 on SQL could be driven by better tail calibration rather than overall

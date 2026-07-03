@@ -18,11 +18,11 @@ estimation, Knapp--Hartung $t$-distribution adjustment
 \toprule
 Variant & $k$ & $\Dhat$ & 95\% CI & $p$ & $Q$ \\
 \midrule
-Full pool         & 543 & $-0.190$ & $[-0.275,\; -0.105]$ & $<.0001$ & 53{,}038 \\
-Excl-M5           & 468 & $-0.180$ & $[-0.276,\; -0.084]$ & 0.0003 &  21{,}469 \\
-\WAPE{}-only      & 211 & $-0.112$ & $[-0.204,\; -0.019]$ & 0.019  &  28{,}693 \\
+Full pool         & 543 & $-0.195$ & $[-0.283,\; -0.107]$ & $<.0001$ & 56{,}301 \\
+Excl-M5           & 468 & $-0.183$ & $[-0.278,\; -0.087]$ & 0.0002 &  21{,}469 \\
+\WAPE{}-only      & 211 & $-0.116$ & $[-0.212,\; -0.020]$ & 0.018  &  28{,}693 \\
 SQL-only          & 166 & $-0.318$ & $[-0.395,\; -0.240]$ & $<.0001$ & 7{,}467 \\
-Source~B only     &  45 & $-0.229$ & $[-0.567,\; +0.108]$ & 0.178  &  20{,}626 \\
+Source~B only     &  45 & $-0.251$ & $[-0.606,\; +0.104]$ & 0.161  &  20{,}626 \\
 Source~A only     & 498 & $-0.168$ & $[-0.242,\; -0.093]$ & $<.0001$ & 30{,}714 \\
 \bottomrule
 \end{tabular}
@@ -32,12 +32,12 @@ Source~A only     & 498 & $-0.168$ & $[-0.242,\; -0.093]$ & $<.0001$ & 30{,}714 
 
 \begin{enumerate}
   \item \textbf{Excl-M5 ($k = 468$):} Excluding all M5 pairs barely
-    changes the estimate ($-0.180$ vs $-0.190$) and remains
-    highly significant ($p = 0.0003$).  M5 is not driving the primary
+    changes the estimate ($-0.183$ vs $-0.195$) and remains
+    highly significant ($p = 0.0002$).  M5 is not driving the primary
     result.
 
   \item \textbf{\WAPE{}-only ($k = 211$):} The FM advantage is
-    statistically significant ($\hat{\Delta} = -0.112$, $p = 0.019$),
+    statistically significant ($\hat{\Delta} = -0.116$, $p = 0.018$),
     but the effect is smaller than the SQL-only finding, confirming the
     metric gradient documented in \S\ref{subsec:metric-moderator}.
 
@@ -47,8 +47,8 @@ Source~A only     & 498 & $-0.168$ & $[-0.242,\; -0.093]$ & $<.0001$ & 30{,}714 
     conditional on this metric.
 
   \item \textbf{Source~B only ($k = 45$):} The 45 within-paper pairs
-    (5~FMs $\times$ 9~cells) show the right direction ($-0.229$) but
-    are insufficient for significance ($p = 0.18$) with only 3~dataset
+    (5~FMs $\times$ 9~cells) show the right direction ($-0.251$) but
+    are insufficient for significance ($p = 0.16$) with only 3~dataset
     clusters.
 
   \item \textbf{Source~A only ($k = 498$):} Highly significant

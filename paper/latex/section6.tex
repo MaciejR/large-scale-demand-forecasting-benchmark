@@ -14,8 +14,8 @@ pooling approaches.
 \subsection{Pooling strategy and effect size}
 \label{subsec:pooling-strategy}
 
-The unit of analysis is one paired comparison per (FM model, baseline,
-task, metric) tuple.  For each within-paper group (identified by
+The unit of analysis is one paired comparison per (FM model, task,
+metric) tuple.  For each within-paper group (identified by
 \texttt{paper\_id}), we compute:
 
 \begin{equation}
@@ -24,9 +24,11 @@ task, metric) tuple.  For each within-paper group (identified by
 \end{equation}
 
 \noindent where $\text{baseline}_j$ is the within-group average of the
-strongest non-FM baseline family: gradient-boosted trees (LightGBM,
-CatBoost) where available (fev-bench, Source~B), or statistical models
-(Auto~ETS, Seasonal Naive) where tree baselines are absent (GIFT-Eval).
+available conventional baseline rows: gradient-boosted trees (LightGBM,
+CatBoost) where reported and statistical models (Auto~ETS, Seasonal
+Naive) where tree baselines are absent.  Source~B therefore averages its
+LightGBM and Seasonal Naive baseline rows within each dataset--horizon
+cell, whereas GIFT-Eval contributes statistical baselines only.
 The sign is oriented so that negative values mean ``FM beats
 baseline''.
 

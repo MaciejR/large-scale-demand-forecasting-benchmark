@@ -5,7 +5,8 @@
 # Restructured from bucket-level (k=10) to model-level paired comparisons
 # (k≥50) using per-task per-model data from fev-bench and Source B.
 #
-# Unit of analysis: one row per (FM_i, baseline_j, task, metric) pair.
+# Unit of analysis: one row per (FM_i, task, metric), paired against the
+# within-cell average of available conventional baseline rows.
 # Effect size: delta_ij = FM_metric - baseline_metric (absolute difference).
 # Nesting: list(~1|dataset_norm/paper_id, ~1|model_name) to account for
 # dataset-level correlation, within-task clustering, and non-independence
@@ -182,8 +183,9 @@ prepare_rows <- function(raw) {
 # ---------------------------------------------------------------------------
 # 2. Model-level paired deltas (NEW — primary for k≥50).
 #
-# For each (paper_id × metric) group that contains both FM and ML_TREE rows,
-# compute one delta per FM model: delta_i = FM_i_metric - mean(ML_TREE_metric).
+# For each (paper_id × metric) group that contains both FM and conventional
+# baseline rows, compute one delta per FM model:
+# delta_i = FM_i_metric - mean(available baseline metrics).
 # This is the new unit of analysis.
 # ---------------------------------------------------------------------------
 
@@ -214,10 +216,10 @@ load_bootstrap_se <- function(path = BOOTSTRAP_PATH) {
 
 compute_model_level_delta <- function(rows, bootstrap_se_df = NULL) {
   # Within each paper_id (= task for fev-bench/GIFT-Eval, = dataset×horizon
-  # for Source B), pair each FM row with the best available baseline.
-  # Baseline priority: ML_TREE if present, else STATS.
-  # This allows GIFT-Eval (STATS baselines) and fev-bench (ML_TREE baselines)
-  # to both contribute paired comparisons.
+  # for Source B), pair each FM row with the within-cell average of available
+  # conventional baselines. This allows GIFT-Eval (STATS baselines),
+  # fev-bench (ML_TREE/STATS baselines), and Source B (LightGBM + Seasonal
+  # Naive) to all contribute paired comparisons.
   baseline_families <- c("ML_TREE", "STATS")
 
   by_group <- rows %>%
@@ -226,7 +228,7 @@ compute_model_level_delta <- function(rows, bootstrap_se_df = NULL) {
     filter(any(family == "FM"), any(family %in% baseline_families)) %>%
     ungroup()
 
-  # Compute baseline per group: prefer ML_TREE, fall back to STATS.
+  # Compute average conventional baseline per group.
   baselines <- by_group %>%
     filter(family %in% baseline_families) %>%
     group_by(paper_id, dataset_norm, horizon_bucket, metric_name) %>%

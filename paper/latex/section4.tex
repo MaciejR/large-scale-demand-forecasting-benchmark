@@ -10,9 +10,12 @@ and meta-regression (\S6) operate on it.
 \subsection{PRISMA flow}
 \label{subsec:prisma-flow}
 
-\emph{[Figure~4.1: PRISMA flow diagram --- see
-\texttt{analysis/figures/prisma\_flow.pdf}, rendered from
-\texttt{analysis/prisma\_flow\_diagram.py}.]}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.86\textwidth]{prisma_flow.pdf}
+\caption{PRISMA-informed flow of records from identification to extraction.}
+\label{fig:prisma-flow}
+\end{figure}
 
 \begin{table}[htbp]
 \centering
@@ -77,8 +80,8 @@ The per-task granularity enables model-level pairing within each
 (task, metric) cell, which is the basis of the $k = 543$ meta-regression.
 
 \noindent\textbf{Model family distribution.}
-Foundation models account for 460 rows (71\%), followed by ML\_TREE
-(65 rows, 10\%), statistical (49 rows, 8\%), deep learning
+Foundation models account for 567 rows (71\%), followed by ML\_TREE
+(125 rows, 16\%), statistical (48 rows, 6\%), deep learning
 (13 rows, 2\%), and various mixed/comparison/hybrid categories.  The
 high FM share reflects both the search strategy's emphasis on FM
 papers and the per-task extraction from benchmark suites where each
@@ -87,11 +90,12 @@ partially offset the imbalance.
 
 \noindent\textbf{Metric heterogeneity.}
 The extraction contains three primary metrics after re-extraction:
-\WAPE{} (183 rows), \MASE{} (169 rows), and SQL (155 rows), plus
+\WAPE{} (232 rows), \MASE{} (227 rows), and SQL (213 rows), plus
 \WRMSSE{} (23 rows, M5 only), win\_rate\_SQL (15 rows), and
-several minor metrics.  The meta-regression exploits this
-metric depth: SQL pairs drive the distributional-accuracy finding,
-while \WAPE{} pairs test the point-forecast question.
+several minor metrics.  After within-cell pairing, the meta-regression
+uses 211 \WAPE{} pairs, 166 SQL pairs, and 166 \MASE{} pairs.  SQL pairs
+drive the distributional-accuracy finding, while \WAPE{} pairs test the
+point-forecast question.
 
 \noindent\textbf{Evaluation protocol.}
 The per-task fev-bench and GIFT-Eval rows use rolling-tail protocols
@@ -104,7 +108,7 @@ validity (\S\ref{subsec:future-work}).
 \label{subsec:narrative}
 
 \noindent\textbf{Foundation models.}
-The 460 FM rows (71\% of the extraction) now span three tiers of
+The 567 FM rows (71\% of the extraction) now span three tiers of
 granularity: (i)~per-paper aggregate results from Source~A Category~A
 (58 rows from 17 FM papers), (ii)~per-task per-model \WAPE{}/\MASE{}/SQL
 scores from the fev-bench and GIFT-Eval re-extraction (${\sim}$400 rows),
@@ -117,7 +121,7 @@ extraction enables model-level FM-vs-baseline pairing within each
 meta-regression (\S6).
 
 \noindent\textbf{Gradient-boosted trees (ML\_TREE).}
-The 65 ML\_TREE rows split between M5 competition entries (C01,
+The 125 ML\_TREE rows split between M5 competition entries (C01,
 7~rows with \WRMSSE{} 0.52--0.54 for the top-5 solutions), our own
 LightGBM baselines (OWN\_*, 45 rows across three datasets with
 \WAPE{} and \WRMSSE{}), and fev-bench/GIFT-Eval baseline rows where
@@ -129,7 +133,7 @@ M5, where \LGBM{} posts 1.35--1.94 (per-series) vs FM at 0.93--0.96
 --- the metric choice determines the sign of the comparison.
 
 \noindent\textbf{Statistical models.}
-The 49 STATS rows include our Seasonal Naive baselines (OWN\_*),
+The 48 STATS rows include our Seasonal Naive baselines (OWN\_*),
 Auto~ETS and Theta rows from fev-bench/GIFT-Eval, and Croston
 from the M5 competition.  On Favorita and Rohlik, both FM and
 ML\_TREE beat Seasonal Naive comfortably (by 8--15~pp \WAPE{}); on
