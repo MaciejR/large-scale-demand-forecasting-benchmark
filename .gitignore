@@ -19,3 +19,12 @@ mlruns/
 outputs/
 tabpfn-v2-regressor-*.ckpt
 benchmark/results/_local_only_export_check.csv
+
+# LaTeX build products. Keep paper/latex/main.pdf tracked as the public draft.
+paper/latex/*.aux
+paper/latex/*.bbl
+paper/latex/*.blg
+paper/latex/*.log
+paper/latex/*.out
+paper/latex/*.spl
+paper/latex/*.synctex.gz

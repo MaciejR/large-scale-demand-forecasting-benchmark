@@ -22,6 +22,7 @@ Usage:
 """
 
 import argparse
+import os
 from pathlib import Path
 
 import mlflow
@@ -37,16 +38,10 @@ DATASET_NORMALIZATION = {
     "rohlik": "Rohlik v2",
 }
 
-# Azure ML workspace tracking URI for the meta-analysis experiment. The
-# workspace/resource-group/subscription triple is stable across runs so
-# the URI is baked in here rather than routed through yet another flag.
-AZURE_MLFLOW_URI = (
-    "azureml://swedencentral.api.azureml.ms/mlflow/v1.0/"
-    "subscriptions/ad0f5d80-04ce-435e-9130-dbf3a540ebd3/"
-    "resourceGroups/rg-forecast-benchmark/"
-    "providers/Microsoft.MachineLearningServices/"
-    "workspaces/mlw-forecast-benchmark"
-)
+# Private Azure workspace URIs should be passed through --azure-uri or the
+# AZURE_MLFLOW_URI environment variable. The checked-in default is empty so
+# public clones do not expose subscription/resource identifiers.
+AZURE_MLFLOW_URI = os.environ.get("AZURE_MLFLOW_URI", "")
 
 # Model-name → normalized meta-analysis family. Anything not listed is
 # dropped with a warning so the exporter never silently mis-classifies.
@@ -205,7 +200,7 @@ def main() -> None:
                         "(e.g. when sweep ran from a different CWD)")
     p.add_argument("--azure-uri", default=AZURE_MLFLOW_URI,
                    help="Azure ML workspace MLflow URI (ML_TREE + stats baselines). "
-                        "Pass empty string to skip.")
+                        "Defaults to AZURE_MLFLOW_URI; pass empty string to skip.")
     p.add_argument("--experiment", default="meta-analysis-gap-filling")
     p.add_argument("--out", type=Path,
                    default=Path("benchmark/results/local_fm_sweep.csv"))

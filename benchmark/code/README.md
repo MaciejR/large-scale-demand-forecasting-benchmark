@@ -1,160 +1,53 @@
-# Benchmark Code – Design & Roadmap
+# Benchmark Code
 
-This directory contains the **reproducible benchmark implementation** for large-scale, short-term demand forecasting.
+This directory contains the Python implementation used for the paper's Source B
+experiments.
 
-The goal is to enable **fair, extensible, and transparent** comparison of forecasting models across thousands of SKUs, tracked via **Azure ML + MLflow**.
+## Layout
 
----
-
-## 1. Design Principles
-
-- **Single source of truth** for data splits and evaluation
-- **Rolling-origin evaluation** only (no single holdout)
-- **Global models by default** (scalable to thousands of SKUs)
-- **MLflow tracking** for all experiments (params, metrics, artifacts)
-- **Azure ML pipelines** for reproducible, scalable execution
-- Clear separation between:
-  - data loading
-  - feature engineering
-  - models
-  - evaluation
-
----
-
-## 2. Architecture
-
-```
+```text
 benchmark/code/
-│
-├─�� data/
-│   └── loaders/
-│       ├── m5.py               # M5 Walmart dataset
-│       ├── gift_eval.py        # GIFT-Eval sales subset (HuggingFace)
-│       └── fev_bench.py        # fev-bench tasks (HuggingFace)
-│
-├── models/
-│   ├── baselines/
-│   │   ├── naive.py
-│   │   ├── seasonal_naive.py
-│   │   └── ets.py
-│   ├── ml/
-│   │   └── lightgbm.py        # Global LightGBM with lag/rolling features
-│   ├── dl/
-│   │   ├── nbeats.py
-│   │   ├── deepar.py
-│   │   ├── tft.py
-│   │   └── patchtst.py
-│   └── foundation/
-│       ├── chronos2.py         # Amazon Chronos-2
-│       ├── timesfm.py          # Google TimesFM 2.5
-│       └── moirai.py           # Salesforce Moirai 2.0
-│
-├── evaluation/
-│   ├── rolling.py
-│   ├── metrics.py
-│   └── cost.py                 # Runtime, GPU hours, CO₂ estimates
-│
-├── experiments/
-│   ├── run_m5_baselines.py     # Original standalone runner
-│   └── run_model.py            # Azure ML entry point with MLflow
-│
-├── pipelines/
-│   ├── single_model_job.yaml   # Single model Azure ML job
-│   └── m5_benchmark.yaml       # Full Phase 1 pipeline
-│
-├── config/
-│   └── m5.yaml                 # Experiment parameters
-│
-└── environment.yaml            # Conda environment for Azure ML
+├── config/              # experiment configuration
+├── data/loaders/        # M5, Favorita, Rohlik, fev-bench, GIFT-Eval loaders
+├── evaluation/          # rolling evaluation, metrics, WRMSSE, cost accounting
+├── experiments/         # runnable experiment entry points and sweep scripts
+├── models/              # baseline, ML, and foundation-model wrappers
+├── pipelines/           # Azure ML pipeline YAMLs
+├── environment*.yaml    # Azure/CPU conda environments
+└── requirements-local-fm.txt
 ```
 
----
+## Main Entry Points
 
-## 3. Phase 1 – Statistical & ML Baselines (Current)
+- `experiments/run_gap_filling.py` - generic runner for baseline and selected
+  model cells.
+- `experiments/run_local_fm_sweep.sh` - local MacBook foundation-model sweep.
+- `experiments/run_m5_full.sh` - M5 Source B sweep.
+- `experiments/run_rohlik_full.sh` - Rohlik v2 Source B sweep.
+- `experiments/run_favorita_full.sh` - Favorita Source B sweep.
+- `experiments/run_direct_scaled_favorita.py` - horizon-scaled direct-LightGBM
+  robustness check.
 
-### Models
-- Naive (last-value repeat)
-- Seasonal Naive (same-day-last-week) — TODO
-- ETS (Holt-Winters, statsmodels)
-- LightGBM (global model with lag/rolling features)
+## Result Export
 
-### Datasets
-- M5 Forecasting (Walmart, 30K+ series)
+MLflow runs are consolidated by:
 
-### Setup
-- Frequency: daily
-- Horizons: 7, 14, 28
-- Evaluation: rolling-origin
-- Tracking: Azure ML + MLflow (nested runs)
-- Compute: Azure ML Cluster (STANDARD_E4DS_V4)
+```bash
+python tools/export_mlflow_to_csv.py \
+  --azure-uri "$AZURE_MLFLOW_URI" \
+  --out benchmark/results/local_fm_sweep.csv
+```
 
----
+Use `--azure-uri ""` for local-only export. The checked-in
+`benchmark/results/local_fm_sweep.csv` is the table used by the manuscript.
 
-## 4. Phase 2 – Deep Learning Models
+## Raw Data
 
-### Models
-- N-BEATS / N-BEATSx (interpretable deep learning)
-- DeepAR (probabilistic autoregressive)
-- Temporal Fusion Transformer (attention + covariates)
-- PatchTST (patched transformer)
+Raw datasets are not committed. Download them from Kaggle/Rohlik and place them
+under `data/raw/`; the loaders expect that local layout.
 
-### Datasets — add
-- GIFT-Eval sales subset (HuggingFace: Salesforce/GIFT-Eval)
+## Notes for Reviewers
 
-### New capabilities
-- GPU compute on Azure ML
-- Probabilistic metrics (CRPS, Pinball loss)
-
----
-
-## 5. Phase 3 – Foundation Models
-
-### Models
-- Chronos-2 (Amazon) — zero-shot + fine-tuned
-- TimesFM 2.5 (Google) — zero-shot + fine-tuned
-- Moirai 2.0 (Salesforce) — zero-shot + fine-tuned, multivariate native
-
-### Datasets — add
-- fev-bench (HuggingFace: autogluon/fev_datasets)
-  - 46 tasks with covariates
-  - Bootstrapped confidence intervals
-
-### New capabilities
-- Zero-shot vs fine-tuned comparison
-- Cost–accuracy Pareto frontiers
-- Data leakage audit (GIFT-Eval non-leaking protocol)
-- CO₂ / GPU-hour tracking
-
----
-
-## 6. Phase 4 (exploratory) – Graph-Based Models
-
-### Datasets
-- SupplyGraph (product graph structure)
-
-### Models
-- GNN-based forecasting (TBD based on Phase 3 findings)
-
----
-
-## 7. Reproducibility Checklist
-
-- [x] Fixed random seeds
-- [x] Config-driven experiments (YAML)
-- [x] Logged metrics and runtimes (MLflow)
-- [ ] Hardware disclosure (auto-logged by Azure ML)
-- [ ] Bootstrapped confidence intervals (fev-bench)
-- [ ] Data leakage audit
-
----
-
-## 8. Output Artifacts
-
-- Per-series and aggregated metrics CSV (MLflow artifacts)
-- Rank tables (per dataset, per horizon)
-- Accuracy vs cost Pareto plots
-- Summary table per parent run (MLflow)
-
----
-
-This roadmap is aligned with **IJF / EJOR / NeurIPS Datasets & Benchmarks** reproducibility expectations.
+The experiment code is included for auditability and reruns. The fastest way to
+reproduce the manuscript claims is to rerun `analysis/meta_regression.R` against
+the checked-in extraction/result CSV files.
