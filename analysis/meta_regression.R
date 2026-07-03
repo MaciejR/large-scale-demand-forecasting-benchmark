@@ -214,12 +214,16 @@ load_bootstrap_se <- function(path = BOOTSTRAP_PATH) {
   bse
 }
 
-compute_model_level_delta <- function(rows, bootstrap_se_df = NULL) {
+compute_model_level_delta <- function(rows, bootstrap_se_df = NULL,
+                                      baseline_strategy = c("average", "best")) {
+  baseline_strategy <- match.arg(baseline_strategy)
   # Within each paper_id (= task for fev-bench/GIFT-Eval, = dataset×horizon
-  # for Source B), pair each FM row with the within-cell average of available
-  # conventional baselines. This allows GIFT-Eval (STATS baselines),
-  # fev-bench (ML_TREE/STATS baselines), and Source B (LightGBM + Seasonal
-  # Naive) to all contribute paired comparisons.
+  # for Source B), pair each FM row with conventional baselines. The primary
+  # strategy uses the within-cell average of available conventional baselines.
+  # The "best" sensitivity uses the lowest-error conventional baseline in the
+  # same cell. This allows GIFT-Eval (STATS baselines), fev-bench
+  # (ML_TREE/STATS baselines), and Source B (LightGBM + Seasonal Naive) to all
+  # contribute paired comparisons.
   baseline_families <- c("ML_TREE", "STATS")
 
   by_group <- rows %>%
@@ -228,17 +232,35 @@ compute_model_level_delta <- function(rows, bootstrap_se_df = NULL) {
     filter(any(family == "FM"), any(family %in% baseline_families)) %>%
     ungroup()
 
-  # Compute average conventional baseline per group.
-  baselines <- by_group %>%
+  baseline_rows <- by_group %>%
     filter(family %in% baseline_families) %>%
     group_by(paper_id, dataset_norm, horizon_bucket, metric_name) %>%
-    summarise(
-      baseline_metric = mean(metric_num, na.rm = TRUE),
-      baseline_family = first(family),
-      n_baseline = n(),
-      baseline_n_series = mean(n_series_num, na.rm = TRUE),
-      .groups = "drop"
-    )
+    mutate(n_baseline_available = n()) %>%
+    ungroup()
+
+  if (baseline_strategy == "average") {
+    baselines <- baseline_rows %>%
+      group_by(paper_id, dataset_norm, horizon_bucket, metric_name) %>%
+      summarise(
+        baseline_metric = mean(metric_num, na.rm = TRUE),
+        baseline_family = first(family),
+        n_baseline = n(),
+        baseline_n_series = mean(n_series_num, na.rm = TRUE),
+        .groups = "drop"
+      )
+  } else {
+    baselines <- baseline_rows %>%
+      group_by(paper_id, dataset_norm, horizon_bucket, metric_name) %>%
+      slice_min(metric_num, n = 1, with_ties = FALSE) %>%
+      ungroup() %>%
+      transmute(
+        paper_id, dataset_norm, horizon_bucket, metric_name,
+        baseline_metric = metric_num,
+        baseline_family = family,
+        n_baseline = n_baseline_available,
+        baseline_n_series = n_series_num
+      )
+  }
 
   # FM rows joined with their within-group baseline.
   fm_rows <- by_group %>%
@@ -471,7 +493,8 @@ main <- function() {
   bse_df <- load_bootstrap_se()
 
   # ---- Model-level deltas (PRIMARY, k≥50) ----
-  model_delta <- compute_model_level_delta(rows, bootstrap_se_df = bse_df)
+  model_delta <- compute_model_level_delta(rows, bootstrap_se_df = bse_df,
+                                           baseline_strategy = "average")
   message(sprintf("\nModel-level Δ: %d pairs across %d datasets, %d unique FMs.",
                   nrow(model_delta), n_distinct(model_delta$dataset_norm),
                   n_distinct(model_delta$model_name)))
@@ -539,6 +562,16 @@ main <- function() {
   }
 
   # ---- Sensitivity analyses ----
+
+  # Best conventional baseline per cell (reviewer-stringent comparator).
+  model_delta_best <- compute_model_level_delta(rows, bootstrap_se_df = bse_df,
+                                                baseline_strategy = "best")
+  write_csv(model_delta_best,
+            file.path(FIG_DIR, "table_6_1_model_level_deltas_best_baseline.csv"))
+  run_sensitivity(
+    model_delta_best,
+    "Best conventional baseline per cell", "sensitivity_best_baseline"
+  )
 
   # Excl-M5 (metric artefact sensitivity).
   run_sensitivity(

@@ -1,7 +1,7 @@
 % appendix_d.tex — Sensitivity Analyses
 \section{Sensitivity Analyses}\label{app:sensitivity}
 
-Five sensitivity variants of the primary $k = 543$ model-level
+Six sensitivity variants of the primary $k = 543$ model-level
 meta-regression are reported below.  All models use
 \texttt{metafor::rma.mv} \citep{viechtbauer2010metafor} with REML
 estimation, Knapp--Hartung $t$-distribution adjustment
@@ -24,6 +24,7 @@ Excl-M5           & 468 & $-0.183$ & $[-0.278,\; -0.087]$ & 0.0002 &  21{,}469 \
 SQL-only          & 166 & $-0.318$ & $[-0.395,\; -0.240]$ & $<.0001$ & 7{,}467 \\
 Source~B only     &  45 & $-0.251$ & $[-0.606,\; +0.104]$ & 0.161  &  20{,}626 \\
 Source~A only     & 498 & $-0.168$ & $[-0.242,\; -0.093]$ & $<.0001$ & 30{,}714 \\
+Best baseline     & 543 & $-0.155$ & $[-0.231,\; -0.078]$ & $<.0001$ & 39{,}746 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -54,6 +55,11 @@ Source~A only     & 498 & $-0.168$ & $[-0.242,\; -0.093]$ & $<.0001$ & 30{,}714 
   \item \textbf{Source~A only ($k = 498$):} Highly significant
     ($p < .0001$).  The cross-benchmark pairs from fev-bench and
     GIFT-Eval carry most of the statistical mass.
+
+  \item \textbf{Best baseline ($k = 543$):} Replacing the average
+    conventional baseline with the lowest-error conventional baseline
+    in each cell attenuates the estimate but leaves the FM advantage
+    significant ($\hat{\Delta} = -0.155$, $p < .0001$).
 \end{enumerate}
 
 \subsection{Bucket-Level Variant ($k = 10$)}

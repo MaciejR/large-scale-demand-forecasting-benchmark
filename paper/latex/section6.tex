@@ -150,11 +150,11 @@ This metric gradient clarifies the pattern in the literature:
 papers that evaluate FMs on distributional metrics (CRPS, WQL, SQL)
 report large FM superiority; papers that evaluate on point-forecast
 metrics (\WAPE{}, MAE) report smaller but still meaningful gains.
-The mechanism is that FMs produce well-calibrated predictive
-distributions (trained on probabilistic losses at scale); their point
-forecasts (median or mean of that distribution) are also significantly
-better but the advantage is attenuated relative to distributional
-metrics.
+The mechanism is metric-specific: FMs achieve lower aggregate quantile
+losses on SQL, which is compatible with better distributional forecasts
+but is not by itself a direct calibration test.  Their point forecasts
+(median or mean of that distribution) are also significantly better, but
+the advantage is attenuated relative to distributional metrics.
 
 \subsection{Forest plots}
 \label{subsec:forest-plots}\label{sec:per-dataset-results}
@@ -208,7 +208,7 @@ that dataset across metrics.
 \subsection{Sensitivity analyses}
 \label{subsec:sensitivity}\label{sec:heterogeneity}
 
-Table~\ref{tab:sensitivity} reports five sensitivity slices of the
+Table~\ref{tab:sensitivity} reports six sensitivity slices of the
 $k = 543$ pool.  The results are robust: the sign is consistently
 negative (FM better) and statistically significant across all slices
 except Source~B alone (underpowered with $k = 45$).
@@ -227,6 +227,7 @@ Excl-M5           & 468 & $-0.183$ & $[-0.278,\; -0.087]$ & 0.0002 & M5 not driv
 SQL-only          & 166 & $-0.318$ & $[-0.395,\; -0.240]$ & $< .0001$ & Strongest signal \\
 Source B only     &  45 & $-0.251$ & $[-0.606,\; +0.104]$ & 0.161 & Low power ($k = 45$) \\
 Source A only     & 498 & $-0.168$ & $[-0.242,\; -0.093]$ & $< .0001$ & Significant \\
+Best baseline     & 543 & $-0.155$ & $[-0.231,\; -0.078]$ & $< .0001$ & Conservative comparator \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -249,6 +250,12 @@ Source A only     & 498 & $-0.168$ & $[-0.242,\; -0.093]$ & $< .0001$ & Signific
     significance at the 5\% level with only 3~dataset clusters.
     Source~A (fev-bench + GIFT-Eval) provides the statistical mass
     and is now independently significant ($p < .0001$).
+
+  \item \textbf{The result survives a best-baseline comparator.}
+    Replacing the average conventional baseline in each cell with the
+    lowest-error conventional baseline attenuates the estimate but keeps
+    it significant ($\Dhat = -0.155$, 95\% CI $[-0.231,\,-0.078]$,
+    $p < .0001$).
 \end{enumerate}
 
 \subsection{Heterogeneity diagnostics}

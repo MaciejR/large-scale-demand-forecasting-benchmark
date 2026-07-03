@@ -107,9 +107,19 @@ Swedish hydro, ${\sim}$0.02~kg~CO$_2$/kWh vs Poland at ${\sim}$0.7~kg~CO$_2$/kWh
     immediately.
   \item If the team has cloud infrastructure and a data engineering team, the
     FM saves ${\sim}$2--4 weeks of feature pipeline work but adds inference
-    latency.  The break-even is at ${\sim}$50 forecasting runs: below 50 runs
-    the saved engineering time dominates; above 50 runs the per-run \LGBM{}
-    cost savings dominate.
+    latency.  We express the run-count break-even as:
+    \[
+      N^\star =
+      \frac{C_{\mathrm{feature\ pipeline}}}
+           {C_{\mathrm{FM,run}} - C_{\mathrm{LGBM,run}}},
+    \]
+    defined only when the FM has a positive recurring cost premium.  Using
+    the Source~B cost logs (\texttt{cost\_usd} in
+    \texttt{benchmark/results/local\_fm\_sweep.csv}) and a conservative
+    feature-pipeline saving of roughly 2--4 engineer-weeks, the illustrative
+    threshold is around 50 production forecasting runs.  Below that range,
+    saved engineering time dominates; above it, recurring run cost and latency
+    dominate the decision.
 \end{itemize}
 
 \paragraph{When the FM does NOT pay off:}

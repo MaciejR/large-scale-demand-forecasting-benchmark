@@ -29,9 +29,9 @@ predictive distribution, the FM advantage is large and highly significant
 ($\Dhat = -0.318$, $p < .0001$).  On \WAPE{}, a point-forecast metric,
 the FM advantage is also statistically significant but smaller
 ($\Dhat = -0.116$, $p = 0.018$).
-\textbf{Foundation models produce well-calibrated predictive
-distributions; their point forecasts are also significantly better but the
-advantage is attenuated relative to distributional metrics.}
+\textbf{Foundation models achieve substantially lower quantile-loss scores;
+their point forecasts are also significantly better but the advantage is
+attenuated relative to distributional metrics.}
 
 The result is robust to excluding M5 ($\Dhat = -0.183$, $p = 0.0002$,
 $k = 468$), confirming that the finding does not depend on the M5
@@ -67,7 +67,7 @@ baselines in USD.  On smooth-demand data where FM and \LGBM{} point-forecast
 accuracy are within 1~pp \WAPE{}, the cost differential favours the FM when
 no cloud budget exists and favours \LGBM{} when cloud infrastructure is
 already provisioned.  On distributional accuracy (SQL), the FM delivers
-strictly better calibration at comparable cost.
+strictly lower quantile loss at comparable cost.
 
 \paragraph{RQ4 (Guidance): When should a retail team deploy a foundation
 model?}
@@ -78,7 +78,7 @@ conditions where the FM pays off:
 \begin{enumerate}
   \item \textbf{When distributional forecasts matter.}  If the business uses
     quantile forecasts for safety-stock calculation or scenario planning,
-    FMs provide significantly better calibration than tree models
+    FMs provide significantly lower SQL / quantile loss than tree models
     ($\Dhat = -0.318$ on SQL).
 
   \item \textbf{No feature engineering capacity.}  Zero-shot FM inference on
