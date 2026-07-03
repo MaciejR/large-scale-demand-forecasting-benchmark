@@ -10,7 +10,7 @@ for reporting systematic reviews. BMJ 2021;372:n71.
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
-# ── PRISMA Flow Numbers (aligned with §4.1, 2026-04-16) ─────────────────────
+# PRISMA flow numbers aligned with the manuscript's high-level flow summary.
 # Identification
 N_DB_RECORDS = 150          # Records identified through database searching
 N_QUERIES = 30              # Number of search queries executed
@@ -30,18 +30,16 @@ N_FULLTEXT_ASSESSED = N_SCREENED - N_EXCLUDED_SCREENING  # ~70
 N_EXCLUDED_FULLTEXT = 32    # No retail dataset, no FM evaluation, duplicate results
 
 # Inclusion
-N_INCLUDED = 38             # 32 external papers + 6 own experiment blocks
+N_INCLUDED = 39             # 32 external papers + 7 own experiment blocks
 N_INCLUDED_EXTERNAL = 32    # External papers
-N_OWN_EXPERIMENTS = 6       # Own experiment blocks (Source B)
-N_EXTRACTION_ROWS = 185     # Multiple rows per study (model × dataset × metric)
+N_OWN_EXPERIMENTS = 7       # Own experiment blocks (Source B)
+N_EXTRACTION_ROWS_LABEL = "800+"  # After per-task fev-bench/GIFT-Eval extraction
 
-# Category breakdown (from §4.1)
-N_CAT_A = 17  # Foundation model papers (58 rows)
-N_CAT_B = 4   # Benchmark papers (40 rows)
-N_CAT_C = 8   # Retail-specific ML/DL (31 rows)
-N_CAT_D = 3   # Cross-domain (3 rows)
-N_CAT_F = 1   # fev-bench entries (8 rows)
-N_CAT_OWN = 6 # Own experiments (45 rows)
+N_CAT_A = 17  # Foundation model papers
+N_CAT_B = 4   # Benchmark papers
+N_CAT_C = 8   # Retail-specific ML/DL
+N_CAT_D = 3   # Cross-domain papers
+N_CAT_OWN = 7 # Own experiment blocks
 
 # Exclusion reasons at full-text stage
 EXCL_REASONS = [
@@ -92,15 +90,15 @@ def draw_side_arrow(ax, x1, y1, x2, y2, color="#999999"):
 
 
 def main():
-    fig, ax = plt.subplots(1, 1, figsize=(10, 12))
+    fig, ax = plt.subplots(1, 1, figsize=(10, 11))
     ax.set_xlim(0, 10)
-    ax.set_ylim(0, 12)
+    ax.set_ylim(0, 11)
     ax.axis("off")
 
     # Title
-    ax.text(5, 11.7, "PRISMA 2020 Flow Diagram", ha="center", va="center",
+    ax.text(5, 10.7, "PRISMA-Informed Flow Diagram", ha="center", va="center",
             fontsize=14, fontweight="bold", family="sans-serif")
-    ax.text(5, 11.4,
+    ax.text(5, 10.4,
             "Systematic Review: Foundation Models for Retail Demand Forecasting",
             ha="center", va="center", fontsize=9, fontstyle="italic",
             family="sans-serif", color="#555555")
@@ -108,10 +106,10 @@ def main():
     # ── Phase labels (left side) ─────────────────────────────────────────────
     phase_x = 0.6
     phases = [
-        (10.5, "IDENTIFICATION"),
-        (8.3, "SCREENING"),
-        (6.2, "ELIGIBILITY"),
-        (3.8, "INCLUDED"),
+        (9.5, "IDENTIFICATION"),
+        (7.5, "SCREENING"),
+        (5.7, "ELIGIBILITY"),
+        (3.4, "INCLUDED"),
     ]
     for py, label in phases:
         ax.text(phase_x, py, label, ha="center", va="center", fontsize=8,
@@ -119,128 +117,100 @@ def main():
                 family="sans-serif")
 
     # ── IDENTIFICATION ───────────────────────────────────────────────────────
-    bw, bh = 3.2, 0.7  # box width, height
+    bw, bh = 3.2, 0.7
 
-    draw_box(ax, 3.5, 10.5, bw, bh,
+    draw_box(ax, 3.5, 9.5, bw, bh,
              f"Records identified through\ndatabase searching\n(n = {N_DB_RECORDS})",
              color="#E3F2FD", border="#1976D2", bold_first_line=True)
 
-    draw_box(ax, 7.2, 10.5, bw, bh,
+    draw_box(ax, 7.2, 9.5, bw, bh,
              f"Additional records from\nother sources\n(n = {N_OTHER_SOURCES})",
              color="#E3F2FD", border="#1976D2", bold_first_line=True)
 
-    # Subtitle: databases
-    ax.text(3.5, 9.85,
-            f"{N_DATABASES} databases, {N_QUERIES}+ queries\n"
-            "(Semantic Scholar, Google Scholar,\narXiv, Scopus, Web of Science)",
-            ha="center", va="center", fontsize=7, color="#777777",
-            family="sans-serif")
-
-    ax.text(7.2, 9.95,
-            "GIFT-Eval leaderboard,\ncitation chasing, grey literature",
-            ha="center", va="center", fontsize=7, color="#777777",
+    ax.text(3.5, 8.95,
+            f"{N_DATABASES} databases, {N_QUERIES}+ queries",
+            ha="center", va="center", fontsize=8, color="#777777",
             family="sans-serif")
 
     # ── Arrows: identification → screening ───────────────────────────────────
-    draw_arrow(ax, 3.5, 10.1, 3.5, 9.2)
-    draw_arrow(ax, 7.2, 10.1, 5.3, 9.2)
+    draw_arrow(ax, 3.5, 9.1, 3.5, 8.35)
+    draw_arrow(ax, 7.2, 9.1, 5.3, 8.35)
 
     # ── SCREENING ────────────────────────────────────────────────────────────
-    draw_box(ax, 4.2, 8.8, 3.5, 0.65,
+    draw_box(ax, 4.2, 8.0, 3.5, 0.65,
              f"Records after duplicates removed\n(n = {N_AFTER_DEDUP})",
              color="#E8F5E9", border="#388E3C", bold_first_line=True)
 
-    draw_arrow(ax, 4.2, 8.47, 4.2, 7.95)
+    draw_arrow(ax, 4.2, 7.67, 4.2, 7.15)
 
-    draw_box(ax, 4.2, 7.6, 3.5, 0.65,
+    draw_box(ax, 4.2, 6.8, 3.5, 0.65,
              f"Titles/abstracts screened\n(n = {N_SCREENED})",
              color="#E8F5E9", border="#388E3C", bold_first_line=True)
 
     # Exclusion box (right)
-    draw_box(ax, 8.2, 7.6, 2.5, 0.65,
+    draw_box(ax, 8.2, 6.8, 2.5, 0.65,
              f"Records excluded\n(n = {N_EXCLUDED_SCREENING})",
              color="#FFEBEE", border="#D32F2F")
 
-    draw_side_arrow(ax, 5.95, 7.6, 6.95, 7.6, color="#D32F2F")
+    draw_side_arrow(ax, 5.95, 6.8, 6.95, 6.8, color="#D32F2F")
 
-    ax.text(8.2, 7.1,
-            "Not demand/retail forecasting,\nno quantitative results,\nduplicate/superseded",
-            ha="center", va="center", fontsize=7, color="#999999",
-            family="sans-serif")
-
-    # Duplicates removed (right of dedup box)
-    draw_box(ax, 8.2, 8.8, 2.5, 0.55,
+    draw_box(ax, 8.2, 8.0, 2.5, 0.55,
              f"Duplicates removed\n(n = {N_DUPLICATES})",
              color="#FFF3E0", border="#F57C00")
-    draw_side_arrow(ax, 5.95, 8.8, 6.95, 8.8, color="#F57C00")
+    draw_side_arrow(ax, 5.95, 8.0, 6.95, 8.0, color="#F57C00")
 
     # ── ELIGIBILITY ──────────────────────────────────────────────────────────
-    draw_arrow(ax, 4.2, 7.27, 4.2, 6.75)
+    draw_arrow(ax, 4.2, 6.47, 4.2, 5.95)
 
-    draw_box(ax, 4.2, 6.4, 3.5, 0.65,
+    draw_box(ax, 4.2, 5.6, 3.5, 0.65,
              f"Full-text articles assessed\nfor eligibility\n(n = {N_FULLTEXT_ASSESSED})",
              color="#FFF8E1", border="#F9A825", bold_first_line=True)
 
     # Exclusion box (right)
-    draw_box(ax, 8.2, 6.4, 2.5, 0.65,
+    draw_box(ax, 8.2, 5.6, 2.5, 0.65,
              f"Full-text articles excluded\n(n = {N_EXCLUDED_FULLTEXT})",
              color="#FFEBEE", border="#D32F2F")
 
-    draw_side_arrow(ax, 5.95, 6.4, 6.95, 6.4, color="#D32F2F")
+    draw_side_arrow(ax, 5.95, 5.6, 6.95, 5.6, color="#D32F2F")
 
     reasons_text = "\n".join(EXCL_REASONS)
-    ax.text(8.2, 5.85, reasons_text,
-            ha="center", va="center", fontsize=7, color="#999999",
+    ax.text(8.2, 5.05, reasons_text,
+            ha="center", va="center", fontsize=8, color="#777777",
             family="sans-serif")
 
     # ── INCLUDED ─────────────────────────────────────────────────────────────
-    draw_arrow(ax, 4.2, 6.07, 4.2, 5.45)
+    draw_arrow(ax, 4.2, 5.27, 4.2, 4.65)
 
-    draw_box(ax, 4.2, 5.1, 3.5, 0.65,
+    draw_box(ax, 4.2, 4.3, 3.5, 0.65,
              f"Studies included\n(n = {N_INCLUDED}: {N_INCLUDED_EXTERNAL} papers\n+ {N_OWN_EXPERIMENTS} own experiment blocks)",
              color="#E8EAF6", border="#3F51B5", bold_first_line=True)
 
-    draw_arrow(ax, 4.2, 4.77, 4.2, 4.15)
+    draw_arrow(ax, 4.2, 3.97, 4.2, 3.35)
 
-    draw_box(ax, 4.2, 3.8, 3.5, 0.65,
-             f"Extraction rows\n(n = {N_EXTRACTION_ROWS})",
+    draw_box(ax, 4.2, 3.0, 3.5, 0.65,
+             f"Extraction rows after per-task\nbenchmark re-extraction\n(n = {N_EXTRACTION_ROWS_LABEL})",
              color="#E8EAF6", border="#3F51B5", bold_first_line=True)
 
-    # Source split (right)
-    draw_box(ax, 8.2, 5.1, 2.5, 0.55,
-             f"Source B: own experiments\n(n = {N_CAT_OWN} blocks, 45 rows)",
+    draw_box(ax, 8.2, 4.3, 2.5, 0.55,
+             f"Source B: own experiments\n(n = {N_CAT_OWN} blocks, 72 rows)",
              color="#F3E5F5", border="#7B1FA2")
-    draw_side_arrow(ax, 5.95, 5.1, 6.95, 5.1, color="#7B1FA2")
-
-    ax.text(8.2, 4.6,
-            "Gap-filling experiments:\nFM + baselines on M5,\nFavorita, Rohlik v2 (§5)",
-            ha="center", va="center", fontsize=7, color="#999999",
-            family="sans-serif")
+    draw_side_arrow(ax, 5.95, 4.3, 6.95, 4.3, color="#7B1FA2")
 
     # ── Category breakdown ───────────────────────────────────────────────────
-    draw_arrow(ax, 4.2, 3.47, 4.2, 2.9)
+    draw_arrow(ax, 4.2, 2.67, 4.2, 2.1)
 
     # Category breakdown box
     cat_text = (
         f"Category Breakdown\n"
-        f"A: Foundation model papers (n={N_CAT_A}, 58 rows)\n"
-        f"B: Benchmark papers (n={N_CAT_B}, 40 rows)\n"
-        f"C: Retail ML/DL papers (n={N_CAT_C}, 31 rows)\n"
-        f"D: Cross-domain papers (n={N_CAT_D}, 3 rows)\n"
-        f"F: fev-bench entries (n={N_CAT_F}, 8 rows)\n"
-        f"OWN: Gap-filling experiments (n={N_CAT_OWN}, 45 rows)"
+        f"A: Foundation model papers (n={N_CAT_A})\n"
+        f"B: Benchmark papers (n={N_CAT_B})\n"
+        f"C: Retail ML/DL papers (n={N_CAT_C})\n"
+        f"D: Cross-domain papers (n={N_CAT_D})\n"
+        f"OWN: Gap-filling experiment blocks (n={N_CAT_OWN})"
     )
-    draw_box(ax, 4.2, 1.9, 5.0, 1.6, cat_text,
+    draw_box(ax, 4.2, 1.2, 5.0, 1.4, cat_text,
              color="#ECEFF1", border="#546E7A", fontsize=8,
              bold_first_line=True)
-
-    # ── Extraction stats (bottom right) ──────────────────────────────────────
-    ax.text(8.5, 1.0,
-            f"Extraction: {N_EXTRACTION_ROWS} rows\nacross {N_INCLUDED} studies\nin extraction_schema.csv",
-            ha="center", va="center", fontsize=7,
-            family="sans-serif", color="#666666",
-            bbox=dict(boxstyle="round,pad=0.3", facecolor="#F5F5F5",
-                      edgecolor="#BDBDBD"))
 
     # ── Save ─────────────────────────────────────────────────────────────────
     import os
