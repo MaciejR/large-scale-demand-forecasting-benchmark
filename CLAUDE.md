@@ -4,7 +4,22 @@
 
 **Target:** International Journal of Forecasting (IJF). arXiv preprint first. PRISMA 2020 systematic review format — the meta-analysis *is* the paper, not a benchmark.
 
-## Current State (2026-04-14)
+## Current State (2026-07-03)
+
+**Latest update.** The Phase F horizon-scaled direct-LightGBM Favorita
+check is complete and now appears in the paper as a robustness check,
+not as a primary meta-regression baseline. Results live in
+`benchmark/results/direct_scaled_favorita.csv`:
+- h=7: 300 trees/head, WAPE 0.4878, runtime 329.6 s
+- h=14: 600 trees/head, WAPE 0.5060, runtime 1045.2 s
+- h=28: 1200 trees/head, WAPE 0.5264, runtime 3172.3 s
+
+This confirms the fixed-budget direct-LightGBM horizon penalty on
+Favorita is capacity-driven: h=28 improves from 0.5892 to 0.5264 when
+tree budget scales with horizon. Keep the fixed-budget rows in
+`benchmark/results/local_fm_sweep.csv` for Source B pairing; do not add
+`lightgbm_direct_scaled` there unless intentionally rerunning §6 with a
+different baseline definition.
 
 **Phases B–E complete.** Full 27-job LightGBM baseline grid across M5 / Rohlik v2 / Favorita top-30k is landed:
 - M5: pipeline `mighty_morning_6qz5c4jmwm`, best LGBM = direct h=7 WRMSSE 0.5598
@@ -66,14 +81,20 @@ Local FM runs use a weaker equivalent: git SHA + HuggingFace revision SHA + `pip
 - Training-budget artefact: direct LGBM's horizon-growth penalty on Favorita is budget-bound (fixed 300 trees per head), not protocol-intrinsic. Flag in §5.3.5/§5.3.7 point 4 and §6 moderator table.
 - C12 (arXiv 2512.00888) is about **tabular FMs (TabPFN/TabICL)**, not TS FMs. Cite only as cross-domain analogue, never as direct TS FM hardware evidence. Protocol file and extraction schema already flag this — do not revert.
 
-## Todo Queue (after the 1+3 pivot)
+## Completed Since the 1+3 Pivot
 
-1. **§5.4 rewrite** — re-scope from "Phase F on V100 GPU" to "extraction-anchored + local consumer-box sensitivity"
-2. **§5.4.8 local run methodology** — new subsection for MPS inference protocol on the three small FMs
-3. **§6.5 reframe** — consumer-CPU Pareto panel is now **primary**, GPU-cloud Pareto is sensitivity (if it appears at all)
-4. **Run local FM inference** — three models × three datasets × three horizons = 27 local-run rows
-5. **Optional Phase F extension** — direct-LGBM with horizon-scaled tree budget on Favorita (CPU, cheap), to test the training-budget artefact hypothesis from §5.3.5
-6. **§6 R code** — `analysis/meta_regression.R` with mixed-effects REML, forest plots, Pareto figures. Can run today on extraction alone.
+- §5.4 rewritten to extraction-anchored + local consumer-box Source B framing.
+- §5.4 MPS inference protocol added.
+- §6 consumer-CPU Pareto reframed as the primary cost panel.
+- Local Source B sweep completed for five models across M5 / Rohlik v2 / Favorita.
+- §6 R pipeline rerun on Source A + Source B.
+- Favorita horizon-scaled direct-LightGBM robustness check completed and documented.
+
+## Remaining Todo Queue
+
+1. Final manuscript consistency pass after the scaled-direct update.
+2. Run/record final test suite and LaTeX build before submission commit.
+3. Push the local 8+ commits once the worktree is clean.
 
 ## What NOT to Do
 

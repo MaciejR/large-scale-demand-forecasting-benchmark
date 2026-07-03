@@ -450,8 +450,12 @@ Three key findings:
 \item \textbf{Recursive is the default retail baseline for
   continuous-demand datasets} on both cost and accuracy grounds.  On
   Favorita, recursive is 14$\times$ cheaper AND 4--10\% more accurate
-  than direct.  The ``direct dominates recursive'' claim is
-  M5-specific.
+  than fixed-budget direct.  A horizon-scaled direct robustness run
+  narrows this gap on Favorita (most strongly at $h=28$: 0.589
+  $\to$ 0.526 \WAPE{}), confirming that the original direct penalty is
+  budget-confounded rather than intrinsic to direct multi-step
+  forecasting.  The ``direct dominates recursive'' claim is
+  M5-specific unless the direct budget is scaled with horizon.
 \end{enumerate}
 
 Our direct LightGBM reaches \WRMSSE{} 0.560 on M5 at $h = 7$ --- within

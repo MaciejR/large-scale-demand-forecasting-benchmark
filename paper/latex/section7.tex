@@ -51,7 +51,9 @@ Q1: Does your dataset have >15\% zero-day fraction
          \(\mid\)         demand), lightgbm\_cov matches Chronos-Bolt-
          \(\mid\)         Tiny within 0.3 pp WAPE at h=7 and beats it
          \(\mid\)         at h=14,28 (\S5.4.5). Recursive outperforms
-         \(\mid\)         direct by 4--10\% on smooth demand (\S5.3.6).
+         \(\mid\)         fixed-budget direct by 4--10\% on smooth
+         \(\mid\)         demand; horizon-scaled direct narrows the
+         \(\mid\)         gap but raises training cost (\S5.3.6).
          \(\mid\)         The FM adds no accuracy and costs more in
          \(\mid\)         inference latency at scale.
          \(\mid\)         RISK: Feature engineering is the bottleneck,

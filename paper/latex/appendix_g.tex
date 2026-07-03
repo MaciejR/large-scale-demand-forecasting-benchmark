@@ -284,29 +284,38 @@ We interpret this as a \textbf{training-budget artefact of direct
 LightGBM, not a protocol property of direct multi-step}.  Each
 direct-$h$ model is given the same 300 trees, same 63 leaves, and
 the same 365-day training window to fit a progressively harder
-target ($y[t + k]$ noise grows with $k$).  Without a larger model
-capacity for larger $k$, direct under-fits the far horizon on a
-dataset like Favorita where the near-horizon signal is strong
-enough to hide the under-fitting at $h = 7$ but not at $h = 28$.
-Fair reporting of the direct-vs-recursive gap would either hold the
-training budget fixed (our setup, matching
-\citealp{hewamalage2023forecast}) and flag the artefact, or grow
-the budget with horizon.  We do the former but flag it explicitly
-in \S\ref{sec:threats} as a threat to validity on cross-dataset
-protocol claims.
+target ($y[t + k]$ noise grows with $k$).  To check this, we reran
+Favorita direct LightGBM with a horizon-scaled tree budget
+($300 \times h/7$ trees per head).  The scaled direct run reaches
+\WAPE{} 0.4878, 0.5060, and 0.5264 at $h=7,14,28$, respectively
+(\texttt{direct\_scaled\_favorita.csv}).  The
+$h=28$ cell improves by 6.3 pp versus fixed-budget direct
+(0.5892 $\to$ 0.5264), confirming that the fixed-budget direct
+penalty is capacity-driven.  It does not overturn the main
+Favorita baseline ranking because recursive remains cheaper and
+competitive at $h=28$ (0.5377 \WAPE{}), but it changes the
+interpretation: fair reporting of the direct-vs-recursive gap must
+state whether per-head budget is held constant or scaled with
+horizon.  We keep the fixed-budget rows as the primary benchmark
+because they match \citealp{hewamalage2023forecast}, and report the
+scaled run as a robustness check rather than as a new meta-analysis
+baseline.
 
 \textbf{Second, the cost argument for recursive is overwhelming.}
 On Favorita, LightGBM-direct cost \textbf{\$1.030 total across
 the three horizons} versus \$0.073 for recursive --- a
-\textbf{14$\times$ cost ratio} that buys strictly worse accuracy.
+\textbf{14$\times$ cost ratio} that buys worse fixed-budget
+accuracy.
 The absolute numbers hide the severity: direct $h = 28$ alone ran
 for ${\sim}60$ minutes on E4DS\_V4, while recursive $h = 28$
 finished in ${\sim}4$ minutes.  At the scale where retail
 practitioners actually operate --- whole-chain daily forecasting at
 $10^5$--$10^6$ series --- the direct-LightGBM protocol is a
-practical non-starter without much bigger hardware, and on
-Favorita that investment would buy \emph{worse} accuracy than the
-trivial recursive variant.
+practical non-starter without much bigger hardware.  The
+horizon-scaled run shows that extra direct capacity can recover
+accuracy, but the fixed-budget protocol commonly used for
+cross-paper comparison is not a free accuracy win over the trivial
+recursive variant.
 
 sMAPE on Favorita behaves exactly as on Rohlik: 90.9--92.8\% for
 LightGBM vs 60.8--62.5\% for Seasonal Naive --- a 30-point gap in
@@ -375,14 +384,15 @@ Three patterns emerge from Table~\ref{tab:t58}:
 \item \textbf{Direct LightGBM's own horizon penalty is a
   training-budget artefact.}  On Favorita direct \WAPE{} grows
   from 0.551 to 0.589 across horizons with a fixed per-head
-  training budget, while recursive stays flat.  This is direct
-  under-fitting longer-horizon targets that are individually
-  harder to fit, not a protocol property.  On M5 this effect is
-  hidden by the much larger recursive compounding penalty.  On
-  Favorita it is the dominant factor.  \textbf{Fair cross-dataset
-  reporting therefore has to note whether training budget per head
-  is held constant across horizons}; our tables do, and we flag
-  this explicitly.
+  training budget, while recursive stays flat.  When the direct
+  tree budget is scaled linearly with horizon, the same cells fall
+  to 0.488, 0.506, and 0.526.  This confirms direct under-fitting
+  longer-horizon targets that are individually harder to fit, not a
+  protocol property.  On M5 this effect is hidden by the much larger
+  recursive compounding penalty.  On Favorita it is the dominant
+  factor.  \textbf{Fair cross-dataset reporting therefore has to
+  note whether training budget per head is held constant across
+  horizons}; our tables do, and we flag this explicitly.
 \end{enumerate}
 
 The methodological consequence for the meta-analysis --- which \S6
@@ -604,20 +614,23 @@ have been making:
 \item \textbf{Recursive LightGBM is the default retail baseline
   for continuous-demand datasets on compute and accuracy grounds
   simultaneously.}  On Favorita, recursive trains 14$\times$
-  faster than direct \emph{and} scores 4--10\% better on
-  \WAPE{}, with the margin growing with horizon.  The only setting
-  where direct LightGBM is the right choice is
+  faster than fixed-budget direct \emph{and} scores 4--10\% better
+  on \WAPE{}, with the margin growing with horizon.  Scaling the
+  direct budget can recover the Favorita accuracy gap, but not the
+  cost gap.  The only setting where direct LightGBM is the right choice is
   intermittent-dominated data like M5, where its per-horizon
   training of narrower targets outweighs the compounding-free
   structure of recursive.
 
 \item \textbf{Direct LightGBM's horizon-growth penalty on Favorita
-  is a training-budget artefact.}  Fair cross-paper comparison
-  needs to ask whether the direct LightGBM uses a constant
-  per-head budget (our setup, matching
-  \citealp{hewamalage2023forecast}) or scales the budget with
-  horizon (as the M5 winner does).  \S6's moderator table records
-  this for every indexed paper.
+  is a training-budget artefact.}  A follow-up run that scales
+  direct LightGBM from 300 trees/head at $h=7$ to 1200 trees/head
+  at $h=28$ improves Favorita $h=28$ \WAPE{} from 0.589 to 0.526.
+  Fair cross-paper comparison therefore needs to ask whether the
+  direct LightGBM uses a constant per-head budget (our primary
+  setup, matching \citealp{hewamalage2023forecast}) or scales the
+  budget with horizon (as the M5 winner does).  \S6's moderator
+  table records this for every indexed paper.
 \end{enumerate}
 
 For the Pareto frontier in \S6.3, Table~\ref{tab:t56} in
@@ -627,4 +640,3 @@ ladder in \S\ref{sec:m5distance} supplies the accuracy axis for
 the M5 slice.  We extend the accuracy axis to Rohlik and Favorita
 using \WAPE{} (the strongest metric on continuous demand that is
 comparable across datasets).
-

@@ -13,7 +13,9 @@ data/gift_eval/
 data/fev_bench/
 data/raw/
 .DS_Store
+.claude/
 *.log
 mlruns/
 outputs/
 tabpfn-v2-regressor-*.ckpt
+benchmark/results/_local_only_export_check.csv

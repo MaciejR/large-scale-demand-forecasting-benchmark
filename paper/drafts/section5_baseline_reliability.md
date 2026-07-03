@@ -254,20 +254,19 @@ We interpret this as a **training-budget artefact of direct
 LightGBM, not a protocol property of direct multi-step**. Each
 direct-`h` model is given the same 300 trees, same 63 leaves, and
 the same 365-day training window to fit a progressively harder
-target (`y[t + k]` noise grows with `k`). Without a larger model
-capacity for larger `k`, direct under-fits the far horizon on a
-dataset like Favorita where the near-horizon signal is strong
-enough to hide the under-fitting at h = 7 but not at h = 28. Fair
-reporting of the direct-vs-recursive gap would either hold the
-training budget fixed (our setup, matching Hewamalage et al.
-2022) and flag the artefact, or grow the budget with horizon. We
-do the former but flag it explicitly in §5.3.7 as a threat to
-validity on cross-dataset protocol claims.
+target (`y[t + k]` noise grows with `k`). A horizon-scaled
+robustness run (`300 × h/7` trees per head) reaches WAPE 0.4878,
+0.5060, and 0.5264 at h = 7, 14, and 28; the h = 28 cell improves
+from 0.5892 to 0.5264. Fair reporting of the direct-vs-recursive
+gap must therefore say whether per-head budget is held constant or
+scaled with horizon. We keep the fixed-budget rows as the primary
+benchmark for comparability with Hewamalage et al. 2022, and report
+the scaled run as a robustness check.
 
 **Second, the cost argument for recursive is overwhelming.** On
-Favorita, LightGBM-direct cost **$1.030 total across the three
-horizons** versus $0.073 for recursive — a **14× cost ratio**
-that buys strictly worse accuracy. The absolute numbers hide the
+Favorita, fixed-budget LightGBM-direct cost **$1.030 total across
+the three horizons** versus $0.073 for recursive — a **14× cost
+ratio** that buys worse fixed-budget accuracy. The absolute numbers hide the
 severity: direct h = 28 alone ran for ~60 minutes on E4DS_V4,
 while recursive h = 28 finished in ~4 minutes. At the scale where
 retail practitioners actually operate — whole-chain daily
@@ -499,18 +498,23 @@ claims that single-dataset (M5-only) papers have been making:
 4. **Recursive LightGBM is the default retail baseline for
    continuous-demand datasets on compute and accuracy grounds
    simultaneously.** On Favorita, recursive trains 14× faster than
-   direct *and* scores 4–10% better on WAPE, with the margin
-   growing with horizon. The only setting where direct LightGBM is
+   fixed-budget direct *and* scores 4–10% better on WAPE, with the
+   margin growing with horizon. Scaling the direct budget can
+   recover the Favorita accuracy gap, but not the cost gap. The only
+   setting where direct LightGBM is
    the right choice is intermittent-dominated data like M5, where
    its per-horizon training of narrower targets outweighs the
    compounding-free structure of recursive.
 
 5. **Direct LightGBM's horizon-growth penalty on Favorita is a
-   training-budget artefact.** Fair cross-paper comparison needs to
-   ask whether the direct LightGBM uses a constant per-head budget
-   (our setup, matching Hewamalage et al. 2022) or scales the
-   budget with horizon (as the M5 winner does). §6's moderator
-   table records this for every indexed paper.
+   training-budget artefact.** A follow-up run that scales direct
+   LightGBM from 300 trees/head at h = 7 to 1200 trees/head at h =
+   28 improves Favorita h = 28 WAPE from 0.589 to 0.526. Fair
+   cross-paper comparison needs to ask whether the direct LightGBM
+   uses a constant per-head budget (our primary setup, matching
+   Hewamalage et al. 2022) or scales the budget with horizon (as the
+   M5 winner does). §6's moderator table records this for every
+   indexed paper.
 
 For the Pareto frontier in §6.3, Table 5.6 in §5.2.3 (cross-dataset cost
 shares) supplies the LightGBM cost axis for all three datasets,
@@ -518,4 +522,3 @@ and the M5 WRMSSE ladder in §5.3.3 supplies the accuracy axis for
 the M5 slice. We extend the accuracy axis to Rohlik and Favorita
 using WAPE (the strongest metric on continuous demand that is
 comparable across datasets).
-
