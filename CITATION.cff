@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this report or the accompanying materials, please cite the Zenodo record."
+title: "When Do Foundation Models Pay Off for Retail Demand Forecasting? A Systematic Review and Cross-Benchmark Meta-Analysis"
+type: report
+authors:
+  - family-names: Rubczynski
+    given-names: Maciej
+    affiliation: Independent researcher
+version: "v1.0"
+date-released: "2026-07-13"
+doi: "10.5281/zenodo.21338004"
+url: "https://doi.org/10.5281/zenodo.21338004"
+repository-code: "https://github.com/MaciejR/large-scale-demand-forecasting-benchmark"
+abstract: "A PRISMA-informed systematic review and cross-benchmark meta-analysis of foundation models and conventional baselines for short-term retail demand forecasting."
+keywords:
+  - demand forecasting
+  - foundation models
+  - meta-analysis
+  - systematic review
+  - retail forecasting
+  - time series
+license: CC-BY-4.0

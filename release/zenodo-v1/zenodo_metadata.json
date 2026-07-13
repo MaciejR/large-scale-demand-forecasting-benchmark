@@ -1,0 +1,39 @@
+{
+  "metadata": {
+    "title": "When Do Foundation Models Pay Off for Retail Demand Forecasting? A Systematic Review and Cross-Benchmark Meta-Analysis",
+    "upload_type": "publication",
+    "publication_type": "technicalnote",
+    "description": "We present a PRISMA-informed systematic review of forecasting methods for short-term retail demand, combined with original gap-filling experiments and cross-benchmark extraction from fev-bench and GIFT-Eval. We screen approximately 150 papers from 2020 to 2026 and extract quantitative results into more than 800 rows spanning nine retail datasets. A model-level meta-regression on 543 paired comparisons across foundation models and conventional baselines finds a robust benchmark-level foundation-model advantage, strongest on distributional metrics and smaller on point-forecast metrics. The report includes sensitivity checks, benchmark-level caveats, and a practitioner-oriented cost-accuracy Pareto analysis.",
+    "creators": [
+      {
+        "name": "Rubczynski, Maciej",
+        "affiliation": "Independent researcher"
+      }
+    ],
+    "keywords": [
+      "demand forecasting",
+      "foundation models",
+      "meta-analysis",
+      "systematic review",
+      "retail forecasting",
+      "time series",
+      "LightGBM",
+      "benchmark",
+      "fev-bench",
+      "GIFT-Eval"
+    ],
+    "publication_date": "2026-07-13",
+    "version": "v1.0",
+    "language": "eng",
+    "access_right": "open",
+    "license": "cc-by-4.0",
+    "doi": "10.5281/zenodo.21338004",
+    "related_identifiers": [
+      {
+        "identifier": "https://github.com/MaciejR/large-scale-demand-forecasting-benchmark",
+        "relation": "isSupplementedBy",
+        "scheme": "url"
+      }
+    ]
+  }
+}

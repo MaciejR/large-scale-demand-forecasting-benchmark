@@ -9,10 +9,13 @@ meta-regression specification that combines them.
 \subsection{Search protocol (PRISMA)}
 \label{subsec:search}
 
-We follow the PRISMA 2020 reporting guidelines \citep{page2021prisma}
-for systematic reviews.  The full search protocol is committed at
-\texttt{analysis/prisma\_search\_protocol.md}; we summarise the key
-parameters here.
+We use the PRISMA 2020 reporting guidelines \citep{page2021prisma}
+as the reporting framework for a single-author, PRISMA-informed
+systematic review.  The study is not PRISMA-compliant in the strict
+multi-reviewer sense because it does not include independent duplicate
+screening or inter-rater reliability.  The full search protocol is
+committed at \texttt{analysis/prisma\_search\_protocol.md}; we
+summarise the key parameters here.
 
 \noindent\textbf{Databases.}
 Scopus, Google Scholar, Semantic Scholar API, arXiv
@@ -256,18 +259,26 @@ hypothesis-generating rather than confirmatory:
 \end{enumerate}
 
 \noindent\textbf{Sensitivity analyses.}
-Three pre-registered sensitivity runs:
+We report the following robustness checks:
 
 \begin{itemize}
-  \item \textbf{Excl-M5-WAPE:} Drops all M5 \WAPE{} pairs (where the
-    per-series denominator artefact inflates $\Delta$) and refits on
-    the remaining pool.
+  \item \textbf{Excl-M5:} Drops all M5 pairs to test whether the
+    primary result is driven by the M5 \WAPE{} denominator artefact.
+  \item \textbf{Metric-only slices:} Refits the model on \WAPE{}-only
+    and SQL-only pairs so the pooled omnibus estimate is not the only
+    inferential target.
   \item \textbf{Source-B-only:} Restricts to Source~B pairs
     (\texttt{LOCAL\_MAC\_*}), testing whether the cross-paper pooling
     materially changes the conclusion.
   \item \textbf{Source-A-only:} Restricts to Source~A pairs (fev-bench,
     GIFT-Eval), testing the FM--baseline gap using only published
     benchmark results.
+  \item \textbf{Best baseline:} Replaces the average conventional
+    baseline with the lowest-error conventional baseline in each cell.
+  \item \textbf{Leave-one-suite-out:} Drops fev-bench and GIFT-Eval in
+    turn to test whether a single benchmark suite drives the result.
+  \item \textbf{Equal-weight:} Replaces the sampling-variance proxy
+    with equal weights for all paired comparisons.
 \end{itemize}
 
 \noindent\textbf{Implementation.}

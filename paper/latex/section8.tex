@@ -21,12 +21,13 @@ a definitive solution to benchmark memorisation.
 The practical consequence for our meta-regression: Source~A FM rows may be
 slightly optimistic (the FM saw something like the test distribution during
 pre-training), while Source~A ML\_TREE rows have no such advantage (they are
-trained from scratch on each dataset).  If this bias is present, it works
-\emph{against} our SQL finding --- it would inflate FM performance in the
-cross-paper pool, making the $\Dhat = -0.318$ SQL advantage an upper bound.
-The \WAPE{} finding ($\Dhat = -0.116$, $p = 0.018$) may similarly be
-inflated; the true FM point-forecast advantage could be smaller than
-observed.
+trained from scratch on each dataset).  If this bias is present, it would
+inflate FM performance in the cross-paper pool, so the
+$\Dhat = -0.318$ SQL advantage should be interpreted as an observed
+benchmark-suite effect and potentially an upper bound on leakage-free
+distributional performance.  The \WAPE{} finding
+($\Dhat = -0.116$, $p = 0.018$) may similarly be inflated; the true FM
+point-forecast advantage could be smaller than observed.
 
 \subsection{The covariate gap}
 \label{subsec:covariate-gap}
@@ -112,7 +113,11 @@ The meta-regression uses a proxy variance
 $v_i = 1/n_\text{FM} + 1/n_\text{baseline}$ rather than per-row bootstrap
 SEs.  This captures the precision difference between large (M5, 30K series)
 and small (Rohlik, 5K) datasets but does not model within-series
-autocorrelation.  The Knapp--Hartung adjustment partially mitigates this.
+autocorrelation.  The Knapp--Hartung adjustment partially mitigates this,
+and an equal-weight sensitivity analysis leaves the sign and significance
+unchanged ($\hat{\Delta} = -0.160$, $p = 0.0002$), but the proxy remains an
+approximation rather than a substitute for fully bootstrapped standard
+errors.
 
 \paragraph{Evaluation protocol heterogeneity.}
 Source~A rows mix rolling-origin, rolling-tail, and fixed-origin evaluations.

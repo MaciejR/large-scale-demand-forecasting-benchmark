@@ -109,7 +109,7 @@ The intermediate ladder is:
 \centering
 \caption{Intermediate ladder from Seasonal Naive to M5 winner.}
 \label{tab:t53b}
-\begin{tabular}{lrr}
+\begin{tabularx}{\textwidth}{Xrr}
 \toprule
 Configuration & \WRMSSE{} ($h = 7$) & Gap vs winner \\
 \midrule
@@ -119,7 +119,7 @@ LightGBM direct, 6 covariates, 1 model & 0.560 & +8\% \\
 LightGBM direct + lag\_28 + per-store (projected, \S\ref{sec:threats}) & ${\sim}0.53$--$0.54$ & +2--4\% \\
 M5 winner \citep{makridakis2022m5} & 0.520 & --- \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 The space for a foundation model to claim ``beats LightGBM on M5''
@@ -344,7 +344,7 @@ negative = recursive wins).  Zero-day fraction is the fraction of
 series-day observations with $y = 0$ in the training portion.}
 \label{tab:t58-appendix}
 \small
-\begin{tabular}{llrrrlr}
+\begin{tabularx}{\textwidth}{llrrrXr}
 \toprule
 Dataset & Zero-day frac. & $h = 7$ & $h = 14$ & $h = 28$ & Direction & Cost ratio (dir/rec) \\
 \midrule
@@ -352,10 +352,10 @@ M5 & ${\sim}70\,\%$ & $+16.6\,\%$ & $+18.5\,\%$ & $+21.8\,\%$ & direct wins & 3.
 Rohlik & ${\sim}1.2\,\%$ & $-4.4\,\%$ & $-3.0\,\%$ & $-2.8\,\%$ & recursive wins & 4.8--18.0$\times$ \\
 Favorita & ${\sim}15$--$25\,\%$, long tail & $-4.1\,\%$ & $-7.5\,\%$ & $-9.6\,\%$ & recursive wins, growing & 4.3--15.6$\times$ \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
-Three patterns emerge from Table~\ref{tab:t58}:
+Three patterns emerge from Table~\ref{tab:t58-appendix}:
 
 \begin{enumerate}
 \item \textbf{Direction tracks intermittency, not protocol.}  The
@@ -516,7 +516,7 @@ at time of writing); CO$_2$ uses the region's 2025 baseline
 marginal intensity of 0.041\,kgCO$_2$eq/kWh (Nowtricity/Ember, 2024).}
 \label{tab:t56}
 \small
-\begin{tabular}{lrrrrrl}
+\begin{tabularx}{\textwidth}{lrrrrrX}
 \toprule
 Dataset & SN cost & \LGBM{}-rec cost & \LGBM{}-dir cost & Total cost & Total CO$_2$ (kg) & Dominant job \\
 \midrule
@@ -528,7 +528,7 @@ Favorita & \$0.0161 & \$0.0734 & \$1.030 & \$1.119 & 0.00043 &
   \texttt{lgbm\_dir\_h28} (60\,min, \$0.379) \\
 \textbf{Total} & \$0.165 & \$0.179 & \$1.700 & \$2.049 & 0.00085 & --- \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 \subsubsection{Reproducibility Detail}\label{app:reproducibility}

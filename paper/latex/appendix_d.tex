@@ -1,7 +1,7 @@
 % appendix_d.tex — Sensitivity Analyses
 \section{Sensitivity Analyses}\label{app:sensitivity}
 
-Six sensitivity variants of the primary $k = 543$ model-level
+Nine sensitivity variants of the primary $k = 543$ model-level
 meta-regression are reported below.  All models use
 \texttt{metafor::rma.mv} \citep{viechtbauer2010metafor} with REML
 estimation, Knapp--Hartung $t$-distribution adjustment
@@ -19,12 +19,15 @@ estimation, Knapp--Hartung $t$-distribution adjustment
 Variant & $k$ & $\Dhat$ & 95\% CI & $p$ & $Q$ \\
 \midrule
 Full pool         & 543 & $-0.195$ & $[-0.283,\; -0.107]$ & $<.0001$ & 56{,}301 \\
-Excl-M5           & 468 & $-0.183$ & $[-0.278,\; -0.087]$ & 0.0002 &  21{,}469 \\
+Excl-M5           & 468 & $-0.183$ & $[-0.278,\; -0.087]$ & 0.0002 &  20{,}650 \\
 \WAPE{}-only      & 211 & $-0.116$ & $[-0.212,\; -0.020]$ & 0.018  &  28{,}693 \\
 SQL-only          & 166 & $-0.318$ & $[-0.395,\; -0.240]$ & $<.0001$ & 7{,}467 \\
 Source~B only     &  45 & $-0.251$ & $[-0.606,\; +0.104]$ & 0.161  &  20{,}626 \\
 Source~A only     & 498 & $-0.168$ & $[-0.242,\; -0.093]$ & $<.0001$ & 30{,}714 \\
 Best baseline     & 543 & $-0.155$ & $[-0.231,\; -0.078]$ & $<.0001$ & 39{,}746 \\
+Without fev-bench & 129 & $-0.306$ & $[-0.482,\; -0.131]$ & 0.0007 & 25{,}028 \\
+Without GIFT-Eval & 459 & $-0.156$ & $[-0.250,\; -0.062]$ & 0.0012 & 52{,}147 \\
+Equal-weight      & 543 & $-0.160$ & $[-0.245,\; -0.076]$ & 0.0002 & 25 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -60,25 +63,33 @@ Best baseline     & 543 & $-0.155$ & $[-0.231,\; -0.078]$ & $<.0001$ & 39{,}746 
     conventional baseline with the lowest-error conventional baseline
     in each cell attenuates the estimate but leaves the FM advantage
     significant ($\hat{\Delta} = -0.155$, $p < .0001$).
+
+  \item \textbf{Leave-one-suite-out:} Dropping fev-bench leaves
+    GIFT-Eval plus Source~B and remains significant
+    ($\hat{\Delta} = -0.306$, $p = 0.0007$).  Dropping GIFT-Eval leaves
+    fev-bench plus Source~B and remains significant
+    ($\hat{\Delta} = -0.156$, $p = 0.0012$).
+
+  \item \textbf{Equal-weight ($k = 543$):} Replacing the
+    sampling-variance proxy with equal weights leaves the sign and
+    significance unchanged ($\hat{\Delta} = -0.160$, $p = 0.0002$).
 \end{enumerate}
 
-\subsection{Bucket-Level Variant ($k = 10$)}
+\subsection{Bucket-Level Variant ($k = 43$)}
 
 For comparison, a coarser bucket-level aggregation
 (mean FM vs mean ML\_TREE per dataset--horizon--metric cell) yields
-$k = 10$:
+$k = 43$:
 
 \begin{table}[htbp]
 \centering
-\caption{Bucket-level variant ($k = 10$),
+\caption{Bucket-level variant ($k = 43$),
   retained for comparison.}\label{tab:sensitivity-old}
 \begin{tabular}{lrlll}
 \toprule
 Variant & $k$ & $\Dhat$ & 95\% CI & $p$ \\
 \midrule
-Full pool        & 10 & $+0.101$ & $[-0.227, +0.429]$ & 0.505 \\
-Excl-M5 \WAPE{}  & 6  & $-0.044$ & $[-0.115, +0.027]$ & 0.174 \\
-Within-paper (B) & 9  & $-0.245$ & $[-0.482, -0.008]$ & 0.044 \\
+Full pool        & 43 & $-0.129$ & $[-0.204, -0.053]$ & 0.0013 \\
 \bottomrule
 \end{tabular}
 \end{table}

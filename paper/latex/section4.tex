@@ -43,9 +43,11 @@ The 39 included studies and experiment blocks break down as follows:
     are the primary FM technical reports --- Chronos (A01), Chronos-2
     (A02), TimesFM (A03--A04), Moirai (A05--A06), TiRex (A13),
     TabPFN-TS (A14), and the smaller FM entries (A07--A11, A15--A17).
-  \item \textbf{Category~B (benchmark papers):} 4 papers, 40 rows.
-    GIFT-Eval (B01), fev-bench (B02), and two multi-model comparison
-    papers (B03, B07--B08).
+  \item \textbf{Category~B (benchmark papers and per-task
+    re-extraction):} 657 rows.  This includes GIFT-Eval (B01/B03),
+    fev-bench (B02), and two smaller multi-model comparison papers
+    (B07--B08).  The large row count reflects task--model--metric
+    expansion, not hundreds of independent papers.
   \item \textbf{Category~C (retail ML/DL papers):} 8 papers, 31 rows.
     M5 competition analyses (C01, C05), transformer-based retail
     studies (C03, C06), AutoML baselines (C10), and cross-domain
@@ -53,7 +55,9 @@ The 39 included studies and experiment blocks break down as follows:
   \item \textbf{Category~D (cross-domain):} 3 papers, 3 rows.
     Included for model-family coverage but not in the retail-scoped
     meta-regression.
-  \item \textbf{Category~F (fev-bench entries):} 1 paper, 8 rows.
+  \item \textbf{Category~F (legacy fev-bench summary entries):} 1
+    paper, 8 rows.  These are retained for provenance but the
+    model-level meta-regression uses the expanded B02 per-task rows.
   \item \textbf{OWN\_* (own experiments):} 7 experiment blocks,
     72 rows.  Five FM models (\S5.4), LightGBM baselines (\S5.2--5.3),
     and Seasonal Naive across three datasets and three horizons.
@@ -73,8 +77,8 @@ by the fev-bench and GIFT-Eval per-task re-extraction.
 
 \noindent\textbf{Dataset distribution.}
 After per-task re-extraction from fev-bench and GIFT-Eval, the
-distribution is broad: 17 fev-bench tasks (18 rows each, ${\sim}$300
-rows total) and 4 GIFT-Eval retail tasks (${\sim}$107 rows) dominate,
+distribution is broad: 20 fev-bench retail tasks (24--27 rows each,
+534 rows total) and 4 GIFT-Eval retail tasks (${\sim}$107 rows) dominate,
 followed by M5 (40 rows, 6\%) and the remaining retail datasets.
 The per-task granularity enables model-level pairing within each
 (task, metric) cell, which is the basis of the $k = 543$ meta-regression.
@@ -111,7 +115,7 @@ validity (\S\ref{subsec:future-work}).
 The 567 FM rows (71\% of the extraction) now span three tiers of
 granularity: (i)~per-paper aggregate results from Source~A Category~A
 (58 rows from 17 FM papers), (ii)~per-task per-model \WAPE{}/\MASE{}/SQL
-scores from the fev-bench and GIFT-Eval re-extraction (${\sim}$400 rows),
+scores from the fev-bench and GIFT-Eval re-extraction (${\sim}$640 rows),
 and (iii)~per-cell \WAPE{} from our Source~B consumer-box runs (45 rows).
 On benchmark suites, Chronos-2, TimesFM~2.5, and Moirai~2.0 achieve
 win rates of 75--84\% against statistical baselines on GIFT-Eval,

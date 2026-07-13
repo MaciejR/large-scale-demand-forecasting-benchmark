@@ -360,6 +360,18 @@ fit_model_level_mods <- function(delta_df, moderator) {
   )
 }
 
+fit_model_level_equal_weight <- function(delta_df) {
+  # Robustness check for the sampling-variance proxy.  This keeps the same
+  # random-effects structure but gives every paired comparison identical V.
+  rma.mv(
+    yi = delta, V = rep(1, nrow(delta_df)),
+    random = list(~ 1 | dataset_norm / paper_id, ~ 1 | model_name),
+    data = delta_df,
+    test = "t",
+    method = "REML"
+  )
+}
+
 # Legacy fits (bucket-level).
 fit_meta_crosspaper <- function(delta_df) {
   rma.mv(
@@ -449,6 +461,24 @@ run_sensitivity <- function(delta_df, label, out_prefix) {
   message(sprintf("\n--- Sensitivity: %s (k=%d) ---", label, nrow(delta_df)))
   fit <- tryCatch(
     fit_model_level(delta_df),
+    error = function(e) { message("  fit failed: ", e$message); NULL }
+  )
+  if (!is.null(fit)) {
+    print(fit)
+    writeLines(capture.output(print(fit)),
+               file.path(FIG_DIR, paste0(out_prefix, ".txt")))
+  }
+  invisible(fit)
+}
+
+run_equal_weight_sensitivity <- function(delta_df, label, out_prefix) {
+  if (nrow(delta_df) < 3) {
+    message(sprintf("Sensitivity '%s': k=%d, skipped.", label, nrow(delta_df)))
+    return(invisible(NULL))
+  }
+  message(sprintf("\n--- Sensitivity: %s (k=%d) ---", label, nrow(delta_df)))
+  fit <- tryCatch(
+    fit_model_level_equal_weight(delta_df),
     error = function(e) { message("  fit failed: ", e$message); NULL }
   )
   if (!is.null(fit)) {
@@ -601,6 +631,22 @@ main <- function() {
   run_sensitivity(
     model_delta %>% filter(source == "LIT"),
     "Source A only", "sensitivity_source_a_only"
+  )
+
+  # Leave-one-suite-out checks for benchmark-suite dominance.
+  run_sensitivity(
+    model_delta %>% filter(!grepl("^B02_fev", paper_id)),
+    "Leave fev-bench out", "sensitivity_without_fev_bench"
+  )
+  run_sensitivity(
+    model_delta %>% filter(!grepl("^B03_gift", paper_id)),
+    "Leave GIFT-Eval out", "sensitivity_without_gift_eval"
+  )
+
+  # Equal-weight robustness check for the vi proxy.
+  run_equal_weight_sensitivity(
+    model_delta,
+    "Equal-weight V", "sensitivity_equal_weight"
   )
 
   # ---- Legacy bucket-level (for comparison with original k=10) ----

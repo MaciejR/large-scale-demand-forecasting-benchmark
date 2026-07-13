@@ -1,12 +1,17 @@
 % appendix_e.tex — Extraction Table (Abbreviated)
 \section{Extraction Table (Abbreviated)}\label{app:extraction}
 
-The full extraction table (\texttt{analysis/extraction\_schema.csv} +
-\texttt{benchmark/results/local\_fm\_sweep.csv}, 800+ data rows)
-records one row per (paper $\times$ model $\times$ dataset $\times$
-metric) observation. The complete CSVs are available in the
-supplementary materials. Table~\ref{tab:extraction-columns} shows the
-key columns; columns omitted for space include
+The extraction inputs
+(\path{analysis/extraction_schema.csv} and
+\path{benchmark/results/local_fm_sweep.csv}) record one row per
+(paper $\times$ model $\times$ dataset $\times$ metric) observation.
+The frozen extraction schema contains 802 rows; the local Source~B
+sweep contributes 72 additional experiment rows.  After canonicalising
+datasets, model families, and numeric metrics, the R pipeline retains
+774 analysis-ready rows and forms $k = 543$ paired comparisons.  The
+complete CSVs are available in the supplementary materials.
+Table~\ref{tab:extraction-columns} shows the key columns; columns
+omitted for space include
 \texttt{dataset\_variant}, \texttt{n\_series},
 \texttt{series\_length\_median}, \texttt{frequency},
 \texttt{fine\_tuned}, \texttt{runtime\_reported},
@@ -43,34 +48,37 @@ Column & Description \\
 \begin{table}[htbp]
 \centering
 \caption{Extraction table row counts by category.}\label{tab:extraction-counts}
-\begin{tabular}{llr}
+\begin{tabularx}{\textwidth}{lXr}
 \toprule
 Category & Description & Rows \\
 \midrule
 A     & Foundation model papers              & 58 \\
-B     & Benchmark papers (incl.\ fev-bench, GIFT-Eval) & 574 \\
+B     & Benchmark papers and per-task re-extraction (incl.\ fev-bench, GIFT-Eval) & 657 \\
 C     & M5 competition and retail-specific   & 31 \\
 D     & Cross-domain papers                  & 3 \\
-F     & fev-bench entry papers               & 8 \\
-OWN   & Our baselines (Source~B, Azure)       & 45 \\
-LOCAL & Our Source~B cells (5~FMs + 3~baselines, MacBook/Azure) & 72 \\
+F     & Legacy fev-bench summary entries     & 8 \\
+OWN   & Legacy Source~B baseline rows in extraction schema & 45 \\
+LOCAL & Local Source~B sweep file (5~FMs + 3~baselines, MacBook/Azure) & 72 \\
 \midrule
-\textbf{Total} & & \textbf{${\sim}$780} \\
+\textbf{Extraction schema} & & \textbf{802} \\
+\textbf{Local sweep file} & & \textbf{72} \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 \subsection{Source A vs Source B}
 
 \begin{itemize}[nosep]
   \item \textbf{Source~A} (literature extraction): categories A--F
-    (${\sim}$674 rows from 38+ studies, including per-task fev-bench
+    (757 rows from 38+ studies, including per-task fev-bench
     and GIFT-Eval re-extraction). These rows report accuracy numbers
     as published by the original authors.
   \item \textbf{Source~B} (gap-filling experiments): OWN + LOCAL
-    (${\sim}$117 rows). These rows are from our own experiments on
+    rows. The current model-level analysis uses the 72-row
+    \texttt{local\_fm\_sweep.csv} export from our own experiments on
     consumer hardware (MacBook M-series MPS) and Azure ML (E4DS\_V4),
-    using the shared protocol of \S5.1.
+    using the shared protocol of \S5.1; legacy OWN rows are retained in
+    the extraction schema for provenance.
 \end{itemize}
 
 The extraction table is frozen at the version used for the

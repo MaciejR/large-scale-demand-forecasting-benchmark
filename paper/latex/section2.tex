@@ -70,7 +70,8 @@ lightweight fine-tuning. The models in scope for this review are:
 \centering
 \caption{Foundation models in scope.}
 \label{tab:fm-scope}
-\begin{tabular}{lrlcl}
+\scriptsize
+\begin{tabularx}{\textwidth}{p{2.15cm}p{1.15cm}p{2.7cm}p{1.25cm}X}
 \toprule
 Model & Params & Architecture & Covariates & Key reference \\
 \midrule
@@ -89,7 +90,7 @@ Lag-Llama & 6\,M & Llama backbone & No &
 TimeGPT & undisclosed & Proprietary & Yes &
   \citet{garza2023timegpt} \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 In the extraction schema, \texttt{model\_family = "foundation"}.

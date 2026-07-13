@@ -1,0 +1,3 @@
+50f348c27af9fad773f76a4bd693f99d193528d87a279778c3500d4150a49b7a  demand-forecasting-technical-report-v1.pdf
+d0bad20851c1ec5453877e0750156f7e827f6e1d205ad750da5878269d7beb92  paper-source-v1.zip
+f5dbf2a51abdd8488dc999c3afa39010075a25b56344f0a5d523f4e61ad7a5c0  replication-materials-v1.zip

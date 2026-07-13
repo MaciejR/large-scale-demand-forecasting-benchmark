@@ -52,7 +52,10 @@ We address four research questions across three complementary lenses
 
 This study combines a PRISMA-informed systematic review with
 original gap-filling experiments and structured extraction from two
-large forecasting benchmarks (fev-bench, GIFT-Eval).
+large forecasting benchmarks (fev-bench, GIFT-Eval).  Because the
+paired statistical mass comes mainly from these benchmark suites, we
+treat the pooled estimate as a benchmark-level synthesis and report
+metric-specific and leave-one-suite-out analyses alongside it.
 
 \begin{enumerate}
   \item \textbf{Source~A (literature + benchmark extraction).} We
@@ -91,16 +94,17 @@ paired comparisons.
 Three findings motivate the sections that follow:
 
 \begin{enumerate}
-  \item \textbf{The FM advantage is significant on both distributional
-    and point-forecast metrics, but substantially stronger on the
-    former.}
+  \item \textbf{The FM advantage is robust at benchmark level and is
+    substantially stronger on distributional metrics than on
+    point-forecast metrics.}
     Across $k = 543$ pairs, on Scaled Quantile Loss (SQL),
     $\Dhat = -0.318$ ($p < .0001$); on \WAPE{} (a point-forecast
     metric), $\Dhat = -0.116$ ($p = 0.018$).  The
-    full-pool aggregate ($\Dhat = -0.195$, $p < .0001$) confirms a
-    net FM advantage.  FMs achieve substantially lower quantile-loss
-    scores; their point forecasts are also significantly better but the
-    advantage is attenuated relative to distributional metrics.
+    full-pool aggregate ($\Dhat = -0.195$, $p < .0001$) is an
+    omnibus summary across SQL, \WAPE{}, and \MASE{}.  FMs achieve
+    substantially lower quantile-loss scores; their point forecasts are
+    also better on average, but the advantage is attenuated and more
+    sensitive to covariates, leakage, and evaluation protocol.
 
   \item \textbf{Model scale is not a significant predictor of retail
     accuracy.}  Within Source~B (controlled protocol), the smallest FM
@@ -131,10 +135,9 @@ Three findings motivate the sections that follow:
     GIFT-Eval, yielding 543 model-level paired comparisons across
     12~FMs and conventional baselines.
   \item \textbf{Model-level meta-regression} ($k = 543$) identifying
-    a significant FM advantage on both distributional metrics
-    (SQL, $p < .0001$) and point-forecast metrics
-    (\WAPE{}, $p = 0.018$), with a substantially stronger signal on
-    the former.
+    a robust benchmark-level FM advantage that is strongest on
+    distributional metrics (SQL, $p < .0001$) and smaller on
+    point-forecast metrics (\WAPE{}, $p = 0.018$).
   \item \textbf{Baseline reliability analysis} documenting the
     conditional direct-vs-recursive LightGBM gap across three
     datasets.

@@ -9,6 +9,9 @@ A Systematic Review and Cross-Benchmark Meta-Analysis**
 The current manuscript PDF is available at
 [`paper/latex/main.pdf`](paper/latex/main.pdf).
 
+The v1.0 technical-report release is archived on Zenodo:
+<https://doi.org/10.5281/zenodo.21338004>.
+
 ## What Is In This Repository
 
 - `paper/latex/` - LaTeX manuscript source and compiled PDF.
@@ -68,6 +71,6 @@ sources:
 
 ## Current Status
 
-The repository is prepared for collaborator review. The manuscript still uses
-author/affiliation placeholders in `paper/latex/main.tex`; fill those before
-arXiv or journal submission.
+The v1.0 technical report has been published on Zenodo with DOI
+`10.5281/zenodo.21338004`. The local manuscript now includes this DOI in the
+data-availability statement for future versions.

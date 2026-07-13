@@ -19,6 +19,8 @@
 \usepackage{chngcntr}
 \counterwithout{figure}{section}
 \counterwithout{table}{section}
+\renewcommand{\theHfigure}{\thesection.\arabic{figure}}
+\renewcommand{\theHtable}{\thesection.\arabic{table}}
 
 % --- Paths ---
 \graphicspath{{../../analysis/figures/}}
@@ -37,12 +39,10 @@
 \title{When Do Foundation Models Pay Off for Retail Demand Forecasting?\\
 A Systematic Review and Cross-Benchmark Meta-Analysis}
 
-\author[inst1]{[Author Name]\corref{cor1}}
-\ead{[email]}
+\author[inst1]{Maciej Rubczynski\corref{cor1}}
+\ead{rubczynski.maciej@gmail.com}
 \cortext[cor1]{Corresponding author.}
-\affiliation[inst1]{organization={[Affiliation]},
-  city={[City]},
-  country={[Country]}}
+\affiliation[inst1]{organization={Independent researcher}}
 
 \begin{abstract}
 We present a PRISMA-informed systematic review of forecasting methods
@@ -52,15 +52,17 @@ GIFT-Eval.  We screen approximately 150 papers (2020--2026) and extract
 quantitative results into 800+ rows spanning 9~retail datasets.
 A model-level meta-regression (\texttt{metafor::rma.mv}, REML,
 Knapp--Hartung) on $k = 543$ paired comparisons across foundation
-models and conventional baselines reveals a significant FM advantage
-on both distributional and point-forecast metrics, with a
-substantially stronger signal on the former: on Scaled Quantile Loss
+models and conventional baselines shows a robust benchmark-level FM
+advantage that is strongest on distributional metrics and smaller on
+point-forecast metrics: on Scaled Quantile Loss
 (SQL), $\hat{\Delta} = -0.318$ ($p < .0001$); on \WAPE{},
 $\hat{\Delta} = -0.116$ ($p = 0.018$).  The full-pool aggregate
-($\Dhat = -0.195$, $p < .0001$) confirms a net FM advantage.
+($\Dhat = -0.195$, $p < .0001$) is an omnibus summary across SQL,
+\WAPE{}, and \MASE{} rather than a single-metric effect size.
 Foundation models achieve substantially lower quantile-loss scores;
-their point forecasts are also significantly better but the advantage
-is attenuated relative to distributional metrics.  Model scale (9\,M--200\,M parameters) is not a
+their point forecasts are also better on average, but the advantage is
+attenuated and more sensitive to covariates, leakage, and benchmark
+protocol.  Model scale (9\,M--200\,M parameters) is not a
 significant moderator in the retail domain.
 We provide a practitioner-oriented cost--accuracy Pareto analysis on
 consumer hardware and document that the LightGBM direct-vs-recursive
@@ -103,13 +105,15 @@ relationships that could have appeared to influence the work
 reported in this paper.
 
 \section*{CRediT authorship contribution statement}
-\textbf{[Author Name]:} Conceptualization, Methodology, Software,
+\textbf{Maciej Rubczynski:} Conceptualization, Methodology, Software,
 Formal analysis, Investigation, Data curation, Writing -- original
 draft, Writing -- review \& editing, Visualization.
 
 \section*{Data availability}
-The extraction table (\texttt{analysis/extraction\_schema.csv}),
-result tables, and all analysis scripts are available at
+The v1.0 technical report, LaTeX source, extraction table, result
+tables, and replication materials are archived on Zenodo at
+\url{https://doi.org/10.5281/zenodo.21338004}. The live repository is
+available at
 \url{https://github.com/MaciejR/large-scale-demand-forecasting-benchmark}.
 The M5 dataset is publicly available via Kaggle; the Favorita
 dataset is publicly available via Kaggle; the Rohlik~v2 dataset

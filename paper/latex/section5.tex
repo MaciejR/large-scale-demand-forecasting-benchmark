@@ -272,22 +272,22 @@ records whether it is direct or recursive.  Cost is the total
 per-horizon numbers are in Tables~\ref{tab:t53}--\ref{tab:t55}
 of \S\ref{sec:baseline}.}
 \label{tab:t52}
-\footnotesize
-\begin{tabular}{llllllll}
+\scriptsize
+\begin{tabularx}{\textwidth}{lllllXr}
 \toprule
-Dataset & Zero-day frac & SN primary metric $h{=}7$ & Best \LGBM{} primary metric $h{=}7$ & Best \LGBM{} protocol & \LGBM{} vs SN & 9-job sweep cost & Pipeline \\
+Dataset & Zero-day frac & SN primary metric $h{=}7$ & Best \LGBM{} primary metric $h{=}7$ & Best \LGBM{} protocol & \LGBM{} vs SN & 9-job sweep cost \\
 \midrule
 M5 & ${\sim}70\,\%$ & 1.3072 & \textbf{0.5598} (\WRMSSE{}) & direct &
   direct ${\sim}12\,\%$ better on \WRMSSE{} vs recursive (17\,\% on \WAPE{}) &
-  \$0.810 & \texttt{mighty\_morning\_6qz5c4jmwm} \\
+  \$0.810 \\
 Rohlik~v2 & ${\sim}1.2\,\%$ & 0.4015 & \textbf{0.3654} & recursive &
   recursive 4.2\,\% better than direct &
-  \$0.120 & \texttt{goofy\_pear\_g54m1skybs} \\
+  \$0.120 \\
 Favorita & ${\sim}15$--$25\,\%$, long tail & 0.6363 & \textbf{0.5295} & recursive &
   recursive 4.1\,\% better than direct at $h = 7$, gap grows to 9.6\,\% at $h = 28$ &
-  \$1.119 & \texttt{loyal\_roti\_bcc63n9gkh} \\
+  \$1.119 \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table*}
 
 Three observations at the headline level:
@@ -592,7 +592,7 @@ origin) across models, datasets, and horizons.  Lower is better.
 All 72 cells populated (5 FMs + 3 baselines $\times$ 3 datasets
 $\times$ 3 horizons).}
 \label{tab:t59}
-\small
+\scriptsize
 \begin{tabular}{llrrrrrrrrr}
 \toprule
 Model & Family & \multicolumn{3}{c}{Favorita} & \multicolumn{3}{c}{M5} & \multicolumn{3}{c}{Rohlik~v2} \\

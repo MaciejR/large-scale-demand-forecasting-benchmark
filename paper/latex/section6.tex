@@ -94,11 +94,13 @@ $t(542) = -4.36$,\quad $p < .0001$,\quad
 95\,\% CI $[-0.283,\; -0.107]$.
 \end{quote}
 
-\noindent Foundation models are, on average, significantly better than
-conventional baselines across all metrics, datasets, and model sizes in
-this pool.  The per-metric decomposition below reveals that this
-advantage is significant on both distributional and point-forecast
-metrics, but substantially stronger on the former.
+\noindent This full-pool intercept is an omnibus benchmark-level
+summary across SQL, \WAPE{}, and \MASE{}, not a claim that the same
+effect size applies to every metric.  It shows that the paired corpus
+has a net FM advantage after accounting for dataset, paper, and model
+clustering.  The per-metric decomposition below is the main
+interpretive result: the advantage is strongest on distributional
+metrics and smaller on point-forecast metrics.
 
 \paragraph{Variance components.}
 The between-dataset variance component is
@@ -107,8 +109,8 @@ between-paper component is
 $\hat{\sigma}^2_{\text{paper}} = 0.0267$; the crossed model-name
 component is
 $\hat{\sigma}^2_{\text{model}} = 0.0003$.  The near-zero model
-variance confirms that non-independence of pairs from the same FM does
-not inflate the primary estimate.
+variance suggests that non-independence of pairs from the same FM is
+not the dominant source of uncertainty in the primary estimate.
 
 \paragraph{Heterogeneity.}
 $Q(542) = 56{,}301$, $p < .0001$.  The enormous $Q$ reflects
@@ -126,7 +128,7 @@ decomposition of the FM advantage:
 \caption{Metric-specific pooled $\hat{\Delta}$ from sensitivity analyses.
   Negative = FM better.}
 \label{tab:metric-split}
-\begin{tabular}{lrrlrl}
+\begin{tabularx}{\textwidth}{lrrlrX}
 \toprule
 Metric & $k$ & $\hat{\Delta}$ & 95\,\% CI & $p$ & Interpretation \\
 \midrule
@@ -134,17 +136,16 @@ SQL (quantile loss)  & 166 & $-0.318$ & $[-0.395,\; -0.240]$ & $< .0001$ & FM st
 \MASE{}              & 166 & $-0.156$ & --- & --- & (intercept from moderator) \\
 \WAPE{} / ND         & 211 & $-0.116$ & $[-0.212,\; -0.020]$ & $0.018$   & FM significantly better \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 \noindent On SQL --- the primary metric of fev-bench, which measures the
 full predictive distribution via quantile losses --- foundation models
-are \textbf{strongly and significantly better} than tree and statistical
-baselines ($\hat{\Delta} = -0.318$, $p < .0001$).  On \WAPE{} --- a
-point-forecast accuracy metric --- the FM advantage is also
-\textbf{statistically significant} ($\hat{\Delta} = -0.116$,
-$p = 0.018$), but the effect size is roughly one-third of the SQL
-finding.
+show the strongest advantage over tree and statistical baselines
+($\hat{\Delta} = -0.318$, $p < .0001$).  On \WAPE{} --- a
+point-forecast accuracy metric --- the FM advantage remains
+statistically significant ($\hat{\Delta} = -0.116$, $p = 0.018$), but
+the effect size is roughly one-third of the SQL finding.
 
 This metric gradient clarifies the pattern in the literature:
 papers that evaluate FMs on distributional metrics (CRPS, WQL, SQL)
@@ -153,8 +154,10 @@ metrics (\WAPE{}, MAE) report smaller but still meaningful gains.
 The mechanism is metric-specific: FMs achieve lower aggregate quantile
 losses on SQL, which is compatible with better distributional forecasts
 but is not by itself a direct calibration test.  Their point forecasts
-(median or mean of that distribution) are also significantly better, but
-the advantage is attenuated relative to distributional metrics.
+(median or mean of that distribution) are also better on average in
+this corpus, but the advantage is attenuated relative to
+distributional metrics and remains more exposed to covariates,
+pre-training leakage, and protocol differences.
 
 \subsection{Forest plots}
 \label{subsec:forest-plots}\label{sec:per-dataset-results}
@@ -208,16 +211,20 @@ that dataset across metrics.
 \subsection{Sensitivity analyses}
 \label{subsec:sensitivity}\label{sec:heterogeneity}
 
-Table~\ref{tab:sensitivity} reports six sensitivity slices of the
-$k = 543$ pool.  The results are robust: the sign is consistently
-negative (FM better) and statistically significant across all slices
-except Source~B alone (underpowered with $k = 45$).
+Table~\ref{tab:sensitivity} reports nine sensitivity slices of the
+$k = 543$ pool.  The results are robust to the main reviewer concerns:
+the sign is negative (FM better) and statistically significant after
+excluding M5, replacing the comparator with the best conventional
+baseline, removing either major benchmark suite, and replacing the
+sampling-variance proxy with equal weights.  Source~B alone remains
+directionally consistent but underpowered with $k = 45$.
 
 \begin{table}[htbp]
 \centering
 \caption{Sensitivity analyses on the model-level meta-regression.}
 \label{tab:sensitivity}
-\begin{tabular}{lrrlrl}
+\small
+\begin{tabularx}{\textwidth}{lrrlrX}
 \toprule
 Sensitivity & $k$ & $\hat{\Delta}$ & 95\,\% CI & $p$ & Note \\
 \midrule
@@ -228,8 +235,11 @@ SQL-only          & 166 & $-0.318$ & $[-0.395,\; -0.240]$ & $< .0001$ & Stronges
 Source B only     &  45 & $-0.251$ & $[-0.606,\; +0.104]$ & 0.161 & Low power ($k = 45$) \\
 Source A only     & 498 & $-0.168$ & $[-0.242,\; -0.093]$ & $< .0001$ & Significant \\
 Best baseline     & 543 & $-0.155$ & $[-0.231,\; -0.078]$ & $< .0001$ & Conservative comparator \\
+Without fev-bench & 129 & $-0.306$ & $[-0.482,\; -0.131]$ & 0.0007 & Leave-one-suite-out \\
+Without GIFT-Eval & 459 & $-0.156$ & $[-0.250,\; -0.062]$ & 0.0012 & Leave-one-suite-out \\
+Equal-weight      & 543 & $-0.160$ & $[-0.245,\; -0.076]$ & 0.0002 & No $v_i$ proxy \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 \paragraph{Key observations.}
@@ -256,6 +266,20 @@ Best baseline     & 543 & $-0.155$ & $[-0.231,\; -0.078]$ & $< .0001$ & Conserva
     lowest-error conventional baseline attenuates the estimate but keeps
     it significant ($\Dhat = -0.155$, 95\% CI $[-0.231,\,-0.078]$,
     $p < .0001$).
+
+  \item \textbf{No single benchmark suite drives the result.}  Removing
+    fev-bench leaves GIFT-Eval plus Source~B and remains significant
+    ($\Dhat = -0.306$, $p = 0.0007$).  Removing GIFT-Eval leaves
+    fev-bench plus Source~B and also remains significant
+    ($\Dhat = -0.156$, $p = 0.0012$).  Removing both benchmark suites
+    reduces the analysis to Source~B only, which is directionally
+    consistent but underpowered.
+
+  \item \textbf{The sampling-variance proxy is not decisive.}  Giving
+    all pairs equal variance yields $\Dhat = -0.160$ ($p = 0.0002$),
+    close to the primary estimate.  We therefore treat the $v_i$ proxy
+    as a precision weighting device, not as the sole reason for the
+    result.
 \end{enumerate}
 
 \subsection{Heterogeneity diagnostics}
@@ -273,7 +297,7 @@ Best baseline     & 543 & $-0.155$ & $[-0.231,\; -0.078]$ & $< .0001$ & Conserva
 Model & $k$ & $Q$ & $\hat{\sigma}^2_1$ & $\hat{\sigma}^2_2$ & $\hat{\sigma}^2_3$ & Note \\
 \midrule
 Full pool     & 543 & 56{,}301 & 0.0077 & 0.0267 & 0.0003 & Primary \\
-Excl-M5       & 468 &  21{,}469 & --- & --- & --- & \\
+Excl-M5       & 468 &  20{,}650 & --- & --- & --- & \\
 SQL-only      & 166 &   7{,}467 & --- & --- & --- & Lowest $Q$ \\
 \WAPE{}-only  & 211 &  28{,}693 & --- & --- & --- & \\
 \bottomrule
@@ -290,9 +314,10 @@ homogeneous across datasets and models.
 The \texttt{model\_name} variance component
 ($\hat{\sigma}^2_3 = 0.0003$) is negligible relative to the dataset
 ($\hat{\sigma}^2_1 = 0.0077$) and paper ($\hat{\sigma}^2_2 = 0.0267$)
-components.  This confirms that model-level non-independence ---
-the same FM appearing across multiple papers and datasets --- does
-not materially inflate the pooled estimate or its standard error.
+components.  This supports the interpretation that model-level
+non-independence --- the same FM appearing across multiple papers and
+datasets --- is not the dominant source of uncertainty in the pooled
+estimate.
 
 \paragraph{Publication bias (PRISMA Item~14).}
 Figure~\ref{fig:funnel_sql} shows the funnel plot for the SQL-only

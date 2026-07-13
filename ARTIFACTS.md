@@ -7,6 +7,7 @@ This file maps manuscript claims to repository artifacts.
 - PDF: `paper/latex/main.pdf`
 - LaTeX source: `paper/latex/main.tex` and `paper/latex/section*.tex`
 - Bibliography: `paper/references.bib`
+- Zenodo v1.0 record: `https://doi.org/10.5281/zenodo.21338004`
 
 ## Review and Extraction
 

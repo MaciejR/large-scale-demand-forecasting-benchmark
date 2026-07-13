@@ -16,12 +16,12 @@ research question and close with directions for future work.
 \paragraph{RQ1 (Accuracy): Do zero-shot foundation models outperform
 conventional baselines on retail demand forecasting?}
 
-Yes --- and the answer is significant on both distributional and
-point-forecast metrics.  The pooled meta-regression on $k = 543$
-model-level pairs finds
+Yes, in the benchmark-level paired corpus --- with a much stronger
+advantage on distributional metrics than on point-forecast metrics.
+The pooled meta-regression on $k = 543$ model-level pairs finds
 $\Dhat(\text{FM} - \text{baseline}) = -0.195$ ($p < .0001$, 95\,\% CI
-$[-0.283, -0.107]$).  Foundation models are significantly better than tree
-and statistical baselines across the full pool.
+$[-0.283, -0.107]$).  This is an omnibus summary across SQL,
+\WAPE{}, and \MASE{}, not a single-metric effect size.
 
 The per-metric decomposition (\S\ref{subsec:metric-moderator}) reveals a
 metric gradient: on Scaled Quantile Loss (SQL), which measures the full
@@ -30,12 +30,17 @@ predictive distribution, the FM advantage is large and highly significant
 the FM advantage is also statistically significant but smaller
 ($\Dhat = -0.116$, $p = 0.018$).
 \textbf{Foundation models achieve substantially lower quantile-loss scores;
-their point forecasts are also significantly better but the advantage is
-attenuated relative to distributional metrics.}
+their point forecasts are also better on average in this corpus, but the
+advantage is attenuated and more sensitive to covariates, leakage, and
+evaluation protocol.}
 
 The result is robust to excluding M5 ($\Dhat = -0.183$, $p = 0.0002$,
 $k = 468$), confirming that the finding does not depend on the M5
-\WAPE{} artefact that inflates per-series denominators.
+\WAPE{} artefact that inflates per-series denominators.  It is also
+robust to dropping fev-bench ($\Dhat = -0.306$, $p = 0.0007$), dropping
+GIFT-Eval ($\Dhat = -0.156$, $p = 0.0012$), using the best conventional
+baseline in each cell ($\Dhat = -0.155$, $p < .0001$), and equal
+weighting of pairs ($\Dhat = -0.160$, $p = 0.0002$).
 
 \paragraph{RQ2 (Moderators): Which characteristics moderate the
 FM-vs-baseline gap?}
@@ -78,8 +83,8 @@ conditions where the FM pays off:
 \begin{enumerate}
   \item \textbf{When distributional forecasts matter.}  If the business uses
     quantile forecasts for safety-stock calculation or scenario planning,
-    FMs provide significantly lower SQL / quantile loss than tree models
-    ($\Dhat = -0.318$ on SQL).
+    FMs provide lower SQL / quantile loss than tree models in the
+    benchmark corpus ($\Dhat = -0.318$ on SQL).
 
   \item \textbf{No feature engineering capacity.}  Zero-shot FM inference on
     consumer hardware delivers competitive point-forecast accuracy ($<$1~pp
@@ -116,7 +121,7 @@ are untested on retail data; if their SQL advantage translates to improved
 point forecasts, the model-scale moderator could become significant.
 
 \paragraph{Beyond retail.}
-The metric gradient (FM wins strongly on SQL, smaller but significant
-advantage on \WAPE{}) should be tested on spare-parts, pharmaceutical,
-and e-commerce demand datasets to determine whether it is a universal
+The metric gradient (large FM advantage on SQL, smaller advantage on
+\WAPE{}) should be tested on spare-parts, pharmaceutical, and
+e-commerce demand datasets to determine whether it is a universal
 property of current FMs or specific to the retail domain.
