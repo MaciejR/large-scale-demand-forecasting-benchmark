@@ -41,10 +41,10 @@ dataset--horizon cells.  Moirai~2.0-Small is lower in all nine point
 estimates, with bootstrap intervals excluding zero in seven.  Chronos-Bolt-Tiny
 is near parity on M5 and worse on Rohlik and Favorita.  TimesFM~2.5, measured
 on Favorita, is near parity with the best local baseline but is much slower on
-the local CPU path.  TiRex completed only a smaller 20-series Favorita
-diagnostic in this repair pass; its point estimates favour TiRex but the
-bootstrap intervals include zero.  These results are paired local evidence,
-not a replacement for the broader Source~A reanalysis.
+the local CPU path.  Batched TiRex, measured on Favorita, is lower than the
+best local baseline at $h=7$ and $h=14$ and remains uncertain at $h=28$.
+These results are paired local evidence, not a replacement for the broader
+Source~A reanalysis.
 
 \paragraph{RQ2 (Moderators): Which characteristics moderate the
 FM-vs-baseline gap?}
@@ -118,10 +118,10 @@ are validation hypotheses, not universal deployment rules.
 
 \paragraph{Complete the Source~B repair.}
 The current shared-panel repair covers M5/Rohlik for three FMs and Favorita
-for four 100-series FMs plus a smaller TiRex diagnostic.  The remaining repair
-is to optimise or batch TiRex, extend TimesFM~2.5 and TiRex across the full
-M5/Rohlik/Favorita panel where computationally feasible, add GPU throughput
-measurements and covariate-aware FM variants, then compute paired bootstrap
+for five 100-series FMs including batched TiRex.  The remaining repair is to
+extend TimesFM~2.5 and batched TiRex across the full M5/Rohlik/Favorita panel
+where computationally feasible, add GPU throughput measurements and
+covariate-aware FM variants, then compute paired bootstrap
 covariance matrices for the full set of log-ratio contrasts.
 
 \paragraph{Covariate-aware FM evaluation.}

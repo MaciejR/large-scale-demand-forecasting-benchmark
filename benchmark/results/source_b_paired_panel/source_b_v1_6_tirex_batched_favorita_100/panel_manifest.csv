@@ -1,0 +1,2 @@
+run_id,panel_id,dataset,n_series,n_dates,first_date,last_date,series_selection,seed
+source_b_v1_6_tirex_batched_favorita_100,favorita_top_volume_100_20260714,Favorita,100,1679,2013-01-02,2017-08-15,top_volume,20260714

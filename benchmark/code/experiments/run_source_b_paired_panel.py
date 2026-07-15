@@ -47,6 +47,22 @@ LAGS = (1, 7, 14)
 WINDOWS = (7, 14)
 BASELINE_MODELS = {"seasonal_naive", "lightgbm_cov", "lightgbm_direct", "lightgbm_direct_scaled"}
 FM_MODELS = {"chronos_bolt_tiny", "chronos2", "timesfm25", "tirex", "moirai2"}
+CONTRAST_COLUMNS = [
+    "run_id",
+    "panel_id",
+    "dataset",
+    "horizon",
+    "model_name",
+    "baseline_model",
+    "n_series",
+    "model_WAPE_aggregate",
+    "baseline_WAPE_aggregate",
+    "log_ratio",
+    "bootstrap_se",
+    "ci95_low",
+    "ci95_high",
+    "n_boot",
+]
 
 
 @dataclass(frozen=True)
@@ -408,6 +424,16 @@ def get_fm_predictor(model_name: str, hardware: str) -> Callable[[pd.Series, int
     raise ValueError(f"Unknown FM model: {model_name}")
 
 
+def fm_device_for(hardware: str) -> str:
+    return "mps" if hardware == "M_SERIES_MAC" else ("cuda" if hardware in {"NC6", "T4", "K80", "A100"} else "cpu")
+
+
+def tirex_device_for(hardware: str) -> str:
+    if hardware == "M_SERIES_MAC":
+        return "cpu"
+    return fm_device_for(hardware)
+
+
 def evaluate_fm(
     y_wide: np.ndarray,
     starts: list[int],
@@ -571,7 +597,7 @@ def paired_bootstrap(
                     "n_boot": int(len(boot_arr)),
                 }
             )
-    return pd.DataFrame(rows)
+    return pd.DataFrame(rows, columns=CONTRAST_COLUMNS)
 
 
 def run_cell(
@@ -619,6 +645,14 @@ def run_cell(
                 y_wide, starts, horizon, TimesFM25Forecaster(device="cpu")
             )
             model_params = {"protocol": "zero_shot_univariate_batched"}
+        elif model_name == "tirex":
+            from models.foundation.tirex import TiRexForecaster
+
+            device = tirex_device_for(args.hardware)
+            y_true, y_pred, eval_t, origin_t = evaluate_fm_batch(
+                y_wide, starts, horizon, TiRexForecaster(device=device)
+            )
+            model_params = {"protocol": "zero_shot_univariate_batched", "device": device}
         else:
             predictor = get_fm_predictor(model_name, args.hardware)
             y_true, y_pred, eval_t, origin_t = evaluate_fm(y_wide, starts, horizon, predictor)
@@ -651,6 +685,14 @@ def run_cell(
         "model_params_json": json.dumps(model_params, sort_keys=True),
     }
     return predictions, meta
+
+
+def portable_path(path_value: str) -> str:
+    path = Path(path_value)
+    try:
+        return str(path.resolve().relative_to(REPO_ROOT))
+    except ValueError:
+        return str(path)
 
 
 def main() -> None:
@@ -724,7 +766,8 @@ def main() -> None:
     summary_df.to_csv(out_dir / "cell_summary.csv", index=False)
     contrasts_df.to_csv(out_dir / "paired_bootstrap_contrasts.csv", index=False)
     with (out_dir / "run_config.json").open("w", encoding="utf-8") as fh:
-        json.dump(vars(args) | {"run_id": run_id}, fh, indent=2, sort_keys=True)
+        config = vars(args) | {"out_dir": portable_path(args.out_dir), "run_id": run_id}
+        json.dump(config, fh, indent=2, sort_keys=True)
     print("Done.")
     print(summary_df[["dataset", "horizon", "model_name", "n_series", "WAPE_aggregate", "WAPE_mean", "runtime_sec"]])
     if not contrasts_df.empty:

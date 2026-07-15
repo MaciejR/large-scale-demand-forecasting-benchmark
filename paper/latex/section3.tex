@@ -110,7 +110,7 @@ Field & Type & Description \\
 Each extracted result is a separate row with a unique
 \texttt{paper\_id}.  A paper reporting Chronos and LightGBM on M5
 contributes at least two rows (\texttt{A01\_chronos\_indomain},
-\texttt{A01\_chronos\_zeroshot}, etc.).  The v1.4 analysis therefore
+\texttt{A01\_chronos\_zeroshot}, etc.).  The current analysis therefore
 does not treat \texttt{paper\_id} as a paper-level dependency cluster.
 The R pipeline derives separate identifiers:
 \texttt{study\_id} for the publication or Source~B experiment source,
@@ -198,10 +198,9 @@ files keyed by series, origin date, target date, and forecast step, and
 records a machine-readable run ledger.  Completed repair runs cover
 Seasonal Naive, recursive LightGBM, direct LightGBM, horizon-scaled direct
 LightGBM, Chronos-Bolt-Tiny, Chronos-2, and Moirai~2.0-Small on
-M5/Rohlik/Favorita at $h\in\{7,14,28\}$, plus TimesFM~2.5 on Favorita.
-TiRex did not complete the full 100-series Favorita first cell in a practical
-wall-clock window, so it is reported as a separate 20-series Favorita
-diagnostic rather than in the main 100-series repair table.
+M5/Rohlik/Favorita at $h\in\{7,14,28\}$, plus TimesFM~2.5 and batched
+TiRex on Favorita.  TiRex uses a CPU batched path on the MacBook because
+the MPS xLSTM fallback is slower for this workload.
 
 \subsection{Reanalysis specification}
 \label{subsec:metaspec}
@@ -219,8 +218,8 @@ $\ell_i = \log\{\text{metric}(\text{FM}_i) /
 observations across fev-bench and GIFT-Eval.  The legacy Source~B export
 yields an auditable $k = 543$ contrast file, but those 45 legacy Source~B
 contrasts remain labelled descriptive because they fail the legacy
-workload-matching audit.  The v1.4 matched-panel Source~B repair is
-reported separately as a prediction-level paired analysis on 18 FM-vs-best
+workload-matching audit.  The matched-panel Source~B repair is
+reported separately as a prediction-level paired analysis on 33 FM-vs-best
 baseline WAPE contrasts.  \ref{app:sensitivity} also reports a
 coarser bucket-level analysis for comparison.
 
@@ -258,7 +257,7 @@ For legacy Source~B pairs, the same proxy is computed with the recorded
 variance for a paired log-ratio: it does not capture metric dispersion,
 shared baselines, covariance between FM and baseline errors, or
 within-series autocorrelation.  This is flagged as a limitation in
-\S8.4 and is why v1.4 does not present the weighted Source~A model as a
+\S8.4 and is why this paper does not present the weighted Source~A model as a
 confirmatory meta-analysis.
 
 \noindent\textbf{Small-sample and cluster-robust diagnostics.}

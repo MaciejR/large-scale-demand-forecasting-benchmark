@@ -173,18 +173,17 @@ was to evaluate each FM on a fixed 100-series sample per cell and pair it
 against baselines on the same sampled workload.  The v1.3 audit showed
 that the saved 72-row result file did not satisfy that condition for all
 models.  The legacy sweep is therefore retained only as provenance and
-cost-audit material.  Version~1.4 adds a new matched-panel repair run for
+cost-audit material.  The matched-panel repair run covers
 M5 and Rohlik: the runner
 \texttt{benchmark/code/experiments/run\_source\_b\_paired\_panel.py}
 samples the same 100 top-volume series per dataset, stores the series
 manifest, writes prediction-level Parquet files, and computes paired
 bootstrap log-ratio contrasts against the best available baseline in the
-same dataset--horizon cell.  The completed v1.4 matched panel covers
+same dataset--horizon cell.  The completed matched panel covers
 Chronos-Bolt-Tiny, Chronos-2, Moirai~2.0-Small, Seasonal Naive, recursive
 \LGBM{}, direct \LGBM{}, and horizon-scaled direct \LGBM{} for
-M5/Rohlik at $h\in\{7,14,28\}$.  TimesFM~2.5 and TiRex were attempted
-but remain throughput targets on the local CPU/MPS setup, and Favorita is
-still a matched-panel target.  Audit outputs are written to
+M5/Rohlik/Favorita at $h\in\{7,14,28\}$, plus TimesFM~2.5 and batched
+TiRex on Favorita.  Audit outputs are written to
 \texttt{analysis/figures/source\_b\_paired\_panel\_*}.
 
 \subsubsection{Model Families}\label{sec:modelfamilies}
@@ -236,10 +235,11 @@ same cap applies on Rohlik and Favorita for comparability.
 Foundation models are evaluated zero-shot with each model's published
 inference script on consumer hardware (Apple M-series MPS/CPU).  The
 legacy Source~B sweep covers Chronos-Bolt-Tiny, Moirai~2.0-Small, TiRex,
-Chronos-2, and TimesFM~2.5, but not on a common workload.  The v1.4
+Chronos-2, and TimesFM~2.5, but not on a common workload.  The
 matched-panel repair covers Chronos-Bolt-Tiny, Chronos-2, and
-Moirai~2.0-Small on M5/Rohlik with shared series IDs, shared forecast
-origins, and paired prediction outputs.  Details of the FM protocol,
+Moirai~2.0-Small on M5/Rohlik/Favorita, plus TimesFM~2.5 and TiRex on
+Favorita, with shared series IDs, shared forecast origins, and paired
+prediction outputs.  Details of the FM protocol,
 context-length choices, and hardware configuration are in \S\ref{sec:fm}.
 
 \subsubsection{Reproducibility}\label{sec:reproducibility}
@@ -359,8 +359,8 @@ break-even rule.
 \subsubsection{Foundation Model Results}\label{sec:fmresults_pointer}
 
 Foundation model zero-shot results are reported separately in
-\S\ref{sec:fm}.  Table~\ref{tab:sourceb-paired} presents the v1.4
-matched-panel repair results for M5/Rohlik.  Table~\ref{tab:t59}
+\S\ref{sec:fm}.  Table~\ref{tab:sourceb-paired} presents the
+matched-panel repair results for M5/Rohlik/Favorita.  Table~\ref{tab:t59}
 retains the older 72-row Source~B \WAPE{} grid for provenance only;
 because that sweep has unequal workload counts within cells, it is not
 used as paired evidence.
@@ -388,9 +388,11 @@ The \textbf{direction} of the protocol gap is not constant
 across datasets or metric definitions.  In the legacy full-workload
 per-series \WAPE{} audit, direct LightGBM is much better than recursive
 LightGBM on M5, while recursive is better on Rohlik and Favorita under
-the fixed-budget runs.  In the v1.4 matched 100-series aggregate-\WAPE{}
+the fixed-budget runs.  In the matched 100-series aggregate-\WAPE{}
 panel, however, the M5 gap is small at $h=7$ and $h=14$ and direct is
-only lower at $h=28$.  The ``direct dominates recursive'' pattern is
+only lower at $h=28$; Favorita shows the same mixed pattern, with
+recursive lower at $h=7$ and $h=14$ and direct lower at $h=28$.  The
+``direct dominates recursive'' pattern is
 therefore conditional on dataset, workload, metric aggregation, and
 compute budget, not a property of multi-step LightGBM protocol choice in
 the abstract.  Intermittency is a plausible moderator, but the current
@@ -422,14 +424,14 @@ We ran a three-variant sweep (Seasonal Naive, LightGBM recursive,
 LightGBM direct) on all three datasets.  The detailed per-dataset tables
 are in \ref{app:baseline-detail}; Table~\ref{tab:t58}
 summarises the legacy full-workload per-series \WAPE{} pattern.  The
-v1.4 matched-panel aggregate-\WAPE{} repair is reported immediately
+matched-panel aggregate-\WAPE{} repair is reported immediately
 after the table.
 
 \begin{table}[htbp]
 \centering
 \caption{Legacy full-workload summary of the direct-vs-recursive
 LightGBM gap using per-series \WAPE{} means (positive = direct lower,
-negative = recursive lower).  The v1.4 matched-panel aggregate-\WAPE{}
+negative = recursive lower).  The matched-panel aggregate-\WAPE{}
 repair gives a more conservative M5 pattern and is described below.}
 \label{tab:t58}
 \small
@@ -444,40 +446,39 @@ Favorita & ${\sim}15$--$25\,\%$ & $-4.1\,\%$ & $-7.5\,\%$ & $-9.6\,\%$ & recursi
 \end{tabular}
 \end{table}
 
-The v1.4 matched-panel repair changes the protocol conclusion for
-M5/Rohlik.  On the same 100 top-volume series and aggregate-\WAPE{}
+The matched-panel repair changes the protocol conclusion for
+M5/Rohlik/Favorita.  On the same 100 top-volume series and aggregate-\WAPE{}
 metric used for Table~\ref{tab:sourceb-paired}, direct \LGBM{} is slightly
 worse than recursive on M5 at $h=7$ (+0.4\% error) and $h=14$ (+1.1\%),
 but better at $h=28$ (-2.1\%).  On Rohlik, direct is consistently worse
-than recursive by about 3.9--4.3\%.  The horizon-scaled direct variant is
-identical to direct at $h=7$ and worse at $h=14,28$ in this matched
-M5/Rohlik repair, so the earlier unexplained \texttt{direct\_scaled}
-$h=7$ anomaly is resolved for these two datasets.  Favorita still needs
-the same matched-panel rerun before its protocol ranking can be promoted
-from legacy audit to repaired evidence.
+than recursive by about 3.9--4.3\%.  On Favorita, recursive is lower at
+$h=7$ (+4.6\% direct error) and $h=14$ (+2.2\%), while direct is lower at
+$h=28$ (-4.9\%).  The horizon-scaled direct variant is identical to direct
+at $h=7$ and worse at $h=14,28$ in the matched repair, so the earlier
+unexplained \texttt{direct\_scaled} $h=7$ anomaly is resolved in the
+repaired panel.
 
 Three key findings:
 
 \begin{enumerate}
 \item \textbf{Direction varies across datasets, workloads, and metric
   aggregation.}  The legacy per-series audit gives a strong M5 direct
-  advantage, but the v1.4 matched aggregate-\WAPE{} panel makes M5 close
+  advantage, but the matched aggregate-\WAPE{} panel makes M5 close
   at short horizons.  Rohlik remains recursive-favourable in both views,
-  while Favorita still requires a matched rerun.  This is consistent with
-  an intermittency hypothesis, but not sufficient to define a threshold or
-  causal mechanism.
+  while Favorita is recursive-favourable at short horizons and
+  direct-favourable at $h=28$.  This is consistent with an intermittency
+  hypothesis, but not sufficient to define a threshold or causal mechanism.
 
 \item \textbf{The recursive compounding penalty is demand-dependent.}
   On M5, recursive \WAPE{} grows $+19\%$ from $h = 7$ to $h = 28$
   (amplified by sparsity); on Rohlik and Favorita the recursive horizon
   penalty is no worse than direct's.
 
-\item \textbf{Budget effects remain real.}  The v1.4 M5/Rohlik repair
-  resolves the earlier \texttt{direct\_scaled} $h=7$ inconsistency for
-  those datasets, because the scaled and unscaled direct runs are
-  identical when both use 300 trees.  The legacy Favorita scaled-direct
-  result remains unresolved and should not be used to infer a stable
-  protocol ranking.
+\item \textbf{Budget effects remain real.}  The matched repair resolves
+  the earlier \texttt{direct\_scaled} $h=7$ inconsistency, because the
+  scaled and unscaled direct runs are identical when both use 300 trees.
+  At $h=14$ and $h=28$, the scaled direct variant is more expensive and
+  does not improve aggregate \WAPE{} in this repaired panel.
 \end{enumerate}
 
 The M5 \WRMSSE{} rows are reported as internal rolling-origin diagnostics
@@ -515,9 +516,10 @@ GIFT-Eval (B01) populate the FM grid entirely from published numbers.
 a MacBook (M-series, 16\,GB, MPS/CPU backend).  The legacy Source~B sweep
 contains five FMs (Chronos-Bolt-Tiny, Moirai~2.0-Small, TiRex,
 Chronos-2, TimesFM~2.5; 9--200\,M parameters) for cost-error provenance.
-The v1.4 matched-panel repair is narrower but paired: Chronos-Bolt-Tiny,
-Chronos-2, and Moirai~2.0-Small on M5/Rohlik, with the same series IDs
-and forecast origins as the baseline panel.  The two sources are kept
+The matched-panel repair is narrower but paired: Chronos-Bolt-Tiny,
+Chronos-2, and Moirai~2.0-Small on M5/Rohlik/Favorita, plus TimesFM~2.5
+and batched TiRex on Favorita, with the same series IDs and forecast
+origins as the baseline panel.  The two sources are kept
 separate: extraction rows carry
 \texttt{paper\_id}~$\in$~\{A01\ldots A17, B01, B02\}, local runs
 carry \texttt{LOCAL\_*}.  \S\ref{sec:metareg} reports the pooled
@@ -598,11 +600,9 @@ bootstrap intervals resample the shared series panel.
 \subsubsection{Consumer-Box Run: Results}\label{sec:fm_results}
 
 The Source~B repair supersedes the legacy row-level comparison for completed
-matched panels.  The main 100-series table has 30 FM-vs-best-baseline
-contrasts: three FMs on M5/Rohlik, and four FMs on Favorita including
-TimesFM~2.5.  TiRex is kept separate because the full 100-series Favorita
-CPU run did not complete the first horizon in a practical wall-clock window;
-we report a smaller 20-series diagnostic after the main table.
+matched panels.  The main 100-series table has 33 FM-vs-best-baseline
+contrasts: three FMs on M5/Rohlik, and five FMs on Favorita including
+TimesFM~2.5 and batched TiRex.
 
 \begin{table*}[htbp]
 \centering
@@ -638,14 +638,17 @@ Favorita & Chronos-2 & 7 & recursive \LGBM{} & 0.248 & 0.271 & $-0.085$ [$-0.106
 Favorita & Chronos-Bolt-Tiny & 7 & recursive \LGBM{} & 0.327 & 0.271 & 0.190 [0.141, 0.242] \\
 Favorita & Moirai~2.0-Small & 7 & recursive \LGBM{} & 0.264 & 0.271 & $-0.024$ [$-0.042$, $-0.008$] \\
 Favorita & TimesFM~2.5 & 7 & recursive \LGBM{} & 0.275 & 0.271 & 0.017 [$-0.016$, 0.051] \\
+Favorita & TiRex & 7 & recursive \LGBM{} & 0.258 & 0.271 & $-0.049$ [$-0.073$, $-0.028$] \\
 Favorita & Chronos-2 & 14 & recursive \LGBM{} & 0.255 & 0.283 & $-0.105$ [$-0.127$, $-0.084$] \\
 Favorita & Chronos-Bolt-Tiny & 14 & recursive \LGBM{} & 0.330 & 0.283 & 0.155 [0.107, 0.202] \\
 Favorita & Moirai~2.0-Small & 14 & recursive \LGBM{} & 0.272 & 0.283 & $-0.037$ [$-0.056$, $-0.019$] \\
 Favorita & TimesFM~2.5 & 14 & recursive \LGBM{} & 0.283 & 0.283 & 0.001 [$-0.035$, 0.040] \\
+Favorita & TiRex & 14 & recursive \LGBM{} & 0.265 & 0.283 & $-0.065$ [$-0.086$, $-0.045$] \\
 Favorita & Chronos-2 & 28 & direct \LGBM{} & 0.270 & 0.292 & $-0.077$ [$-0.140$, $-0.025$] \\
 Favorita & Chronos-Bolt-Tiny & 28 & direct \LGBM{} & 0.337 & 0.292 & 0.143 [0.084, 0.199] \\
 Favorita & Moirai~2.0-Small & 28 & direct \LGBM{} & 0.287 & 0.292 & $-0.017$ [$-0.065$, 0.027] \\
 Favorita & TimesFM~2.5 & 28 & direct \LGBM{} & 0.293 & 0.292 & 0.006 [$-0.035$, 0.052] \\
+Favorita & TiRex & 28 & direct \LGBM{} & 0.279 & 0.292 & $-0.045$ [$-0.100$, 0.004] \\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -655,19 +658,18 @@ nine matched M5/Rohlik/Favorita cells.  Moirai~2.0-Small is also lower in
 all nine point estimates, with the bootstrap interval excluding zero in
 seven.  Chronos-Bolt-Tiny is near parity on M5 and worse on Rohlik and
 Favorita.  TimesFM~2.5 is near parity on Favorita but much slower than the
-other completed local FMs.  These are paired local results for 100-series
+smaller completed local FMs.  Batched TiRex is lower than the best Favorita
+baseline at $h=7$ and $h=14$, with a wider interval crossing zero at $h=28$.
+These are paired local results for 100-series
 panels, not a claim that the same ranking holds for larger workloads, GPU
 inference, or covariate-aware FM variants.
 
-\textbf{TiRex diagnostic.}  A full 100-series Favorita TiRex run was started
-but did not finish the first horizon in a practical wall-clock window on the
-local CPU path.  A separate 20-series diagnostic completed at
-$h\in\{7,14,28\}$ with aggregate \WAPE{} 0.209, 0.214, and 0.223,
-respectively.  The corresponding log-ratios against the best baseline on the
-same 20 series were $-0.040$ [$-0.079$, 0.000], $-0.046$ [$-0.113$, 0.019],
-and $-0.019$ [$-0.095$, 0.048].  These point estimates favour TiRex but are
-not part of the main 100-series table and should be read primarily as a
-throughput warning.
+\textbf{TiRex throughput note.}  The original series-by-series TiRex path
+was too slow for the 100-series Favorita run.  Version~1.6 uses TiRex's
+2D context interface to batch all series within a forecast origin and runs
+the MacBook path on CPU, which completed the Favorita 100-series panel at
+$h\in\{7,14,28\}$.  This repairs the Favorita TiRex gap, but GPU throughput
+and batched M5/Rohlik TiRex reruns remain separate scaling checks.
 
 \textbf{Per-cell \WAPE{} (descriptive Source~B grid).}  Numbers below are
 per-series \WAPE{} means from the saved result file.  Because
@@ -754,20 +756,21 @@ results.
 \textbf{Caveats.}  The LightGBM baselines use a fixed hyperparameter
 grid with no dataset-specific tuning; the FMs are zero-shot; this
 section is point-forecast only; the matched repair currently covers
-100-series M5/Rohlik/Favorita for completed models, but not full TiRex,
-GPU/batched inference, or covariate-aware FM configurations.
+100-series M5/Rohlik/Favorita for completed models and batched TiRex on
+Favorita, but not GPU throughput, full TiRex M5/Rohlik reruns in the
+batched runner, or covariate-aware FM configurations.
 
 \subsubsection{Reproducibility}\label{sec:fm_repro}
 
 Source~B runs are anchored by git commit SHA, HuggingFace revision
 SHA, \texttt{pip freeze} snapshot, and machine fingerprint where
-available.  The v1.4 matched-panel runs include shared series manifests,
+available.  The matched-panel runs include shared series manifests,
 per-series predictions, run ledgers, and paired bootstrap contrasts for
-M5/Rohlik.  The v1.5 working artifacts extend that structure to Favorita for
-completed models and add a smaller TiRex diagnostic.  Future Source~B releases
-must extend the same structure to full TiRex, larger hardware/batch
-configurations, and covariate-aware FMs before Source~B can enter a broader
-paired inference.  Moirai~2.0-Small carries a
+M5/Rohlik/Favorita.  The v1.6 working artifacts add batched TiRex on the
+Favorita 100-series panel.  Future Source~B releases must extend the same
+structure to GPU throughput, batched TiRex on M5/Rohlik, larger workloads,
+and covariate-aware FMs before Source~B can enter a broader paired
+inference.  Moirai~2.0-Small carries a
 non-commercial license (CC-BY-NC-4.0), flagged in
 \S\ref{sec:framework}.
 
