@@ -8,7 +8,8 @@ The extraction inputs
 The frozen extraction schema contains 802 rows; the local Source~B
 sweep contributes 72 additional experiment rows.  After canonicalising
 datasets, model families, and numeric metrics, the R pipeline retains
-774 analysis-ready rows and forms $k = 543$ paired comparisons.  The
+774 analysis-ready rows and forms $k = 498$ primary Source~A paired
+comparisons plus 45 Source~B descriptive contrasts.  The
 complete CSVs are available in the supplementary materials.
 Table~\ref{tab:extraction-columns} shows the key columns; columns
 omitted for space include
@@ -16,6 +17,10 @@ omitted for space include
 \texttt{series\_length\_median}, \texttt{frequency},
 \texttt{fine\_tuned}, \texttt{runtime\_reported},
 \texttt{gpu\_hours}, \texttt{hardware}, and \texttt{notes}.
+The R pipeline additionally derives \texttt{study\_id},
+\texttt{suite\_id}, and \texttt{task\_id}; the resulting study
+characteristics table is written to
+\path{analysis/study_characteristics.csv}.
 
 \subsection{Column Definitions}
 
@@ -27,7 +32,10 @@ omitted for space include
 \toprule
 Column & Description \\
 \midrule
-\texttt{paper\_id}       & Unique row identifier: \texttt{\{category\}\{seq\}\_\{detail\}} \\
+\texttt{paper\_id}       & Unique row/result identifier, not a dependency cluster \\
+\texttt{study\_id}       & Derived publication or experiment-source identifier \\
+\texttt{suite\_id}       & Derived source-suite identifier (fev-bench, GIFT-Eval, Source~B, other) \\
+\texttt{task\_id}        & Derived benchmark task/dataset/frequency/horizon cell identifier \\
 \texttt{authors}         & First author et al. \\
 \texttt{year}            & Publication year \\
 \texttt{dataset}         & Target dataset (M5, Favorita, Rohlik, GIFT-Eval, fev-bench, etc.) \\
@@ -70,9 +78,10 @@ LOCAL & Local Source~B sweep file (5~FMs + 3~baselines, MacBook/Azure) & 72 \\
 
 \begin{itemize}[nosep]
   \item \textbf{Source~A} (literature extraction): categories A--F
-    (757 rows from 38+ studies, including per-task fev-bench
-    and GIFT-Eval re-extraction). These rows report accuracy numbers
-    as published by the original authors.
+    (757 schema rows from 32 included external sources plus benchmark
+    task expansions, including per-task fev-bench and GIFT-Eval
+    re-extraction). These rows report accuracy numbers as published by the
+    original authors or benchmark repositories.
   \item \textbf{Source~B} (gap-filling experiments): OWN + LOCAL
     rows. The current model-level analysis uses the 72-row
     \texttt{local\_fm\_sweep.csv} export from our own experiments on
@@ -81,6 +90,6 @@ LOCAL & Local Source~B sweep file (5~FMs + 3~baselines, MacBook/Azure) & 72 \\
     the extraction schema for provenance.
 \end{itemize}
 
-The extraction table is frozen at the version used for the
-meta-regression of \S6. Any post-submission additions would require
-re-running the pooled models of \S6.7.
+The extraction table is frozen at the version used for the reanalysis of
+\S6. Any post-submission additions would require re-running the generated
+contrast files and descriptive summaries of \S\ref{sec:metaanalysis}.

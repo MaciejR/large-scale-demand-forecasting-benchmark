@@ -1,0 +1,6 @@
+CR2 cluster-robust inference: WAPE/task_id
+cluster = task_id; n_clusters = 24
+CR2 on cluster-compatible sensitivity model. The primary model includes a crossed model_name random effect, which is not nested within this cluster variable.
+Alternative hypothesis: two-sided
+   Coef. Estimate     SE Null value t-stat d.f. (Satt) p-val (Satt) Sig.
+ intrcpt  -0.0876 0.0407          0  -2.15        22.5       0.0425    *

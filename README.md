@@ -6,7 +6,7 @@ This repository contains the manuscript, extraction table, experiment code, and
 analysis outputs for:
 
 **When Do Foundation Models Pay Off for Retail Demand Forecasting?  
-A Systematic Review and Cross-Benchmark Meta-Analysis**
+A PRISMA-Informed Cross-Benchmark Reanalysis**
 
 The current manuscript PDF is available at
 [`paper/latex/main.pdf`](paper/latex/main.pdf).
@@ -16,9 +16,9 @@ The v1.0 technical-report release is archived on Zenodo:
 
 ## Key Findings
 
-- Foundation models show a robust benchmark-level advantage over conventional
-  baselines in the pooled model-level meta-regression, but the effect is not a
-  universal single-metric claim.
+- Foundation models show negative benchmark-level log-ratio point estimates
+  against conventional baselines, but conservative suite/study-level
+  uncertainty is wide.
 - The advantage is strongest on distributional metrics such as Scaled Quantile
   Loss and smaller on point-forecast metrics such as WAPE.
 - Model scale in the 9M--200M parameter range is not a significant moderator in
@@ -26,6 +26,9 @@ The v1.0 technical-report release is archived on Zenodo:
 - Strong conventional baselines remain competitive, especially when covariates,
   leakage controls, and direct-vs-recursive protocol choices are handled
   carefully.
+- The v1.4 matched-panel Source B repair reruns M5/Rohlik on shared
+  100-series panels and reports paired bootstrap contrasts separately from the
+  Source A reanalysis.
 - Cost-accuracy tradeoffs matter: some foundation-model gains are meaningful
   only when inference cost and hardware constraints are acceptable for the use
   case.
@@ -57,11 +60,10 @@ BibTeX:
 
 ## Publication Roadmap
 
-The current recommended path is documented in
-[`docs/PUBLICATION_STRATEGY.md`](docs/PUBLICATION_STRATEGY.md). In short:
-prepare a shorter arXiv-oriented v1.1 manuscript, seek one external
-forecasting/time-series reviewer or collaborator, then target a peer-reviewed
-forecasting or applied-ML journal.
+The current recommended path is to treat v1.4 as an exploratory
+matched-panel repair release, complete the remaining Favorita/TimesFM/TiRex
+reruns, and only then decide between arXiv and a peer-reviewed forecasting or
+applied-ML journal.
 
 ## What Is In This Repository
 
@@ -83,14 +85,20 @@ instructions.
 - Systematic extraction: [`analysis/extraction_schema.csv`](analysis/extraction_schema.csv)
 - Source B local/Azure result export:
   [`benchmark/results/local_fm_sweep.csv`](benchmark/results/local_fm_sweep.csv)
-- Primary model-level deltas:
+- Primary model-level log-ratios and audit deltas:
   [`analysis/figures/table_6_1_model_level_deltas.csv`](analysis/figures/table_6_1_model_level_deltas.csv)
+- Metric-specific summary:
+  [`analysis/figures/table_6_1_metric_specific.csv`](analysis/figures/table_6_1_metric_specific.csv)
+- Study characteristics:
+  [`analysis/study_characteristics.csv`](analysis/study_characteristics.csv)
 - Best-baseline sensitivity deltas:
   [`analysis/figures/table_6_1_model_level_deltas_best_baseline.csv`](analysis/figures/table_6_1_model_level_deltas_best_baseline.csv)
 - Primary meta-regression output:
   [`analysis/figures/table_6_1_primary_intercept.txt`](analysis/figures/table_6_1_primary_intercept.txt)
 - Best-baseline sensitivity:
   [`analysis/figures/sensitivity_best_baseline.txt`](analysis/figures/sensitivity_best_baseline.txt)
+- v1.4 Source B matched-panel contrasts:
+  [`analysis/figures/source_b_paired_panel_fm_vs_best_baseline.csv`](analysis/figures/source_b_paired_panel_fm_vs_best_baseline.csv)
 
 ## Quick Verification
 
@@ -123,5 +131,6 @@ sources:
 ## Current Status
 
 The v1.0 technical report has been published on Zenodo with DOI
-`10.5281/zenodo.21338004`. The local manuscript now includes this DOI in the
-data-availability statement for future versions.
+`10.5281/zenodo.21338004`. Version 1.4 is prepared as a separate
+matched-panel repair package and does not overwrite the historical v1.0
+snapshot.

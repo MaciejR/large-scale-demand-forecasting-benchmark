@@ -1,0 +1,10 @@
+dataset,horizon,models_present,n_models_present,missing_models,all_8_models_present
+Favorita,7,chronos2;chronos_bolt_tiny;lightgbm_cov;lightgbm_direct;moirai2;seasonal_naive;timesfm25;tirex,8,,True
+Favorita,14,chronos2;chronos_bolt_tiny;lightgbm_cov;lightgbm_direct;moirai2;seasonal_naive;timesfm25;tirex,8,,True
+Favorita,28,chronos2;chronos_bolt_tiny;lightgbm_cov;lightgbm_direct;moirai2;seasonal_naive;timesfm25;tirex,8,,True
+M5,7,chronos2;chronos_bolt_tiny;lightgbm_cov;lightgbm_direct;moirai2;seasonal_naive;timesfm25;tirex,8,,True
+M5,14,chronos2;chronos_bolt_tiny;lightgbm_cov;lightgbm_direct;moirai2;seasonal_naive;timesfm25;tirex,8,,True
+M5,28,chronos2;chronos_bolt_tiny;lightgbm_cov;lightgbm_direct;moirai2;seasonal_naive;timesfm25;tirex,8,,True
+Rohlik v2,7,chronos2;chronos_bolt_tiny;lightgbm_cov;lightgbm_direct;moirai2;seasonal_naive;timesfm25;tirex,8,,True
+Rohlik v2,14,chronos2;chronos_bolt_tiny;lightgbm_cov;lightgbm_direct;moirai2;seasonal_naive;timesfm25;tirex,8,,True
+Rohlik v2,28,chronos2;chronos_bolt_tiny;lightgbm_cov;lightgbm_direct;moirai2;seasonal_naive;timesfm25;tirex,8,,True

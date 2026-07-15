@@ -2,174 +2,96 @@
 \section{Decision Framework}
 \label{sec:framework}
 
-The meta-regression of \S\ref{sec:metareg} answers ``when do FMs pay off?'' in
-statistical terms ($\Dhat$, CIs, moderator directions).  This section
-translates those findings into a practitioner-oriented decision tool: given a
-retail team's data characteristics and infrastructure constraints, which model
-family should they evaluate first?
+The evidence in \S\ref{sec:metareg} is not strong enough to justify a
+deterministic decision tree.  The defensible output is a validation
+procedure: run a small, paired bake-off on the target workload, choose the
+metric that matches the business loss, and treat model-family rankings as
+conditional on that protocol.
 
-\subsection{The decision tree}
-\label{subsec:decision-tree}
+\subsection{Validation checklist}
+\label{subsec:validation-checklist}
 
-The framework is a three-question flowchart.  Each leaf recommends a starting
-model family and flags the dominant risk.
+For a new retail forecasting deployment, we recommend the following order.
 
-\begin{alltt}\small
-Q1: Does your dataset have >15\% zero-day fraction
-    (intermittent / sparse demand)?
-\(\mid\)
-\(\mid\)-- YES \(\to\) Q2a: Do you need per-series point-forecast accuracy
-\(\mid\)         (e.g., replenishment at SKU level)?
-\(\mid\)         \(\mid\)
-\(\mid\)         \(\mid\)-- YES \(\to\) START WITH: LightGBM direct + covariates
-\(\mid\)         \(\mid\)         WHY: On intermittent data, direct LGBM wins
-\(\mid\)         \(\mid\)         by 17--22\% over recursive (\S5.3.6, Table~\ref{tab:t58}),
-\(\mid\)         \(\mid\)         and per-series WAPE is unreliable as a metric
-\(\mid\)         \(\mid\)         (\S5.4.5). Use WRMSSE or aggregate WAPE for
-\(\mid\)         \(\mid\)         model selection. FMs post lower per-series
-\(\mid\)         \(\mid\)         WAPE but this is a metric artefact, not a
-\(\mid\)         \(\mid\)         real accuracy gain (\S6.7 M5 finding).
-\(\mid\)         \(\mid\)         RISK: Per-series WAPE will mislead you into
-\(\mid\)         \(\mid\)         picking the FM. Validate on WRMSSE.
-\(\mid\)         \(\mid\)
-\(\mid\)         \(\mid\)-- NO (aggregate-level forecast, e.g., category
-\(\mid\)              planning) \(\to\) START WITH: FM zero-shot
-\(\mid\)              WHY: At the aggregate level, FM and LGBM converge
-\(\mid\)              (aggregate WAPE ratio \(\sim\)0.89, \S5.4.5). The FM
-\(\mid\)              requires no feature engineering, saving 2--4 weeks
-\(\mid\)              of data pipeline work.
-\(\mid\)              RISK: No covariate channel in most FMs --- if
-\(\mid\)              promotions drive >20\% of variance, LGBM wins.
-\(\mid\)
-\(\mid\)-- NO (smooth / continuous demand, <15\% zero-day) \(\to\)
-    Q2b: Do you have rich covariates (promotions, price,
-         calendar events) AND engineering capacity to build
-         a feature pipeline?
-         \(\mid\)
-         \(\mid\)-- YES \(\to\) START WITH: LightGBM recursive + covariates
-         \(\mid\)         WHY: On Favorita (covariate-rich, smooth
-         \(\mid\)         demand), lightgbm\_cov matches Chronos-Bolt-
-         \(\mid\)         Tiny within 0.3 pp WAPE at h=7 and beats it
-         \(\mid\)         at h=14,28 (\S5.4.5). Recursive outperforms
-         \(\mid\)         fixed-budget direct by 4--10\% on smooth
-         \(\mid\)         demand; horizon-scaled direct narrows the
-         \(\mid\)         gap but raises training cost (\S5.3.6).
-         \(\mid\)         The FM adds no accuracy and costs more in
-         \(\mid\)         inference latency at scale.
-         \(\mid\)         RISK: Feature engineering is the bottleneck,
-         \(\mid\)         not model selection. Budget 60\% of effort on
-         \(\mid\)         features, 20\% on tuning, 20\% on evaluation.
-         \(\mid\)
-         \(\mid\)-- NO (limited covariates or no feature engineering
-              capacity) \(\to\) Q3: Is wall-time latency critical
-              (e.g., <5 min for 10K series)?
-              \(\mid\)
-              \(\mid\)-- YES \(\to\) START WITH: Chronos-Bolt-Tiny
-              \(\mid\)         WHY: 9M params, \(\sim\)0.6s per series on
-              \(\mid\)         consumer CPU, competitive with LGBM
-              \(\mid\)         on Rohlik within 4--8 pp WAPE (\S5.4.7,
-              \(\mid\)         Table~\ref{tab:t59}). No feature pipeline needed.
-              \(\mid\)         RISK: On Rohlik h=28, seasonal\_naive
-              \(\mid\)         overtakes lightgbm\_cov (0.412 vs 0.432)
-              \(\mid\)         --- at long horizons on smooth data, even
-              \(\mid\)         naive beats a poorly tuned tree.
-              \(\mid\)
-              \(\mid\)-- NO \(\to\) START WITH: TiRex
-                        WHY: Beats Chronos-Bolt-Tiny on all 9
-                        paired cells by 0.6--2.3 pp (\S5.4.5),
-                        at \(\sim\)3.5\(\times\) the FLOPs. Worth the cost when
-                        wall time is not binding and 1 pp WAPE
-                        matters for the business case.
-                        RISK: MPS xLSTM stall on Apple silicon
-                        (\S5.4.9). Use TIREX\_FORCE\_CPU=1 or
-                        deploy on CUDA.
-\end{alltt}
-
-\subsection{Cost thresholds}
-\label{subsec:cost-thresholds}
-
-The decision tree above is accuracy-first.  When cost is the binding
-constraint, the \S\ref{sec:metareg} Pareto analysis adds a second dimension.
-
-\paragraph{Consumer hardware (MacBook M-series MPS).}
-The 45 FM Source~B cells ran in ${\sim}14$~h wall time at \$0.08 marginal
-electricity (Polish grid) and 0.201~kg~CO$_2$.  Per 1,000 series per horizon,
-FM inference costs ${\sim}$\$0.003 and emits ${\sim}$0.011~kg~CO$_2$.  This is
-$16\times$ cheaper in \$ than the Azure E4DS\_V4 batch baseline (\$0.048 per
-1,000 series) but $44\times$ higher in CO$_2$ per \$ (the Azure grid is
-Swedish hydro, ${\sim}$0.02~kg~CO$_2$/kWh vs Poland at ${\sim}$0.7~kg~CO$_2$/kWh).
-
-\paragraph{When the FM ``pays off'' in \$ terms:}
-\begin{itemize}
-  \item If the team already has a consumer MacBook and no cloud budget, FM
-    inference is essentially free (marginal electricity only) and the accuracy
-    delta on smooth-demand data is $<$1~pp \WAPE{}.  The FM pays off
-    immediately.
-  \item If the team has cloud infrastructure and a data engineering team, the
-    FM saves ${\sim}$2--4 weeks of feature pipeline work but adds inference
-    latency.  We express the run-count break-even as:
-    \[
-      N^\star =
-      \frac{C_{\mathrm{feature\ pipeline}}}
-           {C_{\mathrm{FM,run}} - C_{\mathrm{LGBM,run}}},
-    \]
-    defined only when the FM has a positive recurring cost premium.  Using
-    the Source~B cost logs (\texttt{cost\_usd} in
-    \texttt{benchmark/results/local\_fm\_sweep.csv}) and a conservative
-    feature-pipeline saving of roughly 2--4 engineer-weeks, the illustrative
-    threshold is around 50 production forecasting runs.  Below that range,
-    saved engineering time dominates; above it, recurring run cost and latency
-    dominate the decision.
-\end{itemize}
-
-\paragraph{When the FM does NOT pay off:}
-\begin{itemize}
-  \item On intermittent-demand data where per-series accuracy matters and
-    \WRMSSE{} is the evaluation metric: the FM posts 0.97 \WRMSSE{} vs
-    competition-grade \LGBM{} at 0.52 on M5.  No cost argument overcomes a
-    45~pp accuracy gap on the business-relevant metric.
-  \item When the team has rich covariates that carry real signal (promotions,
-    markdown schedules, weather): univariate FMs cannot access this information
-    and the covariate-aware \LGBM{} baseline consumes it directly.
-\end{itemize}
-
-\subsection{Recommendations by role}
-\label{subsec:recommendations-role}
-
-\paragraph{Data scientist / ML engineer} evaluating model families for a new
-retail forecasting system:
 \begin{enumerate}
-  \item Profile your demand distribution: compute zero-day fraction per series.
-    If median $> 15$\%, you are in the intermittent regime and \LGBM{} direct
-    is the default.
-  \item Run Seasonal Naive as a sanity floor.  Any model that loses to it on a
-    given (dataset, horizon) cell is broken.
-  \item If smooth demand and no covariates: try Chronos-Bolt-Tiny zero-shot.
-    If it lands within 2~pp \WAPE{} of your internal baseline, ship it --- the
-    engineering savings justify the gap.
-  \item If smooth demand and rich covariates: invest in LightGBM recursive
-    with a proper feature pipeline.  The FM will not beat it and will not use
-    your covariates.
+  \item \textbf{Define the decision metric before modelling.}  If the
+    business decision is replenishment at SKU level, use a per-series or
+    service-level metric and inspect denominator sensitivity.  If the
+    decision is category or warehouse planning, include aggregate \WAPE{} or
+    a volume-weighted metric.  For safety-stock decisions, evaluate quantile
+    loss directly.
+
+  \item \textbf{Build the common evaluation panel.}  Use the same series IDs,
+    origins, horizons, and actuals for Seasonal Naive, the candidate FM, and
+    the tree baseline.  Store per-series predictions so that paired
+    bootstrap intervals can be computed for every model contrast.
+
+  \item \textbf{Run three baselines first.}  Seasonal Naive is the sanity
+    floor.  A fixed-budget LightGBM recursive model measures the value of a
+    cheap covariate-aware tree.  A direct or horizon-scaled direct LightGBM
+    measures the value of avoiding recursive feedback at higher training
+    cost.
+
+  \item \textbf{Run one or two zero-shot FMs on the same panel.}  Start with
+    a small, operationally cheap FM and one stronger checkpoint if latency
+    allows.  Do not compare an FM sampled on 100 series with a baseline
+    evaluated on a full dataset unless the claim is explicitly labelled as
+    descriptive.
+
+  \item \textbf{Compare paired contrasts, not table ranks.}  Report
+    $\log(\text{FM metric}/\text{baseline metric})$ with a paired bootstrap
+    interval.  A point estimate within the noise floor is a tie; choose the
+    simpler or cheaper deployment.
 \end{enumerate}
 
-\paragraph{Engineering manager} sizing infrastructure:
+\subsection{Interpreting the main moderators}
+\label{subsec:framework-moderators}
+
+\paragraph{Metric.}
+The most stable empirical pattern is metric dependence.  SQL, \WAPE{}, and
+\MASE{} do not measure the same construct, and a mixed-metric omnibus should
+not drive deployment.  Use the metric-specific result that matches the
+operational decision.
+
+\paragraph{Demand intermittency.}
+The direct-vs-recursive gap differs across M5, Rohlik, and Favorita.  This
+supports an intermittency hypothesis, but it does not establish a universal
+zero-day threshold.  Treat zero-day fraction as a stratification variable in
+the bake-off rather than as a rule such as ``above 15\%, choose direct.''
+
+\paragraph{Covariates.}
+When promotions, prices, stockouts, holidays, or weather are predictive, a
+covariate-aware LightGBM can be a strong comparator.  A univariate FM may
+still be useful when the team lacks a feature pipeline, but that is a
+systems tradeoff rather than evidence that the model family has more
+forecasting information.
+
+\paragraph{Cost and hardware.}
+The Source~B cost logs mix MacBook marginal electricity, Azure job costs,
+and unequal workloads.  They are useful for scenario planning, not for a
+universal break-even point.  A publishable cost comparison should normalize
+to the same number of series, the same horizons, the same batching policy,
+and the same accounting basis.
+
+\subsection{Decision rule after the bake-off}
+\label{subsec:framework-decision-rule}
+
+After the paired bake-off, choose the FM when all of the following hold:
+
 \begin{itemize}
-  \item Consumer-HW FM inference (MacBook, no GPU) is viable for datasets up
-    to ${\sim}$30K series with daily re-forecasting.  Above that, batch on
-    cloud CPU (E4ds\_v4-class) is cheaper than renting GPUs, and \LGBM{} on
-    the same CPU instances is faster per series.
-  \item GPU allocation for FM inference is not justified on any of our three
-    retail datasets --- the accuracy delta does not warrant the cost premium
-    over CPU inference.
+  \item the FM has a lower or practically tied paired error interval on the
+    target metric;
+  \item the saved feature-engineering or maintenance effort is material for
+    the team;
+  \item inference latency and hardware cost are acceptable at the target
+    series count;
+  \item the business does not depend on covariates that the evaluated FM
+    cannot consume.
 \end{itemize}
 
-\paragraph{VP / Director} making a build-vs-buy decision:
-\begin{itemize}
-  \item The FM ``pays off'' when your team does not have the bandwidth to build
-    and maintain a covariate feature pipeline.  The accuracy sacrifice on
-    smooth-demand data is $<$1~pp \WAPE{} (Table~\ref{tab:t59}, Favorita row) --- likely
-    within the noise floor of most business KPIs.
-  \item The FM does NOT pay off when you already have a production \LGBM{}
-    pipeline with promotions and calendar features: swapping to an FM loses the
-    covariate signal with no accuracy gain.
-\end{itemize}
+Choose the conventional baseline when it wins the paired interval, uses
+important covariates, or already exists as a reliable production pipeline.
+Choose Seasonal Naive or another simple statistical method when both FM and
+LightGBM fail to beat it on the target metric; that outcome usually signals
+an evaluation, feature, or data-quality problem before it signals a need for
+a larger model.

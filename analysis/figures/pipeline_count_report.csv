@@ -1,0 +1,13 @@
+stage,n
+raw_extraction_rows,874
+prepared_analysis_rows,774
+prepared_source_a_rows,702
+prepared_source_b_rows,72
+average_baseline_delta_pairs_all_sources,543
+best_baseline_delta_pairs_all_sources,543
+primary_best_baseline_source_a_pairs,498
+primary_pairs_metric_MASE,166
+primary_pairs_metric_SQL,166
+primary_pairs_metric_WAPE,166
+primary_pairs_suite_GIFT-Eval,84
+primary_pairs_suite_fev-bench,414

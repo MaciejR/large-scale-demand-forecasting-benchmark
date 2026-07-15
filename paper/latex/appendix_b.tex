@@ -8,7 +8,7 @@
     traditional statistical/ML models on retail demand forecasting?
   \item \textbf{RQ2:} Which data characteristics moderate the relative
     performance of foundation models?
-  \item \textbf{RQ3:} What is the cost-accuracy Pareto frontier across
+  \item \textbf{RQ3:} What is the observed cost-error tradeoff across
     model families?
   \item \textbf{RQ4:} Under what conditions should a practitioner choose
     a foundation model over LightGBM or ETS?
@@ -20,9 +20,15 @@
   \item Semantic Scholar (API)
   \item Google Scholar
   \item arXiv (cs.LG, stat.ML)
-  \item Scopus
-  \item Web of Science
+  \item Scopus (target source; auditable export not retained in v1.3)
+  \item Web of Science (target source; auditable export not retained in v1.3)
 \end{enumerate}
+
+The retained search log below contains 25 auditable query families, mostly
+Google Scholar/web queries plus arXiv and Semantic Scholar checks.  Scopus
+and Web of Science are therefore reported as intended sources rather than
+fully auditable database exports.  This is one reason the review is labelled
+PRISMA-informed rather than PRISMA-compliant.
 
 \subsection{Primary Search Query}
 
@@ -103,16 +109,20 @@ Date & Source & Query (abbreviated) & Results \\
 \end{tabular}
 \end{table}
 
-Total queries: 25. Total unique candidates after deduplication: 49.
+Total queries: 25. Total unique candidates after deduplication: approximately
+120.  The search log records the query families; the PRISMA flow below uses
+the deduplicated screening counts.
 
 \subsection{PRISMA Flow Summary}
 
 \begin{alltt}
-Records identified through database searching:       ~250
-Records after deduplication:                          ~130
-Titles/abstracts screened:                             130
-Records excluded (not demand/retail, no quant):        ~81
-Full-text articles assessed for eligibility:            49
-Studies included in qualitative synthesis:              43
-Studies included in quantitative extraction:            39
+Records identified through database searching:        150
+Duplicates removed:                                    30
+Records after deduplication:                          120
+Titles/abstracts screened:                            120
+Records excluded (not demand/retail, no quant):        50
+Full-text articles assessed for eligibility:            70
+Full-text articles excluded:                            38
+Source A external studies included:                     32
+Source B own experiment blocks:                          7 (not PRISMA studies)
 \end{alltt}

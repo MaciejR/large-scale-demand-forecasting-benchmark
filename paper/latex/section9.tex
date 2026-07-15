@@ -2,13 +2,16 @@
 \section{Conclusions}
 \label{sec:conclusions}\label{sec:conclusion}
 
-We presented a PRISMA-informed systematic review of foundation models for
-retail demand forecasting, augmented with cross-benchmark extraction from
-fev-bench and GIFT-Eval and original gap-filling experiments.  The study
-synthesised 800+ extraction rows from 9~retail datasets (2020--2026) into a
-model-level meta-regression with $k = 543$ paired comparisons across
-12~foundation models and conventional baselines.  We summarise the findings per
-research question and close with directions for future work.
+We presented a PRISMA-informed review and exploratory cross-benchmark
+reanalysis of foundation models for retail demand forecasting, augmented
+with original gap-filling experiments.  The primary quantitative file now
+contains $k = 498$ Source~A best-baseline comparisons from two benchmark
+suites, fev-bench and GIFT-Eval, plus a separate v1.4 matched-panel Source~B
+repair on M5/Rohlik.
+Because the available benchmark papers do not provide paired
+prediction-level variances and covariances, v1.4 does not claim a
+confirmatory pooled meta-analysis.  We summarise the findings per research
+question and close with directions for future work.
 
 \subsection{Answers to the research questions}
 \label{subsec:answers-rq}
@@ -16,98 +19,105 @@ research question and close with directions for future work.
 \paragraph{RQ1 (Accuracy): Do zero-shot foundation models outperform
 conventional baselines on retail demand forecasting?}
 
-Yes, in the benchmark-level paired corpus --- with a much stronger
-advantage on distributional metrics than on point-forecast metrics.
-The pooled meta-regression on $k = 543$ model-level pairs finds
-$\Dhat(\text{FM} - \text{baseline}) = -0.195$ ($p < .0001$, 95\,\% CI
-$[-0.283, -0.107]$).  This is an omnibus summary across SQL,
-\WAPE{}, and \MASE{}, not a single-metric effect size.
+The repaired answer is conditional.  In the Source~A best-baseline corpus,
+the metric-specific descriptive summaries are directionally favourable to
+FMs: SQL has median log-ratio $-0.229$ with FMs lower in 92\% of rows,
+\WAPE{}/ND has median $-0.047$ with FMs lower in 66\% of rows, and
+\MASE{} has median $-0.036$ with FMs lower in 61\% of rows.  GIFT-Eval is
+uniformly favourable to FMs in this extraction, while fev-bench is much
+closer to parity on point-forecast metrics.
 
-The per-metric decomposition (\S\ref{subsec:metric-moderator}) reveals a
-metric gradient: on Scaled Quantile Loss (SQL), which measures the full
-predictive distribution, the FM advantage is large and highly significant
-($\Dhat = -0.318$, $p < .0001$).  On \WAPE{}, a point-forecast metric,
-the FM advantage is also statistically significant but smaller
-($\Dhat = -0.116$, $p = 0.018$).
-\textbf{Foundation models achieve substantially lower quantile-loss scores;
-their point forecasts are also better on average in this corpus, but the
-advantage is attenuated and more sensitive to covariates, leakage, and
-evaluation protocol.}
+\textbf{The defensible conclusion is that FMs show an observed
+benchmark-level advantage, especially on distributional metrics, but this is
+not universal evidence that FMs outperform conventional baselines in all
+retail demand settings.}  Rankings depend on metric, baseline strength,
+covariates, leakage controls, and evaluation protocol.
 
-The result is robust to excluding M5 ($\Dhat = -0.183$, $p = 0.0002$,
-$k = 468$), confirming that the finding does not depend on the M5
-\WAPE{} artefact that inflates per-series denominators.  It is also
-robust to dropping fev-bench ($\Dhat = -0.306$, $p = 0.0007$), dropping
-GIFT-Eval ($\Dhat = -0.156$, $p = 0.0012$), using the best conventional
-baseline in each cell ($\Dhat = -0.155$, $p < .0001$), and equal
-weighting of pairs ($\Dhat = -0.160$, $p = 0.0002$).
+The v1.4 Source~B matched-panel repair is directionally consistent with a
+narrower local version of that claim.  On the same 100 M5/Rohlik series and
+forecast origins, Chronos-2 has lower aggregate \WAPE{} than the best local
+baseline in all six dataset--horizon cells, while Moirai~2.0-Small is lower
+in all six point estimates and has bootstrap intervals excluding zero in
+five.  Chronos-Bolt-Tiny is near parity on M5 and worse on Rohlik.  These
+results are paired local evidence, not a replacement for the broader
+Source~A reanalysis.
 
 \paragraph{RQ2 (Moderators): Which characteristics moderate the
 FM-vs-baseline gap?}
 
-All moderator tests are exploratory (no multiplicity adjustment).
-Metric choice is the dominant moderator: the SQL/\WAPE{} split explains more
-heterogeneity than any data characteristic.  Beyond metric:
+All moderator statements are exploratory.  Metric choice is the dominant
+row-level pattern: the SQL/\WAPE{} split is more visible than any data
+characteristic.  Beyond metric, the following patterns are
+hypothesis-generating because the independent source count is small:
 
 \begin{itemize}
-  \item \textbf{Dataset:} Not significant as a moderator ($p = 0.431$);
-    the metric type drives heterogeneity, not the dataset.
-  \item \textbf{Model scale:} Not significant ($p = 0.867$).
-    Within Source~B (controlled protocol),
-    Moirai~2.0-Small (11\,M) outperforms Chronos-2 (120\,M) on M5.
-  \item \textbf{Horizon:} No significant horizon effect on $\Delta$.
+  \item \textbf{Dataset:} No stable dataset-level moderator survives the
+    repaired clustering.
+  \item \textbf{Model scale:} No stable scale effect appears in the
+    9\,M--200\,M legacy range.  In the v1.4 matched M5/Rohlik panel,
+    Chronos-2 is consistently stronger than Chronos-Bolt-Tiny, but
+    Moirai~2.0-Small is also competitive.  That pattern is too narrow to
+    claim a monotonic scaling law.
+  \item \textbf{Horizon:} No stable horizon effect appears.
   \item \textbf{Baseline family:} The FM advantage is larger against
     statistical baselines (Auto~ETS, Seasonal Naive) than against
     gradient-boosted trees, as expected.
   \item \textbf{LightGBM protocol:} The direct-vs-recursive multi-step gap
-    is conditional on demand intermittency: direct wins on M5 (intermittent),
-    recursive wins on Favorita and Rohlik (smooth).
+    differs across datasets, metric aggregation, and budgets.  The legacy
+    per-series audit made M5 look strongly direct-favourable, but the v1.4
+    matched aggregate-\WAPE{} panel makes M5 close at short horizons and
+    recursive-favourable on Rohlik.  Favorita remains a matched-rerun target.
 \end{itemize}
 
-\paragraph{RQ3 (Cost): What is the cost-accuracy Pareto frontier?}
+\paragraph{RQ3 (Cost): What is the cost-error tradeoff?}
 
-Consumer-hardware FM inference (MacBook M-series MPS) costs ${\sim}$\$0.003
-per 1,000 series per horizon --- $16\times$ cheaper than Azure E4DS\_V4 batch
-baselines in USD.  On smooth-demand data where FM and \LGBM{} point-forecast
-accuracy are within 1~pp \WAPE{}, the cost differential favours the FM when
-no cloud budget exists and favours \LGBM{} when cloud infrastructure is
-already provisioned.  On distributional accuracy (SQL), the FM delivers
-strictly lower quantile loss at comparable cost.
+Consumer-hardware FM inference can be inexpensive for the Source~B setup,
+but the cost comparison is scenario-dependent.  It depends on batch size,
+available hardware, GPU recosting assumptions, and whether a team already
+has a tuned \LGBM{} pipeline.  The cost plots should be read as
+scenario-specific cost-error scatterplots, not as a universal efficiency
+frontier or break-even rule.
 
 \paragraph{RQ4 (Guidance): When should a retail team deploy a foundation
 model?}
 
 The \S\ref{sec:framework} decision framework distils the findings into
-conditions where the FM pays off:
+conditions where an FM is worth testing first:
 
 \begin{enumerate}
   \item \textbf{When distributional forecasts matter.}  If the business uses
     quantile forecasts for safety-stock calculation or scenario planning,
-    FMs provide lower SQL / quantile loss than tree models in the
-    benchmark corpus ($\Dhat = -0.318$ on SQL).
+    FMs often provide lower SQL / quantile loss than tree models in the
+    benchmark corpus, but the result is benchmark-level rather than
+    leakage-free proof.
 
-  \item \textbf{No feature engineering capacity.}  Zero-shot FM inference on
-    consumer hardware delivers competitive point-forecast accuracy ($<$1~pp
-    \WAPE{} gap on smooth-demand data) with zero data preparation.
+  \item \textbf{Limited feature engineering capacity.}  Zero-shot FM
+    inference requires minimal inference-time preparation and can be a useful
+    baseline when no covariate pipeline exists.
 
-  \item \textbf{Cold-start series.}  For new SKUs with no sales history,
-    zero-shot FMs produce reasonable forecasts from day one.
+  \item \textbf{Cold-start or low-history series.}  Zero-shot FMs are a
+    plausible candidate when per-series training data are sparse, but this
+    should be validated against simple statistical baselines.
 \end{enumerate}
 
-The FM does NOT pay off when: (a)~the team has rich covariates and
-a tuned feature pipeline (\LGBM{} with covariates can match FM on
-\WAPE{}), (b)~batch
-throughput at scale is the constraint (\LGBM{} on CPU is faster per series
-than FM on MPS for $>$10K series).
+The FM may not pay off when: (a)~the team has rich covariates and a tuned
+feature pipeline, or (b)~batch throughput at scale is the constraint.  These
+are validation hypotheses, not universal deployment rules.
 
 \subsection{Future work}
 \label{subsec:future-work}
 
+\paragraph{Complete the Source~B repair.}
+Version~1.4 completes the shared-panel rerun for M5/Rohlik and three FMs.
+The remaining repair is to extend the same design to Favorita,
+TimesFM~2.5, TiRex, GPU/batched inference, and covariate-aware FM variants,
+then compute paired bootstrap covariance matrices for the full set of
+log-ratio contrasts.
+
 \paragraph{Covariate-aware FM evaluation.}
-Chronos-2 and TabPFN-TS support exogenous covariates.  Running these models
-with promotions and calendar features on Favorita and Rohlik would test
-whether the covariate channel closes the residual \WAPE{} gap on
-smooth-demand data.
+Covariate-aware FM configurations and TabPFN-TS should be evaluated with
+promotions and calendar features on Favorita and Rohlik to test whether an
+FM can close the covariate gap under matched conditions.
 
 \paragraph{Fine-tuned FM evaluation.}
 Our study is restricted to zero-shot FMs.  Lightweight fine-tuning (e.g.,
@@ -121,7 +131,6 @@ are untested on retail data; if their SQL advantage translates to improved
 point forecasts, the model-scale moderator could become significant.
 
 \paragraph{Beyond retail.}
-The metric gradient (large FM advantage on SQL, smaller advantage on
-\WAPE{}) should be tested on spare-parts, pharmaceutical, and
-e-commerce demand datasets to determine whether it is a universal
-property of current FMs or specific to the retail domain.
+The metric gradient should be tested on spare-parts, pharmaceutical, and
+e-commerce demand datasets to determine whether it is a stable property of
+current FMs or specific to the present benchmark corpus.

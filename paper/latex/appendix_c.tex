@@ -1,20 +1,27 @@
 % appendix_c.tex — Per-Series Metric Distributions
 \section{Per-Series Metric Distributions}\label{app:metrics}
 
-\subsection{Bootstrap Standard Errors for Source B FM Cells}
+\subsection{Legacy 100-Series Bootstrap for Source B FM Cells}
 
-Table~\ref{tab:bootstrap-se} reports the 10{,}000-iteration bootstrap
-standard error of mean \WAPE{} for each of the 45 Source~B foundation
-model cells (5~FMs $\times$ 3 datasets $\times$ 3 horizons). Each
-cell samples 100 series (98--100 after \WAPE{} filtering). The
-bootstrap validates that $n = 100$ produces stable \WAPE{} estimates
-for the meta-regression of \S6.
+Table~\ref{tab:bootstrap-se} reports the legacy 10{,}000-iteration
+bootstrap standard error of mean \WAPE{} for the Source~B
+foundation-model cells for which per-series bootstrap files were
+available.  The file
+contains 36 cells (4~FMs $\times$ 3 datasets $\times$ 3 horizons) and
+omits TimesFM~2.5.  It is therefore retained as a descriptive uncertainty
+check, not as the sampling-variance input to the Source~A reanalysis
+of \S6.  These values come from the legacy small-sample workload and are
+not directly comparable to the unmatched saved-sweep estimates in
+Table~\ref{tab:t59}.  The v1.4 matched-panel paired bootstrap for M5/Rohlik
+is reported separately in Table~\ref{tab:sourceb-paired} and in
+\texttt{analysis/figures/source\_b\_paired\_panel\_fm\_vs\_best\_baseline.csv}.
 
 \begin{table}[htbp]
 \centering
-\caption{Bootstrap standard error and 95\% CI for Source~B FM cells
-(5~FMs $\times$ 3~datasets $\times$ 3~horizons = 45~cells,
-$B = 10{,}000$).}\label{tab:bootstrap-se}
+\caption{Legacy 100-series bootstrap standard error and 95\% CI for
+available Source~B FM
+cells (4~FMs $\times$ 3~datasets $\times$ 3~horizons = 36~cells,
+TimesFM~2.5 missing, $B = 10{,}000$).}\label{tab:bootstrap-se}
 \footnotesize
 \begin{tabular}{lllrrrr}
 \toprule
@@ -68,17 +75,17 @@ Rohlik   & 7  & Chronos-Bolt-Tiny &  98 & 0.322 & 0.011 & [0.301, 0.344] \\
 \end{tabular}
 \end{table}
 
-Median bootstrap SE across all 45 cells: 0.011. Maximum SE: 0.014
-(Rohlik $h = 28$). Widest 95\% CI: $\pm$0.028 \WAPE{}.
+Median bootstrap SE across the 36 available cells: 0.011. Maximum SE:
+0.014 (Rohlik $h = 28$). Widest 95\% CI: $\pm$0.028 \WAPE{}.
 Interpretation:
 
 \begin{itemize}[nosep]
-  \item The M5 FM-vs-\LGBM{} gap of 40+ pp \WAPE{} is stable to
-    $>$10 SE.
-  \item The Rohlik gap of 4--8 pp is stable to 3--6 SE.
+  \item These bootstrap intervals describe the available FM cells only.
+    They do not provide paired FM-minus-baseline uncertainty.
+  \item TimesFM~2.5 and TiRex still require matched-panel reruns before
+    Source~B can be treated as a complete five-model bootstrap panel.
   \item The Favorita ``close call'' of 0.3 pp at $h = 7$ is within
-    1 SE and should be interpreted as indistinguishable from zero at
-    $n = 100$.
+    roughly 1 SE in the available cells and should not be over-interpreted.
 \end{itemize}
 
 \subsection{M5 Per-Series \WAPE{} Tail Analysis}
@@ -102,8 +109,8 @@ dominate the mean. Specifically:
 \end{itemize}
 
 This tail behaviour is the mechanism behind the M5 \WAPE{} artefact
-documented in \S5.4.5 and is the reason we report an Excl-M5
-sensitivity analysis alongside the primary meta-regression
-(\S\ref{subsec:sensitivity}).  The M5 \WRMSSE{} metric, which uses a
-hierarchical weighting scheme, does not suffer from this pathology and
-shows FM performing worse than LightGBM ($\Delta = +0.41$).
+documented in \S5 and is the reason we report an Excl-M5 sensitivity
+analysis alongside the Source~A reanalysis (\S\ref{subsec:sensitivity}).
+The M5 \WRMSSE{} metric, which uses a hierarchical weighting scheme, does
+not suffer from the same denominator pathology; fair comparison requires
+computing it on a shared model/sample protocol.

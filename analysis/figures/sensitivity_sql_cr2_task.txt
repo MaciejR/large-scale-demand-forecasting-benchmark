@@ -1,0 +1,6 @@
+CR2 cluster-robust inference: SQL/task_id
+cluster = task_id; n_clusters = 24
+CR2 on cluster-compatible sensitivity model. The primary model includes a crossed model_name random effect, which is not nested within this cluster variable.
+Alternative hypothesis: two-sided
+   Coef. Estimate     SE Null value t-stat d.f. (Satt) p-val (Satt) Sig.
+ intrcpt   -0.284 0.0491          0  -5.78        22.6       <0.001  ***

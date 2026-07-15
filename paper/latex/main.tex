@@ -8,6 +8,7 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{hyperref}
+\hypersetup{hidelinks}
 \usepackage{natbib}
 \usepackage{xcolor}
 \usepackage{multirow}
@@ -37,7 +38,7 @@
 \begin{frontmatter}
 
 \title{When Do Foundation Models Pay Off for Retail Demand Forecasting?\\
-A Systematic Review and Cross-Benchmark Meta-Analysis}
+A PRISMA-Informed Cross-Benchmark Reanalysis}
 
 \author[inst1]{Maciej Rubczynski\corref{cor1}}
 \ead{rubczynski.maciej@gmail.com}
@@ -45,32 +46,37 @@ A Systematic Review and Cross-Benchmark Meta-Analysis}
 \affiliation[inst1]{organization={Independent researcher}}
 
 \begin{abstract}
-We present a PRISMA-informed systematic review of forecasting methods
-for short-term retail demand, combined with original gap-filling
-experiments and cross-benchmark extraction from fev-bench and
-GIFT-Eval.  We screen approximately 150 papers (2020--2026) and extract
-quantitative results into 800+ rows spanning 9~retail datasets.
-A model-level meta-regression (\texttt{metafor::rma.mv}, REML,
-Knapp--Hartung) on $k = 543$ paired comparisons across foundation
-models and conventional baselines shows a robust benchmark-level FM
-advantage that is strongest on distributional metrics and smaller on
-point-forecast metrics: on Scaled Quantile Loss
-(SQL), $\hat{\Delta} = -0.318$ ($p < .0001$); on \WAPE{},
-$\hat{\Delta} = -0.116$ ($p = 0.018$).  The full-pool aggregate
-($\Dhat = -0.195$, $p < .0001$) is an omnibus summary across SQL,
-\WAPE{}, and \MASE{} rather than a single-metric effect size.
-Foundation models achieve substantially lower quantile-loss scores;
-their point forecasts are also better on average, but the advantage is
-attenuated and more sensitive to covariates, leakage, and benchmark
-protocol.  Model scale (9\,M--200\,M parameters) is not a
-significant moderator in the retail domain.
-We provide a practitioner-oriented cost--accuracy Pareto analysis on
-consumer hardware and document that the LightGBM direct-vs-recursive
-protocol gap is conditional on demand intermittency.
+We present a PRISMA-informed review and exploratory cross-benchmark
+reanalysis of foundation models for short-term retail demand forecasting.
+The primary quantitative file contains $k=498$ Source~A comparisons from
+two benchmark suites, fev-bench and GIFT-Eval.  Version~1.4 uses
+$\log(\text{FM metric}/\text{best conventional baseline metric})$ as the
+main contrast and treats the recorded series-count term
+$1/n_{\text{FM}}+1/n_{\text{baseline}}$ only as a weighting proxy, not as a
+validated sampling variance.  Results are therefore reported as
+suite- and metric-specific benchmark summaries rather than as a
+confirmatory pooled meta-analysis.  SQL shows the strongest directional FM
+advantage (median log-ratio $-0.229$, FM better in 92\% of rows), while
+\WAPE{}/ND (median $-0.047$, 66\%) and \MASE{} (median $-0.036$, 61\%)
+are much closer to the best baseline.  GIFT-Eval is uniformly favourable
+to FMs in this extraction, whereas fev-bench is more heterogeneous.
+Version~1.4 adds a matched-panel Source~B repair run for M5 and Rohlik:
+100 shared top-volume series per dataset, common rolling-origin windows,
+prediction-level outputs, run ledgers, and paired bootstrap contrasts for
+Seasonal Naive, recursive/direct LightGBM, Chronos-Bolt-Tiny, Chronos-2,
+and Moirai~2.0-Small.  In this repaired subset Chronos-2 is lower than the
+best LightGBM baseline in all six dataset--horizon cells; Moirai is lower
+in five of six; Chronos-Bolt is approximately tied on M5 and worse on
+Rohlik.  Favorita, TimesFM~2.5, and TiRex remain throughput or integrity
+targets rather than completed confirmatory evidence.  The defensible
+conclusion is conditional: observed rankings depend on metric, baseline
+choice, protocol, workload matching, and demand characteristics.  We
+provide a validation checklist and cost-error diagnostics instead of
+deterministic deployment rules.
 \end{abstract}
 
 \begin{keyword}
-demand forecasting \sep foundation models \sep meta-analysis \sep
+demand forecasting \sep foundation models \sep benchmark reanalysis \sep
 LightGBM \sep systematic review \sep retail \sep time series
 \end{keyword}
 
@@ -110,11 +116,16 @@ Formal analysis, Investigation, Data curation, Writing -- original
 draft, Writing -- review \& editing, Visualization.
 
 \section*{Data availability}
-The v1.0 technical report, LaTeX source, extraction table, result
-tables, and replication materials are archived on Zenodo at
-\url{https://doi.org/10.5281/zenodo.21338004}. The live repository is
-available at
+The v1.0 technical report is an archived historical snapshot on Zenodo at
+\url{https://doi.org/10.5281/zenodo.21338004}.  The live repository is
+intended to host the repaired v1.4 materials at
 \url{https://github.com/MaciejR/large-scale-demand-forecasting-benchmark}.
+The v1.1--v1.3 release folders are retained as historical repair
+artifacts; v1.4 is prepared as a separate matched-panel repair release
+and should not overwrite the v1.0 Zenodo snapshot.  The repository includes
+derived extraction tables, analysis code, generated tables/figures,
+study-characteristics data, audit outputs, and replication scripts, but not
+raw competition data.
 The M5 dataset is publicly available via Kaggle; the Favorita
 dataset is publicly available via Kaggle; the Rohlik~v2 dataset
 is available at \url{https://github.com/Rohlik/rohlik-orders-forecasting-challenge}.

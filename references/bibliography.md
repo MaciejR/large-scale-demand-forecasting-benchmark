@@ -76,15 +76,17 @@ Liu, Y., et al. (2024). iTransformer: Inverted transformers are effective for ti
 
 Rasul, K., et al. (2024). Chronos: Learning the language of time series. *arXiv preprint arXiv:2403.07815*.
 
-Rasul, K., et al. (2025). Chronos-2: Time series foundation models with input tokenization. *arXiv preprint*.
+Ansari, A. F., Shchur, O., Küken, J., Auer, A., Han, B., Mercado, P., Rangapuram, S. S., Shen, H., Stella, L., Zhang, X., et al. (2025). Chronos-2: From univariate to universal forecasting. *arXiv preprint arXiv:2510.15821*.
 
 Das, A., et al. (2024). A decoder-only foundation model for time-series forecasting. *Proceedings of the International Conference on Machine Learning (ICML)*. [TimesFM 1.0]
 
-Das, A., et al. (2025). TimesFM 2.0: Scaling time-series foundation models with continuous quantile prediction. *arXiv preprint*.
+Google Research. (2025). TimesFM 2.5 checkpoint: 200M-parameter pretrained time-series foundation model. *Hugging Face model release*.
 
 Woo, G., et al. (2024). Unified training of universal time series forecasting transformers. *Proceedings of the International Conference on Machine Learning (ICML)*. [Moirai]
 
-Woo, G., et al. (2025). Moirai-MoE: Empowering time series foundation models with sparse mixture of experts. *arXiv preprint arXiv:2511.11698*.
+Liu, C., Aksu, T., Liu, J., Liu, X., Yan, H., Pham, Q., Sahoo, D., Xiong, C., Savarese, S., & Li, J. (2025). Moirai 2.0: When less is more for time series forecasting. *arXiv preprint arXiv:2511.11698*.
+
+Liu, X., Liu, J., Woo, G., Aksu, T., Liang, Y., Zimmermann, R., Liu, C., Savarese, S., Xiong, C., & Sahoo, D. (2024). Moirai-MoE: Empowering time series foundation models with sparse mixture of experts. *arXiv preprint arXiv:2410.10469*.
 
 Wu, H., et al. (2023). Towards foundation models for time series forecasting. *Advances in Neural Information Processing Systems (NeurIPS)*.
 

@@ -1,0 +1,23 @@
+{
+  "datasets": [
+    "m5",
+    "rohlik"
+  ],
+  "hardware": "M_SERIES_MAC",
+  "horizons": [
+    7,
+    14,
+    28
+  ],
+  "max_series": 100,
+  "models": [
+    "chronos_bolt_tiny"
+  ],
+  "n_bootstrap": 1000,
+  "out_dir": "/Users/maciejrubczynski/Repos/large-scale-demand-forecasting-benchmark/benchmark/results/source_b_paired_panel",
+  "run_id": "source_b_repair_fm_chronos_bolt_m5_rohlik_100",
+  "seed": 20260714,
+  "series_selection": "top_volume",
+  "train_fraction": 0.8,
+  "train_window_days": 365
+}

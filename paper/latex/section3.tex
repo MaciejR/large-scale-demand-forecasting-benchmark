@@ -4,7 +4,7 @@
 
 This section describes the three-phase protocol: search and
 extraction (Source~A), gap-filling experiments (Source~B), and the
-meta-regression specification that combines them.
+Source~A cross-benchmark reanalysis.
 
 \subsection{Search protocol (PRISMA)}
 \label{subsec:search}
@@ -18,8 +18,10 @@ committed at \texttt{analysis/prisma\_search\_protocol.md}; we
 summarise the key parameters here.
 
 \noindent\textbf{Databases.}
-Scopus, Google Scholar, Semantic Scholar API, arXiv
-(cs.LG, stat.ML), and Web of Science.
+The retained auditable log covers Google Scholar/web searches, Semantic
+Scholar API, and arXiv (cs.LG, stat.ML).  Scopus and Web of Science were
+target sources, but their export logs were not retained in the v1.3 audit;
+this is reported as a PRISMA limitation in \ref{app:search}.
 
 \noindent\textbf{Search query.}
 We combine three concept blocks with AND:
@@ -65,7 +67,7 @@ and pre-FM baselines; the upper bound is the extraction lock date.
 \subsection{Data extraction (Source~A)}
 \label{subsec:extraction}\label{sec:extraction-schema}
 
-Each included study is extracted into one or more rows of the
+Each included Source~A study is extracted into one or more rows of the
 structured CSV \texttt{analysis/extraction\_schema.csv} (800+ rows as of
 2026-04-20).  The schema has 23 fields per row:
 
@@ -104,14 +106,17 @@ Field & Type & Description \\
 \end{tabular}
 \end{table}
 
-\noindent\textbf{Row-level IDs.}
+\noindent\textbf{Row-level IDs and analysis clusters.}
 Each extracted result is a separate row with a unique
 \texttt{paper\_id}.  A paper reporting Chronos and LightGBM on M5
 contributes at least two rows (\texttt{A01\_chronos\_indomain},
-\texttt{A01\_chronos\_zeroshot}, etc.).  This scheme means that
-\texttt{group\_by(paper\_id)} in the meta-regression returns singleton
-groups for most rows --- a structural property that motivated the
-cross-paper pooling design of \S\ref{sec:literature}.
+\texttt{A01\_chronos\_zeroshot}, etc.).  The v1.4 analysis therefore
+does not treat \texttt{paper\_id} as a paper-level dependency cluster.
+The R pipeline derives separate identifiers:
+\texttt{study\_id} for the publication or Source~B experiment source,
+\texttt{suite\_id} for the benchmark suite (fev-bench, GIFT-Eval,
+Source~B, or other), and \texttt{task\_id} for the benchmark
+task/dataset/frequency/horizon cell.
 
 \noindent\textbf{Category prefixes.}
 \texttt{A} = FM papers (17 papers, 58 rows),
@@ -119,8 +124,8 @@ cross-paper pooling design of \S\ref{sec:literature}.
 \texttt{C} = retail ML/DL papers (8 papers, 31 rows),
 \texttt{D} = cross-domain papers (3 papers, 3 rows),
 \texttt{F} = fev-bench entries (1 paper, 8 rows),
-\texttt{OWN\_*} = our own baseline runs from \S5.2--5.3 (7 experiment
-blocks, 72 rows).
+\texttt{OWN\_*} = legacy Source~B baseline rows retained for provenance.
+Source~B rows are not counted as PRISMA included studies.
 
 \noindent\textbf{Normalisation.}
 Raw \texttt{dataset} values are collapsed to five canonical names
@@ -129,7 +134,7 @@ Raw \texttt{dataset} values are collapsed to five canonical names
 Raw \texttt{model\_family} values are collapsed to four analysis
 families (FM, ML\_TREE, STATS, NN) by \texttt{normalize\_family()}.
 Rows that do not map to a canonical dataset or family are excluded
-from the primary meta-regression but retained in the schema for
+from the primary reanalysis but retained in the schema for
 provenance.
 
 \subsection{Gap-filling experiments (Source~B)}
@@ -152,7 +157,7 @@ models:
 \begin{itemize}
   \item \textbf{Chronos-Bolt-Tiny} (9~M params, encoder-only): 9/9
     cells (3~datasets $\times$ 3~horizons), all on MPS.
-  \item \textbf{Moirai~2.0-Small} (11~M params, decoder-only MoE):
+  \item \textbf{Moirai~2.0-Small} (11~M params, decoder-only quantile model):
     9/9 cells, all on MPS.
   \item \textbf{TiRex} ($\sim$35~M params, xLSTM): 9/9 cells.  Seven
     completed on MPS; two (Rohlik $h=14$, $h=28$) required CPU fallback
@@ -174,76 +179,98 @@ Standard\_E4ds\_v4 (4~vCPU, 32~GB), CPU-only.  Three baseline models:
   \item \textbf{seasonal\_naive}: 9~cells.
 \end{itemize}
 
-All 72 cells use the \S5.1.3 evaluation protocol: rolling-origin with
-100 sampled series per cell, per-series \WAPE{} as the primary metric,
-and a fixed random seed for reproducibility.  Runtime, cost, and
-CO\textsubscript{2} are logged per run via MLflow (local file store
-for MacBook runs, Azure ML workspace for batch runs).  The export
-script \texttt{tools/export\_mlflow\_to\_csv.py} pulls both backends
-into a single CSV keyed on the shared
-\texttt{paper\_id = LOCAL\_MAC\_<dataset>\_h<horizon>}, which is what
-enables within-paper $\Delta$ computation in the R pipeline.
+All 72 legacy cells use the same metric definitions and rolling-origin
+design where available, but the v1.3 audit showed that they did not share a
+common 100-series workload across all models.  Runtime, cost, and
+CO\textsubscript{2} were logged per run via MLflow (local file store for
+MacBook runs, Azure ML workspace for batch runs).  The export script
+\texttt{tools/export\_mlflow\_to\_csv.py} pulls both backends into a single
+CSV.  These legacy rows are retained for provenance and cost audit, but not
+for paired inference.
 
-\subsection{Meta-regression specification}
+Version~1.4 adds a matched-panel Source~B repair run for M5 and Rohlik.
+The repair runner
+\texttt{benchmark/code/experiments/run\_source\_b\_paired\_panel.py}
+selects the same 100 top-volume series per dataset, uses the same
+rolling-origin windows for every model, writes prediction-level parquet
+files keyed by series, origin date, target date, and forecast step, and
+records a machine-readable run ledger.  Completed v1.4 repair runs cover
+Seasonal Naive, recursive LightGBM, direct LightGBM, horizon-scaled direct
+LightGBM, Chronos-Bolt-Tiny, Chronos-2, and Moirai~2.0-Small on
+M5/Rohlik at $h\in\{7,14,28\}$.  TimesFM~2.5 and TiRex were attempted but
+are not included in the v1.4 matched-panel result table because their
+current local CPU paths did not complete a 100-series first cell in a
+practical wall-clock window.  Favorita remains a matched-panel rerun target.
+
+\subsection{Reanalysis specification}
 \label{subsec:metaspec}
 
-The primary estimand is the model-level paired delta:
+The primary estimand is the model-level paired log-ratio:
 
 \begin{quote}
-For each FM row $i$ and each baseline row $j$ that share the same
-(paper\_id, dataset, metric) cell, compute
-$\delta_{ij} = \text{metric}(\text{FM}_i) - \text{metric}(\text{baseline}_j)$.
+For each FM row $i$ and baseline summary that share the same
+(\texttt{task\_id}, dataset, metric) cell, compute
+$\ell_i = \log\{\text{metric}(\text{FM}_i) /
+\text{metric}(\text{best conventional baseline})\}$.
 \end{quote}
 
-\noindent This model-level pairing produces $k = 543$ observations
-(12~FM model entries $\times$ 9~datasets $\times$ multiple baselines
-$\times$ multiple metrics).  Appendix~\ref{app:sensitivity} also
-reports a coarser bucket-level analysis for comparison.
+\noindent The primary Source~A model-level pairing produces $k = 498$
+observations across fev-bench and GIFT-Eval.  The legacy Source~B export
+yields an auditable $k = 543$ contrast file, but those 45 legacy Source~B
+contrasts remain labelled descriptive because they fail the legacy
+workload-matching audit.  The v1.4 matched-panel Source~B repair is
+reported separately as a prediction-level paired analysis on 18 FM-vs-best
+baseline WAPE contrasts.  \ref{app:sensitivity} also reports a
+coarser bucket-level analysis for comparison.
 
 \noindent\textbf{Notation convention.}
-Throughout this paper, $\Dhat$ denotes the pooled estimate of the
-FM $-$ baseline difference on the metric in question (\WAPE{} unless
-stated otherwise).  \textbf{Negative $\Dhat$ means FM is better}
-(lower \WAPE{}); \textbf{positive $\Dhat$ means baseline is better.}
-All confidence intervals and $p$-values refer to the two-sided test
-$H_0\colon \Delta = 0$.
+Throughout this paper, $\hat{\ell}$ denotes the pooled estimate of
+\(\log(\text{FM metric}/\text{baseline metric})\).  \textbf{Negative
+$\hat{\ell}$ means FM is better}; \textbf{positive $\hat{\ell}$ means
+baseline is better}.  The older raw difference $\Dhat$ is retained only
+in archived v1.0 outputs and descriptive audit columns.
 
-The model is:
+The exploratory weighted diagnostic model is:
 
 \begin{alltt}
-rma.mv(yi = delta, V = vi,
-       random = list(~ 1 | dataset_norm / paper_id,
+rma.mv(yi = log_ratio, V = vi,
+       random = list(~ 1 | suite_id / task_id,
                      ~ 1 | model_name),
        data = delta_model,
-       test = "t",         # Knapp-Hartung
+       test = "t", dfs = "contain",
        method = "REML")
 \end{alltt}
 
 \noindent\textbf{Random effects.}
-\texttt{\~{} 1 | dataset\_norm / paper\_id} nests papers within
-datasets.  A crossed \texttt{\~{} 1 | model\_name} random effect
+\texttt{\~{} 1 | suite\_id / task\_id} nests tasks within source
+suites.  A crossed \texttt{\~{} 1 | model\_name} random effect
 accounts for non-independence when the same FM appears across
-multiple papers and datasets.  The dataset level captures the primary
-source of heterogeneity (M5 vs smooth-demand, benchmark suite vs
-individual dataset); the paper level accounts for protocol-specific
-effects within each dataset.
+multiple tasks and datasets.  The suite level captures the strongest
+dependence induced by benchmark-suite protocols; the task level
+accounts for repeated models and metrics within a benchmark task.
 
 \noindent\textbf{Variance.}
-For Source~A pairs, $v_i = 1/\sqrt{n_{\mathrm{series}}}$ where
+For Source~A pairs, $v_i = 1/n_{\mathrm{FM}} + 1/n_{\mathrm{baseline}}$ where
 $n_\text{series}$ is the number of series in the evaluation task.
-For Source~B pairs, $v_i = 1/n_{\mathrm{valid}} = 0.01$ because
-each cell samples 100~series (\S5.1.3).  When bootstrap standard
-errors are available (Appendix~\ref{app:metrics}), they replace
-the proxy.  The proxy does not capture within-series error
-correlation; this is flagged as a limitation in \S8.4.
+For legacy Source~B pairs, the same proxy is computed with the recorded
+\texttt{n\_series} value for audit only.  The proxy is not a sampling
+variance for a paired log-ratio: it does not capture metric dispersion,
+shared baselines, covariance between FM and baseline errors, or
+within-series autocorrelation.  This is flagged as a limitation in
+\S8.4 and is why v1.4 does not present the weighted Source~A model as a
+confirmatory meta-analysis.
 
-\noindent\textbf{Small-sample adjustment.}
-\texttt{test = "t"} invokes the Knapp--Hartung adjustment
-\citep{knapp2003improved}, replacing the standard normal reference
-distribution with a $t$-distribution whose degrees of freedom equal
-$k - p$.
+\noindent\textbf{Small-sample and cluster-robust diagnostics.}
+\texttt{test = "t", dfs = "contain"} uses containment degrees of
+freedom in \texttt{metafor::rma.mv}; it is reported only as an exploratory
+small-sample diagnostic.  We also report \texttt{clubSandwich::coef\_test}
+CR2 diagnostics clustered by \texttt{task\_id}, with sensitivity checks
+for \texttt{suite\_id} and \texttt{study\_id}.  Because the primary
+model has a crossed \texttt{model\_name} random effect, the CR2 tables
+are generated from cluster-compatible sensitivity fits and explicitly
+labelled in the output files.
 
-\noindent\textbf{Moderator regressions (exploratory).}
+\noindent\textbf{Moderator diagnostics (exploratory).}
 We test three moderators individually.  These analyses are exploratory
 --- no multiplicity adjustment is applied, and results are
 hypothesis-generating rather than confirmatory:
@@ -264,17 +291,18 @@ We report the following robustness checks:
 \begin{itemize}
   \item \textbf{Excl-M5:} Drops all M5 pairs to test whether the
     primary result is driven by the M5 \WAPE{} denominator artefact.
-  \item \textbf{Metric-only slices:} Refits the model on \WAPE{}-only
-    and SQL-only pairs so the pooled omnibus estimate is not the only
-    inferential target.
-  \item \textbf{Source-B-only:} Restricts to Source~B pairs
+  \item \textbf{Metric-only slices:} Refits the model on \WAPE{}-only,
+    SQL-only, and \MASE{}-only pairs so the pooled omnibus estimate is
+    not the only inferential target.
+  \item \textbf{Source~B-only:} Restricts to Source~B pairs
     (\texttt{LOCAL\_MAC\_*}), testing whether the cross-paper pooling
-    materially changes the conclusion.
+    materially changes the descriptive direction.  This is not paired
+    inference.
   \item \textbf{Source-A-only:} Restricts to Source~A pairs (fev-bench,
     GIFT-Eval), testing the FM--baseline gap using only published
     benchmark results.
-  \item \textbf{Best baseline:} Replaces the average conventional
-    baseline with the lowest-error conventional baseline in each cell.
+  \item \textbf{Average baseline:} Replaces the primary best conventional
+    baseline with the average conventional baseline in each cell.
   \item \textbf{Leave-one-suite-out:} Drops fev-bench and GIFT-Eval in
     turn to test whether a single benchmark suite drives the result.
   \item \textbf{Equal-weight:} Replaces the sampling-variance proxy

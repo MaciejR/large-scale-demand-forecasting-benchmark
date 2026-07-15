@@ -50,7 +50,7 @@ MODELS = [
     ("TimesFM-2.5", "TimesFM-2.5", "foundation", "Yes", "No",
      "200M params; decoder-only; zero-shot"),
     ("Moirai2", "Moirai-2.0-Small", "foundation", "Yes", "No",
-     "11M params; decoder-only MoE; zero-shot"),
+     "11M params; decoder-only quantile model; zero-shot"),
     ("chronos_bolt_base", "Chronos-Bolt-Base", "foundation", "Yes", "No",
      "~46M params; T5 encoder-only; zero-shot"),
     ("Toto_Open_Base_1.0", "Toto-1.0", "foundation", "Yes", "No",

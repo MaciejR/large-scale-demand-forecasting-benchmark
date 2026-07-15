@@ -5,15 +5,15 @@
 ### Research Questions
 - **RQ1:** Do time-series foundation models outperform traditional statistical/ML models on retail demand forecasting?
 - **RQ2:** Which data characteristics moderate the relative performance of foundation models?
-- **RQ3:** What is the cost-accuracy Pareto frontier across model families?
+- **RQ3:** What observed cost-error tradeoffs appear across model families?
 - **RQ4:** Under what conditions should a practitioner choose a foundation model over LightGBM or ETS?
 
 ### Databases
 1. Semantic Scholar (API)
 2. Google Scholar
 3. arXiv (cs.LG, stat.ML)
-4. Scopus
-5. Web of Science
+4. Scopus (target source; auditable export not retained in v1.3)
+5. Web of Science (target source; auditable export not retained in v1.3)
 
 ### Search Query
 ```
@@ -165,13 +165,15 @@ AND
 ## PRISMA Flow Summary
 
 ```
-Records identified through database searching: ~250 (across 30+ queries)
-Records after deduplication: ~130
-Titles/abstracts screened: 130
-Records excluded (not demand/retail, no quant results): ~81
-Full-text articles assessed for eligibility: 49
-Studies included in qualitative synthesis: 43
-Studies included in meta-analysis (with extractable metrics): ~35 (extraction in progress)
+Records identified through database searching: 150 (25 auditable query families)
+Duplicates removed: 30
+Records after deduplication: 120
+Titles/abstracts screened: 120
+Records excluded (not demand/retail, no quant results): 50
+Full-text articles assessed for eligibility: 70
+Full-text articles excluded: 38
+Source A external studies included: 32
+Source B own experiment blocks: 7 (not PRISMA studies)
 ```
 
 ## Status Summary
@@ -187,7 +189,7 @@ Studies included in meta-analysis (with extractable metrics): ~35 (extraction in
 ## Key Observations from Search
 
 1. **No existing PRISMA-compliant systematic review** of foundation models for retail demand forecasting — confirms our contribution C1.
-2. **Three major benchmarks dominate**: GIFT-Eval (2024), fev-bench (2025), M5 (2020). Each has different model coverage — our meta-analysis connects them.
+2. **Three major benchmarks dominate**: GIFT-Eval (2024), fev-bench (2025), M5 (2020). Each has different model coverage; the v1.3 reanalysis keeps suite-level dependence explicit.
 3. **Foundation model landscape is fast-moving**: Chronos-2 (Oct 2025), Moirai 2.0 (Nov 2025), TimesFM 2.5 (Sep 2025), TiRex (May 2025), Sundial (Feb 2025) all released within 9 months.
 4. **GIFT-Eval leaderboard churns rapidly**: #1 changed 4+ times in 2025 (PatchTST → TabPFN-TS → Sundial → Toto → TSOrchestra). Zero-shot FMs cluster mid-pack.
 5. **Key gap**: No paper systematically compares cost/efficiency across foundation models — confirms our contribution C4.
@@ -210,7 +212,7 @@ Studies included in meta-analysis (with extractable metrics): ~35 (extraction in
 
 ## Next Steps
 
-1. [x] Automated search across multiple databases/queries (30+ queries)
+1. [x] Automated search across auditable query families (25 query families)
 2. [x] Extended search for new models (TiRex, TabPFN-TS, Toto, Sundial)
 3. [x] Initial quantitative extraction into `extraction_schema.csv` (65+ rows)
 4. [x] GIFT-Eval leaderboard snapshot captured

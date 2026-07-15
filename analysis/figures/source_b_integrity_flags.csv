@@ -1,0 +1,10 @@
+dataset,horizon,models_present,all_8_models_present,min_n_series,max_n_series,n_series_unique_values,n_series_matched_across_models,source_b_pairwise_matched,reason
+Favorita,7,8,True,100.0,151757.0,5,False,False,n_series differs across models; row-level series identifiers and paired prediction errors are not available for all models
+Favorita,14,8,True,100.0,150209.0,5,False,False,n_series differs across models; row-level series identifiers and paired prediction errors are not available for all models
+Favorita,28,8,True,98.0,147262.0,5,False,False,n_series differs across models; row-level series identifiers and paired prediction errors are not available for all models
+M5,7,8,True,500.0,30490.0,5,False,False,n_series differs across models; row-level series identifiers and paired prediction errors are not available for all models
+M5,14,8,True,500.0,30490.0,5,False,False,n_series differs across models; row-level series identifiers and paired prediction errors are not available for all models
+M5,28,8,True,500.0,30490.0,5,False,False,n_series differs across models; row-level series identifiers and paired prediction errors are not available for all models
+Rohlik v2,7,8,True,1710.0,4713.0,3,False,False,n_series differs across models; row-level series identifiers and paired prediction errors are not available for all models
+Rohlik v2,14,8,True,1691.0,4713.0,3,False,False,n_series differs across models; row-level series identifiers and paired prediction errors are not available for all models
+Rohlik v2,28,8,True,1671.0,4713.0,3,False,False,n_series differs across models; row-level series identifiers and paired prediction errors are not available for all models

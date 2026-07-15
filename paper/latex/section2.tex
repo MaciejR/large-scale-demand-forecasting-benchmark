@@ -17,13 +17,14 @@ populate our extraction schema.
 We group methods into four families, matching the
 \texttt{model\_family} field in our extraction schema
 (\S\ref{sec:extraction-schema}). The grouping is coarse by design:
-the meta-regression (\S\ref{sec:meta-regression}) treats it as a
+the reanalysis (\S\ref{sec:meta-regression}) treats it as a
 categorical moderator, so finer distinctions (e.g., GRU vs
 Transformer within NN) would create sparsely populated cells.
 
 \paragraph{Statistical models.}
 Exponential smoothing (ETS), ARIMA, Theta, Seasonal Naive, and
-intermittent-demand methods (Croston, TSB). These are fitted
+intermittent-demand methods (Croston, TSB)
+\citep{croston1972forecasting,teunter2011intermittent}. These are fitted
 per-series with no cross-series learning. Their value in this paper
 is as a sanity-check baseline: any global model that loses to
 Seasonal Naive on a given (dataset, horizon) cell is failing in a
@@ -34,7 +35,8 @@ extraction schema these models carry
 \texttt{model\_family = "statistical"}.
 
 \paragraph{Gradient-boosted trees (ML\_TREE).}
-LightGBM and XGBoost fitted as global models: one model trained
+LightGBM \citep{ke2017lightgbm} and XGBoost \citep{chen2016xgboost}
+fitted as global models: one model trained
 across all series, with cross-sectional features (lags, calendar
 effects, price, promotions, store/item embeddings). This is the
 family that the M5 competition (\S\ref{sec:m5-benchmark}) crowned
@@ -49,8 +51,10 @@ accuracy ranking by 10+ pp \WAPE{} depending on demand distribution
 gap-filling experiments control for.
 
 \paragraph{Deep learning (NN).}
-Recurrent (DeepAR, LSTNet), attention-based (TFT, PatchTST,
-Informer), and MLP-based (N-BEATS, N-HiTS) models trained on many
+Recurrent (DeepAR \citep{salinas2020deepar}, LSTNet), attention-based
+(TFT \citep{lim2021tft}, PatchTST \citep{nie2023patchtst}, Informer),
+and MLP-based (N-BEATS \citep{oreshkin2020nbeats}, N-HiTS
+\citep{challu2023nhits}) models trained on many
 series. These models occupy a middle ground: they learn cross-series
 patterns like tree models but have higher computational cost and
 typically require more data to avoid overfitting. In the M5
@@ -71,23 +75,23 @@ lightweight fine-tuning. The models in scope for this review are:
 \caption{Foundation models in scope.}
 \label{tab:fm-scope}
 \scriptsize
-\begin{tabularx}{\textwidth}{p{2.15cm}p{1.15cm}p{2.7cm}p{1.25cm}X}
+\begin{tabularx}{\textwidth}{p{1.8cm}p{1.1cm}p{2.2cm}p{1.7cm}p{1.4cm}X}
 \toprule
-Model & Params & Architecture & Covariates & Key reference \\
+Model & Params & Architecture & Checkpoint / code & Covariates used here & Key reference \\
 \midrule
-Chronos / Chronos-2 & 9--710\,M & Encoder-only T5 & v2 only &
+Chronos / Chronos-2 & 9--710\,M & T5-family / Chronos-2 architecture & Chronos-2 120M; Bolt Tiny/Base & No in analyzed rows; Chronos-2 support not evaluated here &
   \citet{ansari2024chronos, ansari2025chronos2} \\
-TimesFM~2.5 & 200\,M & Decoder-only & No &
+TimesFM~2.5 & 200\,M & Decoder-only & 2.5 checkpoint & No &
   \citet{das2025timesfm2} \\
-Moirai~2.0 & 11--305\,M & Decoder-only (MoE) & Yes &
+Moirai~2.0 & 11--305\,M & Decoder-only quantile model & Small checkpoint & No in analyzed rows &
   \citet{liu2025moirai2} \\
-TiRex & \textasciitilde{}35\,M & xLSTM & No &
+TiRex & \textasciitilde{}35\,M & xLSTM & public checkpoint & No &
   \citet{auer2025tirex} \\
-TabPFN-TS & \textasciitilde{}12\,M & Tabular PFN + temporal featurization & No &
+TabPFN-TS & \textasciitilde{}12\,M & Tabular PFN + temporal featurization & TabPFN-v2 extension & Yes in fev-bench covariate tasks &
   \citet{mueller2025tabpfnts} \\
-Lag-Llama & 6\,M & Llama backbone & No &
+Lag-Llama & 6\,M & Llama backbone & public checkpoint & No &
   \citet{rasul2023laglama} \\
-TimeGPT & undisclosed & Proprietary & Yes &
+TimeGPT & undisclosed & Proprietary & API model & Not in the primary paired contrast file &
   \citet{garza2023timegpt} \\
 \bottomrule
 \end{tabularx}
@@ -98,7 +102,7 @@ The zero-shot setting is the primary scope of this review;
 fine-tuned FM entries (e.g., Chronos-2 with in-domain pre-training)
 are retained in the schema but flagged as
 \texttt{fine\_tuned = "Yes"} and excluded from the primary
-meta-regression to avoid confounding pre-training scale with
+contrast file to avoid confounding pre-training scale with
 task-specific tuning.
 
 \subsection{Existing benchmarks}
@@ -129,7 +133,8 @@ perform worse than Seasonal Naive --- a metric artefact, not a
 model failure.
 
 \paragraph{GIFT-Eval \citep{aksu2024gift}.}
-28 datasets (144{,}879 series) curated to avoid train--test leakage
+The published paper reports 23 datasets (about 144{,}000 series) curated
+to avoid train--test leakage
 in foundation-model evaluations. Covers multiple domains including
 retail, energy, and transport. The standard metric is a skill score
 relative to Seasonal Naive, computed with bootstrapped confidence
@@ -161,12 +166,12 @@ dataset with standardised metrics. The M5 (retail) and M4
 (heterogeneous) competitions produced substantial secondary
 analysis, but always on a single dataset per competition.
 Petropoulos et al.\ (2022) survey the forecasting landscape broadly
-but do not run a PRISMA-informed meta-regression. Lim \& Zohren
+but do not run a PRISMA-informed cross-benchmark reanalysis. Lim \& Zohren
 (2021) review deep learning for time series but predate the FM wave.
 
 To our knowledge, \textbf{no prior work combines} (1)~a
 PRISMA-informed systematic search, (2)~quantitative extraction
 across multiple benchmarks, (3)~gap-filling experiments to fill
-structural holes, and (4)~a random-effects meta-regression with
-moderators --- for foundation models in the retail forecasting
+structural holes, and (4)~metric-specific Source~A benchmark
+summaries with exploratory weighted diagnostics --- for foundation models in the retail forecasting
 domain. This is the gap we fill.

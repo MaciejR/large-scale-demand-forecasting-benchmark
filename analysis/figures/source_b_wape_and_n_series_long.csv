@@ -1,0 +1,73 @@
+dataset,horizon,model_name,n_series,metric_value
+Favorita,7,chronos2,2992.0,0.4769
+Favorita,14,chronos2,2992.0,0.4812
+Favorita,28,chronos2,2988.0,0.486
+M5,7,chronos2,3000.0,0.8786
+M5,14,chronos2,3000.0,0.8867
+M5,28,chronos2,3000.0,0.8987
+Favorita,28,chronos_bolt_tiny,2988.0,0.4888
+Favorita,14,chronos_bolt_tiny,2992.0,0.4853
+Favorita,7,chronos_bolt_tiny,2992.0,0.4819
+Favorita,28,moirai2,147262.0,0.4873
+Favorita,14,moirai2,150209.0,0.4816
+Favorita,7,moirai2,151757.0,0.4771
+M5,28,timesfm25,500.0,0.948
+M5,14,timesfm25,500.0,0.9436
+M5,7,timesfm25,500.0,0.9435
+M5,28,tirex,1000.0,0.9138
+M5,14,tirex,1000.0,0.9067
+M5,7,tirex,1000.0,0.9026
+M5,28,chronos_bolt_tiny,3000.0,0.9106
+M5,14,chronos_bolt_tiny,3000.0,0.9022
+M5,7,chronos_bolt_tiny,3000.0,0.8973
+M5,28,moirai2,30490.0,0.9013
+M5,14,moirai2,30490.0,0.8931
+M5,7,moirai2,30490.0,0.8875
+Rohlik v2,28,timesfm25,4549.0,0.3534
+Rohlik v2,14,timesfm25,4614.0,0.3375
+Rohlik v2,7,timesfm25,4651.0,0.3238
+Rohlik v2,28,tirex,4549.0,0.3534
+Rohlik v2,14,tirex,4614.0,0.3373
+Rohlik v2,7,tirex,4651.0,0.3232
+Rohlik v2,28,chronos2,4549.0,0.3567
+Rohlik v2,14,chronos2,4614.0,0.3391
+Rohlik v2,7,chronos2,4651.0,0.3243
+Rohlik v2,28,moirai2,4549.0,0.3536
+Rohlik v2,14,moirai2,4614.0,0.3373
+Rohlik v2,7,moirai2,4651.0,0.324
+Rohlik v2,28,chronos_bolt_tiny,4549.0,0.3606
+Rohlik v2,14,chronos_bolt_tiny,4614.0,0.3453
+Rohlik v2,7,chronos_bolt_tiny,4651.0,0.3338
+Favorita,28,timesfm25,98.0,0.5418
+Favorita,14,timesfm25,100.0,0.5336
+Favorita,7,timesfm25,100.0,0.5281
+Favorita,28,tirex,98.0,0.5395
+Favorita,14,tirex,100.0,0.5311
+Favorita,7,tirex,100.0,0.5249
+Favorita,28,lightgbm_direct,29753.0,0.5892
+Favorita,14,lightgbm_direct,29753.0,0.5711
+Favorita,7,lightgbm_direct,29753.0,0.5513
+Favorita,28,seasonal_naive,15325.0,0.6643
+Favorita,28,lightgbm_cov,29753.0,0.5377
+Favorita,14,lightgbm_cov,29753.0,0.5311
+Favorita,7,lightgbm_cov,29753.0,0.5295
+Favorita,7,seasonal_naive,16034.0,0.6363
+Favorita,14,seasonal_naive,15803.0,0.6473
+Rohlik v2,28,lightgbm_direct,4713.0,0.4442
+Rohlik v2,14,lightgbm_direct,4713.0,0.4072
+Rohlik v2,7,lightgbm_direct,4713.0,0.3816
+Rohlik v2,28,seasonal_naive,1671.0,0.4116
+Rohlik v2,28,lightgbm_cov,4713.0,0.4321
+Rohlik v2,14,seasonal_naive,1691.0,0.4031
+Rohlik v2,14,lightgbm_cov,4713.0,0.3953
+Rohlik v2,7,lightgbm_cov,4713.0,0.3654
+Rohlik v2,7,seasonal_naive,1710.0,0.4015
+M5,28,lightgbm_direct,30462.0,1.5133
+M5,14,lightgbm_direct,30478.0,1.41
+M5,7,lightgbm_direct,30480.0,1.3512
+M5,14,seasonal_naive,30478.0,1.3216
+M5,7,lightgbm_cov,30480.0,1.6246
+M5,28,seasonal_naive,30462.0,1.3285
+M5,14,lightgbm_cov,30478.0,1.7292
+M5,28,lightgbm_cov,30462.0,1.9357
+M5,7,seasonal_naive,30480.0,1.3072

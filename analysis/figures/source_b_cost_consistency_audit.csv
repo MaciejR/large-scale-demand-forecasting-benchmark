@@ -1,0 +1,7 @@
+scope,detail_tables_usd,summary_table_usd,difference_usd,status
+M5 total,0.877,0.81,-0.06699999999999995,mismatch_requires_single_ledger
+Rohlik total,0.1098,0.12,0.0102,mismatch_requires_single_ledger
+Favorita total,0.7765,1.119,0.3425,mismatch_requires_single_ledger
+Favorita direct,0.687,1.03,0.34299999999999997,mismatch_requires_single_ledger
+M5 seasonal naive,0.059,0.146,0.087,mismatch_requires_single_ledger
+M5 direct,0.724,0.571,-0.15300000000000002,mismatch_requires_single_ledger

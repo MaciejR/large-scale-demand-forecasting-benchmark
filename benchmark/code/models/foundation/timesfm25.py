@@ -93,6 +93,38 @@ class TimesFM25Forecaster:
         )
         return pd.Series(point_forecast[0][:horizon])
 
+    def predict_batch(self, histories, horizon: int) -> np.ndarray:
+        """
+        Batched zero-shot point forecast.
+
+        Parameters
+        ----------
+        histories : iterable of array-like
+            One historical target vector per series. Histories may have
+            different lengths; each is truncated to ``max_context``.
+        horizon : int
+            Number of steps to forecast.
+
+        Returns
+        -------
+        np.ndarray
+            Shape ``(n_series, horizon)``.
+        """
+        self._load_model()
+
+        inputs = []
+        for hist in histories:
+            values = np.asarray(hist, dtype=np.float64)
+            if len(values) > self.max_context:
+                values = values[-self.max_context:]
+            inputs.append(values)
+
+        point_forecast, quantile_forecast = self._model.forecast(
+            horizon=horizon,
+            inputs=inputs,
+        )
+        return np.asarray(point_forecast, dtype=np.float32)[:, :horizon]
+
     def predict_quantiles(
         self, train: pd.Series, horizon: int
     ) -> pd.DataFrame:

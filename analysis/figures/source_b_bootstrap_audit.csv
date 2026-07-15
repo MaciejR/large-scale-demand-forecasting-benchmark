@@ -1,0 +1,2 @@
+expected_fm_cells,observed_bootstrap_cells,expected_fm_models,observed_bootstrap_models,missing_bootstrap_models,min_n_valid,max_n_valid,median_bootstrap_se,max_bootstrap_se
+45,36,chronos2;chronos_bolt_tiny;moirai2;timesfm25;tirex,chronos2;chronos_bolt_tiny;moirai2;tirex,timesfm25,98,492,0.0107,0.014

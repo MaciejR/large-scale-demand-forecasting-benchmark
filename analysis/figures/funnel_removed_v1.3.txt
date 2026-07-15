@@ -1,0 +1,3 @@
+Removed in v1.3.
+The vertical axis would use sqrt(1/n_FM + 1/n_baseline), which is a workload-count proxy rather than a sampling SE.
+The plot therefore diagnoses recorded task sizes, not publication bias or small-study asymmetry.

@@ -10,13 +10,13 @@ for reporting systematic reviews. BMJ 2021;372:n71.
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
-# PRISMA flow numbers aligned with the manuscript's high-level flow summary.
+# PRISMA flow numbers aligned with the v1.3 manuscript.
 # Identification
 N_DB_RECORDS = 150          # Records identified through database searching
-N_QUERIES = 30              # Number of search queries executed
-N_DATABASES = 5             # Databases searched (Scopus, Google Scholar, Semantic Scholar, arXiv, Web of Science)
-N_OTHER_SOURCES = 0         # Included in the ~150 estimate
-N_TOTAL_IDENTIFIED = N_DB_RECORDS + N_OTHER_SOURCES  # ~150
+N_QUERIES = 25              # Auditable query families retained in Appendix B
+N_DATABASES = 3             # Auditable exports/checks retained: Google Scholar/web, Semantic Scholar, arXiv
+N_OTHER_SOURCES = 0         # Database searching accounts for all 150 records
+N_TOTAL_IDENTIFIED = N_DB_RECORDS + N_OTHER_SOURCES
 
 # Screening
 N_DUPLICATES = 30           # Cross-database overlap, especially arXiv ↔ Scopus
@@ -27,10 +27,10 @@ N_EXCLUDED_SCREENING = 50   # Non-retail, no quantitative results, financial onl
 
 # Eligibility
 N_FULLTEXT_ASSESSED = N_SCREENED - N_EXCLUDED_SCREENING  # ~70
-N_EXCLUDED_FULLTEXT = 32    # No retail dataset, no FM evaluation, duplicate results
+N_EXCLUDED_FULLTEXT = 38    # No retail dataset, no FM evaluation, duplicate results
 
 # Inclusion
-N_INCLUDED = 39             # 32 external papers + 7 own experiment blocks
+N_INCLUDED = 32             # External Source A studies only
 N_INCLUDED_EXTERNAL = 32    # External papers
 N_OWN_EXPERIMENTS = 7       # Own experiment blocks (Source B)
 N_EXTRACTION_ROWS_LABEL = "800+"  # After per-task fev-bench/GIFT-Eval extraction
@@ -39,13 +39,12 @@ N_CAT_A = 17  # Foundation model papers
 N_CAT_B = 4   # Benchmark papers
 N_CAT_C = 8   # Retail-specific ML/DL
 N_CAT_D = 3   # Cross-domain papers
-N_CAT_OWN = 7 # Own experiment blocks
 
 # Exclusion reasons at full-text stage
 EXCL_REASONS = [
-    "No retail dataset (n=12)",
-    "No FM evaluation (n=10)",
-    "Duplicate results (n=10)",
+    "No retail dataset (n=14)",
+    "No FM evaluation (n=12)",
+    "Duplicate/non-comparable results (n=12)",
 ]
 
 
@@ -128,7 +127,7 @@ def main():
              color="#E3F2FD", border="#1976D2", bold_first_line=True)
 
     ax.text(3.5, 8.95,
-            f"{N_DATABASES} databases, {N_QUERIES}+ queries",
+            f"{N_DATABASES} auditable sources, {N_QUERIES} query families",
             ha="center", va="center", fontsize=8, color="#777777",
             family="sans-serif")
 
@@ -182,7 +181,7 @@ def main():
     draw_arrow(ax, 4.2, 5.27, 4.2, 4.65)
 
     draw_box(ax, 4.2, 4.3, 3.5, 0.65,
-             f"Studies included\n(n = {N_INCLUDED}: {N_INCLUDED_EXTERNAL} papers\n+ {N_OWN_EXPERIMENTS} own experiment blocks)",
+             f"Source A studies included\n(n = {N_INCLUDED_EXTERNAL} external papers)",
              color="#E8EAF6", border="#3F51B5", bold_first_line=True)
 
     draw_arrow(ax, 4.2, 3.97, 4.2, 3.35)
@@ -192,7 +191,7 @@ def main():
              color="#E8EAF6", border="#3F51B5", bold_first_line=True)
 
     draw_box(ax, 8.2, 4.3, 2.5, 0.55,
-             f"Source B: own experiments\n(n = {N_CAT_OWN} blocks, 72 rows)",
+             f"Source B: own experiments\n(not PRISMA studies; 7 blocks, 72 rows)",
              color="#F3E5F5", border="#7B1FA2")
     draw_side_arrow(ax, 5.95, 4.3, 6.95, 4.3, color="#7B1FA2")
 
@@ -206,7 +205,7 @@ def main():
         f"B: Benchmark papers (n={N_CAT_B})\n"
         f"C: Retail ML/DL papers (n={N_CAT_C})\n"
         f"D: Cross-domain papers (n={N_CAT_D})\n"
-        f"OWN: Gap-filling experiment blocks (n={N_CAT_OWN})"
+        "Source B: gap-filling experiments reported separately"
     )
     draw_box(ax, 4.2, 1.2, 5.0, 1.4, cat_text,
              color="#ECEFF1", border="#546E7A", fontsize=8,

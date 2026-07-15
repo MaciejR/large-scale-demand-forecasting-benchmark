@@ -16,11 +16,12 @@ under matched conditions on the same retail datasets and reports the
 delta. The benchmarks multiply; the synthesis does not.
 
 This paper asks: \textbf{when do foundation models actually pay off
-for retail demand forecasting?} We operationalise ``pay off'' as a
-statistically significant reduction in forecast error relative
-to a well-tuned baseline (gradient-boosted tree or statistical model)
-under matched evaluation conditions. By ``when'' we mean: on which
-datasets, horizons, demand distributions, metrics, and hardware
+for retail demand forecasting?} We operationalise ``pay off'' as an
+observed, reproducible reduction in forecast error relative to a
+clearly specified conventional baseline (gradient-boosted tree or
+statistical model), evaluated under conditions that are as comparable
+as the available benchmark evidence allows. By ``when'' we mean: on
+which datasets, horizons, demand distributions, metrics, and hardware
 budgets.
 
 \subsection{Research questions}
@@ -36,10 +37,10 @@ We address four research questions across three complementary lenses
   \item \textbf{RQ2 (Moderators):} Which characteristics ---
     metric choice, demand intermittency, model scale, forecast
     horizon --- moderate the FM-vs-baseline gap?
-    (\S\ref{sec:rq2-moderators})
-  \item \textbf{RQ3 (Cost):} What is the cost-accuracy Pareto
-    frontier when consumer-hardware electricity, cloud-GPU list
-    price, and CO\textsubscript{2} footprint are included?
+    (\S\ref{sec:moderator-results})
+  \item \textbf{RQ3 (Cost):} What cost-error tradeoffs appear when
+    consumer-hardware electricity, cloud-GPU list price, and
+    CO\textsubscript{2} footprint are included?
     (\S\ref{sec:cost-accuracy})
   \item \textbf{RQ4 (Guidance):} Under what conditions should a
     retail forecasting team deploy a foundation model instead of
@@ -59,7 +60,7 @@ metric-specific and leave-one-suite-out analyses alongside it.
 
 \begin{enumerate}
   \item \textbf{Source~A (literature + benchmark extraction).} We
-    screen \textasciitilde{}150 papers (2020--2026) from Scopus,
+    screen 150 papers (2020--2026) from Scopus,
     Google Scholar, Semantic Scholar, and arXiv, applying retail-domain
     inclusion criteria. We supplement the extraction with per-model
     per-task results from fev-bench \citep{shchur2025fevbench}
@@ -76,17 +77,25 @@ metric-specific and leave-one-suite-out analyses alongside it.
     (Apple~Silicon MPS / CPU), and three baselines
     (lightgbm\_cov, lightgbm\_direct, seasonal\_naive) on Azure~ML.
     Source~B produces gap-filling rows with runtime, cost, and
-    CO\textsubscript{2} metadata.
+    CO\textsubscript{2} metadata.  A v1.3 integrity audit showed that
+    the legacy rows were not consistently evaluated on the same series
+    workload across all models.  Version~1.4 partially repairs this with a
+    matched 100-series M5/Rohlik panel for three FMs and the baseline
+    variants; the remaining Source~B rows are treated as descriptive and
+    as sensitivity checks rather than as primary inferential evidence.
 \end{enumerate}
 
-The meta-regression (\S\ref{sec:meta-regression}) pools Source~A and
-Source~B into a model-level random-effects model: for each
-(FM, baseline, task, metric) pair we compute
-$\Delta = \text{FM} - \text{baseline}$, then fit \texttt{rma.mv}
-(REML, Knapp--Hartung) with $k = 543$ pairs nested by dataset,
-paper, and model name.  Source~A provides both FM and baseline rows
-(via fev-bench and GIFT-Eval), contributing the majority of the
-paired comparisons.
+The primary reanalysis (\S\ref{sec:meta-regression}) uses Source~A
+benchmark rows: for each (FM, task, metric) pair we compute
+$\log(\text{FM metric}/\text{best conventional baseline metric})$.  The
+primary file has $k = 498$ Source~A pairs.  We also generate heuristic
+weighted \texttt{rma.mv} diagnostics for continuity, but the
+$1/n_{\text{FM}}+1/n_{\text{baseline}}$ term is treated as a workload
+proxy rather than as a validated sampling variance.  The full auditable
+contrast table contains $k = 543$ rows after adding the legacy Source~B
+export, but those 45 Source~B contrasts are reported separately because
+they lack row-level paired prediction-error covariance.  The v1.4
+matched-panel Source~B repair is reported separately from both files.
 
 \subsection{Headline findings}
 \label{sec:headline-findings}
@@ -94,34 +103,35 @@ paired comparisons.
 Three findings motivate the sections that follow:
 
 \begin{enumerate}
-  \item \textbf{The FM advantage is robust at benchmark level and is
-    substantially stronger on distributional metrics than on
-    point-forecast metrics.}
-    Across $k = 543$ pairs, on Scaled Quantile Loss (SQL),
-    $\Dhat = -0.318$ ($p < .0001$); on \WAPE{} (a point-forecast
-    metric), $\Dhat = -0.116$ ($p = 0.018$).  The
-    full-pool aggregate ($\Dhat = -0.195$, $p < .0001$) is an
-    omnibus summary across SQL, \WAPE{}, and \MASE{}.  FMs achieve
-    substantially lower quantile-loss scores; their point forecasts are
-    also better on average, but the advantage is attenuated and more
-    sensitive to covariates, leakage, and evaluation protocol.
+  \item \textbf{The observed FM advantage is benchmark-level and
+    metric-dependent.}
+    Across $k = 498$ Source~A benchmark pairs, SQL has the clearest
+    directional advantage (median log-ratio $-0.229$; FMs lower in
+    92\% of rows), while \WAPE{}/ND and \MASE{} are closer to the best
+    baseline (median log-ratios $-0.047$ and $-0.036$).  The finding is
+    therefore an observed benchmark-corpus pattern, not a universal claim.
 
-  \item \textbf{Model scale is not a significant predictor of retail
-    accuracy.}  Within Source~B (controlled protocol), the smallest FM
-    (Moirai~2.0-Small, 11\,M) outperforms the largest (Chronos-2,
-    120\,M) on M5.  The cross-paper model-scale moderator is
-    not significant ($p = 0.867$),
-    consistent with \citet{shchur2025fevbench}'s finding that
-    architecture matters more than parameter count.
+  \item \textbf{Model scale is not a stable predictor in the current
+    benchmark corpus.}  Source~B point estimates are clustered across
+    several small and medium FMs, while Source~A does not yield a stable
+    scale moderator.  Because Source~B is not fully paired, this is a
+    hypothesis about the absence of a simple size--accuracy gradient,
+    not evidence that one named checkpoint dominates another.
+    This is consistent with
+    \citet{shchur2025fevbench}'s finding that architecture may matter
+    more than parameter count.
 
   \item \textbf{The LightGBM protocol gap is conditional on
     intermittency.} \S\ref{sec:baseline-reliability} shows that the
-    direct-vs-recursive multi-step gap flips sign at the
+    direct-vs-recursive multi-step gap appears to flip sign across the
     continuous-demand boundary: direct wins on M5 (intermittent) by
     17--22\,\%, recursive wins on Favorita and Rohlik (smooth) by
-    3--10\,\%.  This conditional pattern means that no
+    3--10\,\%.  A horizon-scaled Favorita check shows that the direct
+    result is budget-confounded, so this remains a protocol hypothesis
+    to validate rather than a hard threshold rule.  This conditional
+    pattern means that no
     retail-benchmark protocol recommendation that ignores demand
-    distribution can survive cross-dataset replication.
+    distribution and compute budget should be treated as general.
 \end{enumerate}
 
 \subsection{Contributions}
@@ -132,18 +142,19 @@ Three findings motivate the sections that follow:
     models for retail demand forecasting (800+ extraction rows,
     9~datasets, 2020--2026).
   \item \textbf{Cross-benchmark extraction} from fev-bench and
-    GIFT-Eval, yielding 543 model-level paired comparisons across
-    12~FMs and conventional baselines.
-  \item \textbf{Model-level meta-regression} ($k = 543$) identifying
-    a robust benchmark-level FM advantage that is strongest on
-    distributional metrics (SQL, $p < .0001$) and smaller on
-    point-forecast metrics (\WAPE{}, $p = 0.018$).
+    GIFT-Eval, yielding 498 Source~A model-level paired comparisons
+    across 7~FMs and conventional baselines, plus 45 Source~B
+    descriptive contrasts.
+  \item \textbf{Model-level cross-benchmark reanalysis} ($k = 498$
+    primary) showing metric-specific FM-vs-best-baseline log-ratio
+    patterns, with heuristic weighted diagnostics kept separate from
+    confirmatory inference.
   \item \textbf{Baseline reliability analysis} documenting the
     conditional direct-vs-recursive LightGBM gap across three
     datasets.
-  \item \textbf{Practitioner decision framework} mapping data
-    characteristics to model-family recommendations with
-    cost-accuracy Pareto figures on consumer hardware.
+  \item \textbf{Practitioner validation checklist} mapping data
+    characteristics to bake-off steps and cost-accuracy diagnostics,
+    rather than deterministic model-family rules.
 \end{enumerate}
 
 \subsection{Paper structure}
@@ -155,15 +166,15 @@ protocol, extraction schema, and gap-filling experimental design.
 \S\ref{sec:prisma-results} reports the literature extraction results
 (PRISMA flow, descriptive statistics). \S\ref{sec:experiments}
 presents the gap-filling experiments:
-\S\ref{sec:experimental-setup}--\ref{sec:per-dataset-results}
+\S\ref{sec:experimental-setup}--\ref{sec:perdataset}
 experimental setup and per-dataset results,
 \S\ref{sec:baseline-reliability} baseline reliability (direct vs
 recursive), \S\ref{sec:fm-consumer-box} foundation model
-consumer-box results. \S\ref{sec:meta-regression} runs the
-meta-regression: cross-paper pooled deltas
-(\S\ref{sec:cross-paper-pooling}), moderator hypotheses
+consumer-box results. \S\ref{sec:meta-regression} reports the
+cross-benchmark reanalysis: Source~A best-baseline log-ratios
+(\S\ref{sec:rq1-accuracy}), moderator hypotheses
 (\S\ref{sec:moderator-results}),
-cost-accuracy Pareto frontier (\S\ref{sec:cost-accuracy}),
+cost-error scatter diagnostics (\S\ref{sec:cost-accuracy}),
 heterogeneity diagnostics (\S\ref{sec:heterogeneity}), and
 preliminary findings (\S\ref{sec:rq1-accuracy}).
 \S\ref{sec:discussion} translates the findings into a practitioner

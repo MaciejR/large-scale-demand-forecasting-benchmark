@@ -5,7 +5,7 @@
 This section reports the outcome of the PRISMA search and describes
 the 800+ row extraction (including per-task re-extraction from
 fev-bench and GIFT-Eval) before the gap-filling experiments (\S5)
-and meta-regression (\S6) operate on it.
+and cross-benchmark reanalysis (\S6) operate on it.
 
 \subsection{PRISMA flow}
 \label{subsec:prisma-flow}
@@ -25,19 +25,20 @@ and meta-regression (\S6) operate on it.
 \toprule
 Stage & Count & Notes \\
 \midrule
-Records identified       & $\sim$150 & Scopus + Google Scholar + Semantic Scholar + arXiv \\
-Duplicates removed       & $\sim$30  & Cross-database overlap, especially arXiv $\leftrightarrow$ Scopus \\
-Records screened (title/abstract) & $\sim$120 & \\
-Excluded at screening    & $\sim$50  & Non-retail, no quantitative results, financial only \\
-Full-text assessed       & $\sim$70  & \\
-Excluded at full-text    & $\sim$32  & No retail dataset, no FM evaluation, duplicate results \\
-Studies included         & 39        & 32 external papers + 7 own experiment blocks \\
+Records identified       & 150 & Google Scholar + Semantic Scholar + arXiv; Scopus/Web of Science target strings were not retained as auditable exports \\
+Duplicates removed       & 30  & Cross-database overlap, especially arXiv $\leftrightarrow$ Scopus \\
+Records screened (title/abstract) & 120 & \\
+Excluded at screening    & 50  & Non-retail, no quantitative results, financial only \\
+Full-text assessed       & 70  & \\
+Excluded at full-text    & 38  & No retail dataset, no FM evaluation, duplicate/non-comparable results \\
+Source~A studies included & 32 & External papers and benchmark sources \\
+Source~B experiment blocks & 7 & Own experiments; not PRISMA included studies \\
 Extraction rows          & 800+      & Multiple rows per study; incl.\ per-task fev-bench/GIFT-Eval \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The 39 included studies and experiment blocks break down as follows:
+The Source~A extraction and Source~B experiment blocks break down as follows:
 \begin{itemize}
   \item \textbf{Category~A (FM papers):} 17 papers, 58 rows.  These
     are the primary FM technical reports --- Chronos (A01), Chronos-2
@@ -54,10 +55,10 @@ The 39 included studies and experiment blocks break down as follows:
     comparisons (C04, C12).
   \item \textbf{Category~D (cross-domain):} 3 papers, 3 rows.
     Included for model-family coverage but not in the retail-scoped
-    meta-regression.
+    reanalysis.
   \item \textbf{Category~F (legacy fev-bench summary entries):} 1
     paper, 8 rows.  These are retained for provenance but the
-    model-level meta-regression uses the expanded B02 per-task rows.
+    model-level reanalysis uses the expanded B02 per-task rows.
   \item \textbf{OWN\_* (own experiments):} 7 experiment blocks,
     72 rows.  Five FM models (\S5.4), LightGBM baselines (\S5.2--5.3),
     and Seasonal Naive across three datasets and three horizons.
@@ -80,8 +81,9 @@ After per-task re-extraction from fev-bench and GIFT-Eval, the
 distribution is broad: 20 fev-bench retail tasks (24--27 rows each,
 534 rows total) and 4 GIFT-Eval retail tasks (${\sim}$107 rows) dominate,
 followed by M5 (40 rows, 6\%) and the remaining retail datasets.
-The per-task granularity enables model-level pairing within each
-(task, metric) cell, which is the basis of the $k = 543$ meta-regression.
+The per-task granularity enables Source~A model-level pairing within each
+(task, metric) cell, which is the basis of the $k = 498$ primary
+reanalysis.
 
 \noindent\textbf{Model family distribution.}
 Foundation models account for 567 rows (71\%), followed by ML\_TREE
@@ -96,8 +98,9 @@ partially offset the imbalance.
 The extraction contains three primary metrics after re-extraction:
 \WAPE{} (232 rows), \MASE{} (227 rows), and SQL (213 rows), plus
 \WRMSSE{} (23 rows, M5 only), win\_rate\_SQL (15 rows), and
-several minor metrics.  After within-cell pairing, the meta-regression
-uses 211 \WAPE{} pairs, 166 SQL pairs, and 166 \MASE{} pairs.  SQL pairs
+several minor metrics.  After within-cell best-baseline pairing, the
+primary Source~A contrast file uses 166 \WAPE{} pairs, 166 SQL pairs,
+and 166 \MASE{} pairs.  SQL pairs
 drive the distributional-accuracy finding, while \WAPE{} pairs test the
 point-forecast question.
 
@@ -112,17 +115,22 @@ validity (\S\ref{subsec:future-work}).
 \label{subsec:narrative}
 
 \noindent\textbf{Foundation models.}
-The 567 FM rows (71\% of the extraction) now span three tiers of
-granularity: (i)~per-paper aggregate results from Source~A Category~A
-(58 rows from 17 FM papers), (ii)~per-task per-model \WAPE{}/\MASE{}/SQL
-scores from the fev-bench and GIFT-Eval re-extraction (${\sim}$640 rows),
-and (iii)~per-cell \WAPE{} from our Source~B consumer-box runs (45 rows).
+The extraction schema contains 567 foundation-model rows (71\% of the
+schema), spanning three
+tiers of granularity: (i)~per-paper aggregate results from Source~A
+Category~A (54 foundation-model rows within 58 Category~A rows),
+(ii)~per-task per-model \WAPE{}/\MASE{}/SQL scores from the fev-bench,
+GIFT-Eval, and legacy benchmark-suite re-extraction (509 foundation-model
+rows), and (iii)~four additional Source~A retail rows from Category~C.
+The local Source~B sweep is stored separately and adds 45 descriptive FM
+\WAPE{} rows, but those rows are not part of the 567-row extraction-schema
+count.
 On benchmark suites, Chronos-2, TimesFM~2.5, and Moirai~2.0 achieve
 win rates of 75--84\% against statistical baselines on GIFT-Eval,
 and normalised SQL scores of 20--35 on fev-bench.  The per-task
 extraction enables model-level FM-vs-baseline pairing within each
-(task, metric) cell --- the structural basis of the $k = 543$
-meta-regression (\S6).
+(task, metric) cell --- the structural basis of the $k = 498$ primary
+reanalysis (\S6).
 
 \noindent\textbf{Gradient-boosted trees (ML\_TREE).}
 The 125 ML\_TREE rows split between M5 competition entries (C01,
@@ -165,12 +173,14 @@ and GIFT-Eval (B01) --- which report per-task SQL, \WAPE{}, and
 \MASE{} for FMs alongside LightGBM, CatBoost, and Auto~ETS.
 
 The per-task re-extraction from these suites (\S\ref{subsec:extraction})
-partially resolves the original gap: the $k = 543$ meta-regression now
-draws ${\sim}$75\% of its pairs from Source~A benchmark suites.
+partially resolves the original gap: the $k = 498$ primary
+reanalysis draws its paired rows from Source~A benchmark suites.
 Source~B (\S\ref{subsec:gapfilling}) remains necessary for two
 reasons: (1)~it adds the consumer-hardware cost dimension absent from
 benchmark evaluations, and (2)~it provides per-series \WAPE{} on
 individual retail datasets (M5, Favorita, Rohlik) under a controlled
-rolling-origin protocol.  We report the pooled estimate with and
-without Source~B rows in \S6.7 so readers can assess each source's
-contribution.
+rolling-origin protocol.  Because the legacy Source~B rows had unequal
+workloads, we report Source~B separately rather than as part of the primary
+Source~A contrast file.  Version~1.4 adds a matched M5/Rohlik Source~B
+repair, also reported separately because it has a local 100-series
+aggregate-\WAPE{} estimand.

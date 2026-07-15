@@ -48,7 +48,7 @@ MODELS = [
     ("TimesFM-2.5", "TimesFM-2.5", "foundation", "Yes", "No", "200M params; decoder-only; zero-shot"),
     ("Chronos-2", "Chronos-2", "foundation", "Yes", "No", "120M params; encoder-only T5; zero-shot; natively supports covariates but evaluated univariate in fev-bench"),
     ("Chronos-Bolt", "Chronos-Bolt-Base", "foundation", "Yes", "No", "~46M params; T5 encoder-only; zero-shot"),
-    ("Moirai-2.0", "Moirai-2.0-Small", "foundation", "Yes", "No", "11M params; decoder-only MoE; zero-shot"),
+    ("Moirai-2.0", "Moirai-2.0-Small", "foundation", "Yes", "No", "11M params; decoder-only quantile model; zero-shot"),
     ("Toto-1.0", "Toto-1.0", "foundation", "Yes", "No", "foundation model; open base; zero-shot"),
     ("TabPFN-TS", "TabPFN-TS", "foundation", "Yes", "No", "~12M params; tabular PFN + temporal; zero-shot; ONLY model using covariates in fev-bench"),
     ("LightGBM (Recursive)", "LightGBM (Recursive)", "ml_tree", "No", "Yes", "AutoGluon-TS 0.14.0; per-task trained; recursive; uses covariates"),

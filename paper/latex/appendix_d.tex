@@ -1,103 +1,58 @@
 % appendix_d.tex — Sensitivity Analyses
 \section{Sensitivity Analyses}\label{app:sensitivity}
 
-Nine sensitivity variants of the primary $k = 543$ model-level
-meta-regression are reported below.  All models use
-\texttt{metafor::rma.mv} \citep{viechtbauer2010metafor} with REML
-estimation, Knapp--Hartung $t$-distribution adjustment
-\citep{knapp2003improved}, and nesting
-\texttt{\~{}1\,|\,dataset\_norm/paper\_id}.
+The v1.4 Source~A sensitivity variants use model-level log-ratios,
+\texttt{metafor::rma.mv} with REML, \texttt{test = "t"},
+\texttt{dfs = "contain"}, and the random-effects structure described in
+\S\ref{subsec:metaspec}.  Negative estimates indicate lower error/loss for
+the foundation model.  Generated output files are under
+\path{analysis/figures/}.  Because $v_i$ is a workload-count proxy rather
+than a validated sampling variance, the intervals, $p$ values, and $Q$
+statistics below are diagnostic output, not confirmatory meta-analysis.
 
 \subsection{Summary Table}
 
 \begin{table}[htbp]
 \centering
-\caption{Sensitivity variants of the model-level meta-regression
-  ($k = 543$ primary pool).}\label{tab:sensitivity-summary}
+\caption{Heuristic-weight diagnostic variants of the model-level log-ratio reanalysis
+  ($k = 498$ Source~A primary pool; legacy Source~B descriptive).}\label{tab:sensitivity-summary}
+\small
 \begin{tabular}{lrlllr}
 \toprule
-Variant & $k$ & $\Dhat$ & 95\% CI & $p$ & $Q$ \\
+Variant & $k$ & $\hat{\ell}$ & 95\% CI & $p$ & $Q$ \\
 \midrule
-Full pool         & 543 & $-0.195$ & $[-0.283,\; -0.107]$ & $<.0001$ & 56{,}301 \\
-Excl-M5           & 468 & $-0.183$ & $[-0.278,\; -0.087]$ & 0.0002 &  20{,}650 \\
-\WAPE{}-only      & 211 & $-0.116$ & $[-0.212,\; -0.020]$ & 0.018  &  28{,}693 \\
-SQL-only          & 166 & $-0.318$ & $[-0.395,\; -0.240]$ & $<.0001$ & 7{,}467 \\
-Source~B only     &  45 & $-0.251$ & $[-0.606,\; +0.104]$ & 0.161  &  20{,}626 \\
-Source~A only     & 498 & $-0.168$ & $[-0.242,\; -0.093]$ & $<.0001$ & 30{,}714 \\
-Best baseline     & 543 & $-0.155$ & $[-0.231,\; -0.078]$ & $<.0001$ & 39{,}746 \\
-Without fev-bench & 129 & $-0.306$ & $[-0.482,\; -0.131]$ & 0.0007 & 25{,}028 \\
-Without GIFT-Eval & 459 & $-0.156$ & $[-0.250,\; -0.062]$ & 0.0012 & 52{,}147 \\
-Equal-weight      & 543 & $-0.160$ & $[-0.245,\; -0.076]$ & 0.0002 & 25 \\
+Best baseline Source~A & 498 & $-0.225$ & $[-2.043,\; 1.592]$ & 0.360 & 37{,}176 \\
+Average baseline       & 498 & $-0.286$ & $[-2.525,\; 1.954]$ & 0.352 & 39{,}209 \\
+Excl-M5                & 438 & $-0.226$ & $[-2.075,\; 1.624]$ & 0.365 & 22{,}578 \\
+\WAPE{}-only           & 166 & $-0.157$ & $[-1.720,\; 1.406]$ & 0.423 & 9{,}839 \\
+SQL-only               & 166 & $-0.397$ & $[-2.751,\; 1.956]$ & 0.278 & 9{,}125 \\
+\MASE{}-only           & 166 & $-0.124$ & $[-1.575,\; 1.326]$ & 0.473 & 7{,}411 \\
+Source~B only          &  45 & $-0.197$ & $[-0.814,\; 0.420]$ & 0.154 & 7{,}101 \\
+Without fev-bench      &  84 & $-0.379$ & $[-0.847,\; 0.089]$ & 0.062 & 1{,}167 \\
+Without GIFT-Eval      & 414 & $-0.091$ & $[-0.620,\; 0.437]$ & 0.272 & 33{,}167 \\
+Equal-weight           & 498 & $-0.215$ & $[-2.054,\; 1.623]$ & 0.377 & 33 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \subsection{Interpretation}
 
-\begin{enumerate}
-  \item \textbf{Excl-M5 ($k = 468$):} Excluding all M5 pairs barely
-    changes the estimate ($-0.183$ vs $-0.195$) and remains
-    highly significant ($p = 0.0002$).  M5 is not driving the primary
-    result.
+The sign is stable across sensitivity variants, but conservative
+suite-level containment intervals cross zero.  This remains the key
+methodology repair: the benchmark rows provide many task-level comparisons,
+but they do not provide many independent source clusters.  The v1.4
+Source~B matched-panel rerun is useful local paired evidence, but it is not
+pooled into these Source~A diagnostic variants.
 
-  \item \textbf{\WAPE{}-only ($k = 211$):} The FM advantage is
-    statistically significant ($\hat{\Delta} = -0.116$, $p = 0.018$),
-    but the effect is smaller than the SQL-only finding, confirming the
-    metric gradient documented in \S\ref{subsec:metric-moderator}.
-
-  \item \textbf{SQL-only ($k = 166$):} The strongest signal in the
-    pool: FMs beat baselines by 0.318 SQL units ($p < .0001$), with
-    the lowest $Q$ of any slice, indicating relative homogeneity
-    conditional on this metric.
-
-  \item \textbf{Source~B only ($k = 45$):} The 45 within-paper pairs
-    (5~FMs $\times$ 9~cells) show the right direction ($-0.251$) but
-    are insufficient for significance ($p = 0.16$) with only 3~dataset
-    clusters.
-
-  \item \textbf{Source~A only ($k = 498$):} Highly significant
-    ($p < .0001$).  The cross-benchmark pairs from fev-bench and
-    GIFT-Eval carry most of the statistical mass.
-
-  \item \textbf{Best baseline ($k = 543$):} Replacing the average
-    conventional baseline with the lowest-error conventional baseline
-    in each cell attenuates the estimate but leaves the FM advantage
-    significant ($\hat{\Delta} = -0.155$, $p < .0001$).
-
-  \item \textbf{Leave-one-suite-out:} Dropping fev-bench leaves
-    GIFT-Eval plus Source~B and remains significant
-    ($\hat{\Delta} = -0.306$, $p = 0.0007$).  Dropping GIFT-Eval leaves
-    fev-bench plus Source~B and remains significant
-    ($\hat{\Delta} = -0.156$, $p = 0.0012$).
-
-  \item \textbf{Equal-weight ($k = 543$):} Replacing the
-    sampling-variance proxy with equal weights leaves the sign and
-    significance unchanged ($\hat{\Delta} = -0.160$, $p = 0.0002$).
-\end{enumerate}
+Task-clustered CR2 sensitivity fits are more optimistic because they treat
+the 24 benchmark tasks as clusters.  These are retained as software
+diagnostics only; they do not repair the missing paired sampling covariance.
 
 \subsection{Bucket-Level Variant ($k = 43$)}
 
 For comparison, a coarser bucket-level aggregation
 (mean FM vs mean ML\_TREE per dataset--horizon--metric cell) yields
-$k = 43$:
-
-\begin{table}[htbp]
-\centering
-\caption{Bucket-level variant ($k = 43$),
-  retained for comparison.}\label{tab:sensitivity-old}
-\begin{tabular}{lrlll}
-\toprule
-Variant & $k$ & $\Dhat$ & 95\% CI & $p$ \\
-\midrule
-Full pool        & 43 & $-0.129$ & $[-0.204, -0.053]$ & 0.0013 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-The model-level design ($k = 543$) differs from the bucket-level
-variant in two ways: (1)~it preserves within-task heterogeneity
-instead of averaging it away, and (2)~it includes fev-bench and
-GIFT-Eval multi-metric data (SQL, MASE, WAPE), which contributes
-substantial statistical mass.  Together, these shift the conclusion
-from ``null, heterogeneous'' to ``significantly better on both
-distributional and point-forecast metrics.''
+$k = 43$ and $\hat{\ell}=-0.180$ (95\% CI $[-0.313,-0.047]$,
+$p=0.015$).  This variant is retained only as a legacy sensitivity check;
+it averages away within-task model heterogeneity and is not the primary
+estimand.
