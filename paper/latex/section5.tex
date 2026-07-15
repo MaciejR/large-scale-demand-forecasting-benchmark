@@ -580,34 +580,34 @@ work (\S\ref{subsec:future-work}).
 
 The intended evaluation protocol follows \S\ref{sec:evalprotocol}
 (same windows, horizons, metrics).  The legacy saved Source~B rows do not
-share a common series workload across all models.  The v1.4 repair run
-does share the workload for M5/Rohlik: one manifest per dataset defines
-the 100 top-volume series, and every completed model writes predictions
-for the same series--origin panel.  Each FM uses its published default
-context and point-forecast mode with no tuning.
+share a common series workload across all models.  The matched-panel repair
+does share the workload for completed M5/Rohlik/Favorita runs: one manifest
+per dataset defines the 100 top-volume series, and every completed model
+writes predictions for the same series--origin panel.  Each FM uses its
+published default context and point-forecast mode with no tuning.
 
 \subsubsection{Evaluation and Metrics}\label{sec:fm_metrics}\label{sec:fm-m5-metric}
 
 Both sources use the \S\ref{sec:evalprotocol} metric definitions.
 Primary metrics are \WAPE{} and MAE on all datasets, \WRMSSE{} on M5
 only.  The local run reuses the same metric code path as the LightGBM
-baselines.  For the v1.4 matched-panel subset, aggregate \WAPE{} is
+baselines.  For the matched-panel subset, aggregate \WAPE{} is
 computed from prediction-level outputs on the same rows, and paired
 bootstrap intervals resample the shared series panel.
 
 \subsubsection{Consumer-Box Run: Results}\label{sec:fm_results}
 
-The v1.4 Source~B repair supersedes the legacy row-level comparison for
-M5/Rohlik.  It does not yet supersede Favorita, TimesFM~2.5, or TiRex:
-those remain incomplete matched-panel targets because the local
-CPU/MPS throughput was too slow for a full 100-series rerun in this
-revision window.  The completed v1.4 panel therefore has 18 FM-vs-best
-baseline contrasts (3~FMs $\times$ 2~datasets $\times$ 3~horizons).
+The Source~B repair supersedes the legacy row-level comparison for completed
+matched panels.  The main 100-series table has 30 FM-vs-best-baseline
+contrasts: three FMs on M5/Rohlik, and four FMs on Favorita including
+TimesFM~2.5.  TiRex is kept separate because the full 100-series Favorita
+CPU run did not complete the first horizon in a practical wall-clock window;
+we report a smaller 20-series diagnostic after the main table.
 
 \begin{table*}[htbp]
 \centering
-\caption{Source~B v1.4 matched-panel FM-vs-best-baseline contrasts on M5
-and Rohlik.  Aggregate \WAPE{} is computed from prediction-level outputs
+\caption{Source~B matched-panel FM-vs-best-baseline contrasts.  Aggregate
+\WAPE{} is computed from prediction-level outputs
 on the same 100 series and origins per dataset--horizon.  Negative
 $\ell$ favours the FM.}
 \label{tab:sourceb-paired}
@@ -634,17 +634,40 @@ Rohlik & Moirai~2.0-Small & 14 & recursive \LGBM{} & 0.194 & 0.199 & $-0.026$ [$
 Rohlik & Chronos-2 & 28 & recursive \LGBM{} & 0.193 & 0.209 & $-0.079$ [$-0.102$, $-0.054$] \\
 Rohlik & Chronos-Bolt-Tiny & 28 & recursive \LGBM{} & 0.211 & 0.209 & 0.008 [$-0.014$, 0.033] \\
 Rohlik & Moirai~2.0-Small & 28 & recursive \LGBM{} & 0.202 & 0.209 & $-0.034$ [$-0.063$, $-0.008$] \\
+Favorita & Chronos-2 & 7 & recursive \LGBM{} & 0.248 & 0.271 & $-0.085$ [$-0.106$, $-0.064$] \\
+Favorita & Chronos-Bolt-Tiny & 7 & recursive \LGBM{} & 0.327 & 0.271 & 0.190 [0.141, 0.242] \\
+Favorita & Moirai~2.0-Small & 7 & recursive \LGBM{} & 0.264 & 0.271 & $-0.024$ [$-0.042$, $-0.008$] \\
+Favorita & TimesFM~2.5 & 7 & recursive \LGBM{} & 0.275 & 0.271 & 0.017 [$-0.016$, 0.051] \\
+Favorita & Chronos-2 & 14 & recursive \LGBM{} & 0.255 & 0.283 & $-0.105$ [$-0.127$, $-0.084$] \\
+Favorita & Chronos-Bolt-Tiny & 14 & recursive \LGBM{} & 0.330 & 0.283 & 0.155 [0.107, 0.202] \\
+Favorita & Moirai~2.0-Small & 14 & recursive \LGBM{} & 0.272 & 0.283 & $-0.037$ [$-0.056$, $-0.019$] \\
+Favorita & TimesFM~2.5 & 14 & recursive \LGBM{} & 0.283 & 0.283 & 0.001 [$-0.035$, 0.040] \\
+Favorita & Chronos-2 & 28 & direct \LGBM{} & 0.270 & 0.292 & $-0.077$ [$-0.140$, $-0.025$] \\
+Favorita & Chronos-Bolt-Tiny & 28 & direct \LGBM{} & 0.337 & 0.292 & 0.143 [0.084, 0.199] \\
+Favorita & Moirai~2.0-Small & 28 & direct \LGBM{} & 0.287 & 0.292 & $-0.017$ [$-0.065$, 0.027] \\
+Favorita & TimesFM~2.5 & 28 & direct \LGBM{} & 0.293 & 0.292 & 0.006 [$-0.035$, 0.052] \\
 \bottomrule
 \end{tabular}
 \end{table*}
 
 Chronos-2 has lower aggregate \WAPE{} than the best local baseline in all
-six matched M5/Rohlik cells.  Moirai~2.0-Small is also lower in all six
-point estimates, with the bootstrap interval excluding zero in five.
-Chronos-Bolt-Tiny is near parity on M5 and worse on Rohlik.  These are
-paired local results for a 100-series panel, not a claim that the same
-ranking holds for Favorita, larger workloads, GPU inference, or
-covariate-aware FM variants.
+nine matched M5/Rohlik/Favorita cells.  Moirai~2.0-Small is also lower in
+all nine point estimates, with the bootstrap interval excluding zero in
+seven.  Chronos-Bolt-Tiny is near parity on M5 and worse on Rohlik and
+Favorita.  TimesFM~2.5 is near parity on Favorita but much slower than the
+other completed local FMs.  These are paired local results for 100-series
+panels, not a claim that the same ranking holds for larger workloads, GPU
+inference, or covariate-aware FM variants.
+
+\textbf{TiRex diagnostic.}  A full 100-series Favorita TiRex run was started
+but did not finish the first horizon in a practical wall-clock window on the
+local CPU path.  A separate 20-series diagnostic completed at
+$h\in\{7,14,28\}$ with aggregate \WAPE{} 0.209, 0.214, and 0.223,
+respectively.  The corresponding log-ratios against the best baseline on the
+same 20 series were $-0.040$ [$-0.079$, 0.000], $-0.046$ [$-0.113$, 0.019],
+and $-0.019$ [$-0.095$, 0.048].  These point estimates favour TiRex but are
+not part of the main 100-series table and should be read primarily as a
+throughput warning.
 
 \textbf{Per-cell \WAPE{} (descriptive Source~B grid).}  Numbers below are
 per-series \WAPE{} means from the saved result file.  Because
@@ -691,10 +714,10 @@ outperforms another.
 \textbf{Log-ratio status.}  Source~A remains the only input to the
 \S\ref{subsec:pooling-strategy} cross-benchmark reanalysis.  The legacy
 45 Source~B FM rows are retained in a descriptive contrast file for
-audit.  The v1.4 matched-panel Source~B contrasts are reported separately
+audit.  The matched-panel Source~B contrasts are reported separately
 in Table~\ref{tab:sourceb-paired}, because their estimand is local
-aggregate \WAPE{} on a 100-series M5/Rohlik panel rather than the
-as-reported Source~A benchmark estimand.
+aggregate \WAPE{} on 100-series panels rather than the as-reported Source~A
+benchmark estimand.
 
 \textbf{M5 caveat: per-series \WAPE{} + intermittent demand.}
 The legacy M5 point-estimate gaps are large, but they are inflated by
@@ -709,15 +732,16 @@ central tendency.
 
 A sanity check recasting \WAPE{} in aggregate form
 ($\sum|e|/\sum|y|$) deflates FM M5 scores by ${\sim}11\%$ in the
-legacy rows.  The v1.4 matched-panel results therefore use aggregate
+legacy rows.  The matched-panel results therefore use aggregate
 \WAPE{} from shared predictions as the local Source~B estimand.
 
-\textbf{Favorita remains the unmatched ``close call'' dataset.}
-\texttt{lightgbm\_cov} is close to the FM point estimates on Favorita,
-and the strongest FM point estimate is within a few hundredths of WAPE.
-Given the unequal workloads, the defensible conclusion is that Favorita
-requires a re-run on a shared series set before claiming an FM or
-\LGBM{} win.
+\textbf{Favorita is now the matched ``close call'' dataset.}
+On the shared 100-series Favorita panel, \texttt{lightgbm\_cov} is the best
+baseline at $h=7$ and $h=14$, while direct \LGBM{} is best at $h=28$.
+Chronos-2 is clearly lower than the best baseline on all three horizons,
+Moirai~2.0-Small is lower at $h=7$ and $h=14$ and close at $h=28$, and
+TimesFM~2.5 is close to parity but slow.  The result supports a matched
+bake-off interpretation rather than a universal FM win.
 
 \textbf{Cost and runtime footprint.}  The saved 72-row Source~B file sums
 to 241.6 wall hours, \$3.18, and 4.63\,kg CO$_2$eq under the recorded
@@ -730,8 +754,8 @@ results.
 \textbf{Caveats.}  The LightGBM baselines use a fixed hyperparameter
 grid with no dataset-specific tuning; the FMs are zero-shot; this
 section is point-forecast only; the matched repair currently covers
-M5/Rohlik and three FMs, not Favorita, TimesFM~2.5, TiRex, or
-covariate-aware FM configurations.
+100-series M5/Rohlik/Favorita for completed models, but not full TiRex,
+GPU/batched inference, or covariate-aware FM configurations.
 
 \subsubsection{Reproducibility}\label{sec:fm_repro}
 
@@ -739,9 +763,11 @@ Source~B runs are anchored by git commit SHA, HuggingFace revision
 SHA, \texttt{pip freeze} snapshot, and machine fingerprint where
 available.  The v1.4 matched-panel runs include shared series manifests,
 per-series predictions, run ledgers, and paired bootstrap contrasts for
-M5/Rohlik.  Future Source~B releases must extend the same structure to
-Favorita, TimesFM~2.5, TiRex, and larger hardware/batch configurations
-before Source~B can enter a broader paired inference.  Moirai~2.0-Small carries a
+M5/Rohlik.  The v1.5 working artifacts extend that structure to Favorita for
+completed models and add a smaller TiRex diagnostic.  Future Source~B releases
+must extend the same structure to full TiRex, larger hardware/batch
+configurations, and covariate-aware FMs before Source~B can enter a broader
+paired inference.  Moirai~2.0-Small carries a
 non-commercial license (CC-BY-NC-4.0), flagged in
 \S\ref{sec:framework}.
 

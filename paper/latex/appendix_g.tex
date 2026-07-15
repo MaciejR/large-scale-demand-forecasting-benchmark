@@ -182,8 +182,8 @@ M5 direct & 0.724 & 0.571 & $-0.153$ & mismatch \\
 \end{table}
 
 The cost plots in \S\ref{sec:cost-accuracy} therefore remain cost-error
-scatterplots.  The v1.4 matched-panel repair writes a local run ledger for
-the M5/Rohlik rerun; the older Azure summary/detail tables still need a
+scatterplots.  The matched-panel repair writes a local run ledger for
+the completed M5/Rohlik/Favorita reruns; the older Azure summary/detail tables still need a
 single reconciled ledger before cost claims are promoted beyond descriptive
 accounting.
 
@@ -191,8 +191,8 @@ accounting.
 
 Every baseline result should be tied to a git commit SHA, an Azure ML
 pipeline run name, a registered data asset version, and a versioned
-environment.  The v1.4 matched-panel runs store shared series identifiers,
+environment.  The matched-panel runs store shared series identifiers,
 forecast origins, actuals, per-model predictions, and paired bootstrap
-contrasts for M5/Rohlik.  The same requirement applies to Favorita,
-TimesFM~2.5, TiRex, and future GPU/batched reruns before Source~B can
-enter a broader formal paired analysis.
+contrasts for completed M5/Rohlik/Favorita cells.  The same requirement
+applies to full TiRex, future GPU/batched reruns, and covariate-aware FM
+variants before Source~B can enter a broader formal paired analysis.

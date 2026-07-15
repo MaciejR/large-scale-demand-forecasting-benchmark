@@ -1,0 +1,25 @@
+{
+  "datasets": [
+    "favorita"
+  ],
+  "hardware": "M_SERIES_MAC",
+  "horizons": [
+    7,
+    14,
+    28
+  ],
+  "max_series": 100,
+  "models": [
+    "seasonal_naive",
+    "lightgbm_cov",
+    "lightgbm_direct",
+    "lightgbm_direct_scaled"
+  ],
+  "n_bootstrap": 1000,
+  "out_dir": "/Users/maciejrubczynski/Repos/large-scale-demand-forecasting-benchmark/benchmark/results/source_b_paired_panel",
+  "run_id": "source_b_repair_baselines_favorita_100_v1_5",
+  "seed": 20260714,
+  "series_selection": "top_volume",
+  "train_fraction": 0.8,
+  "train_window_days": 365
+}

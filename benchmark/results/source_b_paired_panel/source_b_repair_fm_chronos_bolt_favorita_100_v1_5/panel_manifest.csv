@@ -1,0 +1,2 @@
+run_id,panel_id,dataset,n_series,n_dates,first_date,last_date,series_selection,seed
+source_b_repair_fm_chronos_bolt_favorita_100_v1_5,favorita_top_volume_100_20260714,Favorita,100,1679,2013-01-02,2017-08-15,top_volume,20260714

@@ -6,10 +6,10 @@ We presented a PRISMA-informed review and exploratory cross-benchmark
 reanalysis of foundation models for retail demand forecasting, augmented
 with original gap-filling experiments.  The primary quantitative file now
 contains $k = 498$ Source~A best-baseline comparisons from two benchmark
-suites, fev-bench and GIFT-Eval, plus a separate v1.4 matched-panel Source~B
-repair on M5/Rohlik.
+suites, fev-bench and GIFT-Eval, plus a separate matched-panel Source~B
+repair on M5, Rohlik, and Favorita.
 Because the available benchmark papers do not provide paired
-prediction-level variances and covariances, v1.4 does not claim a
+prediction-level variances and covariances, this version does not claim a
 confirmatory pooled meta-analysis.  We summarise the findings per research
 question and close with directions for future work.
 
@@ -33,14 +33,18 @@ not universal evidence that FMs outperform conventional baselines in all
 retail demand settings.}  Rankings depend on metric, baseline strength,
 covariates, leakage controls, and evaluation protocol.
 
-The v1.4 Source~B matched-panel repair is directionally consistent with a
-narrower local version of that claim.  On the same 100 M5/Rohlik series and
-forecast origins, Chronos-2 has lower aggregate \WAPE{} than the best local
-baseline in all six dataset--horizon cells, while Moirai~2.0-Small is lower
-in all six point estimates and has bootstrap intervals excluding zero in
-five.  Chronos-Bolt-Tiny is near parity on M5 and worse on Rohlik.  These
-results are paired local evidence, not a replacement for the broader
-Source~A reanalysis.
+The Source~B matched-panel repair is directionally consistent with a narrower
+local version of that claim, but it is also model-specific.  On the same
+100-series panels and forecast origins, Chronos-2 has lower aggregate
+\WAPE{} than the best local baseline in all nine M5/Rohlik/Favorita
+dataset--horizon cells.  Moirai~2.0-Small is lower in all nine point
+estimates, with bootstrap intervals excluding zero in seven.  Chronos-Bolt-Tiny
+is near parity on M5 and worse on Rohlik and Favorita.  TimesFM~2.5, measured
+on Favorita, is near parity with the best local baseline but is much slower on
+the local CPU path.  TiRex completed only a smaller 20-series Favorita
+diagnostic in this repair pass; its point estimates favour TiRex but the
+bootstrap intervals include zero.  These results are paired local evidence,
+not a replacement for the broader Source~A reanalysis.
 
 \paragraph{RQ2 (Moderators): Which characteristics moderate the
 FM-vs-baseline gap?}
@@ -54,19 +58,24 @@ hypothesis-generating because the independent source count is small:
   \item \textbf{Dataset:} No stable dataset-level moderator survives the
     repaired clustering.
   \item \textbf{Model scale:} No stable scale effect appears in the
-    9\,M--200\,M legacy range.  In the v1.4 matched M5/Rohlik panel,
+    9\,M--200\,M legacy range.  In the matched Source~B panel,
     Chronos-2 is consistently stronger than Chronos-Bolt-Tiny, but
-    Moirai~2.0-Small is also competitive.  That pattern is too narrow to
-    claim a monotonic scaling law.
+    Moirai~2.0-Small is also competitive and TimesFM~2.5 does not dominate
+    the smaller models on Favorita.  That pattern is too narrow to claim a
+    monotonic scaling law.
   \item \textbf{Horizon:} No stable horizon effect appears.
   \item \textbf{Baseline family:} The FM advantage is larger against
     statistical baselines (Auto~ETS, Seasonal Naive) than against
     gradient-boosted trees, as expected.
   \item \textbf{LightGBM protocol:} The direct-vs-recursive multi-step gap
     differs across datasets, metric aggregation, and budgets.  The legacy
-    per-series audit made M5 look strongly direct-favourable, but the v1.4
-    matched aggregate-\WAPE{} panel makes M5 close at short horizons and
-    recursive-favourable on Rohlik.  Favorita remains a matched-rerun target.
+    per-series audit made M5 look strongly direct-favourable, but the matched
+    aggregate-\WAPE{} panel makes M5 close at short horizons,
+    recursive-favourable on Rohlik, and mixed on Favorita: recursive is lower
+    at horizons 7 and 14, while direct is lower at horizon 28.  The scaled
+    direct variant is identical to direct at horizon 7 and worse at horizons
+    14 and 28 on Favorita, so the earlier direct-scaled anomaly was not
+    reproduced under a shared panel.
 \end{itemize}
 
 \paragraph{RQ3 (Cost): What is the cost-error tradeoff?}
@@ -108,11 +117,12 @@ are validation hypotheses, not universal deployment rules.
 \label{subsec:future-work}
 
 \paragraph{Complete the Source~B repair.}
-Version~1.4 completes the shared-panel rerun for M5/Rohlik and three FMs.
-The remaining repair is to extend the same design to Favorita,
-TimesFM~2.5, TiRex, GPU/batched inference, and covariate-aware FM variants,
-then compute paired bootstrap covariance matrices for the full set of
-log-ratio contrasts.
+The current shared-panel repair covers M5/Rohlik for three FMs and Favorita
+for four 100-series FMs plus a smaller TiRex diagnostic.  The remaining repair
+is to optimise or batch TiRex, extend TimesFM~2.5 and TiRex across the full
+M5/Rohlik/Favorita panel where computationally feasible, add GPU throughput
+measurements and covariate-aware FM variants, then compute paired bootstrap
+covariance matrices for the full set of log-ratio contrasts.
 
 \paragraph{Covariate-aware FM evaluation.}
 Covariate-aware FM configurations and TabPFN-TS should be evaluated with

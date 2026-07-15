@@ -108,11 +108,16 @@ CPU-only ML\_TREE and statistical baselines.
 The v1.3 audit showed that the legacy Source~B model rows were not
 consistently evaluated on the same series counts within each
 dataset--horizon cell, and the legacy bootstrap file covered only four of
-the five FMs.  Version~1.4 partially repairs this by rerunning M5/Rohlik
+the five FMs.  The matched-panel repair now reruns M5, Rohlik, and Favorita
 on shared 100-series panels with prediction-level outputs and paired
-bootstrap contrasts.  The repair does not yet cover Favorita,
-TimesFM~2.5, TiRex, GPU throughput, or covariate-aware FM variants, so
-Source~B remains a local sensitivity analysis rather than a confirmatory
+bootstrap contrasts for the completed local models.  Favorita includes
+Chronos-Bolt-Tiny, Chronos-2, Moirai~2.0-Small, and TimesFM~2.5 on the
+100-series panel.  TiRex did not finish the full 100-series Favorita
+horizon-7 cell after a long CPU run, so we report a separate 20-series
+throughput/accuracy diagnostic instead of mixing it with the main 100-series
+table.  The repair still does not cover GPU throughput, covariate-aware FM
+variants, or full TiRex/TimesFM reruns across every dataset, so Source~B
+remains a local sensitivity analysis rather than a confirmatory
 cross-benchmark experiment.
 
 \paragraph{Approximate sampling variance.}

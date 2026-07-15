@@ -188,19 +188,20 @@ MacBook runs, Azure ML workspace for batch runs).  The export script
 CSV.  These legacy rows are retained for provenance and cost audit, but not
 for paired inference.
 
-Version~1.4 adds a matched-panel Source~B repair run for M5 and Rohlik.
+The matched-panel Source~B repair adds shared-panel reruns for M5, Rohlik,
+and Favorita.
 The repair runner
 \texttt{benchmark/code/experiments/run\_source\_b\_paired\_panel.py}
 selects the same 100 top-volume series per dataset, uses the same
 rolling-origin windows for every model, writes prediction-level parquet
 files keyed by series, origin date, target date, and forecast step, and
-records a machine-readable run ledger.  Completed v1.4 repair runs cover
+records a machine-readable run ledger.  Completed repair runs cover
 Seasonal Naive, recursive LightGBM, direct LightGBM, horizon-scaled direct
 LightGBM, Chronos-Bolt-Tiny, Chronos-2, and Moirai~2.0-Small on
-M5/Rohlik at $h\in\{7,14,28\}$.  TimesFM~2.5 and TiRex were attempted but
-are not included in the v1.4 matched-panel result table because their
-current local CPU paths did not complete a 100-series first cell in a
-practical wall-clock window.  Favorita remains a matched-panel rerun target.
+M5/Rohlik/Favorita at $h\in\{7,14,28\}$, plus TimesFM~2.5 on Favorita.
+TiRex did not complete the full 100-series Favorita first cell in a practical
+wall-clock window, so it is reported as a separate 20-series Favorita
+diagnostic rather than in the main 100-series repair table.
 
 \subsection{Reanalysis specification}
 \label{subsec:metaspec}
