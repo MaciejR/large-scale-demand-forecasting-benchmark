@@ -110,7 +110,9 @@ consistently evaluated on the same series counts within each
 dataset--horizon cell, and the legacy bootstrap file covered only four of
 the five FMs.  The matched-panel repair now reruns M5, Rohlik, and Favorita
 on shared 100-series panels with prediction-level outputs and paired
-bootstrap contrasts for the completed local models.  Favorita includes
+bootstrap contrasts for the completed local models.  This covariance
+repair adds a shared-bootstrap covariance matrix for the 39 completed
+FM-vs-best-baseline log-ratios.  Favorita includes
 Chronos-Bolt-Tiny, Chronos-2, Moirai~2.0-Small, and batched TiRex on the
 100-series panel, plus TimesFM~2.5 on Favorita.  The repair still does not
 cover GPU throughput, covariate-aware FM variants, TimesFM~2.5 on M5/Rohlik,
@@ -124,9 +126,11 @@ SEs.  This is a weight proxy rather than a true variance for a paired
 log-ratio: it does not model metric dispersion, shared baselines,
 within-series autocorrelation, or covariance between FM and baseline errors.
 Containment degrees of freedom, CR2 sensitivity, and equal-weight analysis
-discipline the claims, but they do not create the missing covariance
-information.  Fully paired bootstrap covariance matrices are required before
-this can be presented as a confirmatory meta-analysis.
+discipline the Source~A claims, but they do not create the missing covariance
+information for published benchmark rows.  The Source~B matched panel now has
+an empirical bootstrap covariance matrix, but a confirmatory cross-benchmark
+meta-analysis would require comparable prediction-level covariance from
+fev-bench, GIFT-Eval, or additional independent benchmark suites.
 
 \paragraph{Evaluation protocol heterogeneity.}
 Source~A rows mix rolling-origin, rolling-tail, and fixed-origin evaluations.

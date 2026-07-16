@@ -595,13 +595,19 @@ Primary metrics are \WAPE{} and MAE on all datasets, \WRMSSE{} on M5
 only.  The local run reuses the same metric code path as the LightGBM
 baselines.  For the matched-panel subset, aggregate \WAPE{} is
 computed from prediction-level outputs on the same rows, and paired
-bootstrap intervals resample the shared series panel.
+bootstrap intervals resample the shared series panel.  The same bootstrap
+draws are reused across all contrasts within a dataset, producing an
+empirical log-ratio covariance matrix for the 39 completed FM-vs-best-baseline
+contrasts.
 
 \subsubsection{Consumer-Box Run: Results}\label{sec:fm_results}
 
 The Source~B repair supersedes the legacy row-level comparison for completed
 matched panels.  The main 100-series table has 39 FM-vs-best-baseline
 contrasts: four FMs on M5/Rohlik and five FMs on Favorita.
+The generated replication files include shared bootstrap draws, a wide
+log-ratio covariance matrix, and a long covariance/correlation table under
+the \texttt{source\_b\_paired\_panel\_*} prefix.
 
 \begin{table*}[htbp]
 \centering
@@ -616,44 +622,44 @@ $\ell$ favours the FM.}
 Dataset & Model & $h$ & Best baseline & FM \WAPE{} & Baseline \WAPE{} & $\ell$ (95\% bootstrap CI) \\
 \midrule
 M5 & Chronos-2 & 7 & recursive \LGBM{} & 0.294 & 0.320 & $-0.085$ [$-0.100$, $-0.070$] \\
-M5 & Chronos-Bolt-Tiny & 7 & recursive \LGBM{} & 0.314 & 0.320 & $-0.017$ [$-0.034$, $-0.001$] \\
-M5 & Moirai~2.0-Small & 7 & recursive \LGBM{} & 0.298 & 0.320 & $-0.070$ [$-0.087$, $-0.053$] \\
+M5 & Chronos-Bolt-Tiny & 7 & recursive \LGBM{} & 0.314 & 0.320 & $-0.017$ [$-0.035$, $-0.000$] \\
+M5 & Moirai~2.0-Small & 7 & recursive \LGBM{} & 0.298 & 0.320 & $-0.070$ [$-0.087$, $-0.055$] \\
 M5 & TiRex & 7 & recursive \LGBM{} & 0.298 & 0.320 & $-0.069$ [$-0.086$, $-0.054$] \\
 M5 & Chronos-2 & 14 & recursive \LGBM{} & 0.307 & 0.334 & $-0.083$ [$-0.100$, $-0.068$] \\
-M5 & Chronos-Bolt-Tiny & 14 & recursive \LGBM{} & 0.331 & 0.334 & $-0.009$ [$-0.029$, 0.012] \\
+M5 & Chronos-Bolt-Tiny & 14 & recursive \LGBM{} & 0.331 & 0.334 & $-0.009$ [$-0.031$, 0.011] \\
 M5 & Moirai~2.0-Small & 14 & recursive \LGBM{} & 0.310 & 0.334 & $-0.074$ [$-0.095$, $-0.056$] \\
-M5 & TiRex & 14 & recursive \LGBM{} & 0.312 & 0.334 & $-0.067$ [$-0.086$, $-0.052$] \\
-M5 & Chronos-2 & 28 & direct \LGBM{} & 0.339 & 0.359 & $-0.056$ [$-0.083$, $-0.030$] \\
-M5 & Chronos-Bolt-Tiny & 28 & direct \LGBM{} & 0.360 & 0.359 & 0.003 [$-0.028$, 0.034] \\
+M5 & TiRex & 14 & recursive \LGBM{} & 0.312 & 0.334 & $-0.067$ [$-0.086$, $-0.050$] \\
+M5 & Chronos-2 & 28 & direct \LGBM{} & 0.339 & 0.359 & $-0.056$ [$-0.084$, $-0.030$] \\
+M5 & Chronos-Bolt-Tiny & 28 & direct \LGBM{} & 0.360 & 0.359 & 0.003 [$-0.030$, 0.034] \\
 M5 & Moirai~2.0-Small & 28 & direct \LGBM{} & 0.329 & 0.359 & $-0.086$ [$-0.111$, $-0.063$] \\
-M5 & TiRex & 28 & direct \LGBM{} & 0.348 & 0.359 & $-0.031$ [$-0.066$, 0.001] \\
-Rohlik & Chronos-2 & 7 & recursive \LGBM{} & 0.180 & 0.191 & $-0.061$ [$-0.082$, $-0.041$] \\
-Rohlik & Chronos-Bolt-Tiny & 7 & recursive \LGBM{} & 0.199 & 0.191 & 0.041 [0.023, 0.063] \\
-Rohlik & Moirai~2.0-Small & 7 & recursive \LGBM{} & 0.188 & 0.191 & $-0.016$ [$-0.041$, 0.011] \\
-Rohlik & TiRex & 7 & recursive \LGBM{} & 0.184 & 0.191 & $-0.037$ [$-0.060$, $-0.012$] \\
-Rohlik & Chronos-2 & 14 & recursive \LGBM{} & 0.185 & 0.199 & $-0.076$ [$-0.096$, $-0.056$] \\
+M5 & TiRex & 28 & direct \LGBM{} & 0.348 & 0.359 & $-0.031$ [$-0.065$, 0.003] \\
+Rohlik & Chronos-2 & 7 & recursive \LGBM{} & 0.180 & 0.191 & $-0.061$ [$-0.080$, $-0.039$] \\
+Rohlik & Chronos-Bolt-Tiny & 7 & recursive \LGBM{} & 0.199 & 0.191 & 0.041 [0.021, 0.063] \\
+Rohlik & Moirai~2.0-Small & 7 & recursive \LGBM{} & 0.188 & 0.191 & $-0.016$ [$-0.040$, 0.010] \\
+Rohlik & TiRex & 7 & recursive \LGBM{} & 0.184 & 0.191 & $-0.037$ [$-0.061$, $-0.011$] \\
+Rohlik & Chronos-2 & 14 & recursive \LGBM{} & 0.185 & 0.199 & $-0.076$ [$-0.095$, $-0.054$] \\
 Rohlik & Chronos-Bolt-Tiny & 14 & recursive \LGBM{} & 0.205 & 0.199 & 0.026 [0.007, 0.044] \\
-Rohlik & Moirai~2.0-Small & 14 & recursive \LGBM{} & 0.194 & 0.199 & $-0.026$ [$-0.051$, $-0.003$] \\
-Rohlik & TiRex & 14 & recursive \LGBM{} & 0.189 & 0.199 & $-0.051$ [$-0.078$, $-0.025$] \\
-Rohlik & Chronos-2 & 28 & recursive \LGBM{} & 0.193 & 0.209 & $-0.079$ [$-0.102$, $-0.054$] \\
-Rohlik & Chronos-Bolt-Tiny & 28 & recursive \LGBM{} & 0.211 & 0.209 & 0.008 [$-0.014$, 0.033] \\
-Rohlik & Moirai~2.0-Small & 28 & recursive \LGBM{} & 0.202 & 0.209 & $-0.034$ [$-0.063$, $-0.008$] \\
-Rohlik & TiRex & 28 & recursive \LGBM{} & 0.196 & 0.209 & $-0.061$ [$-0.094$, $-0.034$] \\
-Favorita & Chronos-2 & 7 & recursive \LGBM{} & 0.248 & 0.271 & $-0.085$ [$-0.106$, $-0.064$] \\
-Favorita & Chronos-Bolt-Tiny & 7 & recursive \LGBM{} & 0.327 & 0.271 & 0.190 [0.141, 0.242] \\
-Favorita & Moirai~2.0-Small & 7 & recursive \LGBM{} & 0.264 & 0.271 & $-0.024$ [$-0.042$, $-0.008$] \\
-Favorita & TimesFM~2.5 & 7 & recursive \LGBM{} & 0.275 & 0.271 & 0.017 [$-0.016$, 0.051] \\
-Favorita & TiRex & 7 & recursive \LGBM{} & 0.258 & 0.271 & $-0.049$ [$-0.073$, $-0.028$] \\
-Favorita & Chronos-2 & 14 & recursive \LGBM{} & 0.255 & 0.283 & $-0.105$ [$-0.127$, $-0.084$] \\
-Favorita & Chronos-Bolt-Tiny & 14 & recursive \LGBM{} & 0.330 & 0.283 & 0.155 [0.107, 0.202] \\
-Favorita & Moirai~2.0-Small & 14 & recursive \LGBM{} & 0.272 & 0.283 & $-0.037$ [$-0.056$, $-0.019$] \\
-Favorita & TimesFM~2.5 & 14 & recursive \LGBM{} & 0.283 & 0.283 & 0.001 [$-0.035$, 0.040] \\
-Favorita & TiRex & 14 & recursive \LGBM{} & 0.265 & 0.283 & $-0.065$ [$-0.086$, $-0.045$] \\
-Favorita & Chronos-2 & 28 & direct \LGBM{} & 0.270 & 0.292 & $-0.077$ [$-0.140$, $-0.025$] \\
-Favorita & Chronos-Bolt-Tiny & 28 & direct \LGBM{} & 0.337 & 0.292 & 0.143 [0.084, 0.199] \\
-Favorita & Moirai~2.0-Small & 28 & direct \LGBM{} & 0.287 & 0.292 & $-0.017$ [$-0.065$, 0.027] \\
-Favorita & TimesFM~2.5 & 28 & direct \LGBM{} & 0.293 & 0.292 & 0.006 [$-0.035$, 0.052] \\
-Favorita & TiRex & 28 & direct \LGBM{} & 0.279 & 0.292 & $-0.045$ [$-0.100$, 0.004] \\
+Rohlik & Moirai~2.0-Small & 14 & recursive \LGBM{} & 0.194 & 0.199 & $-0.026$ [$-0.050$, $-0.000$] \\
+Rohlik & TiRex & 14 & recursive \LGBM{} & 0.189 & 0.199 & $-0.051$ [$-0.077$, $-0.022$] \\
+Rohlik & Chronos-2 & 28 & recursive \LGBM{} & 0.193 & 0.209 & $-0.079$ [$-0.105$, $-0.053$] \\
+Rohlik & Chronos-Bolt-Tiny & 28 & recursive \LGBM{} & 0.211 & 0.209 & 0.008 [$-0.017$, 0.033] \\
+Rohlik & Moirai~2.0-Small & 28 & recursive \LGBM{} & 0.202 & 0.209 & $-0.034$ [$-0.064$, $-0.007$] \\
+Rohlik & TiRex & 28 & recursive \LGBM{} & 0.196 & 0.209 & $-0.061$ [$-0.093$, $-0.031$] \\
+Favorita & Chronos-2 & 7 & recursive \LGBM{} & 0.248 & 0.271 & $-0.085$ [$-0.106$, $-0.065$] \\
+Favorita & Chronos-Bolt-Tiny & 7 & recursive \LGBM{} & 0.327 & 0.271 & 0.190 [0.143, 0.239] \\
+Favorita & Moirai~2.0-Small & 7 & recursive \LGBM{} & 0.264 & 0.271 & $-0.024$ [$-0.040$, $-0.009$] \\
+Favorita & TimesFM~2.5 & 7 & recursive \LGBM{} & 0.275 & 0.271 & 0.017 [$-0.014$, 0.052] \\
+Favorita & TiRex & 7 & recursive \LGBM{} & 0.258 & 0.271 & $-0.049$ [$-0.072$, $-0.028$] \\
+Favorita & Chronos-2 & 14 & recursive \LGBM{} & 0.255 & 0.283 & $-0.105$ [$-0.126$, $-0.084$] \\
+Favorita & Chronos-Bolt-Tiny & 14 & recursive \LGBM{} & 0.330 & 0.283 & 0.155 [0.108, 0.203] \\
+Favorita & Moirai~2.0-Small & 14 & recursive \LGBM{} & 0.272 & 0.283 & $-0.037$ [$-0.055$, $-0.021$] \\
+Favorita & TimesFM~2.5 & 14 & recursive \LGBM{} & 0.283 & 0.283 & 0.001 [$-0.034$, 0.039] \\
+Favorita & TiRex & 14 & recursive \LGBM{} & 0.265 & 0.283 & $-0.065$ [$-0.085$, $-0.046$] \\
+Favorita & Chronos-2 & 28 & direct \LGBM{} & 0.270 & 0.292 & $-0.077$ [$-0.137$, $-0.029$] \\
+Favorita & Chronos-Bolt-Tiny & 28 & direct \LGBM{} & 0.337 & 0.292 & 0.143 [0.088, 0.199] \\
+Favorita & Moirai~2.0-Small & 28 & direct \LGBM{} & 0.287 & 0.292 & $-0.017$ [$-0.063$, 0.027] \\
+Favorita & TimesFM~2.5 & 28 & direct \LGBM{} & 0.293 & 0.292 & 0.006 [$-0.036$, 0.051] \\
+Favorita & TiRex & 28 & direct \LGBM{} & 0.279 & 0.292 & $-0.045$ [$-0.098$, 0.001] \\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -669,6 +675,14 @@ slower than the smaller completed local FMs.
 These are paired local results for 100-series
 panels, not a claim that the same ranking holds for larger workloads, GPU
 inference, or covariate-aware FM variants.
+The shared-bootstrap covariance matrix is block-diagonal by dataset and
+captures dependence among contrasts that share the same sampled series,
+actuals, horizons, and best-baseline rows.  In the generated matrix, the
+diagonal is positive for all 39 contrasts and the strongest off-diagonal
+correlations occur within the same dataset/model or same dataset--horizon
+cell, as expected.  This repairs the local Source~B uncertainty accounting;
+it does not create missing prediction-level covariance for Source~A
+benchmark-paper rows.
 
 \textbf{TiRex throughput note.}  The original series-by-series TiRex path
 was too slow for the 100-series repair panel.  Version~1.7 uses TiRex's

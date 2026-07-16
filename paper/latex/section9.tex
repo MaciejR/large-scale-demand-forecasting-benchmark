@@ -122,8 +122,15 @@ The current shared-panel repair covers M5/Rohlik/Favorita for Chronos-Bolt,
 Chronos-2, Moirai~2.0-Small, and batched TiRex, plus TimesFM~2.5 on Favorita.
 The remaining repair is to extend TimesFM~2.5 across M5/Rohlik where
 computationally feasible, add GPU throughput measurements and covariate-aware
-FM variants, then compute paired bootstrap
-covariance matrices for the full set of log-ratio contrasts.
+FM variants, then extend the paired bootstrap covariance matrix to the full
+local model set.
+
+\paragraph{Acquire prediction-level benchmark artifacts.}
+The Source~A reanalysis remains descriptive because fev-bench and GIFT-Eval
+do not provide the paired prediction-error covariance needed for formal
+meta-analytic inference in the extracted tables.  The decisive next step is
+to obtain or regenerate benchmark prediction files, then compute the same
+paired log-ratio covariance matrices used for Source~B.
 
 \paragraph{Covariate-aware FM evaluation.}
 Covariate-aware FM configurations and TabPFN-TS should be evaluated with

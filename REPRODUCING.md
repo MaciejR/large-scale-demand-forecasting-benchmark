@@ -149,7 +149,17 @@ python analysis/source_b_paired_panel_report.py \
          source_b_v1_7_tirex_batched_m5_rohlik_100
 ```
 
-This regenerates `analysis/figures/source_b_paired_panel_*.csv`.
+This regenerates `analysis/figures/source_b_paired_panel_*.csv`, including:
+
+- `source_b_paired_panel_fm_vs_best_baseline.csv`: 39 matched-panel
+  FM-vs-best-baseline log-ratio contrasts.
+- `source_b_paired_panel_bootstrap_draws.csv`: shared bootstrap draws used for
+  every Source B matched-panel contrast.
+- `source_b_paired_panel_logratio_covariance.csv`: the 39 by 39 empirical
+  covariance matrix for Source B matched-panel log-ratios.
+- `source_b_paired_panel_logratio_covariance_long.csv`: long-form covariance
+  and correlation table for auditing dependence among contrasts.
+
 Batched TiRex uses the same matched 100-series panels. On M-series hardware
 the runner defaults TiRex to CPU because the MPS xLSTM fallback is slower for
 this workload:
