@@ -62,9 +62,9 @@ are much closer to the best baseline.  GIFT-Eval is uniformly favourable
 to FMs in this extraction, whereas fev-bench is more heterogeneous.
 To address the strongest variance critique for a concrete Source~A slice, we
 rerun official fev-bench retail windows for Seasonal Naive,
-Chronos-Bolt-Tiny, and Chronos-2, store prediction-level outputs, and compute
+Chronos-Bolt-Tiny, Chronos-2, and TiRex, store prediction-level outputs, and compute
 paired bootstrap \WAPE{} log-ratio covariance matrices for 20 retail tasks
-and 179,258 paired series-window units per model contrast.
+and 179,258 paired series-window units for each FM contrast.
 The current matched-panel Source~B repair covers M5, Rohlik, and
 Favorita: 100 shared top-volume series per dataset, common rolling-origin
 windows, prediction-level outputs, run ledgers, and paired bootstrap
@@ -125,10 +125,10 @@ draft, Writing -- review \& editing, Visualization.
 \section*{Data availability}
 The v1.0 technical report is an archived historical snapshot on Zenodo at
 \url{https://doi.org/10.5281/zenodo.21338004}.  The live repository is
-intended to host the repaired v1.7 materials at
+intended to host the repaired v1.10 materials at
 \url{https://github.com/MaciejR/large-scale-demand-forecasting-benchmark}.
-The v1.1--v1.6 release folders are retained as historical repair
-artifacts; v1.7 is prepared as a separate TiRex batching and matched-panel
+The v1.1--v1.9 release folders are retained as historical repair
+artifacts; v1.10 is prepared as a separate TiRex fev-bench \WAPE{} covariance
 repair and should not overwrite the v1.0 Zenodo snapshot.  The repository includes
 derived extraction tables, analysis code, generated tables/figures,
 study-characteristics data, audit outputs, and replication scripts, but not

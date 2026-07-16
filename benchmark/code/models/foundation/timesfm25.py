@@ -93,7 +93,12 @@ class TimesFM25Forecaster:
         )
         return pd.Series(point_forecast[0][:horizon])
 
-    def predict_batch(self, histories, horizon: int) -> np.ndarray:
+    def predict_batch(
+        self,
+        histories,
+        horizon: int,
+        quantile_levels: list[float] | None = None,
+    ) -> np.ndarray:
         """
         Batched zero-shot point forecast.
 

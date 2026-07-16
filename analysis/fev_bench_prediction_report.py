@@ -2,8 +2,8 @@
 """Paired bootstrap report for fev-bench prediction-level artifacts.
 
 This script consumes outputs from benchmark/code/experiments/run_fev_bench_official.py.
-It estimates Chronos-Bolt-Tiny vs seasonal-naive WAPE log-ratios using paired
-series/window units and bootstrap standard errors.  The estimator is intentionally
+It estimates FM vs seasonal-naive WAPE log-ratios using paired series/window
+units and bootstrap standard errors.  The estimator is intentionally
 metric-specific: it does not reuse proxy 1/n variances and it does not claim to
 repair SQL/MASE unless prediction-level metric definitions are added.
 """
@@ -63,14 +63,21 @@ CHRONOS2_RUN_BY_TASK = {
     "m5_1D": "fev_v1_9_chronos2_missing_retail_rest",
 }
 
+TIREX_RUN_BY_TASK = {
+    task: "fev_v1_10_tirex_official_retail"
+    for task in CHRONOS_BOLT_RUN_BY_TASK
+}
+
 RUN_BY_TASK = {
     "chronos_bolt_tiny": CHRONOS_BOLT_RUN_BY_TASK,
     "chronos2": CHRONOS2_RUN_BY_TASK,
+    "tirex": TIREX_RUN_BY_TASK,
 }
 
 OUTPUT_PREFIX = {
     "chronos_bolt_tiny": "fev_chronos_bolt_paired_wape",
     "chronos2": "fev_chronos2_paired_wape",
+    "tirex": "fev_tirex_paired_wape",
 }
 
 

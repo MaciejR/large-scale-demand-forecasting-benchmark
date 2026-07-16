@@ -81,14 +81,19 @@ class TiRexForecaster:
         arr = np.asarray(mean).reshape(-1)[:horizon]
         return pd.Series(arr)
 
-    def predict_batch(self, histories, horizon: int) -> np.ndarray:
+    def predict_batch(
+        self,
+        histories,
+        horizon: int,
+        quantile_levels: list[float] | None = None,
+    ) -> np.ndarray:
         """
         Batched zero-shot point forecast.
 
         TiRex accepts a 2D context tensor with shape ``(batch, context)``.
-        The matched-panel runner uses dense panels, so all histories in a
-        forecast-origin batch have the same length and can be stacked without
-        padding. This avoids the old series-by-series Python loop.
+        When histories have ragged starts, they are grouped by equal context
+        length so the model sees the same history each series would receive
+        in the scalar path, without leading zero or NaN padding.
         """
         import torch
 
@@ -96,23 +101,32 @@ class TiRexForecaster:
         arrays = [np.asarray(hist, dtype=np.float32) for hist in histories]
         if not arrays:
             return np.empty((0, horizon), dtype=np.float32)
-        lengths = {len(arr) for arr in arrays}
-        if len(lengths) != 1:
-            raise ValueError("TiRex batched prediction requires equal-length histories.")
-        context = torch.tensor(np.stack(arrays), dtype=torch.float32)
 
-        with torch.no_grad():
-            out = self._model.forecast(context, prediction_length=horizon)
+        forecasts = np.empty((len(arrays), horizon), dtype=np.float32)
+        by_length: dict[int, list[int]] = {}
+        for idx, arr in enumerate(arrays):
+            by_length.setdefault(len(arr), []).append(idx)
 
-        if isinstance(out, tuple):
-            mean = out[1]
-        elif isinstance(out, dict):
-            mean = out.get("mean", out.get("median", out.get("predictions")))
-        else:
-            mean = out
-        if hasattr(mean, "cpu"):
-            mean = mean.cpu()
-        arr = np.asarray(mean, dtype=np.float32)
-        if arr.ndim == 1:
-            arr = arr.reshape(1, -1)
-        return arr[:, :horizon]
+        for indices in by_length.values():
+            context = torch.tensor(
+                np.stack([arrays[idx] for idx in indices]),
+                dtype=torch.float32,
+            )
+
+            with torch.no_grad():
+                out = self._model.forecast(context, prediction_length=horizon)
+
+            if isinstance(out, tuple):
+                mean = out[1]
+            elif isinstance(out, dict):
+                mean = out.get("mean", out.get("median", out.get("predictions")))
+            else:
+                mean = out
+            if hasattr(mean, "cpu"):
+                mean = mean.cpu()
+            arr = np.asarray(mean, dtype=np.float32)
+            if arr.ndim == 1:
+                arr = arr.reshape(1, -1)
+            forecasts[indices, :] = arr[:, :horizon]
+
+        return forecasts

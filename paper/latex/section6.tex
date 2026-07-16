@@ -96,7 +96,7 @@ The strongest remaining objection to the extracted Source~A rows is that
 the workload-count proxy $v_i$ is not a sampling variance.  We therefore
 reran a metric-specific repair for the official fev-bench retail windows
 where prediction-level artifacts can be generated locally.  Seasonal Naive,
-Chronos-Bolt-Tiny, and Chronos-2 were evaluated with
+Chronos-Bolt-Tiny, Chronos-2, and TiRex were evaluated with
 \texttt{fev.Task.iter\_windows()} on all 20 retail tasks, producing
 179,258 forecasts per model.  For each FM we then joined the FM and
 Seasonal Naive per-series/window \WAPE{} values and bootstrapped series
@@ -118,10 +118,12 @@ evidence: for \WAPE{} against Seasonal Naive on fev-bench retail tasks,
 Chronos-2 has lower point estimates in all 20 tasks and bootstrap intervals
 excluding zero in 18; Chronos-Bolt-Tiny has lower point estimates in 16
 tasks, bootstrap intervals favouring the FM in 16, and intervals favouring
-the baseline in 3.  It does not repair the extracted SQL or \MASE{} rows,
-the GIFT-Eval rows, comparisons against stronger best-baseline cells, or
-foundation models for which comparable prediction-level reruns were not
-completed.  The repair is therefore reported as a metric-specific
+the baseline in 3; TiRex has lower point estimates in 19 tasks and
+bootstrap intervals favouring the FM in 19.  It does not repair the extracted
+SQL or \MASE{} rows, the GIFT-Eval rows, comparisons against stronger
+best-baseline cells, or foundation models for which comparable
+prediction-level reruns were not completed.  The repair is therefore
+reported as a metric-specific
 prediction-level audit rather than replacing the descriptive Source~A
 suite summaries.
 

@@ -124,7 +124,44 @@ def _load_batch_forecaster(model_name: str, hardware: str):
 
         forecaster = Chronos2Forecaster(device=device)
         return forecaster.predict_batch
+    if model_name == "tirex":
+        from models.foundation.tirex import TiRexForecaster
+
+        forecaster = TiRexForecaster(device=device)
+        return forecaster.predict_batch
+    if model_name == "timesfm25":
+        from models.foundation.timesfm25 import TimesFM25Forecaster
+
+        forecaster = TimesFM25Forecaster(device=device)
+        return forecaster.predict_batch
     return None
+
+
+def _normalise_batch_output(batch_output, horizon: int) -> tuple[np.ndarray, dict[float, np.ndarray]]:
+    if isinstance(batch_output, tuple):
+        mean_arr, quantile_map = batch_output
+    else:
+        mean_arr = batch_output
+        quantile_map = {}
+
+    mean_arr = np.asarray(mean_arr, dtype=np.float32)
+    if mean_arr.ndim == 1:
+        mean_arr = mean_arr.reshape(1, -1)
+    mean_arr = mean_arr[:, :horizon]
+
+    normalised_quantiles = {}
+    for q in QUANTILE_LEVELS:
+        if q in quantile_map:
+            q_arr = np.asarray(quantile_map[q], dtype=np.float32)
+        elif str(q) in quantile_map:
+            q_arr = np.asarray(quantile_map[str(q)], dtype=np.float32)
+        else:
+            q_arr = mean_arr
+        if q_arr.ndim == 1:
+            q_arr = q_arr.reshape(1, -1)
+        normalised_quantiles[q] = q_arr[:, :horizon]
+
+    return mean_arr, normalised_quantiles
 
 
 def _series_wape(y_true: np.ndarray, y_pred: np.ndarray) -> float:
@@ -227,11 +264,12 @@ def run_task(
                     _clean_history(history_by_id[series_id], fill_missing)
                     for series_id in batch_ids
                 ]
-                mean_arr, quantile_map = batch_predictor(
+                batch_output = batch_predictor(
                     histories,
                     task.horizon,
                     quantile_levels=QUANTILE_LEVELS,
                 )
+                mean_arr, quantile_map = _normalise_batch_output(batch_output, task.horizon)
                 for row_idx in range(len(batch_ids)):
                     row = {
                         "predictions": mean_arr[row_idx].astype(np.float32).tolist()

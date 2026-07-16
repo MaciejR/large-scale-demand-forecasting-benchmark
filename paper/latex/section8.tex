@@ -129,9 +129,11 @@ Containment degrees of freedom, CR2 sensitivity, and equal-weight analysis
 discipline the Source~A claims, but they do not create the missing covariance
 information for published benchmark rows.  The fev-bench prediction-level
 repair now provides empirical \WAPE{} covariance matrices for
-Chronos-Bolt-Tiny and Chronos-2 against Seasonal Naive on 20 retail tasks,
-and the Source~B matched panel has an empirical bootstrap covariance matrix.
-These repairs are still metric- and model-specific.  A confirmatory
+Chronos-Bolt-Tiny, Chronos-2, and TiRex against Seasonal Naive on 20 retail
+tasks, and the Source~B matched panel has an empirical bootstrap covariance
+matrix.  These repairs are still metric- and model-specific: TiRex uses point
+forecasts replicated to quantile columns, so the repaired TiRex slice is for
+\WAPE{} rather than SQL.  A confirmatory
 cross-benchmark meta-analysis would require comparable prediction-level
 covariance for SQL, \MASE{}, GIFT-Eval, stronger best-baseline comparisons,
 additional FM families, or additional independent benchmark suites.

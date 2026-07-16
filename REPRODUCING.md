@@ -236,11 +236,14 @@ This writes:
 - `analysis/figures/fev_official_bootstrap_manifest.csv`
 
 The current coverage is 20/20 seasonal-naive tasks, 20/20 Chronos-Bolt-Tiny
-tasks, and 20/20 Chronos-2 tasks.  The larger Chronos-2 panels
-(`rohlik_sales`, `rossmann`, `hermes`, `favorita_stores_1D/1W`, and M5) were
-completed on M-series hardware with batched true-quantile inference; `m5_1D`
-is the slowest local task and can take materially longer than the other retail
-tasks.
+tasks, 20/20 Chronos-2 tasks, and 20/20 TiRex tasks.  The larger Chronos-2
+panels (`rohlik_sales`, `rossmann`, `hermes`, `favorita_stores_1D/1W`, and M5)
+were completed on M-series hardware with batched true-quantile inference.
+TiRex is tracked under `fev_v1_10_tirex_official_retail`; it uses point
+forecasts replicated to quantile columns, so these artifacts are suitable for
+WAPE/MAE paired repairs but not for a repaired SQL analysis.  Local CPU/M-series
+throughput is the limiting factor for larger TiRex panels; `m5_1D` is the
+slowest local task and can take materially longer than the other retail tasks.
 
 To rebuild the paired WAPE bootstrap outputs:
 
@@ -252,6 +255,12 @@ $HOME/venvs/fm-local/bin/python analysis/fev_bench_prediction_report.py \
 $HOME/venvs/fm-local/bin/python analysis/fev_bench_prediction_report.py \
   --model-name chronos2 \
   --n-boot 2000
+
+$HOME/venvs/fm-local/bin/python analysis/fev_bench_prediction_report.py \
+  --model-name tirex \
+  --n-boot 2000
+
+$HOME/venvs/fm-local/bin/python analysis/fev_bench_wape_summary.py
 ```
 
 These commands generate `analysis/figures/fev_<model>_paired_wape_*.csv`,

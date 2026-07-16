@@ -30,8 +30,8 @@ The v1.0 technical-report release is archived on Zenodo:
   100-series panels for completed local models and reports paired bootstrap
   contrasts separately from the Source A reanalysis.
 - The fev-bench WAPE covariance repair reruns official retail windows for
-  Seasonal Naive, Chronos-Bolt-Tiny, and Chronos-2, producing prediction-level
-  paired bootstrap covariance matrices for 20 retail tasks.
+  Seasonal Naive, Chronos-Bolt-Tiny, Chronos-2, and TiRex, producing
+  prediction-level paired bootstrap covariance matrices for 20 retail tasks.
 - Cost-accuracy tradeoffs matter: some foundation-model gains are meaningful
   only when inference cost and hardware constraints are acceptable for the use
   case.
@@ -63,10 +63,10 @@ BibTeX:
 
 ## Publication Roadmap
 
-The current recommended path is to treat v1.9 as a stronger exploratory
+The current recommended path is to treat v1.10 as a stronger exploratory
 reanalysis: Source B now has matched-panel covariance, and one concrete
-Source A slice (fev-bench retail WAPE for Chronos-Bolt-Tiny and Chronos-2
-against Seasonal Naive) has prediction-level paired covariance.  The remaining
+Source A slice (fev-bench retail WAPE for Chronos-Bolt-Tiny, Chronos-2, and
+TiRex against Seasonal Naive) has prediction-level paired covariance.  The remaining
 methodological gap is full prediction-level covariance for SQL, MASE,
 GIFT-Eval, stronger best-baseline comparisons, and additional FM families.
 
@@ -112,7 +112,8 @@ instructions.
   [`analysis/figures/fev_prediction_level_wape_summary.csv`](analysis/figures/fev_prediction_level_wape_summary.csv)
 - fev-bench paired WAPE covariance outputs:
   [`analysis/figures/fev_chronos_bolt_paired_wape_covariance.csv`](analysis/figures/fev_chronos_bolt_paired_wape_covariance.csv) and
-  [`analysis/figures/fev_chronos2_paired_wape_covariance.csv`](analysis/figures/fev_chronos2_paired_wape_covariance.csv)
+  [`analysis/figures/fev_chronos2_paired_wape_covariance.csv`](analysis/figures/fev_chronos2_paired_wape_covariance.csv) and
+  [`analysis/figures/fev_tirex_paired_wape_covariance.csv`](analysis/figures/fev_tirex_paired_wape_covariance.csv)
 
 ## Quick Verification
 
@@ -150,5 +151,6 @@ sources:
 The v1.0 technical report has been published on Zenodo with DOI
 `10.5281/zenodo.21338004`. Later repair packages are maintained separately and
 do not overwrite the historical v1.0 snapshot. The current working version is
-v1.9, adding fev-bench prediction-level WAPE covariance repair on top of the
-Source B matched-panel covariance repair.
+v1.10, adding full TiRex fev-bench prediction-level WAPE covariance repair on
+top of the v1.9 Chronos fev-bench repair and Source B matched-panel covariance
+repair.

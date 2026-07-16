@@ -8,7 +8,8 @@ used for the current methodology repair tables:
 - seasonal_naive for all 20 retail tasks;
 - Chronos-Bolt-Tiny with true quantiles for all 20 retail tasks;
 - Chronos-2 with true quantiles for all 20 retail tasks;
-- paired WAPE bootstrap outputs for Chronos-Bolt and Chronos-2.
+- TiRex point forecasts for the v1.10 retail rerun;
+- paired WAPE bootstrap outputs for Chronos-Bolt, Chronos-2, and TiRex.
 """
 
 from __future__ import annotations
@@ -100,6 +101,9 @@ CANONICAL_RUNS = {
             "m5_1W",
         ],
     },
+    "tirex": {
+        "fev_v1_10_tirex_official_retail": RETAIL_TASKS,
+    },
 }
 
 BOOTSTRAP_OUTPUTS = {
@@ -116,6 +120,13 @@ BOOTSTRAP_OUTPUTS = {
         "fev_chronos2_paired_wape_bootstrap_draws.csv",
         "fev_chronos2_paired_wape_covariance.csv",
         "fev_chronos2_paired_wape_covariance_long.csv",
+    ],
+    "tirex": [
+        "fev_tirex_paired_wape_units.csv",
+        "fev_tirex_paired_wape_contrasts.csv",
+        "fev_tirex_paired_wape_bootstrap_draws.csv",
+        "fev_tirex_paired_wape_covariance.csv",
+        "fev_tirex_paired_wape_covariance_long.csv",
     ],
 }
 

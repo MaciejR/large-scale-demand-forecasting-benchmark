@@ -47,6 +47,8 @@ This file maps manuscript claims to repository artifacts.
   `analysis/figures/fev_chronos_bolt_paired_wape_*.csv`
 - Chronos-2 paired WAPE outputs:
   `analysis/figures/fev_chronos2_paired_wape_*.csv`
+- TiRex paired WAPE outputs:
+  `analysis/figures/fev_tirex_paired_wape_*.csv`
 
 The full local prediction parquet tree under
 `benchmark/results/fev_bench_official/` is intentionally not versioned in git.
