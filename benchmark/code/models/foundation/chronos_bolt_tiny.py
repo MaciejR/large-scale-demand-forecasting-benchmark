@@ -69,3 +69,39 @@ class ChronosBoltTinyForecaster:
         if hasattr(median, "cpu"):
             median = median.cpu()
         return pd.Series(median.numpy())
+
+    def predict_batch(
+        self,
+        histories,
+        horizon: int,
+        quantile_levels: list[float] | None = None,
+    ) -> tuple[np.ndarray, dict[float, np.ndarray]]:
+        """Batched zero-shot forecast returning mean and requested quantiles."""
+        import torch
+
+        self._load_model()
+        levels = quantile_levels or [0.1, 0.5, 0.9]
+        arrays = [np.asarray(hist, dtype=np.float32) for hist in histories]
+        if not arrays:
+            return np.empty((0, horizon), dtype=np.float32), {}
+        max_len = max(len(arr) for arr in arrays)
+        padded = np.full((len(arrays), max_len), np.nan, dtype=np.float32)
+        for row_idx, arr in enumerate(arrays):
+            padded[row_idx, -len(arr) :] = arr
+
+        inputs = torch.tensor(padded, dtype=torch.float32)
+        quantiles, mean = self._pipeline.predict_quantiles(
+            inputs=inputs,
+            prediction_length=horizon,
+            quantile_levels=levels,
+        )
+        if hasattr(mean, "cpu"):
+            mean = mean.cpu()
+        if hasattr(quantiles, "cpu"):
+            quantiles = quantiles.cpu()
+        mean_arr = np.asarray(mean, dtype=np.float32)[:, :horizon]
+        quantile_arr = np.asarray(quantiles, dtype=np.float32)[:, :horizon, :]
+        return mean_arr, {
+            level: quantile_arr[:, :, idx]
+            for idx, level in enumerate(levels)
+        }

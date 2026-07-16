@@ -29,6 +29,9 @@ The v1.0 technical-report release is archived on Zenodo:
 - The matched-panel Source B repair reruns M5/Rohlik/Favorita on shared
   100-series panels for completed local models and reports paired bootstrap
   contrasts separately from the Source A reanalysis.
+- The fev-bench WAPE covariance repair reruns official retail windows for
+  Seasonal Naive, Chronos-Bolt-Tiny, and Chronos-2, producing prediction-level
+  paired bootstrap covariance matrices for 20 retail tasks.
 - Cost-accuracy tradeoffs matter: some foundation-model gains are meaningful
   only when inference cost and hardware constraints are acceptable for the use
   case.
@@ -60,11 +63,12 @@ BibTeX:
 
 ## Publication Roadmap
 
-The current recommended path is to treat v1.6 as the published exploratory
-matched-panel repair release, use the v1.7 full TiRex matched-panel repair to
-prepare a tighter follow-up, and keep GPU throughput and larger-workload checks as
-separate compute tasks before deciding between arXiv and a peer-reviewed
-forecasting or applied-ML journal.
+The current recommended path is to treat v1.9 as a stronger exploratory
+reanalysis: Source B now has matched-panel covariance, and one concrete
+Source A slice (fev-bench retail WAPE for Chronos-Bolt-Tiny and Chronos-2
+against Seasonal Naive) has prediction-level paired covariance.  The remaining
+methodological gap is full prediction-level covariance for SQL, MASE,
+GIFT-Eval, stronger best-baseline comparisons, and additional FM families.
 
 ## What Is In This Repository
 
@@ -102,6 +106,13 @@ instructions.
   [`analysis/figures/source_b_paired_panel_fm_vs_best_baseline.csv`](analysis/figures/source_b_paired_panel_fm_vs_best_baseline.csv)
 - Source B matched-panel contrasts currently include batched TiRex on the
   M5/Rohlik/Favorita 100-series panels.
+- fev-bench official run coverage:
+  [`analysis/figures/fev_official_model_coverage.csv`](analysis/figures/fev_official_model_coverage.csv)
+- fev-bench prediction-level WAPE repair summary:
+  [`analysis/figures/fev_prediction_level_wape_summary.csv`](analysis/figures/fev_prediction_level_wape_summary.csv)
+- fev-bench paired WAPE covariance outputs:
+  [`analysis/figures/fev_chronos_bolt_paired_wape_covariance.csv`](analysis/figures/fev_chronos_bolt_paired_wape_covariance.csv) and
+  [`analysis/figures/fev_chronos2_paired_wape_covariance.csv`](analysis/figures/fev_chronos2_paired_wape_covariance.csv)
 
 ## Quick Verification
 
@@ -130,11 +141,14 @@ sources:
 - Rohlik Sales Forecasting Challenge v2, Kaggle / Rohlik challenge release.
 - fev-bench and GIFT-Eval results are represented in the extraction scripts and
   extraction table.
+  The fev-bench WAPE repair can be regenerated from the official fev-bench
+  datasets via `benchmark/code/experiments/run_fev_bench_official.py`; full
+  local prediction parquet outputs are intentionally not tracked in git.
 
 ## Current Status
 
 The v1.0 technical report has been published on Zenodo with DOI
-`10.5281/zenodo.21338004`. Version 1.6 is published as a separate
-matched-panel repair package and does not overwrite the historical v1.0
-snapshot. Work toward v1.7 has added batched TiRex M5/Rohlik 100-series
-reruns.
+`10.5281/zenodo.21338004`. Later repair packages are maintained separately and
+do not overwrite the historical v1.0 snapshot. The current working version is
+v1.9, adding fev-bench prediction-level WAPE covariance repair on top of the
+Source B matched-panel covariance repair.

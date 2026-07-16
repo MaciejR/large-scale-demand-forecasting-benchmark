@@ -13,12 +13,14 @@ data/gift_eval/
 data/fev_bench/
 data/raw/
 .DS_Store
+*Umowa*.pdf
 .claude/
 *.log
 mlruns/
 outputs/
 tabpfn-v2-regressor-*.ckpt
 benchmark/results/_local_only_export_check.csv
+benchmark/results/fev_bench_official/
 
 # LaTeX build products. Keep paper/latex/main.pdf tracked as the public draft.
 paper/latex/*.aux

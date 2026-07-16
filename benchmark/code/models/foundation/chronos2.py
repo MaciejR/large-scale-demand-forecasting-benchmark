@@ -176,3 +176,47 @@ class Chronos2Forecaster:
         m_arr = m_tensor.cpu().numpy() if hasattr(m_tensor, "cpu") else np.asarray(m_tensor)
         df["mean"] = m_arr[:horizon]
         return df
+
+    def predict_batch(
+        self,
+        histories,
+        horizon: int,
+        quantile_levels: list[float] | None = None,
+    ) -> tuple[np.ndarray, dict[float, np.ndarray]]:
+        """Batched zero-shot forecast returning mean and requested quantiles."""
+        import torch
+
+        self._load_model()
+        levels = quantile_levels or [0.1, 0.5, 0.9]
+        arrays = [np.asarray(hist, dtype=np.float32) for hist in histories]
+        if not arrays:
+            return np.empty((0, horizon), dtype=np.float32), {}
+
+        max_len = max(len(arr) for arr in arrays)
+        padded = np.full((len(arrays), max_len), np.nan, dtype=np.float32)
+        for row_idx, arr in enumerate(arrays):
+            padded[row_idx, -len(arr) :] = arr
+
+        context = torch.tensor(padded, dtype=torch.float32).reshape(len(arrays), 1, -1)
+        quantiles_list, mean_list = self._pipeline.predict_quantiles(
+            inputs=context,
+            prediction_length=horizon,
+            quantile_levels=levels,
+        )
+
+        q_arrays = []
+        m_arrays = []
+        for q_tensor, m_tensor in zip(quantiles_list, mean_list, strict=True):
+            if hasattr(q_tensor, "cpu"):
+                q_tensor = q_tensor.cpu()
+            if hasattr(m_tensor, "cpu"):
+                m_tensor = m_tensor.cpu()
+            q_arrays.append(np.asarray(q_tensor, dtype=np.float32).reshape(1, horizon, len(levels)))
+            m_arrays.append(np.asarray(m_tensor, dtype=np.float32).reshape(1, horizon))
+
+        quantile_arr = np.concatenate(q_arrays, axis=0)[:, :horizon, :]
+        mean_arr = np.concatenate(m_arrays, axis=0)[:, :horizon]
+        return mean_arr, {
+            level: quantile_arr[:, :, idx]
+            for idx, level in enumerate(levels)
+        }

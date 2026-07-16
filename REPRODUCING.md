@@ -184,6 +184,82 @@ python tools/export_mlflow_to_csv.py \
 
 Pass `--azure-uri ""` to export only local MLflow runs.
 
+## Rerun fev-bench Official Windows
+
+The v1.9 Source-A repair adds prediction-level reruns for fev-bench retail
+tasks using the official `fev.Task.iter_windows()` protocol rather than the
+older extraction-only leaderboard rows.  The entry point is:
+
+```bash
+$HOME/venvs/fm-local/bin/python benchmark/code/experiments/run_fev_bench_official.py \
+  --task rohlik_orders_1W \
+  --model chronos_bolt_tiny \
+  --run-id fev_v1_9_chronos_bolt_quantile_batch_a \
+  --hardware M_SERIES_MAC \
+  --batch-size 64
+```
+
+Each task/model run writes:
+
+- `summary.json` with official fev SQL, MASE, WAPE, and forecast counts.
+- `predictions_long.parquet` with one row per task, window, series, horizon
+  step, point prediction, and quantiles.
+- `per_series_window_metrics.csv` with paired series-window WAPE/MAE units.
+- `run_config.json` with model, task, quantile levels, missing-value handling,
+  and batch size.
+
+Canonical local v1.9 runs are:
+
+- `fev_v1_9_baseline_all_retail`: `seasonal_naive` for all 20 retail tasks.
+- `fev_v1_9_chronos_bolt_quantile_batch_a`,
+  `fev_v1_9_chronos_bolt_quantile_batch_b`,
+  `fev_v1_9_chronos_bolt_quantile_batch_c`, and
+  `fev_v1_9_chronos_bolt_quantile_m5`: Chronos-Bolt-Tiny with true quantiles
+  for all 20 retail tasks.
+- `fev_v1_9_chronos2_small`, `fev_v1_9_chronos2_medium_a`,
+  `fev_v1_9_chronos2_missing_rohlik_sales_1w`, and
+  `fev_v1_9_chronos2_missing_retail_rest`: Chronos-2 with true quantiles for
+  all 20 retail tasks.
+
+Exploratory smoke runs and superseded point-quantile Chronos-Bolt runs may also
+exist under `benchmark/results/fev_bench_official/`; do not use them for the
+current tables.  Regenerate the canonical manifest with:
+
+```bash
+$HOME/venvs/fm-local/bin/python analysis/fev_bench_official_manifest.py
+```
+
+This writes:
+
+- `analysis/figures/fev_official_run_manifest.csv`
+- `analysis/figures/fev_official_model_coverage.csv`
+- `analysis/figures/fev_official_bootstrap_manifest.csv`
+
+The current coverage is 20/20 seasonal-naive tasks, 20/20 Chronos-Bolt-Tiny
+tasks, and 20/20 Chronos-2 tasks.  The larger Chronos-2 panels
+(`rohlik_sales`, `rossmann`, `hermes`, `favorita_stores_1D/1W`, and M5) were
+completed on M-series hardware with batched true-quantile inference; `m5_1D`
+is the slowest local task and can take materially longer than the other retail
+tasks.
+
+To rebuild the paired WAPE bootstrap outputs:
+
+```bash
+$HOME/venvs/fm-local/bin/python analysis/fev_bench_prediction_report.py \
+  --model-name chronos_bolt_tiny \
+  --n-boot 2000
+
+$HOME/venvs/fm-local/bin/python analysis/fev_bench_prediction_report.py \
+  --model-name chronos2 \
+  --n-boot 2000
+```
+
+These commands generate `analysis/figures/fev_<model>_paired_wape_*.csv`,
+including paired units, task-level WAPE log-ratio contrasts, bootstrap draws,
+and empirical covariance matrices.  These outputs are metric-specific repairs
+for WAPE; they do not claim to replace the SQL/MASE leaderboard metrics unless
+their prediction-level definitions are implemented separately.
+
 ## Raw Data
 
 Raw competition data are intentionally not tracked in git. Place downloads under

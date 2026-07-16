@@ -127,10 +127,14 @@ log-ratio: it does not model metric dispersion, shared baselines,
 within-series autocorrelation, or covariance between FM and baseline errors.
 Containment degrees of freedom, CR2 sensitivity, and equal-weight analysis
 discipline the Source~A claims, but they do not create the missing covariance
-information for published benchmark rows.  The Source~B matched panel now has
-an empirical bootstrap covariance matrix, but a confirmatory cross-benchmark
-meta-analysis would require comparable prediction-level covariance from
-fev-bench, GIFT-Eval, or additional independent benchmark suites.
+information for published benchmark rows.  The fev-bench prediction-level
+repair now provides empirical \WAPE{} covariance matrices for
+Chronos-Bolt-Tiny and Chronos-2 against Seasonal Naive on 20 retail tasks,
+and the Source~B matched panel has an empirical bootstrap covariance matrix.
+These repairs are still metric- and model-specific.  A confirmatory
+cross-benchmark meta-analysis would require comparable prediction-level
+covariance for SQL, \MASE{}, GIFT-Eval, stronger best-baseline comparisons,
+additional FM families, or additional independent benchmark suites.
 
 \paragraph{Evaluation protocol heterogeneity.}
 Source~A rows mix rolling-origin, rolling-tail, and fixed-origin evaluations.

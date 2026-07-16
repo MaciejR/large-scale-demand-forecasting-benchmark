@@ -89,6 +89,42 @@ fev-bench & 414 & 20 & $-0.069$ & $-0.086$ & 0.67 & Smaller and more heterogeneo
 0.71 in GIFT-Eval and 0.93 in fev-bench.  These are benchmark-level
 patterns, not estimates from two dozen independent publications.
 
+\subsection{Prediction-Level fev-bench WAPE Repair}
+\label{subsec:fev-prediction-level-repair}
+
+The strongest remaining objection to the extracted Source~A rows is that
+the workload-count proxy $v_i$ is not a sampling variance.  We therefore
+reran a metric-specific repair for the official fev-bench retail windows
+where prediction-level artifacts can be generated locally.  Seasonal Naive,
+Chronos-Bolt-Tiny, and Chronos-2 were evaluated with
+\texttt{fev.Task.iter\_windows()} on all 20 retail tasks, producing
+179,258 forecasts per model.  For each FM we then joined the FM and
+Seasonal Naive per-series/window \WAPE{} values and bootstrapped series
+within task to estimate task-level log-ratios and their empirical covariance
+matrices.
+
+\begin{table}[htbp]
+\centering
+\caption{Prediction-level fev-bench \WAPE{} repair against Seasonal Naive.
+The covariance matrices are empirical bootstrap covariances of the 20
+task-level log-ratios.  Negative $\ell$ favours the FM.}
+\label{tab:fev-prediction-wape-repair}
+\small
+\input{../../analysis/figures/fev_prediction_level_wape_summary.tex}
+\end{table}
+
+\noindent This repair materially strengthens one concrete slice of the
+evidence: for \WAPE{} against Seasonal Naive on fev-bench retail tasks,
+Chronos-2 has lower point estimates in all 20 tasks and bootstrap intervals
+excluding zero in 18; Chronos-Bolt-Tiny has lower point estimates in 16
+tasks, bootstrap intervals favouring the FM in 16, and intervals favouring
+the baseline in 3.  It does not repair the extracted SQL or \MASE{} rows,
+the GIFT-Eval rows, comparisons against stronger best-baseline cells, or
+foundation models for which comparable prediction-level reruns were not
+completed.  The repair is therefore reported as a metric-specific
+prediction-level audit rather than replacing the descriptive Source~A
+suite summaries.
+
 \subsection{Metric-Specific Results}
 \label{subsec:metric-moderator}
 

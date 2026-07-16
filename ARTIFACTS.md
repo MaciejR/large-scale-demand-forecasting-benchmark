@@ -31,6 +31,27 @@ This file maps manuscript claims to repository artifacts.
 - Sensitivity outputs: `analysis/figures/sensitivity_*.txt`
 - Forest/funnel/Pareto figures: `analysis/figures/figure_*.pdf`
 
+## fev-bench Prediction-Level WAPE Repair
+
+- Official fev-bench runner:
+  `benchmark/code/experiments/run_fev_bench_official.py`
+- Canonical run manifest:
+  `analysis/figures/fev_official_run_manifest.csv`
+- Model coverage summary:
+  `analysis/figures/fev_official_model_coverage.csv`
+- Bootstrap artifact manifest:
+  `analysis/figures/fev_official_bootstrap_manifest.csv`
+- Summary table used in the manuscript:
+  `analysis/figures/fev_prediction_level_wape_summary.csv`
+- Chronos-Bolt-Tiny paired WAPE outputs:
+  `analysis/figures/fev_chronos_bolt_paired_wape_*.csv`
+- Chronos-2 paired WAPE outputs:
+  `analysis/figures/fev_chronos2_paired_wape_*.csv`
+
+The full local prediction parquet tree under
+`benchmark/results/fev_bench_official/` is intentionally not versioned in git.
+Recreate it with the commands documented in `REPRODUCING.md`.
+
 ## Source B Experiments
 
 - Exported Source B sweep: `benchmark/results/local_fm_sweep.csv`
@@ -46,5 +67,7 @@ This file maps manuscript claims to repository artifacts.
 - Raw Kaggle/Rohlik datasets under `data/raw/`.
 - Local MLflow stores under `mlruns/`.
 - Local logs under `logs/`.
+- Full fev-bench prediction parquet outputs under
+  `benchmark/results/fev_bench_official/`.
 - Downloaded model checkpoints such as TabPFN weights.
 - Python/R virtual environments and caches.

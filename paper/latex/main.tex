@@ -60,6 +60,11 @@ advantage (median log-ratio $-0.229$, FM better in 92\% of rows), while
 \WAPE{}/ND (median $-0.047$, 66\%) and \MASE{} (median $-0.036$, 61\%)
 are much closer to the best baseline.  GIFT-Eval is uniformly favourable
 to FMs in this extraction, whereas fev-bench is more heterogeneous.
+To address the strongest variance critique for a concrete Source~A slice, we
+rerun official fev-bench retail windows for Seasonal Naive,
+Chronos-Bolt-Tiny, and Chronos-2, store prediction-level outputs, and compute
+paired bootstrap \WAPE{} log-ratio covariance matrices for 20 retail tasks
+and 179,258 paired series-window units per model contrast.
 The current matched-panel Source~B repair covers M5, Rohlik, and
 Favorita: 100 shared top-volume series per dataset, common rolling-origin
 windows, prediction-level outputs, run ledgers, and paired bootstrap

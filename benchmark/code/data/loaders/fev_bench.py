@@ -82,6 +82,7 @@ _TASK_DEFS = {
         "static_columns": ["item_id", "dept_id", "cat_id", "store_id", "state_id"],
     },
     "favorita_stores_1D": {
+        "target": "sales",
         "horizon": 28,
         "seasonality": 7,
         "num_windows": 10,
@@ -90,6 +91,7 @@ _TASK_DEFS = {
         "static_columns": ["store_nbr", "family", "city", "state", "type", "cluster"],
     },
     "favorita_stores_1W": {
+        "target": "sales",
         "horizon": 13,
         "seasonality": 4,
         "num_windows": 10,
@@ -98,6 +100,7 @@ _TASK_DEFS = {
         "static_columns": ["store_nbr", "family", "city", "state", "type", "cluster"],
     },
     "favorita_stores_1M": {
+        "target": "sales",
         "horizon": 12,
         "seasonality": 12,
         "num_windows": 2,
@@ -106,6 +109,7 @@ _TASK_DEFS = {
         "static_columns": ["store_nbr", "family", "city", "state", "type", "cluster"],
     },
     "favorita_transactions_1D": {
+        "target": "transactions",
         "horizon": 28,
         "seasonality": 7,
         "num_windows": 10,
@@ -114,6 +118,7 @@ _TASK_DEFS = {
         "static_columns": ["store_nbr", "city", "state", "type", "cluster"],
     },
     "favorita_transactions_1W": {
+        "target": "transactions",
         "horizon": 13,
         "seasonality": 4,
         "num_windows": 10,
@@ -122,6 +127,7 @@ _TASK_DEFS = {
         "static_columns": ["store_nbr", "city", "state", "type", "cluster"],
     },
     "favorita_transactions_1M": {
+        "target": "transactions",
         "horizon": 12,
         "seasonality": 12,
         "num_windows": 2,
@@ -130,6 +136,7 @@ _TASK_DEFS = {
         "static_columns": ["store_nbr", "city", "state", "type", "cluster"],
     },
     "rossmann_1D": {
+        "target": "Sales",
         "horizon": 48,
         "seasonality": 7,
         "num_windows": 10,
@@ -138,6 +145,7 @@ _TASK_DEFS = {
         "static_columns": ["Store", "StoreType", "Assortment", "CompetitionDistance"],
     },
     "rossmann_1W": {
+        "target": "Sales",
         "horizon": 13,
         "seasonality": 4,
         "num_windows": 8,
@@ -146,6 +154,7 @@ _TASK_DEFS = {
         "static_columns": ["Store", "StoreType", "Assortment", "CompetitionDistance"],
     },
     "rohlik_sales_1D": {
+        "target": "sales",
         "horizon": 14,
         "seasonality": 7,
         "num_windows": 1,
@@ -157,6 +166,7 @@ _TASK_DEFS = {
         "static_columns": ["product_unique_id", "warehouse"],
     },
     "rohlik_sales_1W": {
+        "target": "sales",
         "horizon": 8,
         "seasonality": 4,
         "num_windows": 1,
@@ -168,6 +178,7 @@ _TASK_DEFS = {
         "static_columns": ["product_unique_id", "warehouse"],
     },
     "rohlik_orders_1D": {
+        "target": "orders",
         "horizon": 61,
         "seasonality": 7,
         "num_windows": 5,
@@ -176,6 +187,7 @@ _TASK_DEFS = {
         "static_columns": [],
     },
     "rohlik_orders_1W": {
+        "target": "orders",
         "horizon": 8,
         "seasonality": 4,
         "num_windows": 5,
@@ -258,9 +270,11 @@ def load_fev_bench_task(
         num_windows=task_def["num_windows"],
         seasonality=task_def["seasonality"],
         eval_metric="SQL",
-        known_dynamic_columns=known_dynamic if known_dynamic else None,
-        past_dynamic_columns=past_dynamic if past_dynamic else None,
-        static_columns=static_cols if static_cols else None,
+        quantile_levels=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
+        target=task_def.get("target", "target"),
+        known_dynamic_columns=known_dynamic,
+        past_dynamic_columns=past_dynamic,
+        static_columns=static_cols,
     )
 
     windows = list(task.iter_windows())
