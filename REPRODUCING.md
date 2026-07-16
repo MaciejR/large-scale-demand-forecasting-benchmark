@@ -145,21 +145,22 @@ python analysis/source_b_paired_panel_report.py \
          source_b_repair_fm_chronos2_favorita_100_v1_5 \
          source_b_repair_fm_moirai2_favorita_100_v1_5 \
          source_b_repair_fm_timesfm25_favorita_100_v1_5 \
-         source_b_v1_6_tirex_batched_favorita_100
+         source_b_v1_6_tirex_batched_favorita_100 \
+         source_b_v1_7_tirex_batched_m5_rohlik_100
 ```
 
 This regenerates `analysis/figures/source_b_paired_panel_*.csv`.
-Batched TiRex on Favorita uses the same matched 100-series panel. On
-M-series hardware the runner defaults TiRex to CPU because the MPS xLSTM
-fallback is slower for this workload:
+Batched TiRex uses the same matched 100-series panels. On M-series hardware
+the runner defaults TiRex to CPU because the MPS xLSTM fallback is slower for
+this workload:
 
 ```bash
 $HOME/venvs/fm-local/bin/python benchmark/code/experiments/run_source_b_paired_panel.py \
-  --datasets favorita \
+  --datasets m5 rohlik favorita \
   --models tirex \
   --horizons 7 14 28 \
   --max-series 100 \
-  --run-id source_b_v1_6_tirex_batched_favorita_100
+  --run-id source_b_v1_7_tirex_batched_full_panel_100
 ```
 
 The exporter no longer hard-codes a private Azure workspace URI. To export from

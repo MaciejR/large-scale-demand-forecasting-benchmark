@@ -111,11 +111,11 @@ dataset--horizon cell, and the legacy bootstrap file covered only four of
 the five FMs.  The matched-panel repair now reruns M5, Rohlik, and Favorita
 on shared 100-series panels with prediction-level outputs and paired
 bootstrap contrasts for the completed local models.  Favorita includes
-Chronos-Bolt-Tiny, Chronos-2, Moirai~2.0-Small, TimesFM~2.5, and batched
-TiRex on the 100-series panel.  The repair still does not cover GPU
-throughput, covariate-aware FM variants, or batched TiRex/TimesFM reruns
-across every dataset, so Source~B remains a local sensitivity analysis
-rather than a confirmatory cross-benchmark experiment.
+Chronos-Bolt-Tiny, Chronos-2, Moirai~2.0-Small, and batched TiRex on the
+100-series panel, plus TimesFM~2.5 on Favorita.  The repair still does not
+cover GPU throughput, covariate-aware FM variants, TimesFM~2.5 on M5/Rohlik,
+or larger workloads, so Source~B remains a local sensitivity analysis rather
+than a confirmatory cross-benchmark experiment.
 
 \paragraph{Approximate sampling variance.}
 The exploratory weighted model uses a proxy variance

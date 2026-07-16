@@ -2,14 +2,14 @@
 \section{Detailed Baseline Reliability Analysis}\label{app:baseline-detail}
 
 This appendix keeps the per-dataset baseline tables used by
-\S\ref{sec:baseline-reliability}.  Version~1.4 treats the
+\S\ref{sec:baseline-reliability}.  The repaired analysis treats the
 direct-vs-recursive pattern as a fixed-budget diagnostic, not as a causal
 intermittency result.  The stronger claims from earlier drafts are replaced
 by three audit conclusions: (i) the legacy fixed-budget protocol ranking
-differs across datasets, (ii) the v1.4 matched-panel aggregate-\WAPE{}
-repair makes M5/Rohlik more conservative than the legacy per-series view,
-and (iii) the Favorita \texttt{direct\_scaled} run still has an unresolved
-integrity flag at $h=7$.
+differs across datasets, (ii) the matched-panel aggregate-\WAPE{}
+repair makes M5/Rohlik more conservative than the legacy per-series view
+and gives a mixed Favorita protocol ranking, and (iii) the legacy Favorita
+\texttt{direct\_scaled} run should not be used as inferential evidence.
 
 \subsection{M5 Results}
 
@@ -137,17 +137,17 @@ Favorita & ${\sim}15$--$25\,\%$ & $-4.1\,\%$ & $-7.5\,\%$ & $-9.6\,\%$ & Recursi
 \end{tabularx}
 \end{table}
 
-\subsection{v1.4 Matched-Panel Protocol Check}
+\subsection{Matched-Panel Protocol Check}
 
-The v1.4 matched-panel repair recomputes the M5/Rohlik LightGBM protocol
+The matched-panel repair recomputes the M5/Rohlik/Favorita LightGBM protocol
 contrast on the same 100 top-volume series used for the FM-vs-baseline
 paired panel.  Using aggregate \WAPE{}, direct is slightly worse than
 recursive on M5 at $h=7$ and $h=14$, slightly better at $h=28$, and worse
-than recursive on Rohlik at all horizons.  The horizon-scaled direct run
-equals the unscaled direct run at $h=7$ on both datasets, as expected when
-both use 300 trees.  This resolves the same-tree-count anomaly for M5 and
-Rohlik; the unresolved anomaly is now limited to the legacy Favorita
-\texttt{direct\_scaled} file.
+than recursive on Rohlik at all horizons.  On Favorita, recursive is lower
+at $h=7$ and $h=14$, while direct is lower at $h=28$.  The horizon-scaled
+direct run equals the unscaled direct run at $h=7$ on all three datasets,
+as expected when both use 300 trees.  This resolves the same-tree-count
+anomaly in the repaired panel.
 
 The combined evidence supports a cautious hypothesis: the best LightGBM
 protocol can change with the dataset, metric aggregation, sampled workload,
@@ -156,7 +156,7 @@ nor a general rule that direct or recursive is always preferable.
 
 \subsection{Cost Consistency Audit}\label{app:cost-envelope}
 
-The Azure cost tables are retained for audit, but v1.4 does not use them
+The Azure cost tables are retained for audit, but this paper does not use them
 for universal cost conclusions.  The detail tables and summary table do
 not yet reconcile to one ledger.
 
@@ -194,5 +194,5 @@ pipeline run name, a registered data asset version, and a versioned
 environment.  The matched-panel runs store shared series identifiers,
 forecast origins, actuals, per-model predictions, and paired bootstrap
 contrasts for completed M5/Rohlik/Favorita cells.  The same requirement
-applies to full TiRex, future GPU/batched reruns, and covariate-aware FM
+applies to future GPU/larger-workload reruns and covariate-aware FM
 variants before Source~B can enter a broader formal paired analysis.

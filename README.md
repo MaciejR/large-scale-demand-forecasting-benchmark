@@ -60,9 +60,9 @@ BibTeX:
 
 ## Publication Roadmap
 
-The current recommended path is to treat v1.5 as the published exploratory
-matched-panel repair release, use the v1.6 TiRex batching repair to prepare
-a tighter follow-up, and keep GPU throughput and larger-workload checks as
+The current recommended path is to treat v1.6 as the published exploratory
+matched-panel repair release, use the v1.7 full TiRex matched-panel repair to
+prepare a tighter follow-up, and keep GPU throughput and larger-workload checks as
 separate compute tasks before deciding between arXiv and a peer-reviewed
 forecasting or applied-ML journal.
 
@@ -101,7 +101,7 @@ instructions.
 - Source B matched-panel contrasts:
   [`analysis/figures/source_b_paired_panel_fm_vs_best_baseline.csv`](analysis/figures/source_b_paired_panel_fm_vs_best_baseline.csv)
 - Source B matched-panel contrasts currently include batched TiRex on the
-  Favorita 100-series panel.
+  M5/Rohlik/Favorita 100-series panels.
 
 ## Quick Verification
 
@@ -134,7 +134,7 @@ sources:
 ## Current Status
 
 The v1.0 technical report has been published on Zenodo with DOI
-`10.5281/zenodo.21338004`. Version 1.5 is published as a separate
+`10.5281/zenodo.21338004`. Version 1.6 is published as a separate
 matched-panel repair package and does not overwrite the historical v1.0
-snapshot. Work toward v1.6 has added a batched TiRex Favorita 100-series
-rerun.
+snapshot. Work toward v1.7 has added batched TiRex M5/Rohlik 100-series
+reruns.

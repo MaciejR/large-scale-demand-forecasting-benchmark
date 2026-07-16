@@ -60,17 +60,17 @@ advantage (median log-ratio $-0.229$, FM better in 92\% of rows), while
 \WAPE{}/ND (median $-0.047$, 66\%) and \MASE{} (median $-0.036$, 61\%)
 are much closer to the best baseline.  GIFT-Eval is uniformly favourable
 to FMs in this extraction, whereas fev-bench is more heterogeneous.
-Version~1.6 adds matched-panel Source~B repair runs for M5, Rohlik, and
+Version~1.7 adds matched-panel Source~B repair runs for M5, Rohlik, and
 Favorita: 100 shared top-volume series per dataset, common rolling-origin
 windows, prediction-level outputs, run ledgers, and paired bootstrap
 contrasts for Seasonal Naive, recursive/direct LightGBM, Chronos-Bolt-Tiny,
-Chronos-2, Moirai~2.0-Small, plus TimesFM~2.5 and batched TiRex on
-Favorita.  In this repaired subset Chronos-2 is lower than the best local
-baseline in all nine dataset--horizon cells; Moirai is lower in all nine
-point estimates; Chronos-Bolt is approximately tied on M5 and worse on
-Rohlik/Favorita; TimesFM~2.5 is near parity on Favorita; and batched TiRex
-is lower than the best Favorita baseline at $h=7$ and $h=14$ but uncertain
-at $h=28$.  The defensible conclusion is conditional: observed rankings
+Chronos-2, Moirai~2.0-Small, and batched TiRex on all three datasets, plus
+TimesFM~2.5 on Favorita.  In this repaired subset Chronos-2 is lower than
+the best local baseline in all nine dataset--horizon cells; Moirai is lower
+in all nine point estimates; TiRex is lower in all nine point estimates
+with bootstrap intervals excluding zero in seven; Chronos-Bolt is
+approximately tied on M5 and worse on Rohlik/Favorita; and TimesFM~2.5 is
+near parity on Favorita.  The defensible conclusion is conditional: observed rankings
 depend on metric, baseline choice, protocol, workload matching, and demand
 characteristics.  We provide a validation checklist and cost-error
 diagnostics instead of deterministic deployment rules.
@@ -119,10 +119,10 @@ draft, Writing -- review \& editing, Visualization.
 \section*{Data availability}
 The v1.0 technical report is an archived historical snapshot on Zenodo at
 \url{https://doi.org/10.5281/zenodo.21338004}.  The live repository is
-intended to host the repaired v1.6 materials at
+intended to host the repaired v1.7 materials at
 \url{https://github.com/MaciejR/large-scale-demand-forecasting-benchmark}.
-The v1.1--v1.5 release folders are retained as historical repair
-artifacts; v1.6 is prepared as a separate TiRex batching and matched-panel
+The v1.1--v1.6 release folders are retained as historical repair
+artifacts; v1.7 is prepared as a separate TiRex batching and matched-panel
 repair and should not overwrite the v1.0 Zenodo snapshot.  The repository includes
 derived extraction tables, analysis code, generated tables/figures,
 study-characteristics data, audit outputs, and replication scripts, but not

@@ -198,8 +198,8 @@ files keyed by series, origin date, target date, and forecast step, and
 records a machine-readable run ledger.  Completed repair runs cover
 Seasonal Naive, recursive LightGBM, direct LightGBM, horizon-scaled direct
 LightGBM, Chronos-Bolt-Tiny, Chronos-2, and Moirai~2.0-Small on
-M5/Rohlik/Favorita at $h\in\{7,14,28\}$, plus TimesFM~2.5 and batched
-TiRex on Favorita.  TiRex uses a CPU batched path on the MacBook because
+M5/Rohlik/Favorita at $h\in\{7,14,28\}$, plus batched TiRex on all three
+datasets and TimesFM~2.5 on Favorita.  TiRex uses a CPU batched path on the MacBook because
 the MPS xLSTM fallback is slower for this workload.
 
 \subsection{Reanalysis specification}
@@ -219,7 +219,7 @@ observations across fev-bench and GIFT-Eval.  The legacy Source~B export
 yields an auditable $k = 543$ contrast file, but those 45 legacy Source~B
 contrasts remain labelled descriptive because they fail the legacy
 workload-matching audit.  The matched-panel Source~B repair is
-reported separately as a prediction-level paired analysis on 33 FM-vs-best
+reported separately as a prediction-level paired analysis on 39 FM-vs-best
 baseline WAPE contrasts.  \ref{app:sensitivity} also reports a
 coarser bucket-level analysis for comparison.
 

@@ -79,9 +79,10 @@ metric-specific and leave-one-suite-out analyses alongside it.
     Source~B produces gap-filling rows with runtime, cost, and
     CO\textsubscript{2} metadata.  A v1.3 integrity audit showed that
     the legacy rows were not consistently evaluated on the same series
-    workload across all models.  Version~1.4 partially repairs this with a
-    matched 100-series M5/Rohlik panel for three FMs and the baseline
-    variants; the remaining Source~B rows are treated as descriptive and
+    workload across all models.  The current repair reports a matched
+    100-series M5/Rohlik/Favorita panel for Chronos-Bolt-Tiny, Chronos-2,
+    Moirai~2.0-Small, TiRex, and the baseline variants, plus TimesFM~2.5
+    on Favorita; the remaining legacy Source~B rows are treated as descriptive and
     as sensitivity checks rather than as primary inferential evidence.
 \end{enumerate}
 
@@ -94,8 +95,8 @@ $1/n_{\text{FM}}+1/n_{\text{baseline}}$ term is treated as a workload
 proxy rather than as a validated sampling variance.  The full auditable
 contrast table contains $k = 543$ rows after adding the legacy Source~B
 export, but those 45 Source~B contrasts are reported separately because
-they lack row-level paired prediction-error covariance.  The v1.4
-matched-panel Source~B repair is reported separately from both files.
+they lack row-level paired prediction-error covariance.  The matched-panel
+Source~B repair is reported separately from both files.
 
 \subsection{Headline findings}
 \label{sec:headline-findings}
