@@ -20,7 +20,10 @@ omitted for space include
 The R pipeline additionally derives \texttt{study\_id},
 \texttt{suite\_id}, and \texttt{task\_id}; the resulting study
 characteristics table is written to
-\path{analysis/study_characteristics.csv}.
+\path{analysis/study_characteristics.csv}.  That file summarises
+analysis-contributing sources and benchmark suites after canonicalisation; it
+is not a one-row-per-PRISMA-record catalogue of all 32 included external
+source records.
 
 The official fev-bench prediction-level repair is stored separately from the
 frozen extraction table because it reruns benchmark windows rather than
