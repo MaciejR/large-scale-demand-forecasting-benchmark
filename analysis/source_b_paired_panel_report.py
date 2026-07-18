@@ -9,6 +9,7 @@ same matched panel.
 from __future__ import annotations
 
 import argparse
+import zlib
 from pathlib import Path
 
 import numpy as np
@@ -24,6 +25,20 @@ BASELINE_MODELS = {
     "lightgbm_direct",
     "lightgbm_direct_scaled",
 }
+
+
+def sort_report_frame(frame: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
+    """Sort report tables deterministically across run-list order changes."""
+    if frame.empty:
+        return frame
+    sort_cols = [col for col in columns if col in frame.columns]
+    if not sort_cols:
+        return frame.reset_index(drop=True)
+    return frame.sort_values(sort_cols, kind="mergesort").reset_index(drop=True)
+
+
+def dataset_seed(seed: int, dataset: str) -> int:
+    return (int(seed) + zlib.crc32(dataset.encode("utf-8"))) % (2**32)
 
 
 def read_run(run_dir: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
@@ -56,11 +71,23 @@ def aggregate_runs(run_dirs: list[Path]) -> tuple[pd.DataFrame, pd.DataFrame, pd
         metrics.append(m)
         if not l.empty:
             ledgers.append(l)
-    return (
+    summary = sort_report_frame(
         pd.concat(summaries, ignore_index=True),
-        pd.concat(metrics, ignore_index=True),
-        pd.concat(ledgers, ignore_index=True) if ledgers else pd.DataFrame(),
+        ["dataset", "horizon", "model_name", "source_run_dir", "run_id"],
     )
+    metric_rows = sort_report_frame(
+        pd.concat(metrics, ignore_index=True),
+        ["dataset", "horizon", "model_name", "series_id", "source_run_dir", "run_id"],
+    )
+    ledger = (
+        sort_report_frame(
+            pd.concat(ledgers, ignore_index=True),
+            ["dataset", "horizon", "model_name", "source_run_dir", "run_id"],
+        )
+        if ledgers
+        else pd.DataFrame()
+    )
+    return summary, metric_rows, ledger
 
 
 def paired_log_ratio(
@@ -145,7 +172,10 @@ def build_contrast_definitions(summary: pd.DataFrame) -> pd.DataFrame:
         ),
         axis=1,
     )
-    return contrasts
+    return sort_report_frame(
+        contrasts,
+        ["dataset", "horizon", "model_name", "baseline_model", "contrast_id"],
+    )
 
 
 def _series_metric_maps(
@@ -217,8 +247,6 @@ def compute_fm_contrasts_with_covariance(
 
     metrics = metrics.copy()
     metrics["series_id"] = metrics["series_id"].astype(str)
-    rng = np.random.default_rng(seed)
-
     contrast_maps = {}
     observed_rows = []
     for row in contrasts.itertuples(index=False):
@@ -253,11 +281,15 @@ def compute_fm_contrasts_with_covariance(
 
     dataset_series = {
         dataset: np.array(sorted(group["series_id"].astype(str).unique()), dtype=object)
-        for dataset, group in metrics.groupby("dataset", sort=False)
+        for dataset, group in metrics.groupby("dataset", sort=True)
+    }
+    dataset_rngs = {
+        dataset: np.random.default_rng(dataset_seed(seed, dataset))
+        for dataset in dataset_series
     }
     for b in range(n_boot):
         sampled_by_dataset = {
-            dataset: rng.choice(series_ids, size=len(series_ids), replace=True)
+            dataset: dataset_rngs[dataset].choice(series_ids, size=len(series_ids), replace=True)
             for dataset, series_ids in dataset_series.items()
         }
         for j, contrast_id in enumerate(contrast_ids):
@@ -405,6 +437,27 @@ def main() -> None:
     protocol = compute_baseline_protocol_contrasts(summary)
 
     FIG_DIR.mkdir(parents=True, exist_ok=True)
+    summary = sort_report_frame(
+        summary,
+        ["dataset", "horizon", "model_name", "source_run_dir", "run_id"],
+    )
+    metrics = sort_report_frame(
+        metrics,
+        ["dataset", "horizon", "model_name", "series_id", "source_run_dir", "run_id"],
+    )
+    ledger = sort_report_frame(
+        ledger,
+        ["dataset", "horizon", "model_name", "source_run_dir", "run_id"],
+    )
+    fm_contrasts = sort_report_frame(
+        fm_contrasts,
+        ["dataset", "horizon", "model_name", "baseline_model", "contrast_id"],
+    )
+    boot_draws = sort_report_frame(boot_draws, ["contrast_id"])
+    covariance = sort_report_frame(covariance, ["contrast_id"])
+    covariance_long = sort_report_frame(covariance_long, ["contrast_i", "contrast_j"])
+    protocol = sort_report_frame(protocol, ["dataset", "horizon", "contrast"])
+
     summary.to_csv(FIG_DIR / "source_b_paired_panel_cell_summary.csv", index=False)
     metrics.to_csv(FIG_DIR / "source_b_paired_panel_per_series_metrics.csv", index=False)
     if not ledger.empty:
