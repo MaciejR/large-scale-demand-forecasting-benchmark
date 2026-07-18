@@ -16,6 +16,9 @@ This file maps manuscript claims to repository artifacts.
 - PRISMA flow outputs: `analysis/figures/prisma_flow.pdf`,
   `analysis/figures/prisma_flow.png`
 - Extraction table: `analysis/extraction_schema.csv`
+- Study characteristics table: `analysis/study_characteristics.csv`
+- Study-level risk-of-bias assessment:
+  `analysis/risk_of_bias_assessment.csv`
 - fev-bench extraction script: `analysis/extract_fev_bench_retail.py`
 - GIFT-Eval extraction script: `analysis/extract_gift_eval_retail.py`
 
