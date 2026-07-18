@@ -4,15 +4,15 @@
 
 The primary Source~A evidence is a reanalysis of two benchmark suites:
 fev-bench \citep{shchur2025fevbench} and GIFT-Eval
-\citep{aksu2024gift}.  Version~1.4 uses the stricter comparator as the
-default: each foundation-model row is compared with the best available
+\citep{aksu2024gift}.  The stricter comparator is the default:
+each foundation-model row is compared with the best available
 conventional baseline in the same task and metric cell.  The earlier
 average-baseline comparator is retained as a sensitivity artifact.
 
 Source~B is excluded from this primary Source~A pool.  The legacy local
 rows do not consistently share the same series workload, and paired
-prediction-error covariances are not available.  Version~1.4 adds a
-separate matched-panel Source~B repair for M5/Rohlik
+prediction-error covariances are not available.  The separate matched-panel
+Source~B repair covers M5/Rohlik/Favorita
 (Table~\ref{tab:sourceb-paired}), but that local 100-series aggregate-\WAPE{}
 estimand is not pooled with as-reported Source~A benchmark rows.
 

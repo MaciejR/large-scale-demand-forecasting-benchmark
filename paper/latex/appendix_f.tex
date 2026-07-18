@@ -11,7 +11,8 @@ studies.
 
 \input{../../analysis/figures/risk_of_bias_summary.tex}
 
-Five threats specific to the Source~B foundation model runs (\S5.4),
+Five threats specific to the Source~B foundation model runs
+(\S\ref{sec:fm}),
 in decreasing order of magnitude:
 
 \begin{enumerate}
@@ -19,18 +20,17 @@ in decreasing order of magnitude:
     M5 / Favorita / Rohlik are not a random sample of the FM
     literature --- they are the subset that chose a retail task
     for their own evaluation. Papers that chose ETT / Weather /
-    ECL (most of the LSF literature) are absent. The \S6.6
-    heterogeneity diagnostic includes a
-    \path{paper_chose_retail_as_primary_task} binary flag to
-    surface this.
+    ECL (most of the LSF literature) are absent. The generated
+    extraction and risk-of-bias artifacts surface this selection
+    mechanism through source, suite, and provenance fields.
 
   \item \textbf{Source A vs Source B protocol drift.} Source~A numbers
     are extracted as-reported; Source~B numbers are run on our
-    \S5.1.3 protocol. When the two diverge on the same (model,
+    \S\ref{sec:evalprotocol} protocol. When the two diverge on the same (model,
     dataset, horizon) cell, the divergence is a data point
     about protocol sensitivity, not about model quality. The
-    four-model overlap between A and B is designed to quantify
-    this drift, and \S5.4.7 treats $>$5\% gaps as findings.
+    overlap between Source~A and Source~B is treated descriptively in
+    \S\ref{sec:fm_results}, not as confirmatory paired evidence.
 
   \item \textbf{Local run covers models up to 200\,M params.}
     Moirai~2.0-Large (305\,M) cannot
@@ -40,19 +40,22 @@ in decreasing order of magnitude:
     TiRex 35\,M, Chronos-2 120\,M, TimesFM~2.5 200\,M) span over an
     order of magnitude in scale.
 
-  \item \textbf{Covariate asymmetry.} Four of the six FM families in
-    Table~5.7 are univariate and cannot consume the \S5.1.1
-    covariate sets. The LightGBM baselines in \S5.2 use the
+  \item \textbf{Covariate asymmetry.} Most local FM families in
+    Table~\ref{tab:fm_models} are univariate or are used in univariate
+    zero-shot mode and cannot consume the \S\ref{sec:datasets}
+    covariate sets. The LightGBM baselines in \S\ref{sec:baseline} use the
     full covariate sets. This biases the comparison toward
     LightGBM on covariate-driven datasets (M5: SNAP, prices;
     Favorita: oil, promotions) and is not correctable inside a
-    zero-shot protocol. \S6.2 treats covariate-aware vs
-    univariate as a moderator.
+    zero-shot protocol. The moderator discussion in
+    \S\ref{subsec:moderator-outcomes} treats covariate-aware vs
+    univariate comparisons as hypothesis-generating.
 
   \item \textbf{Top-30k Favorita cap propagates to the local run.}
-    Same cap, same selection rule, same velocity bias as \S5.1.1.
+    Same cap, same selection rule, same velocity bias as
+    \S\ref{sec:datasets}.
     Source~A rows for Favorita include both fev-bench's top-54k
     subset and the full-Favorita subset where available; we
-    flag \texttt{dataset\_variant} per row so the \S6 pool can
-    restrict to comparable subsets.
+    flag \texttt{dataset\_variant} per row so the
+    \S\ref{sec:metareg} pool can restrict to comparable subsets.
 \end{enumerate}
