@@ -59,7 +59,7 @@ scope for this review are:
 
 | Model | Params | Architecture | Covariates | Key reference |
 |-------|-------:|-------------|:----------:|---------------|
-| Chronos / Chronos-2 | 9–710 M | Encoder-only T5 | v2 only | Ansari et al. (2024, 2025) |
+| Chronos / Chronos-2 | 9–710 M | Chronos family / Chronos-2 architecture | v2 only | Ansari et al. (2024, 2025) |
 | TimesFM 2.5 | 200 M | Decoder-only | No | Das et al. (2025) |
 | Moirai 2.0 | 14–300 M | Masked encoder | Yes | Woo et al. (2025) |
 | TiRex | ~35 M | xLSTM | No | Gruber et al. (2025) |
