@@ -29,7 +29,8 @@ This file maps manuscript claims to repository artifacts.
 - Heterogeneity table: `analysis/figures/table_6_2_heterogeneity.csv`
 - Moderator outputs: `analysis/figures/moderator_*.txt`
 - Sensitivity outputs: `analysis/figures/sensitivity_*.txt`
-- Forest/funnel/Pareto figures: `analysis/figures/figure_*.pdf`
+- Forest plots and descriptive cost-error scatter figures:
+  `analysis/figures/figure_*.pdf`
 
 ## fev-bench Prediction-Level WAPE Repair
 
