@@ -109,6 +109,10 @@ instructions.
 - Source B matched-panel contrasts currently include Chronos-Bolt-Tiny,
   Chronos-2, Moirai 2.0-Small, batched TiRex, and TimesFM 2.5 on the
   M5/Rohlik/Favorita 100-series panels.
+- Source B cost audit:
+  [`analysis/figures/source_b_cost_total.csv`](analysis/figures/source_b_cost_total.csv),
+  [`analysis/figures/source_b_cost_by_dataset_family.csv`](analysis/figures/source_b_cost_by_dataset_family.csv), and
+  [`analysis/figures/source_b_cost_consistency_audit.csv`](analysis/figures/source_b_cost_consistency_audit.csv)
 - fev-bench official run coverage:
   [`analysis/figures/fev_official_model_coverage.csv`](analysis/figures/fev_official_model_coverage.csv)
 - fev-bench prediction-level WAPE repair summary:

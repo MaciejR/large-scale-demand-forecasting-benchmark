@@ -66,6 +66,13 @@ Recreate it with the commands documented in `REPRODUCING.md`.
   `analysis/figures/source_b_paired_panel_logratio_covariance.csv`
 - Matched-panel Source B run ledger:
   `analysis/figures/source_b_paired_panel_run_ledger.csv`
+- Legacy Source B cost totals:
+  `analysis/figures/source_b_cost_total.csv`
+- Legacy Source B cost by dataset/family:
+  `analysis/figures/source_b_cost_by_dataset_family.csv`
+- Baseline cost consistency audit:
+  `analysis/figures/source_b_cost_consistency_audit.csv` and
+  `analysis/figures/source_b_cost_consistency_audit.tex`
 - Horizon-scaled Favorita direct-LightGBM check:
   `benchmark/results/direct_scaled_favorita.csv`
 - Experiment runners: `benchmark/code/experiments/`
