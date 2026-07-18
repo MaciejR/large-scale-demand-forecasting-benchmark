@@ -22,6 +22,20 @@ rm -rf "$release_dir" "$zip_path"
 mkdir -p "$release_dir/manuscript" "$release_dir/replication"
 
 tools/audit_manuscript_v112.sh
+Rscript analysis/meta_regression.R >/tmp/v112_meta_regression.log
+meta_status="$(
+  git status --porcelain -- \
+    analysis/figures \
+    analysis/study_characteristics.csv \
+    analysis/risk_of_bias_assessment.csv
+)"
+if [[ -n "$meta_status" ]]; then
+  echo "Meta-regression artifacts changed during release build:" >&2
+  echo "$meta_status" >&2
+  echo "Review and commit regenerated analysis artifacts before packaging." >&2
+  exit 1
+fi
+
 python3 analysis/source_b_integrity_audit.py >/tmp/v112_source_b_integrity_audit.log
 source_b_status="$(git status --porcelain -- analysis/figures)"
 if [[ -n "$source_b_status" ]]; then

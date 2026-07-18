@@ -345,9 +345,9 @@ The script writes `COMMIT.txt`, copies the checked-in manuscript PDF, creates
 fails if excluded private or heavyweight artifacts are present. It also runs
 `tools/audit_manuscript_v112.sh` before packaging. By default it refuses to
 package a dirty working tree so the archived source state matches
-`COMMIT.txt`. It regenerates the Source B integrity audit and fails if tracked
-`analysis/figures` artifacts change during the build. For local debugging only,
-set `ALLOW_DIRTY_RELEASE=1`.
+`COMMIT.txt`. It reruns `analysis/meta_regression.R`, regenerates the Source B
+integrity audit, and fails if tracked analysis artifacts change during the
+build. For local debugging only, set `ALLOW_DIRTY_RELEASE=1`.
 
 The manuscript audit can be run independently:
 
