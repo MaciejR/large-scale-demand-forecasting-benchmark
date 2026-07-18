@@ -151,6 +151,11 @@ python analysis/source_b_paired_panel_report.py \
          source_b_v1_7_tirex_batched_m5_rohlik_100
 ```
 
+The report sorts summaries, per-series metrics, ledgers, contrasts, bootstrap
+draws, and covariance tables before writing them.  Bootstrap resampling uses a
+fixed seed split by dataset, so the generated CSVs are deterministic and do
+not depend on the order of the `--runs` arguments.
+
 This regenerates `analysis/figures/source_b_paired_panel_*.csv`, including:
 
 - `source_b_paired_panel_fm_vs_best_baseline.csv`: 45 matched-panel
@@ -161,6 +166,19 @@ This regenerates `analysis/figures/source_b_paired_panel_*.csv`, including:
   covariance matrix for Source B matched-panel log-ratios.
 - `source_b_paired_panel_logratio_covariance_long.csv`: long-form covariance
   and correlation table for auditing dependence among contrasts.
+
+To verify output stability after regenerating the Source B report:
+
+```bash
+find analysis/figures -maxdepth 1 -type f -name 'source_b_paired_panel*.csv' \
+  -print0 | sort -z | xargs -0 shasum -a 256 > /tmp/source_b_before.sha
+python analysis/source_b_paired_panel_report.py --runs <same run list as above>
+find analysis/figures -maxdepth 1 -type f -name 'source_b_paired_panel*.csv' \
+  -print0 | sort -z | xargs -0 shasum -a 256 > /tmp/source_b_after.sha
+diff -u /tmp/source_b_before.sha /tmp/source_b_after.sha
+```
+
+The final `diff` should be empty.
 
 Batched TiRex uses the same matched 100-series panels. On M-series hardware
 the runner defaults TiRex to CPU because the MPS xLSTM fallback is slower for

@@ -73,6 +73,11 @@ Recreate it with the commands documented in `REPRODUCING.md`.
   `analysis/figures/source_b_paired_panel_logratio_covariance.csv`
 - Matched-panel Source B run ledger:
   `analysis/figures/source_b_paired_panel_run_ledger.csv`
+- Matched-panel Source B generator:
+  `analysis/source_b_paired_panel_report.py`.  It writes deterministic CSV
+  outputs by sorting report tables and using dataset-split bootstrap seeds, so
+  repeated runs and different `--runs` argument orderings produce the same
+  artifacts.
 - Legacy Source B cost totals:
   `analysis/figures/source_b_cost_total.csv`
 - Legacy Source B cost by dataset/family:
