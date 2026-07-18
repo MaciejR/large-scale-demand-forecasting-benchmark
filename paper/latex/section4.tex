@@ -3,7 +3,7 @@
 \label{sec:literature}\label{sec:prisma-results}
 
 This section reports the outcome of the PRISMA search and describes
-the 800+ row extraction (including per-task re-extraction from
+the 802-row extraction schema (including per-task re-extraction from
 fev-bench and GIFT-Eval) before the gap-filling experiments
 (\S\ref{sec:experiments}) and cross-benchmark reanalysis
 (\S\ref{sec:metaanalysis}) operate on it.
@@ -34,7 +34,7 @@ Full-text assessed       & 70  & \\
 Excluded at full-text    & 38  & No retail dataset, no FM evaluation, duplicate/non-comparable results \\
 Source~A studies included & 32 & External papers and benchmark sources \\
 Source~B experiment blocks & 7 & Own experiments; not PRISMA included studies \\
-Extraction rows          & 800+      & Multiple rows per study; incl.\ per-task fev-bench/GIFT-Eval \\
+Extraction schema rows   & 802       & Multiple rows per study; incl.\ per-task fev-bench/GIFT-Eval \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -60,17 +60,18 @@ The Source~A extraction and Source~B experiment blocks break down as follows:
   \item \textbf{Category~F (legacy fev-bench summary entries):} 1
     paper, 8 rows.  These are retained for provenance but the
     model-level reanalysis uses the expanded B02 per-task rows.
-  \item \textbf{OWN\_* (own experiments):} 7 experiment blocks,
-    72 rows.  Five FM models (\S\ref{sec:fm}), LightGBM baselines
-    (\S\ref{sec:results}--\S\ref{sec:baseline}),
-    and Seasonal Naive across three datasets and three horizons.
+  \item \textbf{OWN\_* (own experiments):} 7 legacy experiment blocks,
+    45 rows retained in \texttt{analysis/extraction\_schema.csv} for
+    provenance.  The separate local Source~B sweep file adds 72 rows
+    (five FM models plus three baselines across three datasets and
+    three horizons) and is not counted as a PRISMA included study.
 \end{itemize}
 
 \subsection{Descriptive statistics}
 \label{subsec:descriptive}
 
 \noindent\textbf{Temporal distribution.}
-The extraction skews heavily toward 2024--2025: 439 rows from 2025
+The extraction skews heavily toward 2024--2025: 589 rows from 2025
 papers, 140 from 2024, 53 from 2026.  Pre-2024 rows (20 total) are
 almost entirely M5 competition entries (2020--2022) and early DL
 comparisons.  This reflects the recency of the FM wave --- the first
@@ -99,8 +100,9 @@ partially offset the imbalance.
 \noindent\textbf{Metric heterogeneity.}
 The extraction contains three primary metrics after re-extraction:
 \WAPE{} (232 rows), \MASE{} (227 rows), and SQL (213 rows), plus
-\WRMSSE{} (23 rows, M5 only), win\_rate\_SQL (15 rows), and
-several minor metrics.  After within-cell best-baseline pairing, the
+\WRMSSE{} (23 rows, M5 only) and a long tail of win-rate, rank,
+runtime, cost, and other minor metrics.  After within-cell
+best-baseline pairing, the
 primary Source~A contrast file uses 166 \WAPE{} pairs, 166 SQL pairs,
 and 166 \MASE{} pairs.  SQL pairs
 drive the distributional-accuracy finding, while \WAPE{} pairs test the

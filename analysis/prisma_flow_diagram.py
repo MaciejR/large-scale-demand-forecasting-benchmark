@@ -33,7 +33,7 @@ N_EXCLUDED_FULLTEXT = 38    # No retail dataset, no FM evaluation, duplicate res
 N_INCLUDED = 32             # External Source A studies only
 N_INCLUDED_EXTERNAL = 32    # External papers
 N_OWN_EXPERIMENTS = 7       # Own experiment blocks (Source B)
-N_EXTRACTION_ROWS_LABEL = "800+"  # After per-task fev-bench/GIFT-Eval extraction
+N_EXTRACTION_ROWS_LABEL = "802"   # Frozen extraction_schema.csv rows after per-task re-extraction
 
 N_CAT_A = 17  # Foundation model papers
 N_CAT_B = 4   # Benchmark papers
@@ -191,7 +191,7 @@ def main():
              color="#E8EAF6", border="#3F51B5", bold_first_line=True)
 
     draw_box(ax, 8.2, 4.3, 2.5, 0.55,
-             f"Source B: own experiments\n(not PRISMA studies; 7 blocks, 72 rows)",
+             f"Source B: own experiments\n(not PRISMA studies; local sweep n=72)",
              color="#F3E5F5", border="#7B1FA2")
     draw_side_arrow(ax, 5.95, 4.3, 6.95, 4.3, color="#7B1FA2")
 
