@@ -154,6 +154,7 @@ sources:
 The v1.0 technical report has been published on Zenodo with DOI
 `10.5281/zenodo.21338004`. Later repair packages are maintained separately and
 do not overwrite the historical v1.0 snapshot. The current working version is
-v1.11, adding TimesFM 2.5 M5/Rohlik matched-panel Source B contrasts on top of
-the v1.10 TiRex fev-bench prediction-level WAPE covariance repair, v1.9 Chronos
-fev-bench repair, and Source B matched-panel covariance repair.
+v1.12, adding TimesFM 2.5 official fev-bench prediction-level WAPE covariance
+artifacts on top of the v1.11 TimesFM Source B matched-panel extension, v1.10
+TiRex fev-bench repair, v1.9 Chronos fev-bench repair, and Source B
+matched-panel covariance repair.

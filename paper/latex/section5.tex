@@ -170,7 +170,7 @@ gives a clean, reviewer-auditable split.  Specifically:
 
 \textbf{Source~B sampling audit and repair.}  The initial Source~B plan
 was to evaluate each FM on a fixed 100-series sample per cell and pair it
-against baselines on the same sampled workload.  The v1.3 audit showed
+against baselines on the same sampled workload.  The integrity audit showed
 that the saved 72-row result file did not satisfy that condition for all
 models.  The legacy sweep is therefore retained only as provenance and
 cost-audit material.  The matched-panel repair run covers
@@ -794,9 +794,8 @@ Source~B runs are anchored by git commit SHA, HuggingFace revision
 SHA, \texttt{pip freeze} snapshot, and machine fingerprint where
 available.  The matched-panel runs include shared series manifests,
 per-series predictions, run ledgers, and paired bootstrap contrasts for
-M5/Rohlik/Favorita.  The v1.6 working artifacts add batched TiRex on the
-Favorita 100-series panel, and v1.7 extends the same batched TiRex path to
-M5/Rohlik.  Future Source~B releases must extend the same structure to GPU
+M5/Rohlik/Favorita, including the batched TiRex path required for the
+100-series panels.  Future Source~B releases must extend the same structure to GPU
 throughput, larger workloads, and covariate-aware FMs before Source~B can enter a broader paired
 inference.  Moirai~2.0-Small carries a
 non-commercial license (CC-BY-NC-4.0), flagged in

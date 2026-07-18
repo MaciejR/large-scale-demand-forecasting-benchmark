@@ -10,7 +10,7 @@ for reporting systematic reviews. BMJ 2021;372:n71.
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
-# PRISMA flow numbers aligned with the v1.3 manuscript.
+# PRISMA flow numbers aligned with the repaired manuscript.
 # Identification
 N_DB_RECORDS = 150          # Records identified through database searching
 N_QUERIES = 25              # Auditable query families retained in Appendix B

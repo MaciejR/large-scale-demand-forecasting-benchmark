@@ -175,7 +175,7 @@ fev-bench & \MASE{}      & 138 & $-0.006$ & $-0.010$ & 0.53 & Approximately pari
 \subsection{Heuristic-Weight Diagnostics}
 \label{subsec:sensitivity}\label{sec:heterogeneity}
 
-For continuity with v1.1--v1.2, the pipeline still fits a multilevel
+For continuity with the earlier exploratory pipeline, the pipeline still fits a multilevel
 \texttt{rma.mv} model using the workload-count proxy $v_i$.  The generated
 best-baseline diagnostic has point estimate $\hat{\ell}=-0.225$ with only
 two suite clusters; the average-baseline diagnostic is
@@ -198,7 +198,7 @@ Full per-dataset forest plots remain generated artifacts in
 auditing task-level heterogeneity but are not interpreted as independent
 confirmatory evidence.
 
-The funnel plot and Egger-style regression were removed in v1.3 and remain
+The funnel plot and Egger-style regression were removed from the repaired manuscript and remain
 absent.  Their
 vertical axis would be based on $\sqrt{1/n_{\text{FM}}+1/n_{\text{baseline}}}$,
 which is a workload-count proxy rather than a true standard error.  Such a
@@ -238,6 +238,6 @@ Moderator analyses are hypothesis-generating.  Metric choice is the most
 visible row-level moderator.  Dataset, horizon, model scale, baseline
 family, and covariate availability cannot be interpreted causally from two
 benchmark suites and a descriptive local audit.  The defensible conclusion
-is therefore narrower than in v1.0: FMs often have favourable recorded
+is therefore deliberately narrow: FMs often have favourable recorded
 benchmark-level log-ratios, especially on SQL, but rankings depend on the
 metric, baseline, benchmark protocol, and demand characteristics.

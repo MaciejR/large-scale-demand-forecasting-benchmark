@@ -20,7 +20,7 @@ summarise the key parameters here.
 \noindent\textbf{Databases.}
 The retained auditable log covers Google Scholar/web searches, Semantic
 Scholar API, and arXiv (cs.LG, stat.ML).  Scopus and Web of Science were
-target sources, but their export logs were not retained in the v1.3 audit;
+target sources, but their export logs were not retained in the audit trail;
 this is reported as a PRISMA limitation in \ref{app:search}.
 
 \noindent\textbf{Search query.}
@@ -180,7 +180,7 @@ Standard\_E4ds\_v4 (4~vCPU, 32~GB), CPU-only.  Three baseline models:
 \end{itemize}
 
 All 72 legacy cells use the same metric definitions and rolling-origin
-design where available, but the v1.3 audit showed that they did not share a
+design where available, but the integrity audit showed that they did not share a
 common 100-series workload across all models.  Runtime, cost, and
 CO\textsubscript{2} were logged per run via MLflow (local file store for
 MacBook runs, Azure ML workspace for batch runs).  The export script

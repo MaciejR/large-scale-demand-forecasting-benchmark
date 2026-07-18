@@ -77,12 +77,12 @@ metric-specific and leave-one-suite-out analyses alongside it.
     (Apple~Silicon MPS / CPU), and three baselines
     (lightgbm\_cov, lightgbm\_direct, seasonal\_naive) on Azure~ML.
     Source~B produces gap-filling rows with runtime, cost, and
-    CO\textsubscript{2} metadata.  A v1.3 integrity audit showed that
+    CO\textsubscript{2} metadata.  The integrity audit showed that
     the legacy rows were not consistently evaluated on the same series
     workload across all models.  The current repair reports a matched
     100-series M5/Rohlik/Favorita panel for Chronos-Bolt-Tiny, Chronos-2,
-    Moirai~2.0-Small, TiRex, and the baseline variants, plus TimesFM~2.5
-    on Favorita; the remaining legacy Source~B rows are treated as descriptive and
+    Moirai~2.0-Small, batched TiRex, TimesFM~2.5, and the baseline variants;
+    the remaining legacy Source~B rows are treated as descriptive and
     as sensitivity checks rather than as primary inferential evidence.
 \end{enumerate}
 
