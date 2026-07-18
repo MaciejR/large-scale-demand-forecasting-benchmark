@@ -8,7 +8,7 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{hyperref}
-\hypersetup{hidelinks}
+\hypersetup{hidelinks,hypertexnames=false}
 \usepackage{natbib}
 \usepackage{xcolor}
 \usepackage{multirow}
@@ -20,8 +20,8 @@
 \usepackage{chngcntr}
 \counterwithout{figure}{section}
 \counterwithout{table}{section}
-\renewcommand{\theHfigure}{\thesection.\arabic{figure}}
-\renewcommand{\theHtable}{\thesection.\arabic{table}}
+\renewcommand{\theHfigure}{\arabic{figure}}
+\renewcommand{\theHtable}{\arabic{table}}
 
 % --- Paths ---
 \graphicspath{{../../analysis/figures/}}
