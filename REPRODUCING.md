@@ -342,4 +342,16 @@ tools/build_v112_release.sh
 
 The script writes `COMMIT.txt`, copies the checked-in manuscript PDF, creates
 `CHECKSUMS.txt`, zips the package, validates checksums and zip integrity, and
-fails if excluded private or heavyweight artifacts are present.
+fails if excluded private or heavyweight artifacts are present. It also runs
+`tools/audit_manuscript_v112.sh` before packaging.
+
+The manuscript audit can be run independently:
+
+```bash
+tools/audit_manuscript_v112.sh
+```
+
+It checks the rendered PDF and current LaTeX source for known regression terms
+from the methodology-repair review cycle, including `Appendix Appendix`,
+`Removed Funnel Plot`, stale `k=138` labels, and non-auditable `30+ queries`
+wording.

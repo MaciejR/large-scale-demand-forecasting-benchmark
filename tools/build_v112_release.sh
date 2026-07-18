@@ -11,6 +11,8 @@ pdf_name="demand-forecasting-timesfm-fev-bench-wape-covariance-repair-v1.12.pdf"
 rm -rf "$release_dir" "$zip_path"
 mkdir -p "$release_dir/manuscript" "$release_dir/replication"
 
+tools/audit_manuscript_v112.sh
+
 git rev-parse HEAD > "$release_dir/COMMIT.txt"
 cp paper/latex/main.pdf "$release_dir/manuscript/$pdf_name"
 
