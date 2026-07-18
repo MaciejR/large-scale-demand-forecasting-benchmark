@@ -21,6 +21,7 @@ fi
 rm -rf "$release_dir" "$zip_path"
 mkdir -p "$release_dir/manuscript" "$release_dir/replication"
 
+python3 tools/audit_citations.py
 tools/audit_manuscript_v112.sh
 Rscript analysis/meta_regression.R >/tmp/v112_meta_regression.log
 meta_status="$(

@@ -351,9 +351,11 @@ The manuscript audit can be run independently:
 
 ```bash
 tools/audit_manuscript_v112.sh
+python3 tools/audit_citations.py
 ```
 
-It checks the rendered PDF and current LaTeX source for known regression terms
-from the methodology-repair review cycle, including `Appendix Appendix`,
-`Removed Funnel Plot`, stale `k=138` labels, and non-auditable `30+ queries`
-wording.
+The manuscript audit checks the rendered PDF and current LaTeX source for
+known regression terms from the methodology-repair review cycle, including
+`Appendix Appendix`, `Removed Funnel Plot`, stale `k=138` labels, and
+non-auditable `30+ queries` wording.  The citation audit checks that all
+LaTeX citation keys resolve to unique entries in `paper/references.bib`.
