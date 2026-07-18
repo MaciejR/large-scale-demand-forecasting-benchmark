@@ -228,13 +228,11 @@ same cap applies on Rohlik and Favorita for comparability.
 
 Foundation models are evaluated zero-shot with each model's published
 inference script on consumer hardware (Apple M-series MPS/CPU).  The
-legacy Source~B sweep covers Chronos-Bolt-Tiny, Moirai~2.0-Small, TiRex,
-Chronos-2, and TimesFM~2.5, but not on a common workload.  The
-matched-panel repair covers Chronos-Bolt-Tiny, Chronos-2,
-Moirai~2.0-Small, TiRex, and TimesFM~2.5 on M5, Rohlik, and Favorita,
-with shared series IDs, shared forecast origins, and paired
-prediction outputs.  Details of the FM protocol,
-context-length choices, and hardware configuration are in \S\ref{sec:fm}.
+legacy Source~B sweep includes five FMs but not a common workload.  The
+matched-panel repair reruns those FMs on M5, Rohlik, and Favorita with
+shared series IDs, shared forecast origins, and paired prediction outputs.
+Details of the FM protocol, context-length choices, and hardware
+configuration are in \S\ref{sec:fm}.
 
 \subsubsection{Reproducibility}\label{sec:reproducibility}
 

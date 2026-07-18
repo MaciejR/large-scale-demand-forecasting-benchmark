@@ -77,12 +77,12 @@ lightweight fine-tuning. The models in scope for this review are:
 \centering
 \caption{Foundation models in scope.}
 \label{tab:fm-scope}
-\scriptsize
-\begin{tabularx}{\textwidth}{p{1.8cm}p{1.1cm}p{2.2cm}p{1.7cm}p{1.4cm}X}
+\footnotesize
+\begin{tabularx}{\textwidth}{l l X X X X}
 \toprule
 Model & Params & Architecture & Checkpoint / code & Covariates used here & Key reference \\
 \midrule
-Chronos / Chronos-2 & 9--710\,M & Chronos family / Chronos-2 architecture & Chronos-2 120M; Bolt Tiny/Base & No in analyzed rows; Chronos-2 support not evaluated here &
+Chronos family & 9--710\,M & Chronos / Chronos-2 & Chronos-2 120M; Bolt Tiny/Base & No; covariate support not tested here &
   \citet{ansari2024chronos, ansari2025chronos2} \\
 TimesFM~2.5 & 200\,M & Decoder-only & 2.5 checkpoint & No &
   \citet{das2025timesfm2} \\
@@ -90,11 +90,11 @@ Moirai~2.0 & 11--305\,M & Decoder-only quantile model & Small checkpoint & No in
   \citet{liu2025moirai2} \\
 TiRex & \textasciitilde{}35\,M & xLSTM & public checkpoint & No &
   \citet{auer2025tirex} \\
-TabPFN-TS & \textasciitilde{}12\,M & Tabular PFN + temporal featurization & TabPFN-v2 extension & Yes in fev-bench covariate tasks &
+TabPFN-TS & \textasciitilde{}12\,M & Tabular PFN + temporal features & TabPFN-v2 extension & Yes in fev-bench covariate tasks &
   \citet{mueller2025tabpfnts} \\
 Lag-Llama & 6\,M & Llama backbone & public checkpoint & No &
   \citet{rasul2023laglama} \\
-TimeGPT & undisclosed & Proprietary & API model & Not in the primary paired contrast file &
+TimeGPT & not disclosed & Proprietary & API model & Not in the primary paired file &
   \citet{garza2023timegpt} \\
 \bottomrule
 \end{tabularx}
