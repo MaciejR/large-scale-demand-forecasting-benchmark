@@ -86,6 +86,8 @@ Recreate it with the commands documented in `REPRODUCING.md`.
   because they mix MacBook marginal electricity, Azure job-level charges, and
   unequal workloads; they are descriptive accounting artifacts, not reconciled
   inferential cost results.
+- Source B integrity gate summary:
+  `analysis/figures/source_b_integrity_audit_summary.csv`
 - Baseline cost consistency audit:
   `analysis/figures/source_b_cost_consistency_audit.csv` and
   `analysis/figures/source_b_cost_consistency_audit.tex`

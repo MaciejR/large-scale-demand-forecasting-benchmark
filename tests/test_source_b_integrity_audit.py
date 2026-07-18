@@ -119,3 +119,23 @@ def test_risk_of_bias_assessment_is_study_level():
     assert risk["study_id"].is_unique
     assert set(risk["study_id"]) == set(studies["study_id"])
     assert not risk[list(required_columns)].isna().any().any()
+
+
+def test_source_b_integrity_summary_records_audit_gates():
+    summary_path = Path("analysis/figures/source_b_integrity_audit_summary.csv")
+    assert summary_path.exists()
+
+    summary = pd.read_csv(summary_path)
+    expected_gates = {
+        "legacy_source_b_pairing": "failed",
+        "matched_panel_coverage": "passed",
+        "legacy_cost_reconciliation": "failed",
+        "legacy_direct_scaled_protocol": "failed",
+        "source_b_formal_pooling": "blocked_by_design",
+    }
+
+    assert set(summary["gate"]) == set(expected_gates)
+    actual = dict(zip(summary["gate"], summary["status"]))
+    assert actual == expected_gates
+    assert summary["evidence_file"].str.startswith("analysis/figures/").all()
+    assert summary["manuscript_consequence"].str.len().min() > 20

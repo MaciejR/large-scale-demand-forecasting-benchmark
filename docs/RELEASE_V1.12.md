@@ -36,6 +36,9 @@ continuous TimesFM quantile head.
   - `analysis/figures/fev_timesfm25_paired_wape_covariance_long.csv`
 - Regenerated the fev-bench official run manifest, model coverage summary, and
   bootstrap artifact manifest.
+- Added a Source B integrity gate summary that records which legacy Source B
+  issues remain failed or blocked by design, and which matched-panel repair
+  gates have passed.
 - Stabilized the Source B matched-panel report outputs: generated CSVs are
   sorted deterministically, and bootstrap resampling uses fixed dataset-split
   seeds so repeated runs and different `--runs` orderings reproduce identical

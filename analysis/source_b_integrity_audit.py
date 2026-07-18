@@ -450,6 +450,106 @@ def write_integrity_flags(local: pd.DataFrame) -> None:
     pd.DataFrame(rows).to_csv(FIG_DIR / "source_b_integrity_flags.csv", index=False)
 
 
+def write_integrity_summary(local: pd.DataFrame) -> None:
+    """Write one machine-readable status table for Source B audit gates."""
+    integrity_flags = pd.read_csv(FIG_DIR / "source_b_integrity_flags.csv")
+    direct_scaled = pd.read_csv(FIG_DIR / "source_b_direct_scaled_audit.csv")
+    cost_total = pd.read_csv(FIG_DIR / "source_b_cost_total.csv")
+    matched_panel = pd.read_csv(FIG_DIR / "source_b_paired_panel_cell_summary.csv")
+
+    expected_matched_models = {
+        "chronos2",
+        "chronos_bolt_tiny",
+        "lightgbm_cov",
+        "lightgbm_direct",
+        "lightgbm_direct_scaled",
+        "moirai2",
+        "seasonal_naive",
+        "timesfm25",
+        "tirex",
+    }
+    matched_coverage = matched_panel.groupby(["dataset", "horizon"])["model_name"].agg(
+        lambda s: set(s)
+    )
+    matched_panel_complete = (
+        len(matched_panel) == 81
+        and len(matched_coverage) == 9
+        and all(models == expected_matched_models for models in matched_coverage)
+    )
+    direct_scaled_h7_flagged = (
+        "same_nominal_tree_count_but_wape_changed"
+        in set(direct_scaled["integrity_flag"])
+    )
+    cost_unreconciled = set(cost_total["audit_status"]) == {
+        COST_AUDIT_STATUS
+    }
+
+    rows = [
+        {
+            "gate": "legacy_source_b_pairing",
+            "status": "failed",
+            "evidence_file": "analysis/figures/source_b_integrity_flags.csv",
+            "evidence_summary": (
+                f"{int((~integrity_flags['n_series_matched_across_models']).sum())} "
+                "dataset-horizon cells have unequal recorded n_series values across models"
+            ),
+            "manuscript_consequence": (
+                "legacy Source B remains descriptive and is not pooled into Source A"
+            ),
+        },
+        {
+            "gate": "matched_panel_coverage",
+            "status": "passed" if matched_panel_complete else "failed",
+            "evidence_file": "analysis/figures/source_b_paired_panel_cell_summary.csv",
+            "evidence_summary": (
+                f"{len(matched_panel)} model-dataset-horizon rows; "
+                f"{len(matched_coverage)} dataset-horizon cells"
+            ),
+            "manuscript_consequence": (
+                "matched-panel Source B repair can be reported as local paired evidence"
+            ),
+        },
+        {
+            "gate": "legacy_cost_reconciliation",
+            "status": "failed" if cost_unreconciled else "passed",
+            "evidence_file": "analysis/figures/source_b_cost_total.csv",
+            "evidence_summary": cost_total["audit_status"].iloc[0],
+            "manuscript_consequence": (
+                "legacy Source B costs remain descriptive until one run ledger reconciles tables"
+            ),
+        },
+        {
+            "gate": "legacy_direct_scaled_protocol",
+            "status": "failed" if direct_scaled_h7_flagged else "passed",
+            "evidence_file": "analysis/figures/source_b_direct_scaled_audit.csv",
+            "evidence_summary": (
+                "h=7 scaled direct has the same nominal 300-tree count as base direct "
+                "but a different WAPE"
+                if direct_scaled_h7_flagged
+                else "no same-tree-count direct_scaled anomaly detected"
+            ),
+            "manuscript_consequence": (
+                "legacy direct_scaled Favorita run remains a rerun target, not ranking evidence"
+            ),
+        },
+        {
+            "gate": "source_b_formal_pooling",
+            "status": "blocked_by_design",
+            "evidence_file": "analysis/figures/source_b_integrity_audit_summary.csv",
+            "evidence_summary": (
+                "formal pooling requires prediction-level covariance on the target estimand "
+                "and reconciled workloads"
+            ),
+            "manuscript_consequence": (
+                "Source B is separated from Source A and used as local sensitivity evidence"
+            ),
+        },
+    ]
+    pd.DataFrame(rows).to_csv(
+        FIG_DIR / "source_b_integrity_audit_summary.csv", index=False
+    )
+
+
 def main() -> None:
     FIG_DIR.mkdir(parents=True, exist_ok=True)
     local = load_local()
@@ -462,6 +562,7 @@ def main() -> None:
     write_table8_bootstrap_reconciliation(local)
     write_cost_consistency_audit()
     write_integrity_flags(local)
+    write_integrity_summary(local)
     print("Wrote Source B audit outputs to", FIG_DIR)
 
 
