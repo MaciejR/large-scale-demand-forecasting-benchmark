@@ -35,27 +35,20 @@ time tensor.
 observations with $y = 0$ in the training portion, a core
 moderator variable in \S\ref{subsec:moderator-outcomes}.}
 \label{tab:t51}
-\small
-\begin{tabular}{lrrrllp{5.2cm}}
+\footnotesize
+\begin{tabularx}{\textwidth}{lrrrllX}
 \toprule
 Dataset & $n_\text{series}$ (full) & $n_\text{series}$ (used) & $n_\text{days}$ & Frequency & Zero-day frac & Covariates used \\
 \midrule
 M5 & 30{,}490 & 30{,}490 & 1{,}941 & daily & ${\sim}70\,\%$ &
-  \texttt{sell\_price}, \texttt{snap\_CA/TX/WI}, \texttt{is\_event},
-  \texttt{wday}, \texttt{month} \\
+  price; SNAP/calendar events; weekday and month \\
 Rohlik v2 & 5{,}390 & 5{,}390 & 1{,}402 & daily & ${\sim}1.2\,\%$ &
-  \texttt{sell\_price\_main}, \texttt{holiday},
-  \texttt{shops\_closed},
-  \texttt{winter\_school\_holidays},
-  \texttt{school\_holidays},
-  \texttt{dayofweek}, \texttt{month} \\
+  price; holidays; shop closures; school holidays; weekday and month \\
 Favorita & ${\sim}174{,}685$ & 30{,}000 & 1{,}684 & daily &
   ${\sim}15$--$25\,\%$, long tail &
-  \texttt{onpromotion}, \texttt{dcoilwtico},
-  \texttt{is\_holiday}, \texttt{transactions},
-  \texttt{dayofweek}, \texttt{month} \\
+  promotions; oil; holidays; transactions; weekday and month \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 Three notes on dataset preparation:
@@ -102,8 +95,9 @@ All jobs run on Azure ML compute cluster \texttt{cc-forecast-batch}
 sweeps (\S\ref{sec:fm}) run on consumer hardware (Apple M-series
 MPS); setup details are in \S\ref{sec:fm_scope}.
 
-Experiment orchestration uses Azure ML pipelines defined in
-\texttt{benchmark/code/pipelines/\{m5,rohlik,favorita\}\_consolidated.yaml}.
+Experiment orchestration uses Azure ML pipelines under
+\path{benchmark/code/pipelines/}, including the M5, Rohlik, and Favorita
+consolidated pipeline definitions.
 Every run logs metrics, parameters, runtime, and per-series CSVs
 via MLflow to the workspace tracking server.  Cost and CO$_2$
 estimates are computed inside the job using Azure's published
@@ -111,8 +105,9 @@ per-second pricing for \texttt{Standard\_E4ds\_v4} in
 \texttt{swedencentral} (\$0.38/hr at time of writing) and the
 region's marginal CO$_2$ intensity (0.041\,kgCO$_2$eq/kWh,
 swedencentral 2024 baseline; Nowtricity/Ember).  The per-job runtime, cost, and
-CO$_2$ columns in Tables~\ref{tab:t53}--\ref{tab:t55} are
-computed this way and are therefore comparable across datasets.
+CO$_2$ columns in Tables~\ref{tab:t53}--\ref{tab:t55} are descriptive
+accounting fields computed with this formula; they still require a single
+reconciled ledger before supporting stronger cost-efficiency claims.
 
 \subsubsection{Evaluation Protocol}\label{sec:evalprotocol}
 
@@ -198,10 +193,9 @@ covariate set:
   retail weekly cycles.
 
 \item \textbf{LightGBM recursive} --- one global Tweedie model per
-  dataset, fit with \texttt{variance\_power = 1.1}, 300 boosting
-  rounds, \texttt{num\_leaves = 63}, minimum child samples $= 20$,
-  learning rate 0.05, \texttt{feature\_fraction = 0.8},
-  \texttt{bagging\_fraction = 0.8}.  The model uses lags
+  dataset, fit with 300 boosting rounds, 63 leaves, minimum child
+  samples $= 20$, learning rate 0.05, and 0.8 feature/bagging
+  fractions.  The Tweedie variance power is 1.1.  The model uses lags
   $\{1, 7, 14\}$, rolling means $\{7, 14\}$, and the
   dataset-specific covariates listed in Table~\ref{tab:t51}.  At
   evaluation time, the model is applied recursively: predictions
