@@ -142,11 +142,11 @@ provenance.
 
 Source~A has two structural gaps: (1)~no FM paper reports per-series
 \WAPE{} on M5, Favorita, or Rohlik under a rolling-origin protocol
-matching \S5.1.3 --- the FM literature evaluates on benchmark suites
+matching \S\ref{sec:evalprotocol} --- the FM literature evaluates on benchmark suites
 (GIFT-Eval, fev-bench), not on individual retail datasets.
 (2)~No paper reports both FM and ML\_TREE on the same retail dataset
 under matched conditions with a shared \texttt{paper\_id}, so
-within-paper pairing (the original \S6.1 Pass~1 design) is
+within-paper pairing (the original within-paper design) is
 structurally empty on Source~A.
 
 Source~B fills these gaps with 72 rows from two hardware backends:
@@ -258,7 +258,7 @@ For legacy Source~B pairs, the same proxy is computed with the recorded
 variance for a paired log-ratio: it does not capture metric dispersion,
 shared baselines, covariance between FM and baseline errors, or
 within-series autocorrelation.  This is flagged as a limitation in
-\S8.4 and is why this paper does not present the weighted Source~A model as a
+\S\ref{subsec:limitations} and is why this paper does not present the weighted Source~A model as a
 confirmatory meta-analysis.
 
 \noindent\textbf{Small-sample and cluster-robust diagnostics.}

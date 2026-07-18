@@ -11,7 +11,7 @@
 \subsection{Experimental Setup}\label{sec:setup}\label{sec:experimental-setup}
 % -----------------------------------------------------------------
 
-All gap-filling experiments described in \S5 follow a single
+All gap-filling experiments described in \S\ref{sec:experiments} follow a single
 experimental protocol, parameterized per dataset.  This section
 defines the protocol once.  Dataset-specific choices (covariate
 sets, eval-window lengths, series-count caps) are noted inline in
@@ -33,7 +33,7 @@ time tensor.
 \caption{Datasets used in the gap-filling experiments.
 \texttt{Zero-day fraction} is the fraction of series-day
 observations with $y = 0$ in the training portion, a core
-moderator variable in \S6.}
+moderator variable in \S\ref{subsec:moderator-outcomes}.}
 \label{tab:t51}
 \small
 \begin{tabular}{lrrrllp{5.2cm}}
@@ -82,7 +82,7 @@ Three notes on dataset preparation:
   and does not fit the 32\,GB E4DS\_V4 compute used for Phases
   A--D.  The selection rule biases Favorita \LGBM{} evaluation
   toward higher-velocity series; this is flagged as a limitation
-  in \S\ref{sec:threats} and \S7, and the full-series evaluation
+  in \S\ref{sec:threats} and \S\ref{sec:framework}, and the full-series evaluation
   is left for future work on larger hardware.
 \end{itemize}
 
@@ -118,7 +118,7 @@ computed this way and are therefore comparable across datasets.
 
 For each dataset we use \textbf{rolling-origin non-overlapping
 evaluation with a held-out tail window}, which is the protocol
-most commonly used in the FM papers we screened (\S4) and which
+most commonly used in the FM papers we screened (\S\ref{sec:prisma-results}) and which
 gives a clean, reviewer-auditable split.  Specifically:
 
 \begin{itemize}
@@ -510,7 +510,7 @@ MPS (\S\ref{sec:fm_local}--\S\ref{sec:fm_results}).
 \subsubsection{Scope and Two-Source Strategy}\label{sec:fm_scope}
 
 FM rows come from two sources.  \textbf{Source~A} (primary) draws
-on the PRISMA extraction (\S4): 9~FM papers plus fev-bench (B02) and
+on the PRISMA extraction (\S\ref{sec:prisma-results}): 9~FM papers plus fev-bench (B02) and
 GIFT-Eval (B01) populate the FM grid entirely from published numbers.
 \textbf{Source~B} (secondary) adds local consumer-box sensitivity runs on
 a MacBook (M-series, 16\,GB, MPS/CPU backend).  The legacy Source~B sweep
@@ -692,7 +692,7 @@ it does not create missing prediction-level covariance for Source~A
 benchmark-paper rows.
 
 \textbf{TiRex throughput note.}  The original series-by-series TiRex path
-was too slow for the 100-series repair panel.  Version~1.7 uses TiRex's
+was too slow for the 100-series repair panel.  The repaired implementation uses TiRex's
 2D context interface to batch all series within a forecast origin and runs
 the MacBook path on CPU, which completed the M5/Rohlik/Favorita
 100-series panel at $h\in\{7,14,28\}$.  This repairs the TiRex matched-panel

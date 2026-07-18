@@ -4,8 +4,9 @@
 
 This section reports the outcome of the PRISMA search and describes
 the 800+ row extraction (including per-task re-extraction from
-fev-bench and GIFT-Eval) before the gap-filling experiments (\S5)
-and cross-benchmark reanalysis (\S6) operate on it.
+fev-bench and GIFT-Eval) before the gap-filling experiments
+(\S\ref{sec:experiments}) and cross-benchmark reanalysis
+(\S\ref{sec:metaanalysis}) operate on it.
 
 \subsection{PRISMA flow}
 \label{subsec:prisma-flow}
@@ -60,7 +61,8 @@ The Source~A extraction and Source~B experiment blocks break down as follows:
     paper, 8 rows.  These are retained for provenance but the
     model-level reanalysis uses the expanded B02 per-task rows.
   \item \textbf{OWN\_* (own experiments):} 7 experiment blocks,
-    72 rows.  Five FM models (\S5.4), LightGBM baselines (\S5.2--5.3),
+    72 rows.  Five FM models (\S\ref{sec:fm}), LightGBM baselines
+    (\S\ref{sec:results}--\S\ref{sec:baseline}),
     and Seasonal Naive across three datasets and three horizons.
 \end{itemize}
 
@@ -130,7 +132,7 @@ win rates of 75--84\% against statistical baselines on GIFT-Eval,
 and normalised SQL scores of 20--35 on fev-bench.  The per-task
 extraction enables model-level FM-vs-baseline pairing within each
 (task, metric) cell --- the structural basis of the $k = 498$ primary
-reanalysis (\S6).
+reanalysis (\S\ref{sec:metaanalysis}).
 
 \noindent\textbf{Gradient-boosted trees (ML\_TREE).}
 The 125 ML\_TREE rows split between M5 competition entries (C01,
@@ -151,7 +153,8 @@ from the M5 competition.  On Favorita and Rohlik, both FM and
 ML\_TREE beat Seasonal Naive comfortably (by 8--15~pp \WAPE{}); on
 M5, Seasonal Naive at 1.31--1.33 \WAPE{} actually beats
 lightgbm\_cov (1.62--1.94) at longer horizons --- a striking failure
-of the tree baseline documented in \S5.3 and \S5.4.5.
+of the tree baseline documented in \S\ref{sec:baseline} and
+\S\ref{sec:fm_results}.
 
 \noindent\textbf{Deep learning.}
 The 13 NN rows include M5 competition entries (DeepAR at \WRMSSE{}
