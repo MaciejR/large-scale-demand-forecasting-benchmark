@@ -682,7 +682,7 @@ write_risk_of_bias_assessment <- function(study_df, csv_path, tex_path) {
   tex_lines <- c(
     "\\begin{table}[htbp]",
     "\\centering",
-    "\\caption{Study-level risk-of-bias assessment summary.  The full domain-level assessment is generated as a replication artifact.}",
+    "\\caption{Risk/provenance assessment summary for analysis-contributing sources.  This is not a duplicate-screened risk-of-bias assessment for all PRISMA-included studies.}",
     "\\label{tab:risk-of-bias-summary}",
     "\\small",
     "\\begin{tabular}{llr}",
