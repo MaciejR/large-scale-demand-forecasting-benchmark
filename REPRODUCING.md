@@ -343,7 +343,9 @@ tools/build_v112_release.sh
 The script writes `COMMIT.txt`, copies the checked-in manuscript PDF, creates
 `CHECKSUMS.txt`, zips the package, validates checksums and zip integrity, and
 fails if excluded private or heavyweight artifacts are present. It also runs
-`tools/audit_manuscript_v112.sh` before packaging.
+`tools/audit_manuscript_v112.sh` before packaging. By default it refuses to
+package a dirty working tree so the archived source state matches
+`COMMIT.txt`. For local debugging only, set `ALLOW_DIRTY_RELEASE=1`.
 
 The manuscript audit can be run independently:
 

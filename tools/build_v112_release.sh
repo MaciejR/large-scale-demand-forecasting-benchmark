@@ -8,6 +8,16 @@ release_dir="release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair"
 zip_path="${release_dir}.zip"
 pdf_name="demand-forecasting-timesfm-fev-bench-wape-covariance-repair-v1.12.pdf"
 
+if [[ "${ALLOW_DIRTY_RELEASE:-0}" != "1" ]]; then
+  dirty_status="$(git status --porcelain --untracked-files=all)"
+  if [[ -n "$dirty_status" ]]; then
+    echo "Refusing to build a release from a dirty working tree:" >&2
+    echo "$dirty_status" >&2
+    echo "Commit or remove these changes, or set ALLOW_DIRTY_RELEASE=1 for local debugging only." >&2
+    exit 1
+  fi
+fi
+
 rm -rf "$release_dir" "$zip_path"
 mkdir -p "$release_dir/manuscript" "$release_dir/replication"
 
