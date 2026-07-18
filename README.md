@@ -95,8 +95,9 @@ instructions.
   [`analysis/figures/table_6_1_model_level_deltas.csv`](analysis/figures/table_6_1_model_level_deltas.csv)
 - Metric-specific summary:
   [`analysis/figures/table_6_1_metric_specific.csv`](analysis/figures/table_6_1_metric_specific.csv)
-- Study characteristics:
+- Study characteristics and risk-of-bias assessment:
   [`analysis/study_characteristics.csv`](analysis/study_characteristics.csv)
+  and [`analysis/risk_of_bias_assessment.csv`](analysis/risk_of_bias_assessment.csv)
 - Best-baseline sensitivity deltas:
   [`analysis/figures/table_6_1_model_level_deltas_best_baseline.csv`](analysis/figures/table_6_1_model_level_deltas_best_baseline.csv)
 - Primary meta-regression output:

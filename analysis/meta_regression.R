@@ -608,6 +608,99 @@ write_study_characteristics <- function(rows, out_path) {
     ) %>%
     arrange(suite_id, study_id)
   write_csv(study_df, out_path)
+  invisible(study_df)
+}
+
+write_risk_of_bias_assessment <- function(study_df, csv_path, tex_path) {
+  risk_df <- study_df %>%
+    distinct(study_id, .keep_all = TRUE) %>%
+    mutate(
+      baseline_quality = case_when(
+        suite_id == "SourceB" ~ "limited",
+        suite_id %in% c("fev-bench", "GIFT-Eval") ~ "benchmark-defined",
+        study_id == "makridakis_2022_m5" ~ "competition-grade",
+        TRUE ~ "as reported"
+      ),
+      matched_protocol = case_when(
+        suite_id %in% c("fev-bench", "GIFT-Eval") ~ "within-suite matched",
+        suite_id == "SourceB" ~ "legacy unmatched; repaired panel separate",
+        TRUE ~ "not auditable from aggregate extraction"
+      ),
+      leakage_risk = case_when(
+        suite_id == "GIFT-Eval" ~ "low by benchmark design",
+        suite_id == "fev-bench" ~ "unclear pretraining overlap",
+        suite_id == "SourceB" ~ "train-test controlled; FM pretraining unknown",
+        TRUE ~ "unclear"
+      ),
+      selective_reporting_risk = case_when(
+        suite_id %in% c("fev-bench", "GIFT-Eval") ~ "lower: suite-level reporting",
+        suite_id == "SourceB" ~ "lower: all local cells retained/audited",
+        TRUE ~ "unclear: aggregate paper extraction"
+      ),
+      raw_predictions_available = case_when(
+        suite_id == "SourceB" ~ "yes for matched-panel repair; no for legacy sweep",
+        TRUE ~ "no"
+      ),
+      code_available = case_when(
+        suite_id == "SourceB" ~ "yes: repository scripts",
+        suite_id %in% c("fev-bench", "GIFT-Eval") ~ "benchmark code/results available",
+        TRUE ~ "varies by paper"
+      ),
+      independence_note = case_when(
+        suite_id %in% c("fev-bench", "GIFT-Eval") ~ "many dependent task/model rows within one suite",
+        suite_id == "SourceB" ~ "single-lab experiment block; not a PRISMA study",
+        TRUE ~ "single aggregate publication/preprint row set"
+      ),
+      overall_risk = case_when(
+        suite_id == "GIFT-Eval" ~ "moderate",
+        suite_id == "fev-bench" ~ "moderate",
+        suite_id == "SourceB" ~ "high legacy / moderate repair",
+        TRUE ~ "high/unclear"
+      ),
+      assessment_rationale = case_when(
+        suite_id %in% c("fev-bench", "GIFT-Eval") ~
+          "Strong benchmark provenance, but many rows share suite protocols and baseline/actuals.",
+        suite_id == "SourceB" ~
+          "Local reruns expose predictions for the repaired panel, but legacy sweep remains descriptive.",
+        TRUE ~
+          "Aggregate extraction lacks prediction-level errors, covariance, and full protocol audit."
+      )
+    ) %>%
+    select(
+      study_id, suite_id, source, baseline_quality, matched_protocol,
+      leakage_risk, selective_reporting_risk, raw_predictions_available,
+      code_available, independence_note, overall_risk, assessment_rationale
+    ) %>%
+    arrange(suite_id, study_id)
+
+  write_csv(risk_df, csv_path)
+
+  summary_df <- risk_df %>%
+    count(suite_id, overall_risk, name = "n_sources") %>%
+    arrange(suite_id, overall_risk)
+
+  tex_lines <- c(
+    "\\begin{table}[htbp]",
+    "\\centering",
+    "\\caption{Study-level risk-of-bias assessment summary.  The full domain-level assessment is generated as a replication artifact.}",
+    "\\label{tab:risk-of-bias-summary}",
+    "\\small",
+    "\\begin{tabular}{llr}",
+    "\\toprule",
+    "Suite & Overall risk category & Sources \\\\",
+    "\\midrule",
+    sprintf(
+      "%s & %s & %d \\\\",
+      summary_df$suite_id,
+      summary_df$overall_risk,
+      summary_df$n_sources
+    ),
+    "\\bottomrule",
+    "\\end{tabular}",
+    "\\end{table}"
+  )
+  write_trimmed_lines(tex_lines, tex_path)
+  invisible(risk_df)
 }
 
 write_descriptive_summaries <- function(delta_df, prefix) {
@@ -828,7 +921,12 @@ main <- function() {
                   nrow(rows), n_distinct(rows$paper_id),
                   n_distinct(rows$study_id), n_distinct(rows$task_id),
                   n_distinct(rows$dataset_norm)))
-  write_study_characteristics(rows, "analysis/study_characteristics.csv")
+  study_df <- write_study_characteristics(rows, "analysis/study_characteristics.csv")
+  write_risk_of_bias_assessment(
+    study_df,
+    "analysis/risk_of_bias_assessment.csv",
+    file.path(FIG_DIR, "risk_of_bias_summary.tex")
+  )
 
   # ---- Load bootstrap SEs for Source B (if available) ----
   bse_df <- load_bootstrap_se()

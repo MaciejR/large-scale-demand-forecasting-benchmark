@@ -40,6 +40,7 @@ Key outputs:
 - `analysis/figures/table_6_1_metric_specific.csv`
 - `analysis/figures/table_6_1_cluster_counts.csv`
 - `analysis/study_characteristics.csv`
+- `analysis/risk_of_bias_assessment.csv`
 - `analysis/figures/sensitivity_*.txt`
 - `analysis/figures/figure_6_*.pdf`
 

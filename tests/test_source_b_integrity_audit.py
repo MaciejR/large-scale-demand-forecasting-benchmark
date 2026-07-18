@@ -61,3 +61,24 @@ def test_current_matched_panel_has_complete_nine_model_coverage():
     coverage = summary.groupby(["dataset", "horizon"])["model_name"].agg(set)
     assert len(coverage) == 9
     assert all(models == expected_models for models in coverage)
+
+
+def test_risk_of_bias_assessment_is_study_level():
+    risk = pd.read_csv("analysis/risk_of_bias_assessment.csv")
+    studies = pd.read_csv("analysis/study_characteristics.csv")
+    required_columns = {
+        "study_id",
+        "baseline_quality",
+        "matched_protocol",
+        "leakage_risk",
+        "selective_reporting_risk",
+        "raw_predictions_available",
+        "code_available",
+        "independence_note",
+        "overall_risk",
+    }
+
+    assert required_columns.issubset(risk.columns)
+    assert risk["study_id"].is_unique
+    assert set(risk["study_id"]) == set(studies["study_id"])
+    assert not risk[list(required_columns)].isna().any().any()
