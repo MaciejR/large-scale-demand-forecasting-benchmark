@@ -16,11 +16,22 @@ data/raw/
 *Umowa*.pdf
 .claude/
 *.log
+logs/
 mlruns/
 outputs/
-tabpfn-v2-regressor-*.ckpt
+*.ckpt
+*.pt
+*.pth
+*.safetensors
 benchmark/results/_local_only_export_check.csv
 benchmark/results/fev_bench_official/
+benchmark/results/source_b_paired_panel/smoke_*/
+benchmark/results/source_b_paired_panel/source_b_repair_baselines_m5_rohlik_100/
+benchmark/results/source_b_paired_panel/source_b_repair_fm_timesfm25_m5_rohlik_100*/
+benchmark/results/source_b_paired_panel/source_b_repair_fm_tirex_m5_rohlik_100/
+benchmark/results/source_b_paired_panel/source_b_v1_11_timesfm25_m5_rohlik_100_batched/
+release/zenodo-v*/
+release/zenodo-v*.zip
 
 # LaTeX build products. Keep paper/latex/main.pdf tracked as the public draft.
 paper/latex/*.aux
