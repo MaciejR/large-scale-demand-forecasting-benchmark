@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_ROOT"
+
+release_dir="release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair"
+zip_path="${release_dir}.zip"
+pdf_name="demand-forecasting-timesfm-fev-bench-wape-covariance-repair-v1.12.pdf"
+
+rm -rf "$release_dir" "$zip_path"
+mkdir -p "$release_dir/manuscript" "$release_dir/replication"
+
+git rev-parse HEAD > "$release_dir/COMMIT.txt"
+cp paper/latex/main.pdf "$release_dir/manuscript/$pdf_name"
+
+rsync -a ./ "$release_dir/replication/" \
+  --exclude '.git/' \
+  --exclude 'release/' \
+  --exclude 'data/raw/' \
+  --exclude 'mlruns/' \
+  --exclude 'logs/' \
+  --exclude '.env' \
+  --exclude '.DS_Store' \
+  --exclude '__pycache__/' \
+  --exclude '.pytest_cache/' \
+  --exclude '*.pyc' \
+  --exclude '*.log' \
+  --exclude '*.ckpt' \
+  --exclude '*.pt' \
+  --exclude '*.pth' \
+  --exclude '*.safetensors' \
+  --exclude 'benchmark/results/fev_bench_official/' \
+  --exclude '*/source_b_v1_11_timesfm25_m5_rohlik_100_batched/' \
+  --exclude 'Umowa*.pdf'
+
+cp "$release_dir/replication/docs/RELEASE_V1.12.md" "$release_dir/README.md"
+
+(cd "$release_dir" && \
+  find . -type f ! -name 'CHECKSUMS.txt' -print0 | sort -z | \
+  xargs -0 shasum -a 256 > CHECKSUMS.txt)
+
+(cd release && zip -qr "$(basename "$zip_path")" "$(basename "$release_dir")")
+
+head_sha="$(git rev-parse HEAD)"
+package_sha="$(cat "$release_dir/COMMIT.txt")"
+if [[ "$head_sha" != "$package_sha" ]]; then
+  echo "COMMIT.txt mismatch: package=$package_sha head=$head_sha" >&2
+  exit 1
+fi
+
+(cd "$release_dir" && shasum -a 256 -c CHECKSUMS.txt >/tmp/v112_release_checksums.log)
+unzip -t "$zip_path" >/tmp/v112_release_zip.log
+
+privacy_hits="$(
+  find "$release_dir" \( \
+    -path '*data/raw*' \
+    -o -path '*mlruns*' \
+    -o -path '*logs*' \
+    -o -path '*/.pytest_cache*' \
+    -o -name '__pycache__' \
+    -o -name 'Umowa*.pdf' \
+    -o -name '.env' \
+    -o -name '.DS_Store' \
+    -o -name '*.pyc' \
+    -o -name '*.log' \
+    -o -name '*.ckpt' \
+    -o -name '*.pt' \
+    -o -name '*.pth' \
+    -o -name '*.safetensors' \
+    -o -path '*benchmark/results/fev_bench_official*' \
+    -o -path '*source_b_v1_11_timesfm25_m5_rohlik_100_batched*' \
+  \) -print | sort
+)"
+
+if [[ -n "$privacy_hits" ]]; then
+  echo "Release package contains excluded files:" >&2
+  echo "$privacy_hits" >&2
+  exit 1
+fi
+
+du -sh "$zip_path" "$release_dir"
+echo "Built and audited $zip_path at $head_sha"

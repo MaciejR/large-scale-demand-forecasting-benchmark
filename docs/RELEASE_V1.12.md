@@ -86,8 +86,9 @@ The Zenodo-ready archive contains:
 - `CHECKSUMS.txt` with SHA-256 hashes for packaged files
 
 The package intentionally excludes `.git/`, `release/`, `data/raw/`, `mlruns/`,
-`logs/`, root-level `*.log` files, `.DS_Store`, local `.env` files, model
-checkpoint formats, private `Umowa*.pdf` files, full
+`logs/`, Python cache directories, `.pytest_cache/`, root-level `*.log` files,
+`.DS_Store`, local `.env` files, model checkpoint formats, private
+`Umowa*.pdf` files, full
 `benchmark/results/fev_bench_official/` prediction parquet trees, and the
 untracked local `source_b_v1_11_timesfm25_m5_rohlik_100_batched` prediction
 tree.
