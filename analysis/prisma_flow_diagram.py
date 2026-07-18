@@ -9,6 +9,7 @@ for reporting systematic reviews. BMJ 2021;372:n71.
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import subprocess
 
 # PRISMA flow numbers aligned with the repaired manuscript.
 # Identification
@@ -46,6 +47,23 @@ EXCL_REASONS = [
     "No FM evaluation (n=12)",
     "Duplicate/non-comparable results (n=12)",
 ]
+
+
+def normalize_pdf_dates(path):
+    """Remove wall-clock metadata written by matplotlib's PDF backend."""
+    subprocess.run(
+        [
+            "perl",
+            "-0777",
+            "-pi",
+            "-e",
+            "s/D:[0-9]{14}/D:20260718000000/g",
+            path,
+        ],
+        check=False,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
 
 
 def draw_box(ax, x, y, w, h, text, color="#E8F4FD", border="#2196F3", fontsize=9,
@@ -217,6 +235,7 @@ def main():
 
     plt.tight_layout()
     fig.savefig("analysis/figures/prisma_flow.pdf", bbox_inches="tight", dpi=300)
+    normalize_pdf_dates("analysis/figures/prisma_flow.pdf")
     fig.savefig("analysis/figures/prisma_flow.png", bbox_inches="tight", dpi=300)
     print("Saved: analysis/figures/prisma_flow.pdf")
     print("Saved: analysis/figures/prisma_flow.png")

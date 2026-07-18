@@ -22,6 +22,16 @@ rm -rf "$release_dir" "$zip_path"
 mkdir -p "$release_dir/manuscript" "$release_dir/replication"
 
 python3 tools/audit_citations.py
+python3 tools/audit_prisma_counts.py
+python3 analysis/prisma_flow_diagram.py >/tmp/v112_prisma_flow.log
+prisma_status="$(git status --porcelain -- analysis/figures/prisma_flow.pdf analysis/figures/prisma_flow.png)"
+if [[ -n "$prisma_status" ]]; then
+  echo "PRISMA flow diagram changed during release build:" >&2
+  echo "$prisma_status" >&2
+  echo "Review and commit regenerated PRISMA figures before packaging." >&2
+  exit 1
+fi
+
 tools/audit_manuscript_v112.sh
 Rscript analysis/meta_regression.R >/tmp/v112_meta_regression.log
 meta_status="$(
