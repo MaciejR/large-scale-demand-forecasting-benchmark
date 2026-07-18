@@ -46,8 +46,8 @@ TASKS = [
 MODELS = [
     ("TiRex", "TiRex", "foundation", "Yes", "No", "~35M params; xLSTM; zero-shot"),
     ("TimesFM-2.5", "TimesFM-2.5", "foundation", "Yes", "No", "200M params; decoder-only; zero-shot"),
-    ("Chronos-2", "Chronos-2", "foundation", "Yes", "No", "120M params; encoder-only T5; zero-shot; natively supports covariates but evaluated univariate in fev-bench"),
-    ("Chronos-Bolt", "Chronos-Bolt-Base", "foundation", "Yes", "No", "~46M params; T5 encoder-only; zero-shot"),
+    ("Chronos-2", "Chronos-2", "foundation", "Yes", "No", "120M params; Chronos-2 checkpoint; zero-shot; covariate support not used in extracted rows"),
+    ("Chronos-Bolt", "Chronos-Bolt-Base", "foundation", "Yes", "No", "~46M params; Chronos-Bolt-Base checkpoint; zero-shot"),
     ("Moirai-2.0", "Moirai-2.0-Small", "foundation", "Yes", "No", "11M params; decoder-only quantile model; zero-shot"),
     ("Toto-1.0", "Toto-1.0", "foundation", "Yes", "No", "foundation model; open base; zero-shot"),
     ("TabPFN-TS", "TabPFN-TS", "foundation", "Yes", "No", "~12M params; tabular PFN + temporal; zero-shot; ONLY model using covariates in fev-bench"),
@@ -364,7 +364,7 @@ def main():
                     and not r.get("paper_id", "").startswith("# ")]
 
     with open(SCHEMA_PATH, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=HEADER)
+        writer = csv.DictWriter(f, fieldnames=HEADER, lineterminator="\n")
         writer.writeheader()
         for row in existing:
             writer.writerow(row)

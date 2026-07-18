@@ -90,7 +90,7 @@ records, 70 full texts assessed, and 32 Source A external studies included.
 | ID | Title | Authors (first) | Year | arXiv / DOI | Venue | Citations | Key Models | Datasets | Status |
 |----|-------|-----------------|------|-------------|-------|-----------|-----------|----------|--------|
 | A01 | Chronos: Learning the Language of Time Series | Ansari et al. | 2024 | 2403.07815 | TMLR | 622 | Chronos (T5-based, 20M-710M) | 42 datasets | INCLUDE |
-| A02 | Chronos-2: From Univariate to Universal Forecasting | Ansari et al. | 2025 | 2510.15821 | arXiv | - | Chronos-2 (120M, encoder-only) | GIFT-Eval, fev-bench | INCLUDE |
+| A02 | Chronos-2: From Univariate to Universal Forecasting | Ansari et al. | 2025 | 2510.15821 | arXiv | - | Chronos-2 (120M checkpoint) | GIFT-Eval, fev-bench | INCLUDE |
 | A03 | TimesFM: A decoder-only foundation model for time-series forecasting | Das et al. | 2024 | 2310.10688 | ICML 2024 | - | TimesFM (200M) | Multiple | INCLUDE |
 | A04 | TimesFM 2.5 | Das et al. | 2025 | - | Google Research | - | TimesFM-2.5 (200M, 16K ctx) | GIFT-Eval (#1 zero-shot) | INCLUDE |
 | A05 | Unified Training of Universal Time Series Forecasting Transformers (Moirai) | Woo et al. | 2024 | 2402.02592 | ICML 2024 (Oral) | - | Moirai-1.0 | LOTSA (27B obs) | INCLUDE |
