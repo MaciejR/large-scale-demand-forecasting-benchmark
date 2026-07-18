@@ -44,7 +44,17 @@ full fev-bench prediction parquet trees are intentionally excluded.
 
 ## How to Cite
 
-Please cite the Zenodo technical-report record:
+For the current repair package, cite the repository version or the
+corresponding Zenodo archive once minted:
+
+```text
+Rubczynski, M. (2026). When Do Foundation Models Pay Off for Retail Demand
+Forecasting? A PRISMA-Informed Cross-Benchmark Reanalysis (v1.12).
+GitHub. Current v1.12 repair commit.
+```
+
+The historical v1.0 technical-report record remains citable under its original
+title:
 
 ```text
 Rubczyński, M. (2026). When Do Foundation Models Pay Off for Retail Demand
@@ -55,7 +65,16 @@ Zenodo. https://doi.org/10.5281/zenodo.21338004
 BibTeX:
 
 ```bibtex
-@misc{rubczynski2026foundationmodelsretail,
+@misc{rubczynski2026foundationmodelsretail_v112,
+  author       = {Rubczynski, Maciej},
+  title        = {When Do Foundation Models Pay Off for Retail Demand Forecasting?
+                  A PRISMA-Informed Cross-Benchmark Reanalysis},
+  year         = {2026},
+  version      = {v1.12},
+  url          = {https://github.com/MaciejR/large-scale-demand-forecasting-benchmark}
+}
+
+@misc{rubczynski2026foundationmodelsretail_v1,
   author       = {Rubczynski, Maciej},
   title        = {When Do Foundation Models Pay Off for Retail Demand Forecasting?
                   A Systematic Review and Cross-Benchmark Meta-Analysis},
