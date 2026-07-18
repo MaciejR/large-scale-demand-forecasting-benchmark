@@ -39,9 +39,12 @@ For a new retail forecasting deployment, we recommend the following order.
     descriptive.
 
   \item \textbf{Compare paired contrasts, not table ranks.}  Report
-    $\log(\text{FM metric}/\text{baseline metric})$ with a paired bootstrap
-    interval.  A point estimate within the noise floor is a tie; choose the
-    simpler or cheaper deployment.
+    the paired log-ratio
+    \[
+      \log(\text{FM metric}/\text{baseline metric})
+    \]
+    with a paired bootstrap interval.  A point estimate within the noise
+    floor is a tie; choose the simpler or cheaper deployment.
 \end{enumerate}
 
 \subsection{Interpreting the main moderators}
