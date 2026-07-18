@@ -124,17 +124,17 @@ Three findings motivate the sections that follow:
     \citet{shchur2025fevbench}'s finding that architecture may matter
     more than parameter count.
 
-  \item \textbf{The LightGBM protocol gap is conditional on
-    intermittency.} \S\ref{sec:baseline-reliability} shows that the
-    direct-vs-recursive multi-step gap appears to flip sign across the
-    continuous-demand boundary: direct wins on M5 (intermittent) by
-    17--22\,\%, recursive wins on Favorita and Rohlik (smooth) by
-    3--10\,\%.  A horizon-scaled Favorita check shows that the direct
-    result is budget-confounded, so this remains a protocol hypothesis
-    to validate rather than a hard threshold rule.  This conditional
-    pattern means that no
-    retail-benchmark protocol recommendation that ignores demand
-    distribution and compute budget should be treated as general.
+  \item \textbf{The LightGBM protocol gap varies across panels,
+    metrics, and budgets.} \S\ref{sec:baseline-reliability} shows that
+    the direct-vs-recursive multi-step gap changes with dataset,
+    workload, metric aggregation, and compute budget.  Legacy
+    per-series \WAPE{} makes M5 look strongly direct-favourable, while
+    the matched aggregate-\WAPE{} panel makes M5 close at short horizons
+    and mixed on Favorita.  Intermittency is a plausible stratification
+    variable, but the evidence supports a protocol hypothesis to
+    validate, not a hard threshold rule.  No retail-benchmark protocol
+    recommendation that ignores demand distribution, metric choice, and
+    compute budget should be treated as general.
 \end{enumerate}
 
 \subsection{Contributions}
