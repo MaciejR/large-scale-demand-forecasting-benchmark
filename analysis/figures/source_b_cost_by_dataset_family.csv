@@ -1,10 +1,10 @@
-dataset,model_family,rows,runtime_sec,cost_usd,co2_kg,min_n_series,max_n_series
-Favorita,foundation,15,182736.7525997162,0.3045612543328596,0.9898240765817955,98.0,151757.0
-Favorita,ml_tree,6,7204.760317564011,0.7605024779650897,0.0019512892526733555,29753.0,29753.0
-Favorita,statistical,3,152.86181902885437,0.0161354142308234,4.14000759869814e-05,15325.0,16034.0
-M5,foundation,15,232858.7707335949,0.3880979512226575,1.2613183414736384,500.0,30490.0
-M5,ml_tree,6,7732.153393507004,0.8161717470924057,0.0020941248774079334,30462.0,30480.0
-M5,statistical,3,553.4146056175232,0.0584159861485163,0.00014988312235474587,30462.0,30480.0
-Rohlik v2,foundation,15,437438.4013617039,0.7290640022695059,2.3694580073758953,4549.0,4651.0
-Rohlik v2,ml_tree,6,1020.2886095046997,0.1076971310032735,0.00027632816507409583,4713.0,4713.0
-Rohlik v2,statistical,3,21.213388204574585,0.0022391909771494,5.7452926387389495e-06,1671.0,1710.0
+dataset,model_family,rows,runtime_sec,cost_usd,co2_kg,min_n_series,max_n_series,cost_basis_note,audit_status
+Favorita,foundation,15,182736.7525997162,0.3045612543328596,0.9898240765817955,98.0,151757.0,"descriptive legacy Source B accounting; mixes MacBook marginal electricity, Azure job-level charges, and unequal workloads",not_reconciled_single_ledger
+Favorita,ml_tree,6,7204.760317564011,0.7605024779650897,0.0019512892526733555,29753.0,29753.0,"descriptive legacy Source B accounting; mixes MacBook marginal electricity, Azure job-level charges, and unequal workloads",not_reconciled_single_ledger
+Favorita,statistical,3,152.86181902885437,0.0161354142308234,4.14000759869814e-05,15325.0,16034.0,"descriptive legacy Source B accounting; mixes MacBook marginal electricity, Azure job-level charges, and unequal workloads",not_reconciled_single_ledger
+M5,foundation,15,232858.7707335949,0.3880979512226575,1.2613183414736384,500.0,30490.0,"descriptive legacy Source B accounting; mixes MacBook marginal electricity, Azure job-level charges, and unequal workloads",not_reconciled_single_ledger
+M5,ml_tree,6,7732.153393507004,0.8161717470924057,0.0020941248774079334,30462.0,30480.0,"descriptive legacy Source B accounting; mixes MacBook marginal electricity, Azure job-level charges, and unequal workloads",not_reconciled_single_ledger
+M5,statistical,3,553.4146056175232,0.0584159861485163,0.00014988312235474587,30462.0,30480.0,"descriptive legacy Source B accounting; mixes MacBook marginal electricity, Azure job-level charges, and unequal workloads",not_reconciled_single_ledger
+Rohlik v2,foundation,15,437438.4013617039,0.7290640022695059,2.3694580073758953,4549.0,4651.0,"descriptive legacy Source B accounting; mixes MacBook marginal electricity, Azure job-level charges, and unequal workloads",not_reconciled_single_ledger
+Rohlik v2,ml_tree,6,1020.2886095046997,0.1076971310032735,0.00027632816507409583,4713.0,4713.0,"descriptive legacy Source B accounting; mixes MacBook marginal electricity, Azure job-level charges, and unequal workloads",not_reconciled_single_ledger
+Rohlik v2,statistical,3,21.213388204574585,0.0022391909771494,5.7452926387389495e-06,1671.0,1710.0,"descriptive legacy Source B accounting; mixes MacBook marginal electricity, Azure job-level charges, and unequal workloads",not_reconciled_single_ledger

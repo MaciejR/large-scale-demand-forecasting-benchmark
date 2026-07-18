@@ -39,6 +39,43 @@ def test_cost_consistency_latex_is_generated_from_rows(tmp_path, monkeypatch):
     assert "mismatch requires single ledger" in tex
 
 
+def test_cost_audit_outputs_are_explicitly_descriptive(tmp_path, monkeypatch):
+    monkeypatch.setattr(audit, "FIG_DIR", tmp_path)
+    local = pd.DataFrame(
+        [
+            {
+                "dataset": "M5",
+                "model_family": "foundation",
+                "model_name": "chronos2",
+                "runtime_sec": 10.0,
+                "cost_usd": 0.02,
+                "co2_kg": 0.001,
+                "n_series": 100,
+            },
+            {
+                "dataset": "M5",
+                "model_family": "ml_tree",
+                "model_name": "lightgbm_cov",
+                "runtime_sec": 20.0,
+                "cost_usd": 0.03,
+                "co2_kg": 0.002,
+                "n_series": 1000,
+            },
+        ]
+    )
+
+    audit.write_cost_audit(local)
+
+    total = pd.read_csv(tmp_path / "source_b_cost_total.csv")
+    by_dataset = pd.read_csv(tmp_path / "source_b_cost_by_dataset_family.csv")
+
+    for frame in (total, by_dataset):
+        assert "cost_basis_note" in frame.columns
+        assert "audit_status" in frame.columns
+        assert set(frame["audit_status"]) == {"not_reconciled_single_ledger"}
+        assert frame["cost_basis_note"].str.contains("descriptive legacy Source B").all()
+
+
 def test_current_matched_panel_has_complete_nine_model_coverage():
     path = Path("analysis/figures/source_b_paired_panel_cell_summary.csv")
     summary = pd.read_csv(path)

@@ -20,6 +20,11 @@ FIG_DIR = ROOT / "analysis" / "figures"
 LOCAL_PATH = ROOT / "benchmark" / "results" / "local_fm_sweep.csv"
 BOOTSTRAP_PATH = FIG_DIR / "table_bootstrap_se.csv"
 DIRECT_SCALED_PATH = ROOT / "benchmark" / "results" / "direct_scaled_favorita.csv"
+COST_BASIS_NOTE = (
+    "descriptive legacy Source B accounting; mixes MacBook marginal electricity, "
+    "Azure job-level charges, and unequal workloads"
+)
+COST_AUDIT_STATUS = "not_reconciled_single_ledger"
 
 
 EXPECTED_MODELS = {
@@ -170,6 +175,8 @@ def write_cost_audit(local: pd.DataFrame) -> None:
         )
         .reset_index()
     )
+    by_dataset["cost_basis_note"] = COST_BASIS_NOTE
+    by_dataset["audit_status"] = COST_AUDIT_STATUS
     by_dataset.to_csv(FIG_DIR / "source_b_cost_by_dataset_family.csv", index=False)
 
     total = pd.DataFrame(
@@ -180,6 +187,8 @@ def write_cost_audit(local: pd.DataFrame) -> None:
                 "runtime_hours": local["runtime_sec"].sum() / 3600,
                 "cost_usd": local["cost_usd"].sum(),
                 "co2_kg": local["co2_kg"].sum(),
+                "cost_basis_note": COST_BASIS_NOTE,
+                "audit_status": COST_AUDIT_STATUS,
             }
         ]
     )

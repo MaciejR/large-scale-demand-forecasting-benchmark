@@ -82,6 +82,10 @@ Recreate it with the commands documented in `REPRODUCING.md`.
   `analysis/figures/source_b_cost_total.csv`
 - Legacy Source B cost by dataset/family:
   `analysis/figures/source_b_cost_by_dataset_family.csv`
+- These legacy cost CSVs include `cost_basis_note` and `audit_status` columns
+  because they mix MacBook marginal electricity, Azure job-level charges, and
+  unequal workloads; they are descriptive accounting artifacts, not reconciled
+  inferential cost results.
 - Baseline cost consistency audit:
   `analysis/figures/source_b_cost_consistency_audit.csv` and
   `analysis/figures/source_b_cost_consistency_audit.tex`

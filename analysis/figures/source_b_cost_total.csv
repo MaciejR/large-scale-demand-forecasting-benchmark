@@ -1,2 +1,2 @@
-rows,runtime_sec,runtime_hours,cost_usd,co2_kg
-72,869718.6168284416,241.5885046745671,3.182885155242281,4.625119196217465
+rows,runtime_sec,runtime_hours,cost_usd,co2_kg,cost_basis_note,audit_status
+72,869718.6168284416,241.5885046745671,3.182885155242281,4.625119196217465,"descriptive legacy Source B accounting; mixes MacBook marginal electricity, Azure job-level charges, and unequal workloads",not_reconciled_single_ledger
