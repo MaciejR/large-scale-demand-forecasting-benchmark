@@ -15,6 +15,7 @@ MODEL_INPUTS = [
     ("Chronos-Bolt-Tiny", "chronos_bolt_tiny", "fev_chronos_bolt_paired_wape"),
     ("Chronos-2", "chronos2", "fev_chronos2_paired_wape"),
     ("TiRex", "tirex", "fev_tirex_paired_wape"),
+    ("TimesFM 2.5", "timesfm25", "fev_timesfm25_paired_wape"),
 ]
 
 

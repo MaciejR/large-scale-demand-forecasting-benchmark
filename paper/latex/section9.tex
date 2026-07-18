@@ -39,11 +39,11 @@ local version of that claim, but it is also model-specific.  On the same
 \WAPE{} than the best local baseline in all nine M5/Rohlik/Favorita
 dataset--horizon cells.  Moirai~2.0-Small is lower in all nine point
 estimates, with bootstrap intervals excluding zero in seven.  Chronos-Bolt-Tiny
-is near parity on M5 and worse on Rohlik and Favorita.  TimesFM~2.5, measured
-on Favorita, is near parity with the best local baseline but is much slower on
-the local CPU path.  Batched TiRex, measured on M5/Rohlik/Favorita, is lower
-in all nine point estimates, with uncertainty crossing zero at M5 $h=28$ and
-Favorita $h=28$.
+is near parity on M5 and worse on Rohlik and Favorita.  TimesFM~2.5 is lower
+than the best local baseline on M5/Rohlik but near parity on Favorita, while
+remaining the slowest local CPU path.  Batched TiRex is lower in all nine
+point estimates, with uncertainty crossing zero at M5 $h=28$ and Favorita
+$h=28$.
 These results are paired local evidence, not a replacement for the broader
 Source~A reanalysis.
 
@@ -62,7 +62,7 @@ hypothesis-generating because the independent source count is small:
     9\,M--200\,M legacy range.  In the matched Source~B panel,
     Chronos-2 is consistently stronger than Chronos-Bolt-Tiny, but
     Moirai~2.0-Small is also competitive and TimesFM~2.5 does not dominate
-    the smaller models on Favorita.  That pattern is too narrow to claim a
+    the smaller models across M5/Rohlik/Favorita.  That pattern is too narrow to claim a
     monotonic scaling law.
   \item \textbf{Horizon:} No stable horizon effect appears.
   \item \textbf{Baseline family:} The FM advantage is larger against
@@ -119,11 +119,10 @@ are validation hypotheses, not universal deployment rules.
 
 \paragraph{Complete the Source~B repair.}
 The current shared-panel repair covers M5/Rohlik/Favorita for Chronos-Bolt,
-Chronos-2, Moirai~2.0-Small, and batched TiRex, plus TimesFM~2.5 on Favorita.
-The remaining repair is to extend TimesFM~2.5 across M5/Rohlik where
-computationally feasible, add GPU throughput measurements and covariate-aware
-FM variants, then extend the paired bootstrap covariance matrix to the full
-local model set.
+Chronos-2, Moirai~2.0-Small, batched TiRex, and TimesFM~2.5.  The remaining
+repair is to add GPU throughput measurements, covariate-aware FM variants,
+larger workloads, and larger model families, then test whether the local
+100-series rankings survive these scaling changes.
 
 \paragraph{Acquire prediction-level benchmark artifacts.}
 The Source~A reanalysis remains descriptive because fev-bench and GIFT-Eval

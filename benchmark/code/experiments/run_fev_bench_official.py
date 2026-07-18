@@ -29,6 +29,7 @@ from data.loaders.fev_bench import RETAIL_TASKS, _TASK_DEFS  # noqa: E402
 
 
 QUANTILE_LEVELS = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+PREDICTION_ARTIFACT_SCHEMA = "v2_quantile_head"
 
 
 def _make_task(task_name: str) -> fev.Task:
@@ -226,6 +227,30 @@ def _flatten_window_predictions(
     return pd.DataFrame(rows), pd.DataFrame(metric_rows)
 
 
+def _window_artifact_paths(output_dir: Path, window_idx: int) -> dict[str, Path]:
+    window_dir = output_dir / f"windows_{PREDICTION_ARTIFACT_SCHEMA}"
+    stem = f"window_{window_idx:03d}"
+    return {
+        "predictions": window_dir / f"{stem}_predictions.json",
+        "long": window_dir / f"{stem}_predictions_long.parquet",
+        "metrics": window_dir / f"{stem}_per_series_metrics.csv",
+    }
+
+
+def _batch_artifact_path(
+    output_dir: Path,
+    window_idx: int,
+    batch_start: int,
+    batch_size: int,
+) -> Path:
+    batch_dir = (
+        output_dir
+        / f"windows_{PREDICTION_ARTIFACT_SCHEMA}"
+        / f"window_{window_idx:03d}_batches_bs{batch_size:04d}"
+    )
+    return batch_dir / f"batch_{batch_start:06d}.json"
+
+
 def run_task(
     *,
     task_name: str,
@@ -234,10 +259,23 @@ def run_task(
     hardware: str,
     fill_missing: str,
     batch_size: int,
+    batch_shard_index: int = 0,
+    batch_shard_count: int = 1,
 ) -> None:
+    if batch_shard_count < 1:
+        raise ValueError("batch_shard_count must be at least 1")
+    if not 0 <= batch_shard_index < batch_shard_count:
+        raise ValueError(
+            "batch_shard_index must be between 0 and batch_shard_count - 1"
+        )
+
     task = _make_task(task_name)
     target = task.target if isinstance(task.target, str) else task.target[0]
     output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / f"windows_{PREDICTION_ARTIFACT_SCHEMA}").mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
     batch_predictor = _load_batch_forecaster(model_name, hardware)
     if model_name == "seasonal_naive":
@@ -250,6 +288,20 @@ def run_task(
     metric_frames = []
     start = time.time()
     for window_idx, window in enumerate(task.iter_windows()):
+        window_paths = _window_artifact_paths(output_dir, window_idx)
+        if all(path.exists() for path in window_paths.values()):
+            with window_paths["predictions"].open() as f:
+                predictions = json.load(f)
+            predictions_per_window.append(Dataset.from_list(predictions))
+            long_frames.append(pd.read_parquet(window_paths["long"]))
+            metric_frames.append(pd.read_csv(window_paths["metrics"]))
+            print(
+                f"{task_name}/{model_name}: window {window_idx + 1}/{task.num_windows}, "
+                f"{len(predictions)} series (checkpoint)",
+                flush=True,
+            )
+            continue
+
         past_df, future_df, _ = fev.convert_input_data(window, adapter="pandas")
         history_by_id = {
             series_id: group[target].to_numpy(dtype=np.float32)
@@ -259,7 +311,31 @@ def run_task(
         series_ids = list(future_df["id"].drop_duplicates())
         if batch_predictor is not None:
             for batch_start in range(0, len(series_ids), batch_size):
+                batch_index = batch_start // batch_size
+                if batch_index % batch_shard_count != batch_shard_index:
+                    continue
                 batch_ids = series_ids[batch_start : batch_start + batch_size]
+                batch_path = _batch_artifact_path(
+                    output_dir,
+                    window_idx,
+                    batch_start,
+                    batch_size,
+                )
+                if batch_path.exists():
+                    with batch_path.open() as f:
+                        batch_payload = json.load(f)
+                    if batch_payload.get("series_ids") != batch_ids:
+                        raise ValueError(
+                            f"Batch checkpoint series mismatch for {batch_path}"
+                        )
+                    predictions.extend(batch_payload["predictions"])
+                    print(
+                        f"{task_name}/{model_name}: window {window_idx + 1}/{task.num_windows}, "
+                        f"batch {batch_start // batch_size + 1} checkpoint",
+                        flush=True,
+                    )
+                    continue
+
                 histories = [
                     _clean_history(history_by_id[series_id], fill_missing)
                     for series_id in batch_ids
@@ -277,7 +353,38 @@ def run_task(
                     for q in QUANTILE_LEVELS:
                         row[str(q)] = quantile_map[q][row_idx].astype(np.float32).tolist()
                     predictions.append(row)
+                batch_predictions = predictions[-len(batch_ids):]
+                batch_path.parent.mkdir(parents=True, exist_ok=True)
+                tmp_path = batch_path.with_suffix(".json.tmp")
+                with tmp_path.open("w") as f:
+                    json.dump(
+                        {
+                            "task_name": task_name,
+                            "model_name": model_name,
+                            "window_idx": window_idx,
+                            "batch_start": batch_start,
+                            "series_ids": batch_ids,
+                            "predictions": batch_predictions,
+                        },
+                        f,
+                    )
+                tmp_path.replace(batch_path)
+                print(
+                    f"{task_name}/{model_name}: window {window_idx + 1}/{task.num_windows}, "
+                    f"batch {batch_index + 1}, {len(batch_ids)} series",
+                    flush=True,
+                )
+            if batch_shard_count > 1:
+                print(
+                    f"{task_name}/{model_name}: checkpoint shard "
+                    f"{batch_shard_index + 1}/{batch_shard_count} complete for "
+                    f"window {window_idx + 1}/{task.num_windows}",
+                    flush=True,
+                )
+                continue
         else:
+            if batch_shard_count > 1:
+                raise ValueError("Batch sharding requires a batch-capable model")
             for series_id in series_ids:
                 history = history_by_id[series_id]
                 history = _clean_history(history, fill_missing)
@@ -299,8 +406,23 @@ def run_task(
         )
         long_frames.append(long_df)
         metric_frames.append(metrics_df)
-        print(f"{task_name}/{model_name}: window {window_idx + 1}/{task.num_windows}, "
-              f"{len(predictions)} series")
+        with window_paths["predictions"].open("w") as f:
+            json.dump(predictions, f)
+        long_df.to_parquet(window_paths["long"], index=False)
+        metrics_df.to_csv(window_paths["metrics"], index=False)
+        print(
+            f"{task_name}/{model_name}: window {window_idx + 1}/{task.num_windows}, "
+            f"{len(predictions)} series",
+            flush=True,
+        )
+
+    if batch_shard_count > 1:
+        print(
+            f"Done checkpoint shard {batch_shard_index + 1}/{batch_shard_count} "
+            f"for {task_name}/{model_name}",
+            flush=True,
+        )
+        return
 
     elapsed = time.time() - start
     summary = task.evaluation_summary(
@@ -308,7 +430,16 @@ def run_task(
         model_name=model_name,
         inference_time_s=elapsed,
         trained_on_this_dataset=False,
-        extra_info={"fill_missing": fill_missing, "runner": "run_fev_bench_official.py"},
+        extra_info={
+            "fill_missing": fill_missing,
+            "runner": "run_fev_bench_official.py",
+            "prediction_artifact_schema": PREDICTION_ARTIFACT_SCHEMA,
+            "quantile_source": (
+                "timesfm_continuous_quantile_head"
+                if model_name == "timesfm25"
+                else "model_or_point_fallback"
+            ),
+        },
     )
 
     predictions_long = pd.concat(long_frames, ignore_index=True)
@@ -327,6 +458,12 @@ def run_task(
                 "quantile_levels": QUANTILE_LEVELS,
                 "batch_size": batch_size,
                 "elapsed_seconds": elapsed,
+                "prediction_artifact_schema": PREDICTION_ARTIFACT_SCHEMA,
+                "quantile_source": (
+                    "timesfm_continuous_quantile_head"
+                    if model_name == "timesfm25"
+                    else "model_or_point_fallback"
+                ),
             },
             f,
             indent=2,
@@ -335,7 +472,8 @@ def run_task(
     print(
         f"Done {task_name}/{model_name}: SQL={summary.get('test_error'):.6f}, "
         f"MASE={summary.get('MASE'):.6f}, WAPE={summary.get('WAPE'):.6f}, "
-        f"forecasts={summary.get('num_forecasts')}"
+        f"forecasts={summary.get('num_forecasts')}",
+        flush=True,
     )
 
 
@@ -369,6 +507,8 @@ def main() -> None:
         default=Path("benchmark/results/fev_bench_official"),
     )
     parser.add_argument("--batch-size", type=int, default=64)
+    parser.add_argument("--batch-shard-index", type=int, default=0)
+    parser.add_argument("--batch-shard-count", type=int, default=1)
     args = parser.parse_args()
 
     run_id = args.run_id or time.strftime("fev_official_%Y%m%d_%H%M%S")
@@ -380,6 +520,8 @@ def main() -> None:
         hardware=args.hardware,
         fill_missing=args.fill_missing,
         batch_size=args.batch_size,
+        batch_shard_index=args.batch_shard_index,
+        batch_shard_count=args.batch_shard_count,
     )
 
 

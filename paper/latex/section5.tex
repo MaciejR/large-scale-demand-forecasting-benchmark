@@ -174,16 +174,16 @@ against baselines on the same sampled workload.  The v1.3 audit showed
 that the saved 72-row result file did not satisfy that condition for all
 models.  The legacy sweep is therefore retained only as provenance and
 cost-audit material.  The matched-panel repair run covers
-M5 and Rohlik: the runner
+M5, Rohlik, and Favorita: the runner
 \texttt{benchmark/code/experiments/run\_source\_b\_paired\_panel.py}
 samples the same 100 top-volume series per dataset, stores the series
 manifest, writes prediction-level Parquet files, and computes paired
 bootstrap log-ratio contrasts against the best available baseline in the
 same dataset--horizon cell.  The completed matched panel covers
-Chronos-Bolt-Tiny, Chronos-2, Moirai~2.0-Small, Seasonal Naive, recursive
-\LGBM{}, direct \LGBM{}, and horizon-scaled direct \LGBM{} for
-M5/Rohlik/Favorita at $h\in\{7,14,28\}$, plus TimesFM~2.5 and batched
-TiRex on all three datasets.  Audit outputs are written to
+Seasonal Naive, recursive \LGBM{}, direct \LGBM{}, horizon-scaled direct
+\LGBM{}, Chronos-Bolt-Tiny, Chronos-2, Moirai~2.0-Small, TimesFM~2.5,
+and batched TiRex for M5/Rohlik/Favorita at $h\in\{7,14,28\}$.
+Audit outputs are written to
 \texttt{analysis/figures/source\_b\_paired\_panel\_*}.
 
 \subsubsection{Model Families}\label{sec:modelfamilies}
@@ -236,9 +236,9 @@ Foundation models are evaluated zero-shot with each model's published
 inference script on consumer hardware (Apple M-series MPS/CPU).  The
 legacy Source~B sweep covers Chronos-Bolt-Tiny, Moirai~2.0-Small, TiRex,
 Chronos-2, and TimesFM~2.5, but not on a common workload.  The
-matched-panel repair covers Chronos-Bolt-Tiny, Chronos-2, and
-Moirai~2.0-Small and TiRex on M5/Rohlik/Favorita, plus TimesFM~2.5 on
-Favorita, with shared series IDs, shared forecast origins, and paired
+matched-panel repair covers Chronos-Bolt-Tiny, Chronos-2,
+Moirai~2.0-Small, TiRex, and TimesFM~2.5 on M5/Rohlik/Favorita,
+with shared series IDs, shared forecast origins, and paired
 prediction outputs.  Details of the FM protocol,
 context-length choices, and hardware configuration are in \S\ref{sec:fm}.
 
@@ -517,8 +517,8 @@ a MacBook (M-series, 16\,GB, MPS/CPU backend).  The legacy Source~B sweep
 contains five FMs (Chronos-Bolt-Tiny, Moirai~2.0-Small, TiRex,
 Chronos-2, TimesFM~2.5; 9--200\,M parameters) for cost-error provenance.
 The matched-panel repair is narrower but paired: Chronos-Bolt-Tiny,
-Chronos-2, Moirai~2.0-Small, and TiRex on M5/Rohlik/Favorita, plus
-TimesFM~2.5 on Favorita, with the same series IDs and forecast
+Chronos-2, Moirai~2.0-Small, TiRex, and TimesFM~2.5 on
+M5/Rohlik/Favorita, with the same series IDs and forecast
 origins as the baseline panel.  The two sources are kept
 separate: extraction rows carry
 \texttt{paper\_id}~$\in$~\{A01\ldots A17, B01, B02\}, local runs
@@ -597,14 +597,14 @@ baselines.  For the matched-panel subset, aggregate \WAPE{} is
 computed from prediction-level outputs on the same rows, and paired
 bootstrap intervals resample the shared series panel.  The same bootstrap
 draws are reused across all contrasts within a dataset, producing an
-empirical log-ratio covariance matrix for the 39 completed FM-vs-best-baseline
+empirical log-ratio covariance matrix for the 45 completed FM-vs-best-baseline
 contrasts.
 
 \subsubsection{Consumer-Box Run: Results}\label{sec:fm_results}
 
 The Source~B repair supersedes the legacy row-level comparison for completed
-matched panels.  The main 100-series table has 39 FM-vs-best-baseline
-contrasts: four FMs on M5/Rohlik and five FMs on Favorita.
+matched panels.  The main 100-series table has 45 FM-vs-best-baseline
+contrasts: five FMs on each of M5, Rohlik, and Favorita.
 The generated replication files include shared bootstrap draws, a wide
 log-ratio covariance matrix, and a long covariance/correlation table under
 the \texttt{source\_b\_paired\_panel\_*} prefix.
@@ -624,26 +624,32 @@ Dataset & Model & $h$ & Best baseline & FM \WAPE{} & Baseline \WAPE{} & $\ell$ (
 M5 & Chronos-2 & 7 & recursive \LGBM{} & 0.294 & 0.320 & $-0.085$ [$-0.100$, $-0.070$] \\
 M5 & Chronos-Bolt-Tiny & 7 & recursive \LGBM{} & 0.314 & 0.320 & $-0.017$ [$-0.035$, $-0.000$] \\
 M5 & Moirai~2.0-Small & 7 & recursive \LGBM{} & 0.298 & 0.320 & $-0.070$ [$-0.087$, $-0.055$] \\
+M5 & TimesFM~2.5 & 7 & recursive \LGBM{} & 0.299 & 0.320 & $-0.067$ [$-0.085$, $-0.052$] \\
 M5 & TiRex & 7 & recursive \LGBM{} & 0.298 & 0.320 & $-0.069$ [$-0.086$, $-0.054$] \\
 M5 & Chronos-2 & 14 & recursive \LGBM{} & 0.307 & 0.334 & $-0.083$ [$-0.100$, $-0.068$] \\
 M5 & Chronos-Bolt-Tiny & 14 & recursive \LGBM{} & 0.331 & 0.334 & $-0.009$ [$-0.031$, 0.011] \\
 M5 & Moirai~2.0-Small & 14 & recursive \LGBM{} & 0.310 & 0.334 & $-0.074$ [$-0.095$, $-0.056$] \\
+M5 & TimesFM~2.5 & 14 & recursive \LGBM{} & 0.311 & 0.334 & $-0.071$ [$-0.091$, $-0.052$] \\
 M5 & TiRex & 14 & recursive \LGBM{} & 0.312 & 0.334 & $-0.067$ [$-0.086$, $-0.050$] \\
 M5 & Chronos-2 & 28 & direct \LGBM{} & 0.339 & 0.359 & $-0.056$ [$-0.084$, $-0.030$] \\
 M5 & Chronos-Bolt-Tiny & 28 & direct \LGBM{} & 0.360 & 0.359 & 0.003 [$-0.030$, 0.034] \\
 M5 & Moirai~2.0-Small & 28 & direct \LGBM{} & 0.329 & 0.359 & $-0.086$ [$-0.111$, $-0.063$] \\
+M5 & TimesFM~2.5 & 28 & direct \LGBM{} & 0.332 & 0.359 & $-0.079$ [$-0.106$, $-0.052$] \\
 M5 & TiRex & 28 & direct \LGBM{} & 0.348 & 0.359 & $-0.031$ [$-0.065$, 0.003] \\
 Rohlik & Chronos-2 & 7 & recursive \LGBM{} & 0.180 & 0.191 & $-0.061$ [$-0.080$, $-0.039$] \\
 Rohlik & Chronos-Bolt-Tiny & 7 & recursive \LGBM{} & 0.199 & 0.191 & 0.041 [0.021, 0.063] \\
 Rohlik & Moirai~2.0-Small & 7 & recursive \LGBM{} & 0.188 & 0.191 & $-0.016$ [$-0.040$, 0.010] \\
+Rohlik & TimesFM~2.5 & 7 & recursive \LGBM{} & 0.184 & 0.191 & $-0.040$ [$-0.063$, $-0.015$] \\
 Rohlik & TiRex & 7 & recursive \LGBM{} & 0.184 & 0.191 & $-0.037$ [$-0.061$, $-0.011$] \\
 Rohlik & Chronos-2 & 14 & recursive \LGBM{} & 0.185 & 0.199 & $-0.076$ [$-0.095$, $-0.054$] \\
 Rohlik & Chronos-Bolt-Tiny & 14 & recursive \LGBM{} & 0.205 & 0.199 & 0.026 [0.007, 0.044] \\
 Rohlik & Moirai~2.0-Small & 14 & recursive \LGBM{} & 0.194 & 0.199 & $-0.026$ [$-0.050$, $-0.000$] \\
+Rohlik & TimesFM~2.5 & 14 & recursive \LGBM{} & 0.190 & 0.199 & $-0.048$ [$-0.074$, $-0.021$] \\
 Rohlik & TiRex & 14 & recursive \LGBM{} & 0.189 & 0.199 & $-0.051$ [$-0.077$, $-0.022$] \\
 Rohlik & Chronos-2 & 28 & recursive \LGBM{} & 0.193 & 0.209 & $-0.079$ [$-0.105$, $-0.053$] \\
 Rohlik & Chronos-Bolt-Tiny & 28 & recursive \LGBM{} & 0.211 & 0.209 & 0.008 [$-0.017$, 0.033] \\
 Rohlik & Moirai~2.0-Small & 28 & recursive \LGBM{} & 0.202 & 0.209 & $-0.034$ [$-0.064$, $-0.007$] \\
+Rohlik & TimesFM~2.5 & 28 & recursive \LGBM{} & 0.197 & 0.209 & $-0.060$ [$-0.089$, $-0.031$] \\
 Rohlik & TiRex & 28 & recursive \LGBM{} & 0.196 & 0.209 & $-0.061$ [$-0.093$, $-0.031$] \\
 Favorita & Chronos-2 & 7 & recursive \LGBM{} & 0.248 & 0.271 & $-0.085$ [$-0.106$, $-0.065$] \\
 Favorita & Chronos-Bolt-Tiny & 7 & recursive \LGBM{} & 0.327 & 0.271 & 0.190 [0.143, 0.239] \\
@@ -669,16 +675,17 @@ nine matched M5/Rohlik/Favorita cells.  Moirai~2.0-Small is also lower in
 all nine point estimates, with the bootstrap interval excluding zero in
 seven.  Batched TiRex is lower in all nine point estimates, with intervals
 excluding zero in seven and near-parity uncertainty at M5 $h=28$ and
-Favorita $h=28$.  Chronos-Bolt-Tiny is near parity on M5 and worse on
-Rohlik and Favorita.  TimesFM~2.5 is near parity on Favorita but much
-slower than the smaller completed local FMs.
+Favorita $h=28$.  TimesFM~2.5 is lower than the best baseline on all
+six M5/Rohlik cells, with intervals excluding zero in all six, but remains
+near parity on Favorita.  Chronos-Bolt-Tiny is near parity on M5 and worse on
+Rohlik and Favorita.
 These are paired local results for 100-series
 panels, not a claim that the same ranking holds for larger workloads, GPU
 inference, or covariate-aware FM variants.
 The shared-bootstrap covariance matrix is block-diagonal by dataset and
 captures dependence among contrasts that share the same sampled series,
 actuals, horizons, and best-baseline rows.  In the generated matrix, the
-diagonal is positive for all 39 contrasts and the strongest off-diagonal
+diagonal is positive for all 45 contrasts and the strongest off-diagonal
 correlations occur within the same dataset/model or same dataset--horizon
 cell, as expected.  This repairs the local Source~B uncertainty accounting;
 it does not create missing prediction-level covariance for Source~A
@@ -762,8 +769,9 @@ On the shared 100-series Favorita panel, \texttt{lightgbm\_cov} is the best
 baseline at $h=7$ and $h=14$, while direct \LGBM{} is best at $h=28$.
 Chronos-2 is clearly lower than the best baseline on all three horizons,
 Moirai~2.0-Small is lower at $h=7$ and $h=14$ and close at $h=28$, and
-TimesFM~2.5 is close to parity but slow.  The result supports a matched
-bake-off interpretation rather than a universal FM win.
+TimesFM~2.5 is close to parity but slow.  By contrast, TimesFM~2.5 is lower
+than the best baseline on the matched M5/Rohlik cells.  The result supports a
+matched bake-off interpretation rather than a universal FM win.
 
 \textbf{Cost and runtime footprint.}  The saved 72-row Source~B file sums
 to 241.6 wall hours, \$3.18, and 4.63\,kg CO$_2$eq under the recorded

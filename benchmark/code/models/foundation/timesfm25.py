@@ -17,6 +17,8 @@ import pandas as pd
 class TimesFM25Forecaster:
     """Wrapper for Google TimesFM 2.5 zero-shot forecasting."""
 
+    MODEL_QUANTILES = (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
+
     def __init__(
         self,
         model_id: str = "google/timesfm-2.5-200m-pytorch",
@@ -98,7 +100,7 @@ class TimesFM25Forecaster:
         histories,
         horizon: int,
         quantile_levels: list[float] | None = None,
-    ) -> np.ndarray:
+    ) -> np.ndarray | tuple[np.ndarray, dict[float, np.ndarray]]:
         """
         Batched zero-shot point forecast.
 
@@ -128,7 +130,21 @@ class TimesFM25Forecaster:
             horizon=horizon,
             inputs=inputs,
         )
-        return np.asarray(point_forecast, dtype=np.float32)[:, :horizon]
+        point = np.asarray(point_forecast, dtype=np.float32)[:, :horizon]
+        if quantile_levels is None:
+            return point
+
+        quantiles = np.asarray(quantile_forecast, dtype=np.float32)[:, :horizon, :]
+        quantile_map = {}
+        for level in quantile_levels:
+            try:
+                model_index = self.MODEL_QUANTILES.index(float(level)) + 1
+            except ValueError as err:
+                raise ValueError(
+                    f"TimesFM 2.5 does not provide quantile level {level}"
+                ) from err
+            quantile_map[float(level)] = quantiles[:, :, model_index]
+        return point, quantile_map
 
     def predict_quantiles(
         self, train: pd.Series, horizon: int
@@ -149,7 +165,12 @@ class TimesFM25Forecaster:
             inputs=[values],
         )
 
-        df = pd.DataFrame(quantile_forecast[0][:horizon])
-        df.columns = [f"q{i}" for i in range(df.shape[1])]
-        df["point"] = point_forecast[0][:horizon]
+        quantiles = np.asarray(quantile_forecast, dtype=np.float32)[0, :horizon, :]
+        df = pd.DataFrame(
+            {
+                f"q{level}": quantiles[:, index + 1]
+                for index, level in enumerate(self.MODEL_QUANTILES)
+            }
+        )
+        df["point"] = np.asarray(point_forecast, dtype=np.float32)[0, :horizon]
         return df

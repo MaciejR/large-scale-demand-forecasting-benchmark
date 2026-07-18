@@ -30,7 +30,7 @@ The v1.0 technical-report release is archived on Zenodo:
   100-series panels for completed local models and reports paired bootstrap
   contrasts separately from the Source A reanalysis.
 - The fev-bench WAPE covariance repair reruns official retail windows for
-  Seasonal Naive, Chronos-Bolt-Tiny, Chronos-2, and TiRex, producing
+  Seasonal Naive, Chronos-Bolt-Tiny, Chronos-2, TiRex, and TimesFM 2.5, producing
   prediction-level paired bootstrap covariance matrices for 20 retail tasks.
 - Cost-accuracy tradeoffs matter: some foundation-model gains are meaningful
   only when inference cost and hardware constraints are acceptable for the use
@@ -63,10 +63,11 @@ BibTeX:
 
 ## Publication Roadmap
 
-The current recommended path is to treat v1.10 as a stronger exploratory
-reanalysis: Source B now has matched-panel covariance, and one concrete
-Source A slice (fev-bench retail WAPE for Chronos-Bolt-Tiny, Chronos-2, and
-TiRex against Seasonal Naive) has prediction-level paired covariance.  The remaining
+The current recommended path is to treat v1.12 as a stronger exploratory
+reanalysis: Source B now has matched-panel covariance for all five local FMs
+on M5/Rohlik/Favorita, and one concrete
+Source A slice (fev-bench retail WAPE for Chronos-Bolt-Tiny, Chronos-2,
+TiRex, and TimesFM 2.5 against Seasonal Naive) has prediction-level paired covariance.  The remaining
 methodological gap is full prediction-level covariance for SQL, MASE,
 GIFT-Eval, stronger best-baseline comparisons, and additional FM families.
 
@@ -104,7 +105,8 @@ instructions.
   [`analysis/figures/sensitivity_best_baseline.txt`](analysis/figures/sensitivity_best_baseline.txt)
 - Source B matched-panel contrasts:
   [`analysis/figures/source_b_paired_panel_fm_vs_best_baseline.csv`](analysis/figures/source_b_paired_panel_fm_vs_best_baseline.csv)
-- Source B matched-panel contrasts currently include batched TiRex on the
+- Source B matched-panel contrasts currently include Chronos-Bolt-Tiny,
+  Chronos-2, Moirai 2.0-Small, batched TiRex, and TimesFM 2.5 on the
   M5/Rohlik/Favorita 100-series panels.
 - fev-bench official run coverage:
   [`analysis/figures/fev_official_model_coverage.csv`](analysis/figures/fev_official_model_coverage.csv)
@@ -113,7 +115,8 @@ instructions.
 - fev-bench paired WAPE covariance outputs:
   [`analysis/figures/fev_chronos_bolt_paired_wape_covariance.csv`](analysis/figures/fev_chronos_bolt_paired_wape_covariance.csv) and
   [`analysis/figures/fev_chronos2_paired_wape_covariance.csv`](analysis/figures/fev_chronos2_paired_wape_covariance.csv) and
-  [`analysis/figures/fev_tirex_paired_wape_covariance.csv`](analysis/figures/fev_tirex_paired_wape_covariance.csv)
+  [`analysis/figures/fev_tirex_paired_wape_covariance.csv`](analysis/figures/fev_tirex_paired_wape_covariance.csv) and
+  [`analysis/figures/fev_timesfm25_paired_wape_covariance.csv`](analysis/figures/fev_timesfm25_paired_wape_covariance.csv)
 
 ## Quick Verification
 
@@ -151,6 +154,6 @@ sources:
 The v1.0 technical report has been published on Zenodo with DOI
 `10.5281/zenodo.21338004`. Later repair packages are maintained separately and
 do not overwrite the historical v1.0 snapshot. The current working version is
-v1.10, adding full TiRex fev-bench prediction-level WAPE covariance repair on
-top of the v1.9 Chronos fev-bench repair and Source B matched-panel covariance
-repair.
+v1.11, adding TimesFM 2.5 M5/Rohlik matched-panel Source B contrasts on top of
+the v1.10 TiRex fev-bench prediction-level WAPE covariance repair, v1.9 Chronos
+fev-bench repair, and Source B matched-panel covariance repair.

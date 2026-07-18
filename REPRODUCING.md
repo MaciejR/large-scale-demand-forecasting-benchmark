@@ -140,6 +140,7 @@ python analysis/source_b_paired_panel_report.py \
          source_b_repair_fm_chronos_bolt_m5_rohlik_100 \
          source_b_repair_fm_chronos2_m5_rohlik_100 \
          source_b_repair_fm_moirai2_m5_rohlik_100 \
+         source_b_v1_11_timesfm25_m5_rohlik_100_batched \
          source_b_repair_baselines_favorita_100_v1_5 \
          source_b_repair_fm_chronos_bolt_favorita_100_v1_5 \
          source_b_repair_fm_chronos2_favorita_100_v1_5 \
@@ -151,11 +152,11 @@ python analysis/source_b_paired_panel_report.py \
 
 This regenerates `analysis/figures/source_b_paired_panel_*.csv`, including:
 
-- `source_b_paired_panel_fm_vs_best_baseline.csv`: 39 matched-panel
+- `source_b_paired_panel_fm_vs_best_baseline.csv`: 45 matched-panel
   FM-vs-best-baseline log-ratio contrasts.
 - `source_b_paired_panel_bootstrap_draws.csv`: shared bootstrap draws used for
   every Source B matched-panel contrast.
-- `source_b_paired_panel_logratio_covariance.csv`: the 39 by 39 empirical
+- `source_b_paired_panel_logratio_covariance.csv`: the 45 by 45 empirical
   covariance matrix for Source B matched-panel log-ratios.
 - `source_b_paired_panel_logratio_covariance_long.csv`: long-form covariance
   and correlation table for auditing dependence among contrasts.
@@ -171,6 +172,18 @@ $HOME/venvs/fm-local/bin/python benchmark/code/experiments/run_source_b_paired_p
   --horizons 7 14 28 \
   --max-series 100 \
   --run-id source_b_v1_7_tirex_batched_full_panel_100
+```
+
+TimesFM 2.5 is also run on the shared M5/Rohlik 100-series panels using the
+batched Source B runner:
+
+```bash
+$HOME/venvs/fm-local/bin/python benchmark/code/experiments/run_source_b_paired_panel.py \
+  --datasets m5 rohlik \
+  --models timesfm25 \
+  --horizons 7 14 28 \
+  --max-series 100 \
+  --run-id source_b_v1_11_timesfm25_m5_rohlik_100_batched
 ```
 
 The exporter no longer hard-codes a private Azure workspace URI. To export from
@@ -220,6 +233,11 @@ Canonical local v1.9 runs are:
   `fev_v1_9_chronos2_missing_rohlik_sales_1w`, and
   `fev_v1_9_chronos2_missing_retail_rest`: Chronos-2 with true quantiles for
   all 20 retail tasks.
+- `fev_v1_10_tirex_official_retail`: TiRex for all 20 retail tasks.  These
+  outputs are suitable for WAPE/MAE paired repairs; they do not repair SQL
+  because the TiRex runner stores point forecasts in quantile columns.
+- `fev_v1_12_timesfm25_official_retail`: TimesFM 2.5 with continuous
+  quantile-head forecasts for all 20 retail tasks.
 
 Exploratory smoke runs and superseded point-quantile Chronos-Bolt runs may also
 exist under `benchmark/results/fev_bench_official/`; do not use them for the
@@ -236,14 +254,16 @@ This writes:
 - `analysis/figures/fev_official_bootstrap_manifest.csv`
 
 The current coverage is 20/20 seasonal-naive tasks, 20/20 Chronos-Bolt-Tiny
-tasks, 20/20 Chronos-2 tasks, and 20/20 TiRex tasks.  The larger Chronos-2
-panels (`rohlik_sales`, `rossmann`, `hermes`, `favorita_stores_1D/1W`, and M5)
-were completed on M-series hardware with batched true-quantile inference.
-TiRex is tracked under `fev_v1_10_tirex_official_retail`; it uses point
-forecasts replicated to quantile columns, so these artifacts are suitable for
-WAPE/MAE paired repairs but not for a repaired SQL analysis.  Local CPU/M-series
-throughput is the limiting factor for larger TiRex panels; `m5_1D` is the
-slowest local task and can take materially longer than the other retail tasks.
+tasks, 20/20 Chronos-2 tasks, 20/20 TiRex tasks, and 20/20 TimesFM 2.5 tasks.
+The larger Chronos-2 and TimesFM panels (`rohlik_sales`, `rossmann`, `hermes`,
+`favorita_stores_1D/1W`, and M5) were completed on M-series hardware with
+batched inference.  TiRex is tracked under `fev_v1_10_tirex_official_retail`;
+it uses point forecasts replicated to quantile columns, so these artifacts are
+suitable for WAPE/MAE paired repairs but not for a repaired SQL analysis.
+TimesFM 2.5 is tracked under `fev_v1_12_timesfm25_official_retail`; it uses the
+continuous quantile head and writes `prediction_artifact_schema =
+v2_quantile_head`.  Local CPU/M-series throughput is the limiting factor for
+larger panels; M5 tasks can take materially longer than the other retail tasks.
 
 To rebuild the paired WAPE bootstrap outputs:
 
@@ -258,6 +278,10 @@ $HOME/venvs/fm-local/bin/python analysis/fev_bench_prediction_report.py \
 
 $HOME/venvs/fm-local/bin/python analysis/fev_bench_prediction_report.py \
   --model-name tirex \
+  --n-boot 2000
+
+$HOME/venvs/fm-local/bin/python analysis/fev_bench_prediction_report.py \
+  --model-name timesfm25 \
   --n-boot 2000
 
 $HOME/venvs/fm-local/bin/python analysis/fev_bench_wape_summary.py

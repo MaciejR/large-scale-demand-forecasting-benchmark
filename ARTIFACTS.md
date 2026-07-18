@@ -49,6 +49,8 @@ This file maps manuscript claims to repository artifacts.
   `analysis/figures/fev_chronos2_paired_wape_*.csv`
 - TiRex paired WAPE outputs:
   `analysis/figures/fev_tirex_paired_wape_*.csv`
+- TimesFM 2.5 paired WAPE outputs:
+  `analysis/figures/fev_timesfm25_paired_wape_*.csv`
 
 The full local prediction parquet tree under
 `benchmark/results/fev_bench_official/` is intentionally not versioned in git.
@@ -57,6 +59,12 @@ Recreate it with the commands documented in `REPRODUCING.md`.
 ## Source B Experiments
 
 - Exported Source B sweep: `benchmark/results/local_fm_sweep.csv`
+- Matched-panel Source B contrasts:
+  `analysis/figures/source_b_paired_panel_fm_vs_best_baseline.csv`
+- Matched-panel Source B covariance:
+  `analysis/figures/source_b_paired_panel_logratio_covariance.csv`
+- Matched-panel Source B run ledger:
+  `analysis/figures/source_b_paired_panel_run_ledger.csv`
 - Horizon-scaled Favorita direct-LightGBM check:
   `benchmark/results/direct_scaled_favorita.csv`
 - Experiment runners: `benchmark/code/experiments/`

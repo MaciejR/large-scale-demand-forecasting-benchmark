@@ -62,7 +62,7 @@ are much closer to the best baseline.  GIFT-Eval is uniformly favourable
 to FMs in this extraction, whereas fev-bench is more heterogeneous.
 To address the strongest variance critique for a concrete Source~A slice, we
 rerun official fev-bench retail windows for Seasonal Naive,
-Chronos-Bolt-Tiny, Chronos-2, and TiRex, store prediction-level outputs, and compute
+Chronos-Bolt-Tiny, Chronos-2, TiRex, and TimesFM~2.5, store prediction-level outputs, and compute
 paired bootstrap \WAPE{} log-ratio covariance matrices for 20 retail tasks
 and 179,258 paired series-window units for each FM contrast.
 The current matched-panel Source~B repair covers M5, Rohlik, and
@@ -70,16 +70,17 @@ Favorita: 100 shared top-volume series per dataset, common rolling-origin
 windows, prediction-level outputs, run ledgers, and paired bootstrap
 contrasts with an empirical log-ratio covariance matrix for Seasonal Naive,
 recursive/direct LightGBM, Chronos-Bolt-Tiny, Chronos-2, Moirai~2.0-Small,
-and batched TiRex on all three datasets, plus TimesFM~2.5 on Favorita.
+batched TiRex, and TimesFM~2.5 on all three datasets.
 In this repaired subset Chronos-2 is lower than
 the best local baseline in all nine dataset--horizon cells; Moirai is lower
 in all nine point estimates; TiRex is lower in all nine point estimates
 with bootstrap intervals excluding zero in seven; Chronos-Bolt is
 approximately tied on M5 and worse on Rohlik/Favorita; and TimesFM~2.5 is
-near parity on Favorita.  The defensible conclusion is conditional: observed rankings
-depend on metric, baseline choice, protocol, workload matching, and demand
-characteristics.  We provide a validation checklist and cost-error
-diagnostics instead of deterministic deployment rules.
+lower on M5/Rohlik but near parity on Favorita.  The defensible conclusion
+is conditional: observed rankings depend on metric, baseline choice,
+protocol, workload matching, and demand characteristics.  We provide a
+validation checklist and cost-error diagnostics instead of deterministic
+deployment rules.
 \end{abstract}
 
 \begin{keyword}
@@ -125,11 +126,11 @@ draft, Writing -- review \& editing, Visualization.
 \section*{Data availability}
 The v1.0 technical report is an archived historical snapshot on Zenodo at
 \url{https://doi.org/10.5281/zenodo.21338004}.  The live repository is
-intended to host the repaired v1.10 materials at
+intended to host the repaired v1.11 materials at
 \url{https://github.com/MaciejR/large-scale-demand-forecasting-benchmark}.
-The v1.1--v1.9 release folders are retained as historical repair
-artifacts; v1.10 is prepared as a separate TiRex fev-bench \WAPE{} covariance
-repair and should not overwrite the v1.0 Zenodo snapshot.  The repository includes
+The v1.1--v1.10 release folders are retained as historical repair
+artifacts; v1.11 is prepared as a separate Source~B TimesFM matched-panel
+extension and should not overwrite the v1.0 Zenodo snapshot.  The repository includes
 derived extraction tables, analysis code, generated tables/figures,
 study-characteristics data, audit outputs, and replication scripts, but not
 raw competition data.

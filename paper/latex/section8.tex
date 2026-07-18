@@ -111,11 +111,11 @@ dataset--horizon cell, and the legacy bootstrap file covered only four of
 the five FMs.  The matched-panel repair now reruns M5, Rohlik, and Favorita
 on shared 100-series panels with prediction-level outputs and paired
 bootstrap contrasts for the completed local models.  This covariance
-repair adds a shared-bootstrap covariance matrix for the 39 completed
-FM-vs-best-baseline log-ratios.  Favorita includes
-Chronos-Bolt-Tiny, Chronos-2, Moirai~2.0-Small, and batched TiRex on the
-100-series panel, plus TimesFM~2.5 on Favorita.  The repair still does not
-cover GPU throughput, covariate-aware FM variants, TimesFM~2.5 on M5/Rohlik,
+repair adds a shared-bootstrap covariance matrix for the 45 completed
+FM-vs-best-baseline log-ratios.  The matched panel now includes
+Chronos-Bolt-Tiny, Chronos-2, Moirai~2.0-Small, batched TiRex, and
+TimesFM~2.5 on M5/Rohlik/Favorita.  The repair still does not
+cover GPU throughput, covariate-aware FM variants,
 or larger workloads, so Source~B remains a local sensitivity analysis rather
 than a confirmatory cross-benchmark experiment.
 
@@ -129,11 +129,13 @@ Containment degrees of freedom, CR2 sensitivity, and equal-weight analysis
 discipline the Source~A claims, but they do not create the missing covariance
 information for published benchmark rows.  The fev-bench prediction-level
 repair now provides empirical \WAPE{} covariance matrices for
-Chronos-Bolt-Tiny, Chronos-2, and TiRex against Seasonal Naive on 20 retail
-tasks, and the Source~B matched panel has an empirical bootstrap covariance
-matrix.  These repairs are still metric- and model-specific: TiRex uses point
-forecasts replicated to quantile columns, so the repaired TiRex slice is for
-\WAPE{} rather than SQL.  A confirmatory
+Chronos-Bolt-Tiny, Chronos-2, TiRex, and TimesFM~2.5 against Seasonal Naive
+on 20 retail tasks, and the Source~B matched panel has an empirical bootstrap
+covariance matrix.  These repairs are still metric- and model-specific:
+TiRex uses point forecasts replicated to quantile columns, so the repaired
+TiRex slice is for \WAPE{} rather than SQL.  TimesFM~2.5 uses the continuous
+quantile head in the official fev-bench rerun, but the empirical covariance
+repair reported here still targets paired \WAPE{} log-ratios.  A confirmatory
 cross-benchmark meta-analysis would require comparable prediction-level
 covariance for SQL, \MASE{}, GIFT-Eval, stronger best-baseline comparisons,
 additional FM families, or additional independent benchmark suites.

@@ -2,4 +2,5 @@ model_name,completed_tasks,expected_tasks,missing_tasks,num_forecasts,prediction
 chronos2,20,20,,179258,277539267
 chronos_bolt_tiny,20,20,,179258,278003323
 seasonal_naive,20,20,,179258,88781969
+timesfm25,20,20,,179258,259286624
 tirex,20,20,,179258,278275260

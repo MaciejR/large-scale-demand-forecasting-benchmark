@@ -68,15 +68,22 @@ TIREX_RUN_BY_TASK = {
     for task in CHRONOS_BOLT_RUN_BY_TASK
 }
 
+TIMESFM25_RUN_BY_TASK = {
+    task: "fev_v1_12_timesfm25_official_retail"
+    for task in CHRONOS_BOLT_RUN_BY_TASK
+}
+
 RUN_BY_TASK = {
     "chronos_bolt_tiny": CHRONOS_BOLT_RUN_BY_TASK,
     "chronos2": CHRONOS2_RUN_BY_TASK,
+    "timesfm25": TIMESFM25_RUN_BY_TASK,
     "tirex": TIREX_RUN_BY_TASK,
 }
 
 OUTPUT_PREFIX = {
     "chronos_bolt_tiny": "fev_chronos_bolt_paired_wape",
     "chronos2": "fev_chronos2_paired_wape",
+    "timesfm25": "fev_timesfm25_paired_wape",
     "tirex": "fev_tirex_paired_wape",
 }
 
