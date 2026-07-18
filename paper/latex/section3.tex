@@ -225,7 +225,7 @@ baseline WAPE contrasts with a shared-bootstrap log-ratio covariance matrix.
 coarser bucket-level analysis for comparison.
 
 \noindent\textbf{Notation convention.}
-Throughout this paper, $\hat{\ell}$ denotes the pooled estimate of
+Throughout this paper, $\hat{\ell}$ denotes a reported log-ratio summary of
 \(\log(\text{FM metric}/\text{baseline metric})\).  \textbf{Negative
 $\hat{\ell}$ means FM is better}; \textbf{positive $\hat{\ell}$ means
 baseline is better}.  The older raw difference $\Dhat$ is retained only
@@ -293,8 +293,8 @@ We report the following robustness checks:
   \item \textbf{Excl-M5:} Drops all M5 pairs to test whether the
     primary result is driven by the M5 \WAPE{} denominator artefact.
   \item \textbf{Metric-only slices:} Refits the model on \WAPE{}-only,
-    SQL-only, and \MASE{}-only pairs so the pooled omnibus estimate is
-    not the only inferential target.
+    SQL-only, and \MASE{}-only pairs so the mixed-metric diagnostic is
+    not the only summary target.
   \item \textbf{Source~B-only:} Restricts to Source~B pairs
     (\texttt{LOCAL\_MAC\_*}), testing whether the cross-paper pooling
     materially changes the descriptive direction.  This is not paired
