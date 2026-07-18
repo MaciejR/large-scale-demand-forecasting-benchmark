@@ -311,3 +311,55 @@ pytest
 Some model-wrapper tests may skip or fail if optional foundation-model packages
 or raw datasets are not installed locally. The meta-regression and manuscript
 build are the primary reproducibility checks for the paper.
+
+## Build the v1.12 Release Package
+
+The release archive is a Zenodo-ready package, not a checked-in source tree.
+From the repository root, rebuild it with the same exclusion policy used for
+the audited package:
+
+```bash
+release_dir="release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair"
+zip_path="${release_dir}.zip"
+rm -rf "$release_dir" "$zip_path"
+mkdir -p "$release_dir/manuscript" "$release_dir/replication"
+git rev-parse HEAD > "$release_dir/COMMIT.txt"
+cp paper/latex/main.pdf \
+  "$release_dir/manuscript/demand-forecasting-timesfm-fev-bench-wape-covariance-repair-v1.12.pdf"
+rsync -a ./ "$release_dir/replication/" \
+  --exclude '.git/' \
+  --exclude 'release/' \
+  --exclude 'data/raw/' \
+  --exclude 'mlruns/' \
+  --exclude 'logs/' \
+  --exclude '.env' \
+  --exclude '.DS_Store' \
+  --exclude '*.log' \
+  --exclude '*.ckpt' \
+  --exclude '*.pt' \
+  --exclude '*.pth' \
+  --exclude '*.safetensors' \
+  --exclude 'benchmark/results/fev_bench_official/' \
+  --exclude '*/source_b_v1_11_timesfm25_m5_rohlik_100_batched/' \
+  --exclude 'Umowa*.pdf'
+cp "$release_dir/replication/docs/RELEASE_V1.12.md" "$release_dir/README.md"
+(cd "$release_dir" && \
+  find . -type f ! -name 'CHECKSUMS.txt' -print0 | sort -z | \
+  xargs -0 shasum -a 256 > CHECKSUMS.txt)
+(cd release && zip -qr "$(basename "$zip_path")" "$(basename "$release_dir")")
+```
+
+Validate the package with:
+
+```bash
+(cd "$release_dir" && shasum -a 256 -c CHECKSUMS.txt)
+unzip -t "$zip_path"
+find "$release_dir" \( -path '*data/raw*' -o -path '*mlruns*' \
+  -o -path '*logs*' -o -name 'Umowa*.pdf' -o -name '.env' \
+  -o -name '.DS_Store' -o -name '*.log' -o -name '*.ckpt' \
+  -o -name '*.pt' -o -name '*.pth' -o -name '*.safetensors' \
+  -o -path '*benchmark/results/fev_bench_official*' \
+  -o -path '*source_b_v1_11_timesfm25_m5_rohlik_100_batched*' \) -print
+```
+
+The final `find` command should print nothing.

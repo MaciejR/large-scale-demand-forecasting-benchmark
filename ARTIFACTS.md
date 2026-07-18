@@ -8,6 +8,10 @@ This file maps manuscript claims to repository artifacts.
 - LaTeX source: `paper/latex/main.tex` and `paper/latex/section*.tex`
 - Bibliography: `paper/references.bib`
 - Zenodo v1.0 record: `https://doi.org/10.5281/zenodo.21338004`
+- Current local v1.12 release archive:
+  `release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair.zip`
+- Release provenance and integrity files inside the archive:
+  `COMMIT.txt` and `CHECKSUMS.txt`
 
 ## Review and Extraction
 
@@ -88,6 +92,8 @@ Recreate it with the commands documented in `REPRODUCING.md`.
 - Raw Kaggle/Rohlik datasets under `data/raw/`.
 - Local MLflow stores under `mlruns/`.
 - Local logs under `logs/`.
+- Root-level local logs such as `*.log`.
+- macOS metadata files such as `.DS_Store`.
 - Full fev-bench prediction parquet outputs under
   `benchmark/results/fev_bench_official/`.
 - Downloaded model checkpoints such as TabPFN weights.
