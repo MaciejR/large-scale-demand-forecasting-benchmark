@@ -133,5 +133,7 @@ if [[ -n "$privacy_hits" ]]; then
   exit 1
 fi
 
+python3 tools/audit_release_privacy.py "$release_dir"
+
 du -sh "$zip_path" "$release_dir"
 echo "Built and audited $zip_path at $head_sha"

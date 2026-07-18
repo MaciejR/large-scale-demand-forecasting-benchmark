@@ -353,6 +353,7 @@ The manuscript audit can be run independently:
 tools/audit_manuscript_v112.sh
 python3 tools/audit_citations.py
 python3 tools/audit_prisma_counts.py
+python3 tools/audit_release_privacy.py release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair
 ```
 
 The manuscript audit checks the rendered PDF and current LaTeX source for
@@ -362,3 +363,5 @@ non-auditable `30+ queries` wording.  The citation audit checks that all
 LaTeX citation keys resolve to unique entries in `paper/references.bib`.
 The PRISMA audit checks the flow counts across the diagram generator, Section 4,
 Appendix B, and `analysis/prisma_search_protocol.md`.
+The release privacy audit scans the assembled release directory for excluded
+private files, local filesystem paths, and token-shaped secrets before upload.
