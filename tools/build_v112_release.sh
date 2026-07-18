@@ -45,6 +45,15 @@ if [[ -n "$source_b_status" ]]; then
   exit 1
 fi
 
+tools/build_manuscript_pdf.sh
+pdf_status="$(git status --porcelain -- paper/latex/main.pdf)"
+if [[ -n "$pdf_status" ]]; then
+  echo "Manuscript PDF changed during release build:" >&2
+  echo "$pdf_status" >&2
+  echo "Review and commit the rebuilt paper/latex/main.pdf before packaging." >&2
+  exit 1
+fi
+
 git rev-parse HEAD > "$release_dir/COMMIT.txt"
 cp paper/latex/main.pdf "$release_dir/manuscript/$pdf_name"
 

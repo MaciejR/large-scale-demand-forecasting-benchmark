@@ -62,13 +62,10 @@ conventional baseline.
 
 ## Rebuild the Manuscript
 
-From `paper/latex/`:
+From the repository root:
 
 ```bash
-pdflatex -interaction=nonstopmode -halt-on-error main.tex
-bibtex main
-pdflatex -interaction=nonstopmode -halt-on-error main.tex
-pdflatex -interaction=nonstopmode -halt-on-error main.tex
+tools/build_manuscript_pdf.sh
 ```
 
 The checked-in PDF is `paper/latex/main.pdf`.
@@ -346,8 +343,9 @@ fails if excluded private or heavyweight artifacts are present. It also runs
 `tools/audit_manuscript_v112.sh` before packaging. By default it refuses to
 package a dirty working tree so the archived source state matches
 `COMMIT.txt`. It reruns `analysis/meta_regression.R`, regenerates the Source B
-integrity audit, and fails if tracked analysis artifacts change during the
-build. For local debugging only, set `ALLOW_DIRTY_RELEASE=1`.
+integrity audit, rebuilds `paper/latex/main.pdf`, and fails if tracked
+analysis or PDF artifacts change during the build. For local debugging only,
+set `ALLOW_DIRTY_RELEASE=1`.
 
 The manuscript audit can be run independently:
 
