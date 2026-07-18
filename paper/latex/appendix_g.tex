@@ -160,26 +160,7 @@ The Azure cost tables are retained for audit, but this paper does not use them
 for universal cost conclusions.  The detail tables and summary table do
 not yet reconcile to one ledger.
 
-\begin{table}[htbp]
-\centering
-\caption{Baseline cost consistency audit.  Differences are too large to
-treat as rounding; a single run ledger is required before cost claims are
-promoted from descriptive to inferential.}
-\label{tab:t56}
-\small
-\begin{tabularx}{\textwidth}{lrrrX}
-\toprule
-Scope & Detail tables (USD) & Summary table (USD) & Difference & Status \\
-\midrule
-M5 total & 0.877 & 0.810 & $-0.067$ & mismatch; reconcile from run ledger \\
-Rohlik total & 0.110 & 0.120 & $+0.010$ & mismatch; reconcile from run ledger \\
-Favorita total & 0.777 & 1.119 & $+0.343$ & mismatch; reconcile from run ledger \\
-Favorita direct & 0.687 & 1.030 & $+0.343$ & mismatch; likely source of total gap \\
-M5 Seasonal Naive & 0.059 & 0.146 & $+0.087$ & mismatch \\
-M5 direct & 0.724 & 0.571 & $-0.153$ & mismatch \\
-\bottomrule
-\end{tabularx}
-\end{table}
+\input{../../analysis/figures/source_b_cost_consistency_audit.tex}
 
 The cost plots in \S\ref{sec:cost-accuracy} therefore remain cost-error
 scatterplots.  The matched-panel repair writes a local run ledger for

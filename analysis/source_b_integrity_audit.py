@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Audit Source B cell coverage, sample matching, and cost consistency.
 
-The v1.3 manuscript uses these outputs to separate Source B descriptive
+The repaired manuscript uses these outputs to separate Source B descriptive
 evidence from the primary Source A exploratory reanalysis.  The key issue is
 not whether rows exist, but whether FM and baseline rows are evaluated on the
 same series/workload with paired uncertainty.
@@ -9,6 +9,7 @@ same series/workload with paired uncertainty.
 
 from __future__ import annotations
 
+from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 
 import pandas as pd
@@ -344,7 +345,75 @@ def write_cost_consistency_audit() -> None:
             "status": "mismatch_requires_single_ledger",
         },
     ]
-    pd.DataFrame(rows).to_csv(FIG_DIR / "source_b_cost_consistency_audit.csv", index=False)
+    audit = pd.DataFrame(rows)
+    audit.to_csv(FIG_DIR / "source_b_cost_consistency_audit.csv", index=False)
+    write_cost_consistency_latex(audit)
+
+
+def latex_escape(value: object) -> str:
+    text = str(value)
+    replacements = {
+        "\\": r"\textbackslash{}",
+        "&": r"\&",
+        "%": r"\%",
+        "$": r"\$",
+        "#": r"\#",
+        "_": r"\_",
+        "{": r"\{",
+        "}": r"\}",
+        "~": r"\textasciitilde{}",
+        "^": r"\textasciicircum{}",
+    }
+    for old, new in replacements.items():
+        text = text.replace(old, new)
+    return text
+
+
+def format_decimal(value: object, places: str = "0.001") -> str:
+    return str(Decimal(str(value)).quantize(Decimal(places), rounding=ROUND_HALF_UP))
+
+
+def format_signed_decimal(value: object) -> str:
+    number = Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
+    sign = "+" if number >= 0 else "-"
+    return f"{sign}{abs(number)}"
+
+
+def write_cost_consistency_latex(audit: pd.DataFrame) -> None:
+    """Write the Appendix G cost audit table from the CSV source."""
+    lines = [
+        r"\begin{table}[htbp]",
+        r"\centering",
+        r"\caption{Baseline cost consistency audit.  Differences are too large to",
+        r"treat as rounding; a single run ledger is required before cost claims are",
+        r"promoted from descriptive to inferential.}",
+        r"\label{tab:t56}",
+        r"\small",
+        r"\begin{tabularx}{\textwidth}{lrrrX}",
+        r"\toprule",
+        r"Scope & Detail tables (USD) & Summary table (USD) & Difference & Status \\",
+        r"\midrule",
+    ]
+    for _, row in audit.iterrows():
+        diff = float(row["difference_usd"])
+        status = str(row["status"]).replace("_", " ")
+        lines.append(
+            f"{latex_escape(row['scope'])} & "
+            f"{format_decimal(row['detail_tables_usd'])} & "
+            f"{format_decimal(row['summary_table_usd'])} & "
+            f"${format_signed_decimal(diff)}$ & "
+            f"{latex_escape(status)} \\\\"
+        )
+    lines.extend(
+        [
+            r"\bottomrule",
+            r"\end{tabularx}",
+            r"\end{table}",
+        ]
+    )
+    (FIG_DIR / "source_b_cost_consistency_audit.tex").write_text(
+        "\n".join(lines) + "\n"
+    )
 
 
 def write_integrity_flags(local: pd.DataFrame) -> None:
