@@ -67,13 +67,26 @@ write_trimmed_lines <- function(x, path) {
   writeLines(x, path)
 }
 
+normalize_pdf_dates <- function(path) {
+  if (!file.exists(path)) return(invisible(FALSE))
+  # R's PDF device writes wall-clock CreationDate/ModDate metadata, which
+  # otherwise causes byte-level churn when reproducing checked-in figures.
+  system2(
+    "perl",
+    c("-0777", "-pi", "-e", "s/D:[0-9]{14}/D:20260718000000/g", path),
+    stdout = FALSE,
+    stderr = FALSE
+  )
+  invisible(TRUE)
+}
+
 # ---------------------------------------------------------------------------
 # 1. Load + clean.
 # ---------------------------------------------------------------------------
 
 load_extraction <- function(path) {
   raw <- read_csv(
-    path, comment = "#", show_col_types = FALSE,
+    path, show_col_types = FALSE,
     col_types = cols(
       paper_id = col_character(),
       year = col_integer(),
@@ -810,6 +823,7 @@ save_forest <- function(delta_df, dataset, out_path) {
   forest(sub_fit, slab = slab_labels,
          xlab = "log(FM metric / baseline metric)", main = dataset)
   dev.off()
+  normalize_pdf_dates(out_path)
   message("Wrote ", out_path)
 }
 
@@ -848,6 +862,7 @@ cost_error_scatter <- function(rows, cost_axis, out_path) {
   }
   p <- p + theme_minimal(base_size = 11)
   ggsave(out_path, p, width = 7, height = 5)
+  normalize_pdf_dates(out_path)
   message("Wrote ", out_path)
 }
 
