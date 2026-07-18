@@ -92,11 +92,11 @@ entry points are:
 
 ### Matched-panel repair rerun
 
-The v1.3 audit found that the checked-in Source B cells were not evaluated on
-one common panel of series and forecast origins. The matched-panel repair uses
-shared 100-series panels for M5, Rohlik, and Favorita where runs are complete.
-For the repair rerun, use the matched-panel runner rather than the older
-MLflow-only gap-filling runner.
+The Source B integrity audit found that the legacy checked-in cells were not
+evaluated on one common panel of series and forecast origins. The matched-panel
+repair uses shared 100-series panels for M5, Rohlik, and Favorita where runs
+are complete. For the repair rerun, use the matched-panel runner rather than
+the older MLflow-only gap-filling runner.
 
 Baseline and protocol rerun:
 
@@ -200,7 +200,7 @@ Pass `--azure-uri ""` to export only local MLflow runs.
 
 ## Rerun fev-bench Official Windows
 
-The v1.9 Source-A repair adds prediction-level reruns for fev-bench retail
+The Source A fev-bench repair adds prediction-level reruns for fev-bench retail
 tasks using the official `fev.Task.iter_windows()` protocol rather than the
 older extraction-only leaderboard rows.  The entry point is:
 
@@ -222,7 +222,7 @@ Each task/model run writes:
 - `run_config.json` with model, task, quantile levels, missing-value handling,
   and batch size.
 
-Canonical local v1.9 runs are:
+Canonical local repair runs are:
 
 - `fev_v1_9_baseline_all_retail`: `seasonal_naive` for all 20 retail tasks.
 - `fev_v1_9_chronos_bolt_quantile_batch_a`,

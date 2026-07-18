@@ -1,16 +1,23 @@
-# Publication Strategy
+# Historical Publication Strategy
 
 Last updated: 2026-07-13
 
-This document turns the v1.0 Zenodo technical report into a practical
-publication plan. The current record is already public and citable:
+This document records the earlier publication plan for the v1.0 Zenodo
+technical report. It is retained for provenance, not as the current submission
+plan. The active path is the methodology-repair track documented in the
+manuscript, `README.md`, `REPRODUCING.md`, and the latest release notes: keep
+v1.0 as the historical Zenodo snapshot, maintain separate repair packages, and
+delay arXiv/journal submission until the repaired manuscript and replication
+package are internally consistent.
+
+The v1.0 record remains public and citable:
 <https://doi.org/10.5281/zenodo.21338004>.
 
-## Recommended Path
+## Superseded Recommended Path
 
 Recommended sequence:
 
-1. Prepare an arXiv-oriented v1.1 manuscript.
+1. Earlier plan: prepare an arXiv-oriented repair manuscript.
 2. Ask one forecasting/time-series researcher for external review or
    collaboration before journal submission.
 3. Submit the revised article to a peer-reviewed forecasting or applied-ML
@@ -23,7 +30,7 @@ made arXiv-compatible. A journal submission should follow only after the main
 text is shorter and the methodological framing has been reviewed by someone in
 forecasting or time-series evaluation.
 
-## Stage 1: arXiv v1.1
+## Superseded Stage 1: arXiv v1.1
 
 Goal: produce a readable preprint version that points to the Zenodo DOI and the
 GitHub release.
@@ -183,7 +190,7 @@ Official reference:
 - Data in Brief aims and scope:
   <https://www.sciencedirect.com/journal/data-in-brief>
 
-## Concrete Next Tasks
+## Superseded Concrete Next Tasks
 
 1. Create `paper/arxiv/` from the current LaTeX source.
 2. Produce a shorter v1.1 outline:
