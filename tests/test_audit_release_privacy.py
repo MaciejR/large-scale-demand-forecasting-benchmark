@@ -16,8 +16,9 @@ def test_release_privacy_audit_accepts_clean_text(tmp_path):
 def test_release_privacy_audit_flags_token_shaped_text(tmp_path):
     release_dir = tmp_path / "release"
     release_dir.mkdir()
+    token = "sk-" + "proj-" + "abcdefghijklmnopqrstuvwxyz123456"
     (release_dir / "notes.txt").write_text(
-        "OPENAI_API_KEY=sk-proj-abcdefghijklmnopqrstuvwxyz123456\n"
+        f"OPENAI_API_KEY={token}\n"
     )
 
     findings = audit_release_privacy.audit_release(release_dir)
@@ -28,8 +29,9 @@ def test_release_privacy_audit_flags_token_shaped_text(tmp_path):
 def test_release_privacy_audit_flags_local_paths(tmp_path):
     release_dir = tmp_path / "release"
     release_dir.mkdir()
+    local_path = "/" + "Users/example/private/raw.csv"
     (release_dir / "config.txt").write_text(
-        "source_path=/Users/example/private/raw.csv\n"
+        f"source_path={local_path}\n"
     )
 
     findings = audit_release_privacy.audit_release(release_dir)
