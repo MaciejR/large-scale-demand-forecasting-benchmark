@@ -90,10 +90,12 @@ LOCAL & Local Source~B sweep file (5~FMs + 3~baselines, MacBook/Azure) & 72 \\
 
 \begin{itemize}[nosep]
   \item \textbf{Source~A} (literature extraction): categories A--F
-    (757 schema rows from 32 included external sources plus benchmark
-    task expansions, including per-task fev-bench and GIFT-Eval
-    re-extraction). These rows report accuracy numbers as published by the
-    original authors or benchmark repositories.
+    (757 schema rows).  The PRISMA-informed flow counts 32 included
+    external study/source records; the larger row count comes from
+    model--dataset--metric rows and per-task fev-bench/GIFT-Eval
+    re-extraction, not from 757 independent studies.  These rows report
+    accuracy numbers as published by the original authors or benchmark
+    repositories.
   \item \textbf{Source~B} (gap-filling experiments): OWN + LOCAL
     rows. The current model-level analysis uses the 72-row
     \texttt{local\_fm\_sweep.csv} export from our own experiments on
