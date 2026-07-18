@@ -12,8 +12,8 @@
 1. Semantic Scholar (API)
 2. Google Scholar
 3. arXiv (cs.LG, stat.ML)
-4. Scopus (target source; auditable export not retained in v1.3)
-5. Web of Science (target source; auditable export not retained in v1.3)
+4. Scopus (target source; auditable export not retained)
+5. Web of Science (target source; auditable export not retained)
 
 ### Search Query
 ```
@@ -73,7 +73,13 @@ AND
 | 2026-04-12 | Web (arXiv) | demand forecasting foundation model Chronos TimesFM Moirai 2024 2025 | ~10 | arXiv targeted |
 | 2026-04-12 | Semantic Scholar API | foundation model time series demand forecasting | 1 (rate limited) | Got Chronos citation count (622) |
 
-**Total unique candidate papers after deduplication: 49**
+**PRISMA record count after duplicate removal: 120.**
+
+The candidate-paper tables below document 49 source records that were retained
+as the auditable source map for extraction and citation tracking.  They are not
+the PRISMA deduplicated screening denominator: the PRISMA flow uses 150
+identified records, 30 duplicate records removed, 120 title/abstract-screened
+records, 70 full texts assessed, and 32 Source A external studies included.
 
 ---
 
@@ -189,7 +195,7 @@ Source B own experiment blocks: 7 (not PRISMA studies)
 ## Key Observations from Search
 
 1. **No existing PRISMA-compliant systematic review** of foundation models for retail demand forecasting — confirms our contribution C1.
-2. **Three major benchmarks dominate**: GIFT-Eval (2024), fev-bench (2025), M5 (2020). Each has different model coverage; the v1.3 reanalysis keeps suite-level dependence explicit.
+2. **Three major benchmarks dominate**: GIFT-Eval (2024), fev-bench (2025), M5 (2020). Each has different model coverage; the current reanalysis keeps suite-level dependence explicit.
 3. **Foundation model landscape is fast-moving**: Chronos-2 (Oct 2025), Moirai 2.0 (Nov 2025), TimesFM 2.5 (Sep 2025), TiRex (May 2025), Sundial (Feb 2025) all released within 9 months.
 4. **GIFT-Eval leaderboard churns rapidly**: #1 changed 4+ times in 2025 (PatchTST → TabPFN-TS → Sundial → Toto → TSOrchestra). Zero-shot FMs cluster mid-pack.
 5. **Key gap**: No paper systematically compares cost/efficiency across foundation models — confirms our contribution C4.
