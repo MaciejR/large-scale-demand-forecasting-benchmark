@@ -12,14 +12,14 @@ import matplotlib.patches as mpatches
 
 # PRISMA flow numbers aligned with the repaired manuscript.
 # Identification
-N_DB_RECORDS = 150          # Records identified through database searching
+N_DB_RECORDS = 150          # Records identified through database/web searching
 N_QUERIES = 25              # Auditable query families retained in Appendix B
 N_DATABASES = 3             # Auditable exports/checks retained: Google Scholar/web, Semantic Scholar, arXiv
-N_OTHER_SOURCES = 0         # Database searching accounts for all 150 records
+N_OTHER_SOURCES = 0         # Database/web searching accounts for all 150 records
 N_TOTAL_IDENTIFIED = N_DB_RECORDS + N_OTHER_SOURCES
 
 # Screening
-N_DUPLICATES = 30           # Cross-database overlap, especially arXiv ↔ Scopus
+N_DUPLICATES = 30           # Cross-source overlap among retained auditable records
 N_AFTER_DEDUP = N_TOTAL_IDENTIFIED - N_DUPLICATES    # ~120
 
 N_SCREENED = N_AFTER_DEDUP  # Title/abstract screened
@@ -119,7 +119,7 @@ def main():
     bw, bh = 3.2, 0.7
 
     draw_box(ax, 3.5, 9.5, bw, bh,
-             f"Records identified through\ndatabase searching\n(n = {N_DB_RECORDS})",
+             f"Records identified through\ndatabase/web searching\n(n = {N_DB_RECORDS})",
              color="#E3F2FD", border="#1976D2", bold_first_line=True)
 
     draw_box(ax, 7.2, 9.5, bw, bh,

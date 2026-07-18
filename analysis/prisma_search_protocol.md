@@ -8,12 +8,17 @@
 - **RQ3:** What observed cost-error tradeoffs appear across model families?
 - **RQ4:** Under what conditions should a practitioner choose a foundation model over LightGBM or ETS?
 
-### Databases
+### Search Sources
 1. Semantic Scholar (API)
 2. Google Scholar
 3. arXiv (cs.LG, stat.ML)
 4. Scopus (target source; auditable export not retained)
 5. Web of Science (target source; auditable export not retained)
+
+The retained auditable log contains 25 query families across three source
+channels: Google Scholar/web, arXiv, and Semantic Scholar. Scopus and Web of
+Science remain listed as target sources only because their export logs were not
+retained.
 
 ### Search Query
 ```
@@ -171,7 +176,7 @@ records, 70 full texts assessed, and 32 Source A external studies included.
 ## PRISMA Flow Summary
 
 ```
-Records identified through database searching: 150 (25 auditable query families)
+Records identified through database/web searching: 150 (25 auditable query families)
 Duplicates removed: 30
 Records after deduplication: 120
 Titles/abstracts screened: 120
