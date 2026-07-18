@@ -14,6 +14,12 @@ The current manuscript PDF is available at
 The v1.0 technical-report release is archived on Zenodo:
 <https://doi.org/10.5281/zenodo.21338004>.
 
+The current Zenodo-ready repair package is built locally as
+`release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair.zip`.  It
+contains the manuscript PDF, replication materials, `COMMIT.txt`, and
+`CHECKSUMS.txt`; raw Kaggle data, MLflow stores, model checkpoints, logs, and
+full fev-bench prediction parquet trees are intentionally excluded.
+
 ## Key Findings
 
 - Foundation models show negative benchmark-level log-ratio point estimates
@@ -162,4 +168,6 @@ do not overwrite the historical v1.0 snapshot. The current working version is
 v1.12, adding TimesFM 2.5 official fev-bench prediction-level WAPE covariance
 artifacts on top of the v1.11 TimesFM Source B matched-panel extension, v1.10
 TiRex fev-bench repair, v1.9 Chronos fev-bench repair, and Source B
-matched-panel covariance repair.
+matched-panel covariance repair.  The local v1.12 release directory records
+the exact source commit in `COMMIT.txt` and package integrity in
+`CHECKSUMS.txt`.

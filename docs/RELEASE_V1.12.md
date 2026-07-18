@@ -70,3 +70,19 @@ Raw prediction parquet trees under `benchmark/results/fev_bench_official/` are
 not versioned in git and are not included in the release package.  The release
 contains scripts, manifests, generated summaries, and covariance artifacts
 needed to audit and reproduce the reported WAPE repair.
+
+## Package Audit
+
+The Zenodo-ready archive contains:
+
+- `manuscript/demand-forecasting-timesfm-fev-bench-wape-covariance-repair-v1.12.pdf`
+- `replication/` with source, tests, derived analysis artifacts, manifests, and
+  release documentation
+- `COMMIT.txt` with the source commit used to build the package
+- `CHECKSUMS.txt` with SHA-256 hashes for packaged files
+
+The package intentionally excludes `.git/`, `release/`, `data/raw/`, `mlruns/`,
+`logs/`, local `.env` files, model checkpoint formats, private `Umowa*.pdf`
+files, full `benchmark/results/fev_bench_official/` prediction parquet trees,
+and the untracked local `source_b_v1_11_timesfm25_m5_rohlik_100_batched`
+prediction tree.
