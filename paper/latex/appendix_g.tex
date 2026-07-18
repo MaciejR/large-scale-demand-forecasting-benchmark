@@ -7,7 +7,7 @@ direct-vs-recursive pattern as a fixed-budget diagnostic, not as a causal
 intermittency result.  The stronger claims from earlier drafts are replaced
 by three audit conclusions: (i) the legacy fixed-budget protocol ranking
 differs across datasets, (ii) the matched-panel aggregate-\WAPE{}
-repair makes M5/Rohlik more conservative than the legacy per-series view
+repair makes M5 and Rohlik more conservative than the legacy per-series view
 and gives a mixed Favorita protocol ranking, and (iii) the legacy Favorita
 \texttt{direct\_scaled} run should not be used as inferential evidence.
 
@@ -139,7 +139,7 @@ Favorita & ${\sim}15$--$25\,\%$ & $-4.1\,\%$ & $-7.5\,\%$ & $-9.6\,\%$ & Recursi
 
 \subsection{Matched-Panel Protocol Check}
 
-The matched-panel repair recomputes the M5/Rohlik/Favorita LightGBM protocol
+The matched-panel repair recomputes the M5, Rohlik, and Favorita LightGBM protocol
 contrast on the same 100 top-volume series used for the FM-vs-baseline
 paired panel.  Using aggregate \WAPE{}, direct is slightly worse than
 recursive on M5 at $h=7$ and $h=14$, slightly better at $h=28$, and worse
@@ -164,9 +164,9 @@ not yet reconcile to one ledger.
 
 The cost plots in \S\ref{sec:cost-accuracy} therefore remain cost-error
 scatterplots.  The matched-panel repair writes a local run ledger for
-the completed M5/Rohlik/Favorita reruns; the older Azure summary/detail tables still need a
-single reconciled ledger before cost claims are promoted beyond descriptive
-accounting.
+the completed M5, Rohlik, and Favorita reruns.  The older Azure
+summary/detail tables still need a single reconciled ledger before cost
+claims are promoted beyond descriptive accounting.
 
 \subsection{Reproducibility Detail}\label{app:reproducibility}
 
@@ -174,6 +174,6 @@ Every baseline result should be tied to a git commit SHA, an Azure ML
 pipeline run name, a registered data asset version, and a versioned
 environment.  The matched-panel runs store shared series identifiers,
 forecast origins, actuals, per-model predictions, and paired bootstrap
-contrasts for completed M5/Rohlik/Favorita cells.  The same requirement
+contrasts for completed M5, Rohlik, and Favorita cells.  The same requirement
 applies to future GPU/larger-workload reruns and covariate-aware FM
 variants before Source~B can enter a broader formal paired analysis.
