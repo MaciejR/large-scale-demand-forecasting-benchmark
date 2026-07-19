@@ -70,6 +70,7 @@ cp paper/latex/main.pdf "$release_dir/manuscript/$pdf_name"
 
 rsync -a ./ "$release_dir/replication/" \
   --exclude '.git/' \
+  --exclude '.claude/' \
   --exclude 'release/' \
   --exclude 'data/raw/' \
   --exclude 'mlruns/' \
@@ -84,6 +85,12 @@ rsync -a ./ "$release_dir/replication/" \
   --exclude '*.pt' \
   --exclude '*.pth' \
   --exclude '*.safetensors' \
+  --exclude 'paper/latex/*.aux' \
+  --exclude 'paper/latex/*.bbl' \
+  --exclude 'paper/latex/*.blg' \
+  --exclude 'paper/latex/*.out' \
+  --exclude 'paper/latex/*.spl' \
+  --exclude 'paper/latex/*.synctex.gz' \
   --exclude 'benchmark/results/fev_bench_official/' \
   --exclude '*/source_b_v1_11_timesfm25_m5_rohlik_100_batched/' \
   --exclude 'Umowa*.pdf'
@@ -134,6 +141,7 @@ if [[ -n "$privacy_hits" ]]; then
 fi
 
 python3 tools/audit_release_privacy.py "$release_dir"
+python3 tools/audit_release_manifest.py "$release_dir"
 
 du -sh "$zip_path" "$release_dir"
 echo "Built and audited $zip_path at $head_sha"

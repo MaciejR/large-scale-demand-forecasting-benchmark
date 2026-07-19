@@ -354,6 +354,7 @@ tools/audit_manuscript_v112.sh
 python3 tools/audit_citations.py
 python3 tools/audit_prisma_counts.py
 python3 tools/audit_release_privacy.py release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair
+python3 tools/audit_release_manifest.py release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair
 ```
 
 The manuscript audit checks the rendered PDF and current LaTeX source for
@@ -365,3 +366,7 @@ The PRISMA audit checks the flow counts across the diagram generator, Section 4,
 Appendix B, and `analysis/prisma_search_protocol.md`.
 The release privacy audit scans the assembled release directory for excluded
 private files, local filesystem paths, and token-shaped secrets before upload.
+The release manifest audit checks that the package includes the manuscript,
+LaTeX source, replication scripts, study/provenance tables, PRISMA artifacts,
+fev-bench covariance outputs, Source B audit outputs, checksums, and commit
+provenance while excluding local tool state and LaTeX build products.
