@@ -114,6 +114,7 @@ fi
 
 (cd "$release_dir" && shasum -a 256 -c CHECKSUMS.txt >/tmp/v112_release_checksums.log)
 unzip -t "$zip_path" >/tmp/v112_release_zip.log
+python3 tools/audit_unpacked_release.py "$zip_path"
 
 privacy_hits="$(
   find "$release_dir" \( \
