@@ -46,7 +46,7 @@ def audit_git(repo_root: Path) -> list[str]:
     return findings
 
 
-def audit_release(repo_root: Path) -> list[str]:
+def audit_release(repo_root: Path, require_complete_log: bool) -> list[str]:
     findings: list[str] = []
     release_dir = repo_root / RELEASE_DIR
     zip_path = repo_root / ZIP_PATH
@@ -62,12 +62,16 @@ def audit_release(repo_root: Path) -> list[str]:
     elif commit_path.read_text(encoding="utf-8").strip() != head:
         findings.append("release COMMIT.txt does not match HEAD")
 
+    publication_log_command = ["python3", "tools/audit_publication_log_v112.py"]
+    if require_complete_log:
+        publication_log_command.append("--require-complete")
+
     for command in [
         ["python3", "tools/audit_release_privacy.py", str(RELEASE_DIR)],
         ["python3", "tools/audit_release_manifest.py", str(RELEASE_DIR)],
         ["python3", "tools/audit_release_provenance.py", str(RELEASE_DIR)],
         ["python3", "tools/audit_zenodo_metadata.py"],
-        ["python3", "tools/audit_publication_log_v112.py"],
+        publication_log_command,
     ]:
         code, _stdout, stderr = try_run(command, repo_root)
         if code != 0:
@@ -104,8 +108,8 @@ def audit_github_visibility(repo_root: Path, require_public: bool) -> list[str]:
     return []
 
 
-def audit(repo_root: Path, require_public: bool) -> list[str]:
-    findings = audit_git(repo_root) + audit_release(repo_root)
+def audit(repo_root: Path, require_public: bool, require_complete_log: bool) -> list[str]:
+    findings = audit_git(repo_root) + audit_release(repo_root, require_complete_log)
     visibility_findings = audit_github_visibility(repo_root, require_public)
     findings.extend(visibility_findings)
     if require_public:
@@ -123,10 +127,19 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Fail unless the GitHub repository is public.",
     )
+    parser.add_argument(
+        "--require-complete-log",
+        action="store_true",
+        help="Fail unless docs/PUBLICATION_LOG_V1.12.md is complete after Zenodo publication.",
+    )
     args = parser.parse_args(argv)
 
     repo_root = Path(__file__).resolve().parents[1]
-    findings = audit(repo_root, require_public=args.require_public)
+    findings = audit(
+        repo_root,
+        require_public=args.require_public,
+        require_complete_log=args.require_complete_log,
+    )
     if findings:
         print("Publication readiness audit failed:", file=sys.stderr)
         for finding in findings:

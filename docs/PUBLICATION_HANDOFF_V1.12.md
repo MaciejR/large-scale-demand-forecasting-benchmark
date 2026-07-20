@@ -195,4 +195,5 @@ include the production DOI, DOI URL, Zenodo record URL, ISO-8601 UTC
 
 ```bash
 python3 tools/audit_publication_log_v112.py --require-complete
+python3 tools/audit_publication_readiness.py --require-public --require-complete-log
 ```

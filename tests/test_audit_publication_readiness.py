@@ -64,15 +64,41 @@ def test_release_audit_includes_publication_log_gate(monkeypatch):
     monkeypatch.setattr(Path, "is_file", lambda self: True)
     monkeypatch.setattr(Path, "read_text", lambda self, encoding=None: "abc123")
 
-    assert audit_publication_readiness.audit_release(Path(".")) == []
+    assert audit_publication_readiness.audit_release(Path("."), require_complete_log=False) == []
     assert ["python3", "tools/audit_publication_log_v112.py"] in commands
+
+
+def test_release_audit_can_require_complete_publication_log(monkeypatch):
+    commands = []
+
+    monkeypatch.setattr(audit_publication_readiness, "run", lambda cmd, cwd: "abc123")
+
+    def fake_try_run(cmd, cwd):
+        commands.append(cmd)
+        return 0, "", ""
+
+    monkeypatch.setattr(audit_publication_readiness, "try_run", fake_try_run)
+    monkeypatch.setattr(Path, "is_dir", lambda self: True)
+    monkeypatch.setattr(Path, "is_file", lambda self: True)
+    monkeypatch.setattr(Path, "read_text", lambda self, encoding=None: "abc123")
+
+    assert audit_publication_readiness.audit_release(Path("."), require_complete_log=True) == []
+    assert [
+        "python3",
+        "tools/audit_publication_log_v112.py",
+        "--require-complete",
+    ] in commands
 
 
 def test_require_public_runs_download_verified_github_release_audit(monkeypatch):
     commands = []
 
     monkeypatch.setattr(audit_publication_readiness, "audit_git", lambda repo_root: [])
-    monkeypatch.setattr(audit_publication_readiness, "audit_release", lambda repo_root: [])
+    monkeypatch.setattr(
+        audit_publication_readiness,
+        "audit_release",
+        lambda repo_root, require_complete_log: [],
+    )
     monkeypatch.setattr(
         audit_publication_readiness,
         "audit_github_visibility",
@@ -85,7 +111,14 @@ def test_require_public_runs_download_verified_github_release_audit(monkeypatch)
 
     monkeypatch.setattr(audit_publication_readiness, "try_run", fake_try_run)
 
-    assert audit_publication_readiness.audit(Path("."), require_public=True) == []
+    assert (
+        audit_publication_readiness.audit(
+            Path("."),
+            require_public=True,
+            require_complete_log=False,
+        )
+        == []
+    )
     assert [
         "python3",
         "tools/audit_github_release.py",
