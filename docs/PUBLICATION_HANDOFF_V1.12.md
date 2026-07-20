@@ -107,7 +107,8 @@ the metadata file packaged inside the ZIP.  Publishing is a separate
 irreversible step:
 
 ```bash
-python3 tools/zenodo_upload_v112.py --deposition-id <draft-id> --publish
+python3 tools/zenodo_upload_v112.py --deposition-id <draft-id> --publish | tee /tmp/zenodo-v1.12-publish.json
+python3 tools/update_publication_log_v112.py --zenodo-json /tmp/zenodo-v1.12-publish.json --apply
 ```
 
 ## After Zenodo Minting
