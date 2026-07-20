@@ -48,9 +48,10 @@ Then rerun:
 ```bash
 python3 tools/audit_publication_readiness.py --require-public
 python3 tools/audit_github_release.py
+python3 tools/audit_zenodo_upload_readiness.py
 ```
 
-The public-ready state is reached only when both commands pass.
+The public-ready state is reached only when all three commands pass.
 
 ## Zenodo Upload
 
@@ -67,6 +68,7 @@ Use `docs/ZENODO_METADATA_V1.12.json` as the metadata draft and verify it with:
 
 ```bash
 python3 tools/audit_zenodo_metadata.py
+python3 tools/audit_zenodo_upload_readiness.py --require-token
 ```
 
 Before uploading, verify package provenance:
