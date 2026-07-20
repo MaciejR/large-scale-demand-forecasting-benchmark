@@ -89,7 +89,19 @@ def has_value(text: str, label: str) -> bool:
     raise ValueError(f"expected one publication-log field {label!r}, found 0")
 
 
+def field_value(text: str, label: str) -> str:
+    marker = f"- {label}: "
+    matches = []
+    for line in text.splitlines():
+        if line.startswith(marker):
+            matches.append(line[len(marker) :].strip())
+    if len(matches) != 1:
+        raise ValueError(f"expected one publication-log field {label!r}, found {len(matches)}")
+    return matches[0]
+
+
 def validate_payload_for_log_update(
+    text: str,
     payload: dict[str, Any],
     zip_digest: str,
     sandbox: bool,
@@ -100,9 +112,14 @@ def validate_payload_for_log_update(
         raise ValueError(f"unexpected Zenodo JSON mode: {mode!r}")
     if mode != "dry-run":
         payload_sha = payload.get("zip_sha256")
-        if payload_sha != zip_digest:
+        expected_sha = (
+            field_value(text, "Asset SHA-256")
+            if doi_update_commit
+            else zip_digest
+        )
+        if payload_sha != expected_sha:
             raise ValueError(
-                f"Zenodo JSON zip_sha256 {payload_sha!r} does not match current release zip {zip_digest}"
+                f"Zenodo JSON zip_sha256 {payload_sha!r} does not match expected uploaded release zip {expected_sha}"
             )
         asset_name = payload.get("asset_name")
         if asset_name != ASSET_NAME:
@@ -134,7 +151,6 @@ def update_log_text(
     sandbox: bool,
     doi_update_commit: str | None = None,
 ) -> str:
-    validate_payload_for_log_update(payload, zip_digest, sandbox, doi_update_commit)
     deposition = payload.get("deposition") or {}
     deposition_id = deposition.get("id")
     record_url = record_url_from_payload(deposition)
@@ -147,6 +163,7 @@ def update_log_text(
             "record the Zenodo-uploaded Target commit and Asset SHA-256 before "
             "recording the DOI metadata update commit"
         )
+    validate_payload_for_log_update(text, payload, zip_digest, sandbox, doi_update_commit)
 
     if payload.get("mode") != "dry-run" and not doi_update_commit:
         text = set_field(text, "Target commit", current_commit)
