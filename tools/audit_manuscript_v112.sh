@@ -26,13 +26,23 @@ forbidden_pdf_patterns=(
   "k = 138"
   "k=138"
   "30+ queries"
-  "v1.1"
-  "v1.2"
 )
 
 for pattern in "${forbidden_pdf_patterns[@]}"; do
   if grep -Fq "$pattern" "$TEXT_PATH"; then
     echo "Forbidden PDF text found: $pattern" >&2
+    exit 1
+  fi
+done
+
+forbidden_pdf_regexes=(
+  'v1\.1([^0-9]|$)'
+  'v1\.2([^0-9]|$)'
+)
+
+for pattern in "${forbidden_pdf_regexes[@]}"; do
+  if grep -Eq "$pattern" "$TEXT_PATH"; then
+    echo "Forbidden PDF text found by regex: $pattern" >&2
     exit 1
   fi
 done
