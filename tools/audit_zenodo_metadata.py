@@ -11,6 +11,7 @@ from pathlib import Path
 
 
 METADATA_PATH = Path("docs/ZENODO_METADATA_V1.12.json")
+ROOT_METADATA_PATH = Path(".zenodo.json")
 ZIP_PATH = Path("release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair.zip")
 RELEASE_DIR = Path("release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair")
 ASSET_NAME = "zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair.zip"
@@ -89,18 +90,25 @@ def audit_metadata(metadata: dict) -> list[str]:
 
 def audit(repo_root: Path) -> list[str]:
     metadata_path = repo_root / METADATA_PATH
+    root_metadata_path = repo_root / ROOT_METADATA_PATH
     zip_path = repo_root / ZIP_PATH
     commit_path = repo_root / RELEASE_DIR / "COMMIT.txt"
 
     findings: list[str] = []
     if not metadata_path.is_file():
         return [f"missing metadata file: {METADATA_PATH}"]
+    if not root_metadata_path.is_file():
+        findings.append(f"missing root metadata file: {ROOT_METADATA_PATH}")
     if not zip_path.is_file():
         return [f"missing release zip: {ZIP_PATH}"]
     if not commit_path.is_file():
         findings.append(f"missing release COMMIT.txt: {RELEASE_DIR / 'COMMIT.txt'}")
 
     metadata = load_metadata(metadata_path)
+    if root_metadata_path.is_file():
+        root_metadata = load_metadata(root_metadata_path)
+        if root_metadata != metadata:
+            findings.append(f"{ROOT_METADATA_PATH} does not match {METADATA_PATH}")
     # Do not require the outer zip checksum in this metadata file: the metadata
     # is itself packaged inside the zip, so embedding that hash would be
     # circular.  Package hashes are audited through CHECKSUMS.txt and the GitHub

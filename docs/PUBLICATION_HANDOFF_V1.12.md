@@ -71,6 +71,9 @@ python3 tools/audit_zenodo_metadata.py
 python3 tools/audit_zenodo_upload_readiness.py --require-token
 ```
 
+The root `.zenodo.json` is intentionally kept equivalent as JSON data to
+`docs/ZENODO_METADATA_V1.12.json`; the metadata audit fails if they diverge.
+
 Before uploading, verify package provenance:
 
 ```bash

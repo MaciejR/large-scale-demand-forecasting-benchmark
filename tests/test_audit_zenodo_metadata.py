@@ -75,3 +75,9 @@ def test_zenodo_metadata_flags_missing_checksums_note():
     findings = audit_zenodo_metadata.audit_metadata(metadata)
 
     assert findings == ["notes missing 'CHECKSUMS.txt'"]
+
+
+def test_root_zenodo_metadata_matches_draft():
+    assert audit_zenodo_metadata.load_metadata(
+        audit_zenodo_metadata.ROOT_METADATA_PATH
+    ) == audit_zenodo_metadata.load_metadata(audit_zenodo_metadata.METADATA_PATH)

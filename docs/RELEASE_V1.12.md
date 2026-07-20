@@ -108,7 +108,8 @@ public.  After the GitHub release is created, `python3 tools/audit_github_releas
 checks that tag `v1.12` and the uploaded zip asset match the local package.
 `python3 tools/audit_zenodo_metadata.py` checks that the Zenodo metadata draft
 matches the package version, GitHub release URL, historical DOI relation, asset
-name, commit-provenance note, and packaged `CHECKSUMS.txt` note.
+name, commit-provenance note, packaged `CHECKSUMS.txt` note, and root
+`.zenodo.json` metadata.
 `python3 tools/audit_zenodo_upload_readiness.py` combines the GitHub release,
 Zenodo metadata, package provenance, clean-tree, and pushed-HEAD checks.  Add
 `--require-token` immediately before an API upload to verify that a Zenodo token
