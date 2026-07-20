@@ -19,6 +19,7 @@ GITHUB_RELEASE_URL = (
 )
 DOI_RE = re.compile(r"10\.5281/zenodo\.[0-9]+")
 FULL_COMMIT_RE = re.compile(r"[0-9a-f]{40}")
+UTC_TIMESTAMP_RE = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z")
 FIELD_RE = re.compile(r"^- (?P<label>[^:]+): (?P<value>.*)$", re.MULTILINE)
 
 
@@ -53,6 +54,7 @@ def audit_log_text(text: str) -> list[str]:
         "Production record URL:",
         "Production DOI:",
         "Production DOI URL:",
+        "Published at:",
         "DOI metadata update commit:",
         "Final package SHA-256 after DOI update:",
         "Final GitHub release target after DOI update:",
@@ -69,6 +71,7 @@ def audit_complete_log_text(text: str) -> list[str]:
     doi = field_value(text, "Production DOI")
     doi_url = field_value(text, "Production DOI URL")
     record_url = field_value(text, "Production record URL")
+    published_at = field_value(text, "Published at")
     update_commit = field_value(text, "DOI metadata update commit")
     if not doi or not DOI_RE.fullmatch(doi):
         findings.append("publication log does not contain a Zenodo DOI")
@@ -85,6 +88,8 @@ def audit_complete_log_text(text: str) -> list[str]:
         findings.append(
             "publication log DOI metadata update commit is not a full 40-character git SHA"
         )
+    if not published_at or not UTC_TIMESTAMP_RE.fullmatch(published_at):
+        findings.append("publication log Published at is not an ISO-8601 UTC timestamp")
     return findings
 
 

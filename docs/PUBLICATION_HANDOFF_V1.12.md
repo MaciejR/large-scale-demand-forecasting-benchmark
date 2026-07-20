@@ -148,7 +148,8 @@ python3 tools/audit_publication_readiness.py --require-public
 ```
 
 Commit and push the DOI metadata update, then record that full commit SHA in the
-publication log:
+publication log.  The publish JSON includes `published_at_utc`, which the helper
+copies into the `Published at` field:
 
 ```bash
 python3 tools/update_publication_log_v112.py \
@@ -167,8 +168,9 @@ asset digest.  You can also run the GitHub release gate directly with:
 python3 tools/audit_github_release.py --verify-download
 ```
 
-Finally fill the Zenodo DOI fields in `docs/PUBLICATION_LOG_V1.12.md`, including
-the full 40-character `DOI metadata update commit`, and verify:
+Finally verify that the Zenodo DOI fields in `docs/PUBLICATION_LOG_V1.12.md`
+include the production DOI, DOI URL, Zenodo record URL, ISO-8601 UTC
+`Published at` timestamp, and full 40-character `DOI metadata update commit`:
 
 ```bash
 python3 tools/audit_publication_log_v112.py --require-complete

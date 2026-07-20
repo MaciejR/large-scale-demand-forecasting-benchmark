@@ -109,6 +109,9 @@ def update_log_text(
         text = set_field(text, "Published at", "recorded by Zenodo")
     if doi_update_commit:
         text = set_field(text, "DOI metadata update commit", doi_update_commit)
+    published_at = payload.get("published_at_utc")
+    if isinstance(published_at, str) and payload.get("mode") == "published":
+        text = set_field(text, "Published at", published_at)
     return text
 
 

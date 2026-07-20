@@ -9,6 +9,7 @@ import hashlib
 import json
 import os
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -165,6 +166,10 @@ def write_json_result(result: dict[str, Any], output_path: Path | None) -> str:
     return rendered
 
 
+def utc_now_iso() -> str:
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
 def upload(
     repo_root: Path,
     api_base: str,
@@ -219,6 +224,7 @@ def upload(
         result["deposition"] = deposition_summary(
             publish_deposition(session, api_base, deposition_id)
         )
+        result["published_at_utc"] = utc_now_iso()
     return result
 
 

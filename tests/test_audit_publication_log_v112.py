@@ -16,6 +16,7 @@ def valid_log():
             "Production record URL: TODO",
             "Production DOI: TODO",
             "Production DOI URL: TODO",
+            "Published at: TODO",
             "DOI metadata update commit: TODO",
             "Final package SHA-256 after DOI update: TODO",
             "Final GitHub release target after DOI update: TODO",
@@ -42,6 +43,7 @@ def test_complete_publication_log_flags_todo_and_missing_doi():
     assert "publication log does not contain a Zenodo DOI" in findings
     assert "publication log does not contain a production DOI URL" in findings
     assert "publication log does not contain a production record URL" in findings
+    assert "publication log Published at is not an ISO-8601 UTC timestamp" in findings
     assert (
         "publication log DOI metadata update commit is not a full 40-character git SHA"
         in findings
@@ -53,6 +55,7 @@ def test_complete_publication_log_accepts_doi_record_and_no_todo():
         "- Production DOI: 10.5281/zenodo.99999999\n"
         "- Production DOI URL: https://doi.org/10.5281/zenodo.99999999\n"
         "- Production record URL: https://zenodo.org/records/99999999\n"
+        "- Published at: 2026-07-20T10:30:00Z\n"
         "- DOI metadata update commit: 1234567890abcdef1234567890abcdef12345678"
     )
 
@@ -64,6 +67,7 @@ def test_complete_publication_log_flags_mismatched_doi_url_and_short_commit():
         "- Production DOI: 10.5281/zenodo.99999999\n"
         "- Production DOI URL: https://doi.org/10.5281/zenodo.11111111\n"
         "- Production record URL: https://zenodo.org/records/99999999\n"
+        "- Published at: recorded by Zenodo\n"
         "- DOI metadata update commit: 123abc"
     )
 
@@ -74,6 +78,7 @@ def test_complete_publication_log_flags_mismatched_doi_url_and_short_commit():
         "publication log DOI metadata update commit is not a full 40-character git SHA"
         in findings
     )
+    assert "publication log Published at is not an ISO-8601 UTC timestamp" in findings
 
 
 def test_publication_log_checks_known_commit_and_sha_against_package(tmp_path):
@@ -99,6 +104,7 @@ def test_publication_log_checks_known_commit_and_sha_against_package(tmp_path):
                 "- Production record URL: TODO",
                 "- Production DOI: TODO",
                 "- Production DOI URL: TODO",
+                "- Published at: TODO",
                 "- DOI metadata update commit: TODO",
                 "- Final package SHA-256 after DOI update: TODO",
                 "- Final GitHub release target after DOI update: TODO",
@@ -132,6 +138,7 @@ def test_publication_log_flags_stale_known_commit_and_sha(tmp_path):
                 "- Production record URL: TODO",
                 "- Production DOI: TODO",
                 "- Production DOI URL: TODO",
+                "- Published at: TODO",
                 "- DOI metadata update commit: TODO",
                 "- Final package SHA-256 after DOI update: TODO",
                 "- Final GitHub release target after DOI update: TODO",

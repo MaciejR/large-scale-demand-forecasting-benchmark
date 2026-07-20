@@ -40,6 +40,7 @@ def test_update_log_text_fills_production_publish_result():
     doi_update_commit = "1234567890abcdef1234567890abcdef12345678"
     payload = {
         "mode": "published",
+        "published_at_utc": "2026-07-20T10:30:00Z",
         "deposition": {
             "id": 123,
             "record_id": 456,
@@ -63,7 +64,7 @@ def test_update_log_text_fills_production_publish_result():
     assert "- Production record URL: https://zenodo.org/records/456" in updated
     assert "- Production DOI: 10.5281/zenodo.456" in updated
     assert "- Production DOI URL: https://doi.org/10.5281/zenodo.456" in updated
-    assert "- Published at: recorded by Zenodo" in updated
+    assert "- Published at: 2026-07-20T10:30:00Z" in updated
     assert f"- DOI metadata update commit: {doi_update_commit}" in updated
 
 
