@@ -239,7 +239,11 @@ def upload(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--deposition-id", help="Existing unpublished deposition ID to update.")
-    parser.add_argument("--publish", action="store_true", help="Publish after uploading.")
+    parser.add_argument(
+        "--publish",
+        action="store_true",
+        help="Publish after uploading. Requires --deposition-id.",
+    )
     parser.add_argument("--sandbox", action="store_true", help="Use sandbox.zenodo.org.")
     parser.add_argument("--dry-run", action="store_true", help="Validate and print planned actions.")
     parser.add_argument("--output-json", type=Path, help="Also write the JSON result to this path.")

@@ -6,6 +6,9 @@ sys.path.insert(0, "tools")
 import zenodo_upload_v112
 
 
+SCRIPT = Path("tools/zenodo_upload_v112.py")
+
+
 class Response:
     def __init__(self, status_code, payload):
         self.status_code = status_code
@@ -134,6 +137,12 @@ def test_sandbox_default_token_names_are_distinct_from_production():
     assert (
         sandbox_names != zenodo_upload_v112.audit_zenodo_upload_readiness.TOKEN_ENV_VARS
     )
+
+
+def test_publish_help_mentions_deposition_id_requirement():
+    text = SCRIPT.read_text(encoding="utf-8")
+
+    assert "Publish after uploading. Requires --deposition-id." in text
 
 
 def test_metadata_with_zip_sha_appends_non_circular_upload_note(tmp_path):
