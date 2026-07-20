@@ -39,7 +39,7 @@ def related_identifier_map(metadata: dict) -> dict[tuple[str, str], dict]:
     return result
 
 
-def audit_metadata(metadata: dict, zip_digest: str) -> list[str]:
+def audit_metadata(metadata: dict) -> list[str]:
     findings: list[str] = []
 
     expected = {
@@ -78,7 +78,7 @@ def audit_metadata(metadata: dict, zip_digest: str) -> list[str]:
             findings.append(f"missing related identifier: {key[0]} ({key[1]})")
 
     notes = metadata.get("notes", "")
-    for required in [ASSET_NAME, zip_digest, "COMMIT.txt"]:
+    for required in [ASSET_NAME, "COMMIT.txt", "CHECKSUMS.txt"]:
         if required not in notes:
             findings.append(f"notes missing {required!r}")
 
@@ -99,7 +99,12 @@ def audit(repo_root: Path) -> list[str]:
         findings.append(f"missing release COMMIT.txt: {RELEASE_DIR / 'COMMIT.txt'}")
 
     metadata = load_metadata(metadata_path)
-    findings.extend(audit_metadata(metadata, sha256(zip_path)))
+    # Do not require the outer zip checksum in this metadata file: the metadata
+    # is itself packaged inside the zip, so embedding that hash would be
+    # circular.  Package hashes are audited through CHECKSUMS.txt and the GitHub
+    # release asset digest instead.
+    sha256(zip_path)
+    findings.extend(audit_metadata(metadata))
     return findings
 
 

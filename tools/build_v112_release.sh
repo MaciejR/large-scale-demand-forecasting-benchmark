@@ -145,6 +145,7 @@ fi
 python3 tools/audit_release_privacy.py "$release_dir"
 python3 tools/audit_release_manifest.py "$release_dir"
 python3 tools/audit_release_provenance.py "$release_dir"
+python3 tools/audit_zenodo_metadata.py
 
 du -sh "$zip_path" "$release_dir"
 echo "Built and audited $zip_path at $head_sha"

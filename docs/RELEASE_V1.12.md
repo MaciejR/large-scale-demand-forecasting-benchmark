@@ -108,4 +108,4 @@ public.  After the GitHub release is created, `python3 tools/audit_github_releas
 checks that tag `v1.12` and the uploaded zip asset match the local package.
 `python3 tools/audit_zenodo_metadata.py` checks that the Zenodo metadata draft
 matches the package version, GitHub release URL, historical DOI relation, asset
-name, and SHA-256 digest.
+name, commit-provenance note, and packaged `CHECKSUMS.txt` note.

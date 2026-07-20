@@ -388,4 +388,4 @@ The GitHub release audit checks that tag `v1.12`, its target commit, uploaded
 zip asset, size, URL, and SHA-256 digest match the local release package.
 The Zenodo metadata audit checks that `docs/ZENODO_METADATA_V1.12.json`
 matches the package version, GitHub release URL, historical v1.0 DOI relation,
-asset name, checksum, and release notes.
+asset name, commit-provenance note, and packaged `CHECKSUMS.txt` note.

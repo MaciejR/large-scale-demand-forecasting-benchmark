@@ -38,20 +38,21 @@ def valid_metadata():
         ],
         "notes": (
             f"GitHub release asset: {audit_zenodo_metadata.ASSET_NAME}; "
-            "SHA-256: abc123; source commit recorded in COMMIT.txt inside the archive."
+            "source commit recorded in COMMIT.txt inside the archive; "
+            "file hashes recorded in CHECKSUMS.txt inside the archive."
         ),
     }
 
 
 def test_zenodo_metadata_accepts_valid_minimal_metadata():
-    assert audit_zenodo_metadata.audit_metadata(valid_metadata(), "abc123") == []
+    assert audit_zenodo_metadata.audit_metadata(valid_metadata()) == []
 
 
 def test_zenodo_metadata_flags_wrong_version():
     metadata = valid_metadata()
     metadata["version"] = "v1.0"
 
-    findings = audit_zenodo_metadata.audit_metadata(metadata, "abc123")
+    findings = audit_zenodo_metadata.audit_metadata(metadata)
 
     assert any("version='v1.0'" in finding for finding in findings)
 
@@ -60,14 +61,15 @@ def test_zenodo_metadata_flags_missing_github_release_relation():
     metadata = copy.deepcopy(valid_metadata())
     metadata["related_identifiers"] = metadata["related_identifiers"][:1]
 
-    findings = audit_zenodo_metadata.audit_metadata(metadata, "abc123")
+    findings = audit_zenodo_metadata.audit_metadata(metadata)
 
     assert any(audit_zenodo_metadata.GITHUB_RELEASE_URL in finding for finding in findings)
 
 
-def test_zenodo_metadata_flags_checksum_mismatch():
+def test_zenodo_metadata_flags_missing_checksums_note():
     metadata = valid_metadata()
+    metadata["notes"] = f"GitHub release asset: {audit_zenodo_metadata.ASSET_NAME}; COMMIT.txt"
 
-    findings = audit_zenodo_metadata.audit_metadata(metadata, "def456")
+    findings = audit_zenodo_metadata.audit_metadata(metadata)
 
-    assert findings == ["notes missing 'def456'"]
+    assert findings == ["notes missing 'CHECKSUMS.txt'"]

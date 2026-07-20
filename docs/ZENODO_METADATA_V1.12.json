@@ -44,5 +44,5 @@
     }
   ],
   "communities": [],
-  "notes": "GitHub release asset: zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair.zip; SHA-256: 729df9188657f41a7a569e073ea5245d15ce8b5e8a474776ae102a1ef22cb9f1; source commit recorded in COMMIT.txt inside the archive."
+  "notes": "GitHub release asset: zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair.zip; source commit recorded in COMMIT.txt inside the archive; file hashes recorded in CHECKSUMS.txt inside the archive."
 }
