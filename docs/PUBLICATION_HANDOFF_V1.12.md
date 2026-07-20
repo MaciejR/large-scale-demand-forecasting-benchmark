@@ -157,8 +157,8 @@ asset digest.  You can also run the GitHub release gate directly with:
 python3 tools/audit_github_release.py --verify-download
 ```
 
-Finally fill the Zenodo DOI fields in `docs/PUBLICATION_LOG_V1.12.md` and
-verify:
+Finally fill the Zenodo DOI fields in `docs/PUBLICATION_LOG_V1.12.md`, including
+the full 40-character `DOI metadata update commit`, and verify:
 
 ```bash
 python3 tools/audit_publication_log_v112.py --require-complete

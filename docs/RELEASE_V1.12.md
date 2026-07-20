@@ -120,9 +120,10 @@ is present without printing it.
 `python3 tools/audit_publication_log_v112.py` checks that
 `docs/PUBLICATION_LOG_V1.12.md` has the required fields and that any recorded
 commit or asset checksum matches the current package; after Zenodo publication,
-add `--require-complete` to fail on remaining placeholders.  The outer ZIP
-checksum is intentionally verified through the GitHub release asset digest
-rather than stored inside a tracked file packaged into that ZIP.
+add `--require-complete` to fail on remaining placeholders, mismatched DOI URLs,
+or a non-full-SHA DOI metadata update commit.  The outer ZIP checksum is
+intentionally verified through the GitHub release asset digest rather than stored
+inside a tracked file packaged into that ZIP.
 `python3 tools/zenodo_upload_v112.py --dry-run` validates the same package and
 prints the planned Zenodo upload.  Without `--dry-run`, it creates or updates an
 unpublished draft and appends the outer ZIP SHA-256 to the Zenodo record notes;

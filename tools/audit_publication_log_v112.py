@@ -18,6 +18,7 @@ GITHUB_RELEASE_URL = (
     "https://github.com/MaciejR/large-scale-demand-forecasting-benchmark/releases/tag/v1.12"
 )
 DOI_RE = re.compile(r"10\.5281/zenodo\.[0-9]+")
+FULL_COMMIT_RE = re.compile(r"[0-9a-f]{40}")
 FIELD_RE = re.compile(r"^- (?P<label>[^:]+): (?P<value>.*)$", re.MULTILINE)
 
 
@@ -65,12 +66,25 @@ def audit_complete_log_text(text: str) -> list[str]:
     findings: list[str] = []
     if "TODO" in text:
         findings.append("publication log still contains TODO placeholders")
-    if not DOI_RE.search(text):
+    doi = field_value(text, "Production DOI")
+    doi_url = field_value(text, "Production DOI URL")
+    record_url = field_value(text, "Production record URL")
+    update_commit = field_value(text, "DOI metadata update commit")
+    if not doi or not DOI_RE.fullmatch(doi):
         findings.append("publication log does not contain a Zenodo DOI")
-    if "https://doi.org/10.5281/zenodo." not in text:
+    expected_doi_url = f"https://doi.org/{doi}" if doi else None
+    if not doi_url or not DOI_RE.search(doi_url):
         findings.append("publication log does not contain a production DOI URL")
-    if "https://zenodo.org/records/" not in text:
+    elif expected_doi_url and doi_url != expected_doi_url:
+        findings.append(
+            f"publication log Production DOI URL {doi_url} does not match DOI {doi}"
+        )
+    if not record_url or not record_url.startswith("https://zenodo.org/records/"):
         findings.append("publication log does not contain a production record URL")
+    if not update_commit or not FULL_COMMIT_RE.fullmatch(update_commit):
+        findings.append(
+            "publication log DOI metadata update commit is not a full 40-character git SHA"
+        )
     return findings
 
 

@@ -42,16 +42,38 @@ def test_complete_publication_log_flags_todo_and_missing_doi():
     assert "publication log does not contain a Zenodo DOI" in findings
     assert "publication log does not contain a production DOI URL" in findings
     assert "publication log does not contain a production record URL" in findings
+    assert (
+        "publication log DOI metadata update commit is not a full 40-character git SHA"
+        in findings
+    )
 
 
 def test_complete_publication_log_accepts_doi_record_and_no_todo():
     text = (
-        "Production DOI: 10.5281/zenodo.99999999\n"
-        "Production DOI URL: https://doi.org/10.5281/zenodo.99999999\n"
-        "Production record URL: https://zenodo.org/records/99999999"
+        "- Production DOI: 10.5281/zenodo.99999999\n"
+        "- Production DOI URL: https://doi.org/10.5281/zenodo.99999999\n"
+        "- Production record URL: https://zenodo.org/records/99999999\n"
+        "- DOI metadata update commit: 1234567890abcdef1234567890abcdef12345678"
     )
 
     assert audit_publication_log_v112.audit_complete_log_text(text) == []
+
+
+def test_complete_publication_log_flags_mismatched_doi_url_and_short_commit():
+    text = (
+        "- Production DOI: 10.5281/zenodo.99999999\n"
+        "- Production DOI URL: https://doi.org/10.5281/zenodo.11111111\n"
+        "- Production record URL: https://zenodo.org/records/99999999\n"
+        "- DOI metadata update commit: 123abc"
+    )
+
+    findings = audit_publication_log_v112.audit_complete_log_text(text)
+
+    assert any("Production DOI URL" in finding for finding in findings)
+    assert (
+        "publication log DOI metadata update commit is not a full 40-character git SHA"
+        in findings
+    )
 
 
 def test_publication_log_checks_known_commit_and_sha_against_package(tmp_path):
