@@ -18,7 +18,7 @@ rule out FM pre-training exposure to public benchmark datasets such as M5 or
 Favorita.  We therefore treat Source~B as a cleaner evaluation protocol, not as
 a definitive solution to benchmark memorisation.
 
-The practical consequence for our reanalysis: Source~A FM rows may be
+The practical consequence for our benchmark analysis: Source~A FM rows may be
 slightly optimistic (the FM saw something like the test distribution during
 pre-training), while Source~A ML\_TREE rows have no such advantage (they are
 trained from scratch on each dataset).  If this bias is present, it would
@@ -82,14 +82,13 @@ analysis exposes.
 \label{subsec:limitations}\label{sec:limitations}
 
 \paragraph{Single author.}
-A single-author PRISMA review lacks the double-screening and inter-rater
+A single-author structured search lacks the double-screening and inter-rater
 reliability that a multi-reviewer team provides.  We mitigate this with
 structured extraction from fev-bench and GIFT-Eval (whose data are
-machine-readable) and report the study as ``PRISMA-informed'' rather than
-``PRISMA-compliant''.
+machine-readable) and do not claim full PRISMA compliance.
 
 \paragraph{Retail domain coverage.}
-The Source~A reanalysis covers 9~datasets spanning grocery (M5, Favorita),
+The Source~A benchmark extraction covers 9~datasets spanning grocery (M5, Favorita),
 convenience (Rohlik), drug (Rossmann), general retail (Walmart, Hermes),
 restaurant, and intermittent parts (Car Parts).  Fashion retail (highly
 seasonal, short life cycles), e-commerce (long tail, promotional spikes),
@@ -104,17 +103,16 @@ have no Source~B data on GPU inference speed, batch throughput at scale
 ($>$100K series), or fine-tuned FM accuracy.  The Azure batch cells are
 CPU-only ML\_TREE and statistical baselines.
 
-\paragraph{Source~B workload mismatch and partial repair.}
-The integrity audit showed that the legacy Source~B model rows were not
-consistently evaluated on the same series counts within each
-dataset--horizon cell, and the legacy bootstrap file covered only four of
-the five FMs.  The matched-panel repair now reruns M5, Rohlik, and Favorita
-on shared 100-series panels with prediction-level outputs and paired
-bootstrap contrasts for the completed local models.  This covariance
-repair adds a shared-bootstrap covariance matrix for the 45 completed
+\paragraph{Source~B workload and matched-panel scope.}
+The original Source~B model rows were not consistently evaluated on the same
+series counts within each dataset--horizon cell, and the small-sample
+bootstrap file covered only four of the five FMs.  The main Source~B analysis
+therefore uses shared 100-series panels for M5, Rohlik, and Favorita with
+prediction-level outputs and paired bootstrap contrasts for the completed
+local models.  This adds a shared-bootstrap covariance matrix for the 45 completed
 FM-vs-best-baseline log-ratios.  The matched panel now includes
 Chronos-Bolt-Tiny, Chronos-2, Moirai~2.0-Small, batched TiRex, and
-TimesFM~2.5 on M5, Rohlik, and Favorita.  The repair still does not
+TimesFM~2.5 on M5, Rohlik, and Favorita.  The matched panel still does not
 cover GPU throughput, covariate-aware FM variants,
 or larger workloads, so Source~B remains a local sensitivity analysis rather
 than a confirmatory cross-benchmark experiment.
@@ -128,14 +126,14 @@ within-series autocorrelation, or covariance between FM and baseline errors.
 Containment degrees of freedom, CR2 sensitivity, and equal-weight analysis
 discipline the Source~A claims, but they do not create the missing covariance
 information for published benchmark rows.  The fev-bench prediction-level
-repair now provides empirical \WAPE{} covariance matrices for
+analysis provides empirical \WAPE{} covariance matrices for
 Chronos-Bolt-Tiny, Chronos-2, TiRex, and TimesFM~2.5 against Seasonal Naive
 on 20 retail tasks, and the Source~B matched panel has an empirical bootstrap
-covariance matrix.  These repairs are still metric- and model-specific:
-TiRex uses point forecasts replicated to quantile columns, so the repaired
+covariance matrix.  These covariance results are still metric- and model-specific:
+TiRex uses point forecasts replicated to quantile columns, so the paired
 TiRex slice is for \WAPE{} rather than SQL.  TimesFM~2.5 uses the continuous
 quantile head in the official fev-bench rerun, but the empirical covariance
-repair reported here still targets paired \WAPE{} log-ratios.  A confirmatory
+analysis reported here still targets paired \WAPE{} log-ratios.  A confirmatory
 cross-benchmark meta-analysis would require comparable prediction-level
 covariance for SQL, \MASE{}, GIFT-Eval, stronger best-baseline comparisons,
 additional FM families, or additional independent benchmark suites.

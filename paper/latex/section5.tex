@@ -163,12 +163,11 @@ gives a clean, reviewer-auditable split.  Specifically:
   asymmetry we discuss in \S\ref{sec:favorita}.
 \end{itemize}
 
-\textbf{Source~B sampling audit and repair.}  The initial Source~B plan
-was to evaluate each FM on a fixed 100-series sample per cell and pair it
-against baselines on the same sampled workload.  The integrity audit showed
-that the saved 72-row result file did not satisfy that condition for all
-models.  The legacy sweep is therefore retained only as provenance and
-cost-audit material.  The matched-panel repair run covers
+\textbf{Source~B matched-panel design.}  The main Source~B analysis evaluates
+each FM and baseline on the same fixed 100-series sample per dataset.  An
+earlier 72-row local sweep did not share that workload across all models, so
+it is retained only as provenance and cost-accounting material.  The
+matched-panel run covers
 M5, Rohlik, and Favorita: the runner
 \texttt{benchmark/code/experiments/run\_source\_b\_paired\_panel.py}
 samples the same 100 top-volume series per dataset, stores the series
@@ -178,7 +177,7 @@ same dataset--horizon cell.  The completed matched panel covers
 Seasonal Naive, recursive \LGBM{}, direct \LGBM{}, horizon-scaled direct
 \LGBM{}, Chronos-Bolt-Tiny, Chronos-2, Moirai~2.0-Small, TimesFM~2.5,
 and batched TiRex for M5, Rohlik, and Favorita at $h\in\{7,14,28\}$.
-Audit outputs are written to
+Generated outputs are written to
 \texttt{analysis/figures/source\_b\_paired\_panel\_*}.
 
 \subsubsection{Model Families}\label{sec:modelfamilies}
@@ -228,9 +227,9 @@ same cap applies on Rohlik and Favorita for comparability.
 
 Foundation models are evaluated zero-shot with each model's published
 inference script on consumer hardware (Apple M-series MPS/CPU).  The
-legacy Source~B sweep includes five FMs but not a common workload.  The
-matched-panel repair reruns those FMs on M5, Rohlik, and Favorita with
-shared series IDs, shared forecast origins, and paired prediction outputs.
+matched-panel Source~B experiment evaluates five FMs on M5, Rohlik, and
+Favorita with shared series IDs, shared forecast origins, and paired
+prediction outputs.
 Details of the FM protocol, context-length choices, and hardware
 configuration are in \S\ref{sec:fm}.
 
@@ -339,7 +338,7 @@ reader can jump to:
 
 \subsubsection{Cost and Compute Envelope}\label{sec:costenvelope}
 
-The cost logs are treated as audit data rather than as a universal cost
+The cost logs are treated as provenance data rather than as a universal cost
 model.  Summing the saved Source~B local sweep file gives 72 rows,
 241.6 wall hours, \$3.18 recorded cost, and 4.63\,kg CO$_2$eq under
 the recorded hardware assumptions; the baseline-only appendix tables use
@@ -352,7 +351,7 @@ break-even rule.
 
 Foundation model zero-shot results are reported separately in
 \S\ref{sec:fm}.  Table~\ref{tab:sourceb-paired} presents the
-matched-panel repair results for M5, Rohlik, and Favorita.  Table~\ref{tab:t59}
+matched-panel results for M5, Rohlik, and Favorita.  Table~\ref{tab:t59}
 retains the older 72-row Source~B \WAPE{} grid for provenance only;
 because that sweep has unequal workload counts within cells, it is not
 used as paired evidence.
@@ -377,8 +376,8 @@ LightGBM'' on one protocol and lose to it on another, with no
 change in the FM itself.
 
 The \textbf{direction} of the protocol gap is not constant
-across datasets or metric definitions.  In the legacy full-workload
-per-series \WAPE{} audit, direct LightGBM is much better than recursive
+across datasets or metric definitions.  In the earlier full-workload
+per-series \WAPE{} grid, direct LightGBM is much better than recursive
 LightGBM on M5, while recursive is better on Rohlik and Favorita under
 the fixed-budget runs.  In the matched 100-series aggregate-\WAPE{}
 panel, however, the M5 gap is small at $h=7$ and $h=14$ and direct is
@@ -415,16 +414,16 @@ same protocol.
 We ran a three-variant sweep (Seasonal Naive, LightGBM recursive,
 LightGBM direct) on all three datasets.  The detailed per-dataset tables
 are in \ref{app:baseline-detail}; Table~\ref{tab:t58}
-summarises the legacy full-workload per-series \WAPE{} pattern.  The
-matched-panel aggregate-\WAPE{} repair is reported immediately
+summarises the earlier full-workload per-series \WAPE{} pattern.  The
+matched-panel aggregate-\WAPE{} analysis is reported immediately
 after the table.
 
 \begin{table}[htbp]
 \centering
-\caption{Legacy full-workload summary of the direct-vs-recursive
+\caption{Full-workload descriptive summary of the direct-vs-recursive
 LightGBM gap using per-series \WAPE{} means (positive = direct lower,
 negative = recursive lower).  The matched-panel aggregate-\WAPE{}
-repair gives a more conservative M5 pattern and is described below.}
+analysis gives a more conservative M5 pattern and is described below.}
 \label{tab:t58}
 \small
 \begin{tabular}{llrrrlr}
@@ -438,7 +437,7 @@ Favorita & ${\sim}15$--$25\,\%$ & $-4.1\,\%$ & $-7.5\,\%$ & $-9.6\,\%$ & recursi
 \end{tabular}
 \end{table}
 
-The matched-panel repair changes the protocol conclusion for
+The matched-panel analysis changes the protocol conclusion for
 M5, Rohlik, and Favorita.  On the same 100 top-volume series and aggregate-\WAPE{}
 metric used for Table~\ref{tab:sourceb-paired}, direct \LGBM{} is slightly
 worse than recursive on M5 at $h=7$ (+0.4\% error) and $h=14$ (+1.1\%),
@@ -446,15 +445,15 @@ but better at $h=28$ (-2.1\%).  On Rohlik, direct is consistently worse
 than recursive by about 3.9--4.3\%.  On Favorita, recursive is lower at
 $h=7$ (+4.6\% direct error) and $h=14$ (+2.2\%), while direct is lower at
 $h=28$ (-4.9\%).  The horizon-scaled direct variant is identical to direct
-at $h=7$ and worse at $h=14,28$ in the matched repair, so the earlier
+at $h=7$ and worse at $h=14,28$ in the matched panel, so the earlier
 unexplained \texttt{direct\_scaled} $h=7$ anomaly is resolved in the
-repaired panel.
+paired panel.
 
 Three key findings:
 
 \begin{enumerate}
 \item \textbf{Direction varies across datasets, workloads, and metric
-  aggregation.}  The legacy per-series audit gives a strong M5 direct
+  aggregation.}  The earlier per-series grid gives a strong M5 direct
   advantage, but the matched aggregate-\WAPE{} panel makes M5 close
   at short horizons.  Rohlik remains recursive-favourable in both views,
   while Favorita is recursive-favourable at short horizons and
@@ -468,11 +467,11 @@ Three key findings:
   describes a panel-level pattern; the current three-dataset evidence
   cannot assign the difference to sparsity alone.
 
-\item \textbf{Budget effects remain real.}  The matched repair resolves
+\item \textbf{Budget effects remain real.}  The matched panel resolves
   the earlier \texttt{direct\_scaled} $h=7$ inconsistency, because the
   scaled and unscaled direct runs are identical when both use 300 trees.
   At $h=14$ and $h=28$, the scaled direct variant is more expensive and
-  does not improve aggregate \WAPE{} in this repaired panel.
+  does not improve aggregate \WAPE{} in this matched panel.
 \end{enumerate}
 
 The M5 \WRMSSE{} rows are reported as internal rolling-origin diagnostics
@@ -485,7 +484,7 @@ right-skewed demand triggers sMAPE's 200\% saturation, producing a
 2--2.5$\times$ ranking flip vs Seasonal Naive on all three datasets
 regardless of intermittency.
 
-For the Source~A reanalysis (\S\ref{sec:meta-regression}), Source~B
+For the Source~A benchmark summaries (\S\ref{sec:meta-regression}), Source~B
 direct-vs-recursive rows are not used in the primary contrast file.  They
 remain a protocol hypothesis and a rerun target.
 
@@ -497,33 +496,33 @@ remain a protocol hypothesis and a rerun target.
 % -----------------------------------------------------------------
 
 Foundation model rows come from two complementary data sources:
-the PRISMA literature extraction (\S\ref{sec:fm_scope}--\S\ref{sec:fm_extraction})
+the structured literature extraction (\S\ref{sec:fm_scope}--\S\ref{sec:fm_extraction})
 and a local consumer-box sensitivity run on a MacBook via PyTorch
 MPS (\S\ref{sec:fm_local}--\S\ref{sec:fm_results}).
 
 \subsubsection{Scope and Two-Source Strategy}\label{sec:fm_scope}
 
 FM rows come from two sources.  \textbf{Source~A} (primary) draws
-on the PRISMA extraction (\S\ref{sec:prisma-results}): 9~FM papers plus fev-bench (B02) and
+on the structured extraction (\S\ref{sec:prisma-results}): 9~FM papers plus fev-bench (B02) and
 GIFT-Eval (B01) populate the FM grid entirely from published numbers.
 \textbf{Source~B} (secondary) adds local consumer-box sensitivity runs on
-a MacBook (M-series, 16\,GB, MPS/CPU backend).  The legacy Source~B sweep
+a MacBook (M-series, 16\,GB, MPS/CPU backend).  The Source~B experiment
 contains five FMs (Chronos-Bolt-Tiny, Moirai~2.0-Small, TiRex,
-Chronos-2, TimesFM~2.5; 9--200\,M parameters) for cost-error provenance.
-The matched-panel repair is narrower but paired: Chronos-Bolt-Tiny,
+Chronos-2, TimesFM~2.5; 9--200\,M parameters).  The matched-panel analysis
+is paired: Chronos-Bolt-Tiny,
 Chronos-2, Moirai~2.0-Small, TiRex, and TimesFM~2.5 on
 M5, Rohlik, and Favorita, with the same series IDs and forecast
 origins as the baseline panel.  The two sources are kept
 separate: extraction rows carry
 \texttt{paper\_id}~$\in$~\{A01\ldots A17, B01, B02\}, local runs
-carry \texttt{LOCAL\_*}.  \S\ref{sec:metareg} reports the pooled
-Source~A reanalysis; Source~B is reported as a separate local repair
+carry \texttt{LOCAL\_*}.  \S\ref{sec:metareg} reports the Source~A
+benchmark summaries; Source~B is reported as a separate local matched-panel
 analysis rather than pooled into Source~A.
 
 \subsubsection{Literature-Extraction Protocol
 (Source~A)}\label{sec:fm_extraction}
 
-Extraction follows the PRISMA protocol of \S\ref{sec:prisma-results} and
+Extraction follows the structured search protocol of \S\ref{sec:prisma-results} and
 records \texttt{paper\_id}, \texttt{dataset\_variant},
 \texttt{metric\_name/value}, and a
 \texttt{baseline\_quality\_tier}~$\in$~\{weak, standard, strong\}
@@ -575,9 +574,8 @@ close the residual gap remains a priority for future
 work (\S\ref{subsec:future-work}).
 
 The intended evaluation protocol follows \S\ref{sec:evalprotocol}
-(same windows, horizons, metrics).  The legacy saved Source~B rows do not
-share a common series workload across all models.  The matched-panel repair
-does share the workload for completed M5, Rohlik, and Favorita runs: one manifest
+(same windows, horizons, metrics).  The matched-panel Source~B runs share
+the workload for completed M5, Rohlik, and Favorita runs: one manifest
 per dataset defines the 100 top-volume series, and every completed model
 writes predictions for the same series--origin panel.  Each FM uses its
 published default context and point-forecast mode with no tuning.
@@ -596,8 +594,8 @@ contrasts.
 
 \subsubsection{Consumer-Box Run: Results}\label{sec:fm_results}
 
-The Source~B repair supersedes the legacy row-level comparison for completed
-matched panels.  The main 100-series table has 45 FM-vs-best-baseline
+The Source~B matched-panel analysis supersedes the earlier row-level
+comparison for completed panels.  The main 100-series table has 45 FM-vs-best-baseline
 contrasts: five FMs on each of M5, Rohlik, and Favorita.
 The generated replication files include shared bootstrap draws, a wide
 log-ratio covariance matrix, and a long covariance/correlation table under
@@ -681,21 +679,21 @@ captures dependence among contrasts that share the same sampled series,
 actuals, horizons, and best-baseline rows.  In the generated matrix, the
 diagonal is positive for all 45 contrasts and the strongest off-diagonal
 correlations occur within the same dataset/model or same dataset--horizon
-cell, as expected.  This repairs the local Source~B uncertainty accounting;
+cell, as expected.  This supplies local Source~B uncertainty accounting;
 it does not create missing prediction-level covariance for Source~A
 benchmark-paper rows.
 
 \textbf{TiRex throughput note.}  The original series-by-series TiRex path
-was too slow for the 100-series repair panel.  The repaired implementation uses TiRex's
+was too slow for the 100-series matched panel.  The current implementation uses TiRex's
 2D context interface to batch all series within a forecast origin and runs
 the MacBook path on CPU, which completed the M5, Rohlik, and Favorita
-100-series panel at $h\in\{7,14,28\}$.  This repairs the TiRex matched-panel
-gap, but GPU throughput and larger workloads remain separate scaling checks.
+100-series panel at $h\in\{7,14,28\}$.  GPU throughput and larger workloads
+remain separate scaling checks.
 
 \textbf{Per-cell \WAPE{} (descriptive Source~B grid).}  Numbers below are
 per-series \WAPE{} means from the saved result file.  Because
 \texttt{n\_series} varies within every dataset--horizon cell, the table is
-legacy provenance and should not be read as a fully paired model comparison.
+provenance material and should not be read as a fully paired model comparison.
 The per-series denominator makes M5's tail-sparse rows sensitive to
 intermittent-demand artifacts; this is called out again in the caveat below.
 
@@ -725,25 +723,25 @@ TimesFM~2.5 & FM & 0.528 & 0.534 & 0.542 & 0.944 & 0.944 & 0.948 & 0.324 & 0.338
 \end{tabular}
 \end{table*}
 
-\textbf{Legacy FM point estimates are clustered, but not paired.}
-Favorita and Rohlik show narrow FM spreads in the saved legacy grid, while
+\textbf{Descriptive FM point estimates are clustered, but not paired.}
+Favorita and Rohlik show narrow FM spreads in the saved grid, while
 M5 shows larger separation under per-series \WAPE{}.  Because the
 model-specific \texttt{n\_series} values differ, these spreads are
 hypothesis-generating only.  They support the weaker statement that the
-legacy Source~B data do not show a simple monotonic parameter-count
+descriptive Source~B data do not show a simple monotonic parameter-count
 gradient; they do not establish that one named checkpoint reliably
 outperforms another.
 
 \textbf{Log-ratio status.}  Source~A remains the only input to the
-\S\ref{subsec:pooling-strategy} benchmark analysis.  The legacy
+\S\ref{subsec:pooling-strategy} benchmark analysis.  The earlier
 45 Source~B FM rows are retained in a descriptive contrast file for
-audit.  The matched-panel Source~B contrasts are reported separately
+provenance.  The matched-panel Source~B contrasts are reported separately
 in Table~\ref{tab:sourceb-paired}, because their estimand is local
 aggregate \WAPE{} on 100-series panels rather than the as-reported Source~A
 benchmark estimand.
 
 \textbf{M5 caveat: per-series \WAPE{} + intermittent demand.}
-The legacy M5 point-estimate gaps are large, but they are inflated by
+The descriptive M5 point-estimate gaps are large, but they are inflated by
 the per-series \WAPE{} denominator on M5's long tail of near-zero-volume SKUs
 (\S\ref{subsec:perseries-vs-aggregate}).  The $>$1 \WAPE{} values for
 \texttt{lightgbm\_cov} (1.62--1.94) reflect this pathology, not a
@@ -755,7 +753,7 @@ central tendency.
 
 A sanity check recasting \WAPE{} in aggregate form
 ($\sum|e|/\sum|y|$) deflates FM M5 scores by ${\sim}11\%$ in the
-legacy rows.  The matched-panel results therefore use aggregate
+descriptive rows.  The matched-panel results therefore use aggregate
 \WAPE{} from shared predictions as the local Source~B estimand.
 
 \textbf{Favorita is now the matched ``close call'' dataset.}
@@ -777,7 +775,7 @@ results.
 
 \textbf{Caveats.}  The LightGBM baselines use a fixed hyperparameter
 grid with no dataset-specific tuning; the FMs are zero-shot; this
-section is point-forecast only; the matched repair currently covers
+section is point-forecast only; the matched panel currently covers
 100-series M5, Rohlik, and Favorita for completed models including batched TiRex,
 but not GPU throughput, larger workloads, or covariate-aware FM
 configurations.

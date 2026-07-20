@@ -57,11 +57,11 @@ The Source~A extraction and Source~B experiment blocks break down as follows:
     comparisons (C04, C12).
   \item \textbf{Category~D (cross-domain):} 3 papers, 3 rows.
     Included for model-family coverage but not in the retail-scoped
-    reanalysis.
-  \item \textbf{Category~F (legacy fev-bench summary entries):} 1
+    benchmark analysis.
+  \item \textbf{Category~F (fev-bench summary entries):} 1
     paper, 8 rows.  These are retained for provenance but the
-    model-level reanalysis uses the expanded B02 per-task rows.
-  \item \textbf{OWN\_* (own experiments):} 7 legacy experiment blocks,
+    model-level benchmark analysis uses the expanded B02 per-task rows.
+  \item \textbf{OWN\_* (own experiments):} 7 experiment blocks,
     45 rows retained in \texttt{analysis/extraction\_schema.csv} for
     provenance.  The separate local Source~B sweep file adds 72 rows
     (five FM models plus three baselines across three datasets and
@@ -87,7 +87,7 @@ distribution is broad: 20 fev-bench retail tasks (24--27 rows each,
 followed by M5 (40 rows, 6\%) and the remaining retail datasets.
 The per-task granularity enables Source~A model-level pairing within each
 (task, metric) cell, which is the basis of the $k = 498$ primary
-reanalysis.
+benchmark analysis.
 
 \noindent\textbf{Model family distribution.}
 Foundation models account for 567 rows (71\%), followed by ML\_TREE
@@ -125,7 +125,7 @@ schema), spanning three
 tiers of granularity: (i)~per-paper aggregate results from Source~A
 Category~A (54 foundation-model rows within 58 Category~A rows),
 (ii)~per-task per-model \WAPE{}/\MASE{}/SQL scores from the fev-bench,
-GIFT-Eval, and legacy benchmark-suite re-extraction (509 foundation-model
+GIFT-Eval, and benchmark-suite re-extraction (509 foundation-model
 rows), and (iii)~four additional Source~A retail rows from Category~C.
 The local Source~B sweep is stored separately and adds 45 descriptive FM
 \WAPE{} rows, but those rows are not part of the 567-row extraction-schema
@@ -135,7 +135,7 @@ win rates of 75--84\% against statistical baselines on GIFT-Eval,
 and normalised SQL scores of 20--35 on fev-bench.  The per-task
 extraction enables model-level FM-vs-baseline pairing within each
 (task, metric) cell --- the structural basis of the $k = 498$ primary
-reanalysis (\S\ref{sec:metaanalysis}).
+benchmark analysis (\S\ref{sec:metaanalysis}).
 
 \noindent\textbf{Gradient-boosted trees (ML\_TREE).}
 The 125 ML\_TREE rows split between M5 competition entries (C01,
@@ -180,12 +180,12 @@ and GIFT-Eval (B01) --- which report per-task SQL, \WAPE{}, and
 
 The per-task re-extraction from these suites (\S\ref{subsec:extraction})
 partially resolves the original gap: the $k = 498$ primary
-reanalysis draws its paired rows from Source~A benchmark suites.
+benchmark analysis draws its paired rows from Source~A benchmark suites.
 Source~B (\S\ref{subsec:gapfilling}) remains necessary for two
 reasons: (1)~it adds the consumer-hardware cost dimension absent from
 benchmark evaluations, and (2)~it provides per-series \WAPE{} on
 individual retail datasets (M5, Favorita, Rohlik) under a controlled
-rolling-origin protocol.  Because the legacy Source~B rows had unequal
+rolling-origin protocol.  Because the earlier Source~B rows had unequal
 workloads, we report Source~B separately rather than as part of the primary
-Source~A contrast file.  The matched Source~B repair is also reported
+Source~A contrast file.  The matched Source~B analysis is also reported
 separately because it has a local 100-series aggregate-\WAPE{} estimand.

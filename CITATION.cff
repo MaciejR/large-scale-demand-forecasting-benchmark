@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "If you use the current repair package, cite this repository version or the corresponding Zenodo archive when minted."
+message: "If you use the current release package, cite this repository version or the corresponding Zenodo archive when minted."
 title: "When Do Foundation Models Pay Off for Retail Demand Forecasting? A Benchmark Study with Structured Literature Search"
 type: report
 authors:

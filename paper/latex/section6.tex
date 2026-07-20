@@ -1,18 +1,18 @@
-% === Section 6: Cross-Benchmark Reanalysis ===
-\section{Cross-Benchmark Reanalysis}
+% === Section 6: Benchmark Results ===
+\section{Benchmark Results}
 \label{sec:metaanalysis}\label{sec:meta-regression}\label{sec:metareg}
 
-The primary Source~A evidence is a reanalysis of two benchmark suites:
+The primary Source~A evidence comes from two benchmark suites:
 fev-bench \citep{shchur2025fevbench} and GIFT-Eval
 \citep{aksu2024gift}.  The stricter comparator is the default:
 each foundation-model row is compared with the best available
 conventional baseline in the same task and metric cell.  The earlier
 average-baseline comparator is retained as a sensitivity artifact.
 
-Source~B is excluded from this primary Source~A pool.  The legacy local
+Source~B is excluded from this primary Source~A pool.  The original local
 rows do not consistently share the same series workload, and paired
 prediction-error covariances are not available.  The separate matched-panel
-Source~B repair covers M5, Rohlik, and Favorita
+Source~B analysis covers M5, Rohlik, and Favorita
 (Table~\ref{tab:sourceb-paired}), but that local 100-series aggregate-\WAPE{}
 estimand is not pooled with as-reported Source~A benchmark rows.
 
@@ -43,7 +43,7 @@ The script also computes
   v_i = \frac{1}{n_{\text{FM}}} + \frac{1}{n_{\text{baseline}}}.
 \end{equation}
 
-\noindent In this repair this quantity is treated only as a workload-count
+\noindent In this benchmark analysis this quantity is treated only as a workload-count
 weighting proxy.  It is not the sampling variance of
 $\log(\widehat M_{\text{FM}}/\widehat M_{\text{baseline}})$ because the
 benchmark papers do not provide paired prediction-level errors, metric
@@ -57,7 +57,7 @@ The primary Source~A file contains $k=498$ best-baseline log-ratios:
 414 from fev-bench and 84 from GIFT-Eval.  The rows cover 24 task clusters,
 2 suite clusters, 2 study clusters, 7 foundation models, and three metric
 families.  The full generated contrast table contains 543 rows after adding
-45 legacy descriptive Source~B rows; the matched-panel Source~B repair
+45 descriptive Source~B provenance rows; the matched-panel Source~B analysis
 is stored in a separate file,
 \texttt{source\_b\_paired\_panel\_fm\_vs\_best\_baseline.csv}.
 
@@ -89,12 +89,12 @@ fev-bench & 414 & 20 & $-0.069$ & $-0.086$ & 0.67 & Smaller and more heterogeneo
 0.71 in GIFT-Eval and 0.93 in fev-bench.  These are benchmark-level
 patterns, not estimates from two dozen independent publications.
 
-\subsection{Prediction-Level fev-bench WAPE Repair}
+\subsection{Prediction-Level fev-bench WAPE Analysis}
 \label{subsec:fev-prediction-level-repair}
 
 The strongest remaining objection to the extracted Source~A rows is that
 the workload-count proxy $v_i$ is not a sampling variance.  We therefore
-reran a metric-specific repair for the official fev-bench retail windows
+ran a metric-specific prediction-level analysis for the official fev-bench retail windows
 where prediction-level artifacts can be generated locally.  Seasonal Naive,
 Chronos-Bolt-Tiny, Chronos-2, TiRex, and TimesFM~2.5 were evaluated with
 \texttt{fev.Task.iter\_windows()} on all 20 retail tasks, producing
@@ -105,7 +105,7 @@ matrices.
 
 \begin{table}[htbp]
 \centering
-\caption{Prediction-level fev-bench \WAPE{} repair against Seasonal Naive.
+\caption{Prediction-level fev-bench \WAPE{} analysis against Seasonal Naive.
 The covariance matrices are empirical bootstrap covariances of the 20
 task-level log-ratios.  Negative $\ell$ favours the FM.}
 \label{tab:fev-prediction-wape-repair}
@@ -113,7 +113,7 @@ task-level log-ratios.  Negative $\ell$ favours the FM.}
 \input{../../analysis/figures/fev_prediction_level_wape_summary.tex}
 \end{table}
 
-\noindent This repair materially strengthens one concrete slice of the
+\noindent This analysis materially strengthens one concrete slice of the
 evidence: for \WAPE{} against Seasonal Naive on fev-bench retail tasks,
 Chronos-2 has lower point estimates in all 20 tasks and bootstrap intervals
 excluding zero in 18; Chronos-Bolt-Tiny has lower point estimates in 16
@@ -121,12 +121,12 @@ tasks, bootstrap intervals favouring the FM in 16, and intervals favouring
 the baseline in 3; TiRex has lower point estimates in 19 tasks and
 bootstrap intervals favouring the FM in 19; TimesFM~2.5 has lower point
 estimates in all 20 tasks and bootstrap intervals favouring the FM in 19.
-It does not repair the extracted
+It does not provide prediction-level covariance for the extracted
 SQL or \MASE{} rows, the GIFT-Eval rows, comparisons against stronger
 best-baseline cells, or FM families outside these four local fev-bench
-reruns.  The repair is therefore
+reruns.  It is therefore
 reported as a metric-specific
-prediction-level audit rather than replacing the descriptive Source~A
+prediction-level analysis rather than replacing the descriptive Source~A
 suite summaries.
 
 \subsection{Metric-Specific Results}

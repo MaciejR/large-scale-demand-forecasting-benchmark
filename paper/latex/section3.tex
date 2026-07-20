@@ -10,18 +10,18 @@ Source~A benchmark analysis.
 \label{subsec:search}
 
 We use the PRISMA 2020 reporting guidelines \citep{page2021prisma}
-as a reporting template for a single-author structured search.  The study
-is not PRISMA-compliant in the strict multi-reviewer sense because it does
-not include independent duplicate screening, pre-registration, or
-inter-rater reliability.  The full search protocol is committed at
+as a reporting template for a single-author structured search, but do not
+claim full PRISMA compliance because the study does not include independent
+duplicate screening, pre-registration, or inter-rater reliability.  The full search protocol is committed at
 \texttt{analysis/prisma\_search\_protocol.md}; we summarise the key
 parameters here.
 
 \noindent\textbf{Search sources.}
 The retained auditable log covers Google Scholar/web searches, Semantic
 Scholar API, and arXiv (cs.LG, stat.ML).  Scopus and Web of Science were
-target sources, but their export logs were not retained in the audit trail;
-this is reported as a PRISMA limitation in \ref{app:search}.
+target sources, but their export logs were not retained in the final
+machine-readable search record; this is reported as a structured-search
+limitation in \ref{app:search}.
 
 \noindent\textbf{Search query.}
 We combine three concept blocks with AND:
@@ -125,7 +125,7 @@ task/dataset/frequency/horizon cell.
 \texttt{C} = retail ML/DL papers (8 papers, 31 rows),
 \texttt{D} = cross-domain papers (3 papers, 3 rows),
 \texttt{F} = fev-bench entries (1 paper, 8 rows),
-\texttt{OWN\_*} = legacy Source~B baseline rows retained for provenance.
+\texttt{OWN\_*} = Source~B baseline rows retained for provenance.
 Source~B rows are not counted as PRISMA included studies.
 
 \noindent\textbf{Normalisation.}
@@ -181,23 +181,22 @@ Standard\_E4ds\_v4 (4~vCPU, 32~GB), CPU-only.  Three baseline models:
   \item \textbf{seasonal\_naive}: 9~cells.
 \end{itemize}
 
-All 72 legacy cells use the same metric definitions and rolling-origin
-design where available, but the integrity audit showed that they did not share a
+The original 72-cell local sweep used the same metric definitions and
+rolling-origin design where available, but the saved cells did not share a
 common 100-series workload across all models.  Runtime, cost, and
 CO\textsubscript{2} were logged per run via MLflow (local file store for
 MacBook runs, Azure ML workspace for batch runs).  The export script
 \texttt{tools/export\_mlflow\_to\_csv.py} pulls both backends into a single
-CSV.  These legacy rows are retained for provenance and cost audit, but not
+CSV.  These rows are retained for provenance and cost accounting, but not
 for paired inference.
 
-The matched-panel Source~B repair adds shared-panel reruns for M5, Rohlik,
-and Favorita.
-The repair runner
+The main Source~B analysis uses matched-panel reruns for M5, Rohlik,
+and Favorita.  The runner
 \texttt{benchmark/code/experiments/run\_source\_b\_paired\_panel.py}
 selects the same 100 top-volume series per dataset, uses the same
 rolling-origin windows for every model, writes prediction-level parquet
 files keyed by series, origin date, target date, and forecast step, and
-records a machine-readable run ledger.  Completed repair runs cover
+records a machine-readable run ledger.  Completed matched-panel runs cover
 Seasonal Naive, recursive LightGBM, direct LightGBM, horizon-scaled direct
 LightGBM, Chronos-Bolt-Tiny, Chronos-2, Moirai~2.0-Small, batched TiRex,
 and TimesFM~2.5 on M5, Rohlik, and Favorita at $h\in\{7,14,28\}$.  TiRex uses a CPU
@@ -217,10 +216,10 @@ $\ell_i = \log\{\text{metric}(\text{FM}_i) /
 \end{quote}
 
 \noindent The primary Source~A model-level pairing produces $k = 498$
-observations across fev-bench and GIFT-Eval.  The legacy Source~B export
-yields an auditable $k = 543$ contrast file, but those 45 legacy Source~B
-contrasts remain labelled descriptive because they fail the legacy
-workload-matching audit.  The matched-panel Source~B repair is
+observations across fev-bench and GIFT-Eval.  The older Source~B export
+yields a $k = 543$ contrast file when appended to Source~A, but those 45
+Source~B contrasts are descriptive because they do not share a common
+workload.  The matched-panel Source~B analysis is
 reported separately as a prediction-level paired analysis on 45 FM-vs-best
 baseline WAPE contrasts with a shared-bootstrap log-ratio covariance matrix.
 \ref{app:sensitivity} also reports a
@@ -231,7 +230,7 @@ Throughout this paper, $\hat{\ell}$ denotes a reported log-ratio summary of
 \(\log(\text{FM metric}/\text{baseline metric})\).  \textbf{Negative
 $\hat{\ell}$ means FM is better}; \textbf{positive $\hat{\ell}$ means
 baseline is better}.  The older raw difference $\Dhat$ is retained only
-in legacy outputs and descriptive audit columns.
+in provenance outputs and descriptive columns.
 
 The exploratory weighted diagnostic model is:
 
@@ -255,8 +254,8 @@ accounts for repeated models and metrics within a benchmark task.
 \noindent\textbf{Variance.}
 For Source~A pairs, $v_i = 1/n_{\mathrm{FM}} + 1/n_{\mathrm{baseline}}$ where
 $n_\text{series}$ is the number of series in the evaluation task.
-For legacy Source~B pairs, the same proxy is computed with the recorded
-\texttt{n\_series} value for audit only.  The proxy is not a sampling
+For the older Source~B export, the same proxy is computed with the recorded
+\texttt{n\_series} value for provenance only.  The proxy is not a sampling
 variance for a paired log-ratio: it does not capture metric dispersion,
 shared baselines, covariance between FM and baseline errors, or
 within-series autocorrelation.  This is flagged as a limitation in

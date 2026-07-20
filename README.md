@@ -14,7 +14,7 @@ The current manuscript PDF is available at
 The v1.0 technical-report release is archived on Zenodo:
 <https://doi.org/10.5281/zenodo.21338004>.
 
-The current Zenodo-ready repair package is published as GitHub release
+The current Zenodo-ready release package is published as GitHub release
 [`v1.12`](https://github.com/MaciejR/large-scale-demand-forecasting-benchmark/releases/tag/v1.12)
 and can also be rebuilt locally as
 `release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair.zip`.  It
@@ -36,10 +36,10 @@ The final publication checklist is in
 - Strong conventional baselines remain competitive, especially when covariates,
   leakage controls, and direct-vs-recursive protocol choices are handled
   carefully.
-- The matched-panel Source B repair reruns M5/Rohlik/Favorita on shared
+- The matched-panel Source B analysis runs M5/Rohlik/Favorita on shared
   100-series panels for completed local models and reports paired bootstrap
-  contrasts separately from the Source A reanalysis.
-- The fev-bench WAPE covariance repair reruns official retail windows for
+  contrasts separately from the Source A benchmark analysis.
+- The fev-bench WAPE covariance analysis runs official retail windows for
   Seasonal Naive, Chronos-Bolt-Tiny, Chronos-2, TiRex, and TimesFM 2.5, producing
   prediction-level paired bootstrap covariance matrices for 20 retail tasks.
 - Cost-accuracy tradeoffs matter: some foundation-model gains are meaningful
@@ -48,7 +48,7 @@ The final publication checklist is in
 
 ## How to Cite
 
-For the current repair package, cite the repository version or the
+For the current release package, cite the repository version or the
 corresponding Zenodo archive once minted:
 
 ```text
@@ -93,7 +93,7 @@ BibTeX:
 ## Publication Roadmap
 
 The current recommended path is to treat v1.12 as a stronger exploratory
-reanalysis: Source B now has matched-panel covariance for all five local FMs
+benchmark study: Source B now has matched-panel covariance for all five local FMs
 on M5/Rohlik/Favorita, and one concrete
 Source A slice (fev-bench retail WAPE for Chronos-Bolt-Tiny, Chronos-2,
 TiRex, and TimesFM 2.5 against Seasonal Naive) has prediction-level paired covariance.  The remaining
@@ -103,8 +103,8 @@ GIFT-Eval, stronger best-baseline comparisons, and additional FM families.
 ## What Is In This Repository
 
 - `paper/latex/` - LaTeX manuscript source and compiled PDF.
-- `analysis/` - systematic-review extraction table, PRISMA protocol, R
-  meta-regression pipeline, and generated figures/tables.
+- `analysis/` - structured-search extraction table, analysis scripts, and
+  generated figures/tables.
 - `benchmark/code/` - experiment runners, model wrappers, data loaders, metrics,
   and cost accounting used for the Source B gap-filling experiments.
 - `benchmark/results/` - exported experiment result tables used by the paper.
@@ -148,7 +148,7 @@ instructions.
   [`analysis/figures/source_b_cost_consistency_audit.csv`](analysis/figures/source_b_cost_consistency_audit.csv)
 - fev-bench official run coverage:
   [`analysis/figures/fev_official_model_coverage.csv`](analysis/figures/fev_official_model_coverage.csv)
-- fev-bench prediction-level WAPE repair summary:
+- fev-bench prediction-level WAPE covariance summary:
   [`analysis/figures/fev_prediction_level_wape_summary.csv`](analysis/figures/fev_prediction_level_wape_summary.csv)
 - fev-bench paired WAPE covariance outputs:
   [`analysis/figures/fev_chronos_bolt_paired_wape_covariance.csv`](analysis/figures/fev_chronos_bolt_paired_wape_covariance.csv) and
@@ -183,19 +183,19 @@ sources:
 - Rohlik Sales Forecasting Challenge v2, Kaggle / Rohlik challenge release.
 - fev-bench and GIFT-Eval results are represented in the extraction scripts and
   extraction table.
-  The fev-bench WAPE repair can be regenerated from the official fev-bench
+  The fev-bench WAPE covariance analysis can be regenerated from the official fev-bench
   datasets via `benchmark/code/experiments/run_fev_bench_official.py`; full
   local prediction parquet outputs are intentionally not tracked in git.
 
 ## Current Status
 
 The v1.0 technical report has been published on Zenodo with DOI
-`10.5281/zenodo.21338004`. Later repair packages are maintained separately and
+`10.5281/zenodo.21338004`. Later release packages are maintained separately and
 do not overwrite the historical v1.0 snapshot. The current working version is
 v1.12, adding TimesFM 2.5 official fev-bench prediction-level WAPE covariance
 artifacts on top of the v1.11 TimesFM Source B matched-panel extension, v1.10
-TiRex fev-bench repair, v1.9 Chronos fev-bench repair, and Source B
-matched-panel covariance repair.  The local v1.12 release directory records
+TiRex fev-bench covariance artifacts, v1.9 Chronos fev-bench covariance artifacts,
+and Source B matched-panel covariance artifacts.  The local v1.12 release directory records
 the exact source commit in `COMMIT.txt` and package integrity in
 `CHECKSUMS.txt`; the public GitHub release is
 <https://github.com/MaciejR/large-scale-demand-forecasting-benchmark/releases/tag/v1.12>.
