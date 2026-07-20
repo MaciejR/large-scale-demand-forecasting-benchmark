@@ -166,7 +166,11 @@ def dry_run_report(
 def write_json_result(result: dict[str, Any], output_path: Path | None) -> str:
     rendered = json.dumps(result, indent=2, sort_keys=True)
     if output_path is not None:
-        output_path.write_text(f"{rendered}\n", encoding="utf-8")
+        try:
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_text(f"{rendered}\n", encoding="utf-8")
+        except OSError as exc:
+            raise ZenodoError(f"could not write output JSON {output_path}: {exc}") from exc
     return rendered
 
 
@@ -277,11 +281,12 @@ def main(argv: list[str] | None = None) -> int:
             dry_run=args.dry_run,
             token_env=token_env,
         )
+        rendered = write_json_result(result, args.output_json)
     except ZenodoError as exc:
         print(f"Zenodo upload failed: {exc}", file=sys.stderr)
         return 1
 
-    print(write_json_result(result, args.output_json))
+    print(rendered)
     return 0
 
 

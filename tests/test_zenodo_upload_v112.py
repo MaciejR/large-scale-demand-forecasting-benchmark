@@ -179,6 +179,27 @@ def test_write_json_result_prints_and_writes_same_payload(tmp_path):
     assert output_path.read_text(encoding="utf-8") == f"{rendered}\n"
 
 
+def test_write_json_result_creates_parent_directories(tmp_path):
+    output_path = tmp_path / "nested" / "result.json"
+
+    rendered = zenodo_upload_v112.write_json_result({"mode": "dry-run"}, output_path)
+
+    assert output_path.read_text(encoding="utf-8") == f"{rendered}\n"
+
+
+def test_main_reports_output_json_write_errors(monkeypatch, capsys):
+    monkeypatch.setattr(zenodo_upload_v112, "upload", lambda **kwargs: {"mode": "dry-run"})
+
+    def fail_write(result, output_path):
+        raise zenodo_upload_v112.ZenodoError("could not write output JSON /bad/path")
+
+    monkeypatch.setattr(zenodo_upload_v112, "write_json_result", fail_write)
+
+    assert zenodo_upload_v112.main(["--dry-run", "--output-json", "/bad/path"]) == 1
+    captured = capsys.readouterr()
+    assert "Zenodo upload failed: could not write output JSON /bad/path" in captured.err
+
+
 def test_token_from_env_accepts_explicit_environment():
     token = zenodo_upload_v112.token_from_env(
         ["ZENODO_ACCESS_TOKEN"],
