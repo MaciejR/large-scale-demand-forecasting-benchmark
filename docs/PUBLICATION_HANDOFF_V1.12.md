@@ -109,6 +109,10 @@ deciding whether to update the publication log, commit a draft note, or proceed
 to publication.  The wrapper relies on
 `python3 tools/audit_publication_readiness.py --require-public` for the GitHub
 release download-verification gate, so it does not run a second asset download.
+`tools/publish_v112_zenodo.sh` and
+`python3 tools/audit_zenodo_upload_readiness.py --require-token` both read a
+local ignored `.env` file when present, but only import known Zenodo token
+variables and never override values already exported in the process environment.
 
 For a non-archival sandbox check, use a separate sandbox token:
 

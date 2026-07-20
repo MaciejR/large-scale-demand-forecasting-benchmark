@@ -20,6 +20,7 @@ ZIP_PATH = Path(f"{RELEASE_DIR}.zip")
 TOKEN_ENV_VARS = ("ZENODO_ACCESS_TOKEN", "ZENODO_TOKEN")
 SANDBOX_TOKEN_ENV_VARS = ("ZENODO_SANDBOX_ACCESS_TOKEN", "ZENODO_SANDBOX_TOKEN")
 PLACEHOLDER_TOKENS = {"...", "<token>", "<your-token>", "changeme", "todo", "token"}
+KNOWN_TOKEN_ENV_VARS = TOKEN_ENV_VARS + SANDBOX_TOKEN_ENV_VARS
 
 
 def run(cmd: list[str], cwd: Path) -> str:
@@ -62,6 +63,32 @@ def audit_package_files(repo_root: Path) -> list[str]:
     return findings
 
 
+def load_local_env_tokens(
+    repo_root: Path,
+    environ: dict[str, str] | None = None,
+) -> dict[str, str]:
+    """Return env plus known Zenodo token variables from a local .env file."""
+
+    merged = dict(os.environ if environ is None else environ)
+    env_path = repo_root / ".env"
+    if not env_path.is_file():
+        return merged
+
+    for raw_line in env_path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        if key not in KNOWN_TOKEN_ENV_VARS or merged.get(key):
+            continue
+        value = value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+            value = value[1:-1]
+        merged[key] = value
+    return merged
+
+
 def audit_token(
     require_token: bool,
     environ: dict[str, str] | None = None,
@@ -96,7 +123,10 @@ def audit(
     findings.extend(audit_package_files(repo_root))
     findings.extend(audit_zenodo_metadata.audit(repo_root))
     findings.extend(audit_github_release.audit(repo_root))
-    findings.extend(audit_token(require_token, token_env_vars=token_env_vars))
+    token_environ = load_local_env_tokens(repo_root)
+    findings.extend(
+        audit_token(require_token, environ=token_environ, token_env_vars=token_env_vars)
+    )
     return findings
 
 
@@ -125,7 +155,12 @@ def main(argv: list[str] | None = None) -> int:
 
     token_status = (
         "token present"
-        if audit_token(True, token_env_vars=token_env_vars) == []
+        if audit_token(
+            True,
+            environ=load_local_env_tokens(repo_root),
+            token_env_vars=token_env_vars,
+        )
+        == []
         else "token not checked"
     )
     print(f"Zenodo upload readiness audit passed ({token_status})")

@@ -76,3 +76,40 @@ def test_token_audit_accepts_valid_token_when_other_alias_is_placeholder():
     )
 
     assert findings == []
+
+
+def test_local_env_tokens_are_loaded_without_overriding_environment(tmp_path):
+    (tmp_path / ".env").write_text(
+        "\n".join(
+            [
+                "ZENODO_ACCESS_TOKEN=local-production-token",
+                "ZENODO_TOKEN=local-legacy-token",
+                "OTHER_SECRET=must-not-load",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    environ = {"ZENODO_ACCESS_TOKEN": "process-token"}
+    merged = audit_zenodo_upload_readiness.load_local_env_tokens(tmp_path, environ)
+
+    assert merged["ZENODO_ACCESS_TOKEN"] == "process-token"
+    assert merged["ZENODO_TOKEN"] == "local-legacy-token"
+    assert "OTHER_SECRET" not in merged
+
+
+def test_local_env_token_loader_handles_quotes_and_sandbox_names(tmp_path):
+    (tmp_path / ".env").write_text(
+        "\n".join(
+            [
+                'ZENODO_SANDBOX_ACCESS_TOKEN="sandbox-access"',
+                "ZENODO_SANDBOX_TOKEN='sandbox-legacy'",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    merged = audit_zenodo_upload_readiness.load_local_env_tokens(tmp_path, {})
+
+    assert merged["ZENODO_SANDBOX_ACCESS_TOKEN"] == "sandbox-access"
+    assert merged["ZENODO_SANDBOX_TOKEN"] == "sandbox-legacy"
