@@ -80,8 +80,9 @@ def update_log_text(
     record_url = record_url_from_payload(deposition)
     doi = doi_from_payload(deposition)
 
-    text = set_field(text, "Target commit", current_commit)
-    text = set_field(text, "Asset SHA-256", zip_digest)
+    if payload.get("mode") != "dry-run":
+        text = set_field(text, "Target commit", current_commit)
+        text = set_field(text, "Asset SHA-256", zip_digest)
 
     if sandbox:
         if deposition_id is not None:

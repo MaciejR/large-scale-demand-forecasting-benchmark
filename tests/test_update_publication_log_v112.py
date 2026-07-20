@@ -74,3 +74,16 @@ def test_update_log_text_fills_sandbox_only_when_requested():
 
     assert "- Sandbox deposition ID: 999" in updated
     assert "- Production deposition ID: TODO" in updated
+
+
+def test_update_log_text_dry_run_leaves_release_identity_placeholders():
+    updated = update_publication_log_v112.update_log_text(
+        template(),
+        {"mode": "dry-run"},
+        current_commit="abc123",
+        zip_digest="deadbeef",
+        sandbox=False,
+    )
+
+    assert "- Target commit: TODO" in updated
+    assert "- Asset SHA-256: TODO" in updated
