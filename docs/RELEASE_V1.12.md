@@ -102,10 +102,10 @@ tree.  It also excludes superseded working notes such as
 source is the LaTeX tree under `paper/latex/`.
 
 Publication readiness is checked separately with
-`python3 tools/audit_publication_readiness.py`.  Run it once before changing
-repository visibility, then rerun with `--require-public` after making GitHub
-public.  After the GitHub release is created, `python3 tools/audit_github_release.py`
-checks that tag `v1.12` and the uploaded zip asset match the local package.
+`python3 tools/audit_publication_readiness.py`.  Run it with
+`--require-public` after every package rebuild and GitHub release asset update.
+`python3 tools/audit_github_release.py` checks that tag `v1.12` and the
+uploaded zip asset match the local package.
 `python3 tools/audit_zenodo_metadata.py` checks that the Zenodo metadata draft
 matches the package version, GitHub release URL, historical DOI relation, asset
 name, commit-provenance note, packaged `CHECKSUMS.txt` note, and root
@@ -115,9 +115,9 @@ Zenodo metadata, package provenance, clean-tree, and pushed-HEAD checks.  Add
 `--require-token` immediately before an API upload to verify that a Zenodo token
 is present without printing it.
 `python3 tools/audit_publication_log_v112.py` checks that
-`docs/PUBLICATION_LOG_V1.12.md` records the current GitHub release target and
-asset checksum; after Zenodo publication, add `--require-complete` to fail on
-remaining placeholders.
+`docs/PUBLICATION_LOG_V1.12.md` has the required fields and that any recorded
+commit or asset checksum matches the current package; after Zenodo publication,
+add `--require-complete` to fail on remaining placeholders.
 `python3 tools/zenodo_upload_v112.py --dry-run` validates the same package and
 prints the planned Zenodo upload.  Without `--dry-run`, it creates or updates an
 unpublished draft and appends the outer ZIP SHA-256 to the Zenodo record notes;

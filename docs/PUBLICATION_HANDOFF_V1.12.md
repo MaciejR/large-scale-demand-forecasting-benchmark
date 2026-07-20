@@ -1,8 +1,8 @@
 # Publication Handoff: v1.12
 
 This is the operational checklist for publishing the current v1.12 repair
-package.  It assumes the repository remains private until the final visibility
-step.
+package.  The repository is now public; the GitHub release and asset must stay
+synchronized with the source commit recorded inside the package.
 
 ## Current Package
 
@@ -24,26 +24,21 @@ python3 tools/audit_publication_readiness.py
 python3 tools/audit_zenodo_metadata.py
 ```
 
-Expected state before changing visibility:
+Expected state before touching the public release:
 
 - `pytest` passes.
 - `tools/build_v112_release.sh` passes privacy, manifest, provenance, checksum,
   zip-integrity, manuscript, PRISMA, citation, Source B, and meta-regression
   gates.
 - `python3 tools/audit_publication_readiness.py` passes.
-- `python3 tools/audit_publication_readiness.py --require-public` fails only
-  because GitHub visibility is still `PRIVATE`.
+- `python3 tools/audit_publication_readiness.py --require-public` passes after
+  the GitHub release asset has been updated for the current package.
 
-## GitHub Visibility Step
+## GitHub Release State
 
-After the package audit passes, make the repository public in GitHub settings
-or with:
-
-```bash
-gh repo edit MaciejR/large-scale-demand-forecasting-benchmark --visibility public
-```
-
-Then rerun:
+The public GitHub repository and v1.12 release are part of the publication
+state.  After every commit that changes packaged content, rebuild the package,
+replace the GitHub release asset, and rerun:
 
 ```bash
 python3 tools/audit_publication_readiness.py --require-public
@@ -117,9 +112,8 @@ the metadata file packaged inside the ZIP.  Publishing is a separate
 irreversible step:
 
 ```bash
-python3 tools/zenodo_upload_v112.py --deposition-id <draft-id> --publish --output-json /tmp/zenodo-v1.12-publish.json
-python3 tools/update_publication_log_v112.py --zenodo-json /tmp/zenodo-v1.12-publish.json --apply
 tools/publish_v112_zenodo.sh publish --deposition-id <draft-id> --output-json /tmp/zenodo-v1.12-publish.json
+python3 tools/update_publication_log_v112.py --zenodo-json /tmp/zenodo-v1.12-publish.json --apply
 ```
 
 ## After Zenodo Minting

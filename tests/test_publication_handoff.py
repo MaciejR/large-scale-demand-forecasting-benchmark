@@ -11,7 +11,7 @@ def test_publication_handoff_contains_finalization_commands():
         "python3 tools/audit_publication_log_v112.py",
         "tools/publish_v112_zenodo.sh dry-run",
         "tools/publish_v112_zenodo.sh publish --deposition-id",
-        "gh repo edit MaciejR/large-scale-demand-forecasting-benchmark --visibility public",
+        "replace the GitHub release asset",
         "release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair.zip",
         "shasum -a 256 release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair.zip",
     ]
