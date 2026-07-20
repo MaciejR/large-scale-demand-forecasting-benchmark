@@ -100,7 +100,9 @@ tools/publish_v112_zenodo.sh draft --output-json /tmp/zenodo-v1.12-draft.json
 
 The wrapper does not modify tracked files.  Inspect the draft JSON before
 deciding whether to update the publication log, commit a draft note, or proceed
-to publication.
+to publication.  The wrapper relies on
+`python3 tools/audit_publication_readiness.py --require-public` for the GitHub
+release download-verification gate, so it does not run a second asset download.
 
 For a non-archival sandbox check, use a separate sandbox token:
 

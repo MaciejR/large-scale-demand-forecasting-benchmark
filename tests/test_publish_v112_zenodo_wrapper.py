@@ -9,10 +9,15 @@ def test_publish_wrapper_runs_common_publication_audits():
 
     for command in [
         "python3 tools/audit_publication_readiness.py --require-public",
-        "python3 tools/audit_github_release.py --verify-download",
         "python3 tools/audit_publication_log_v112.py",
     ]:
         assert command in text
+
+
+def test_publish_wrapper_avoids_duplicate_release_asset_download():
+    text = SCRIPT.read_text()
+
+    assert "python3 tools/audit_github_release.py --verify-download" not in text
 
 
 def test_publish_wrapper_requires_tokens_for_mutating_actions():

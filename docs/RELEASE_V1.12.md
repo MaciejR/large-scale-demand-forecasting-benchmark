@@ -140,4 +140,6 @@ ID, record URL, DOI, current commit, and package SHA.
 `tools/publish_v112_zenodo.sh` wraps the audited dry-run, draft, sandbox-draft,
 and publish flows without bypassing the underlying readiness checks; it writes
 the Zenodo response JSON but leaves publication-log edits to the explicit
-`tools/update_publication_log_v112.py` step.
+`tools/update_publication_log_v112.py` step.  Its public-readiness gate already
+download-verifies the GitHub release asset, so the wrapper avoids a duplicate
+download before invoking the uploader.
