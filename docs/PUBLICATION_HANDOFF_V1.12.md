@@ -147,7 +147,17 @@ tools/build_v112_release.sh
 python3 tools/audit_publication_readiness.py --require-public
 ```
 
-Commit and push the DOI metadata update, then rebuild the final package once
+Commit and push the DOI metadata update, then record that full commit SHA in the
+publication log:
+
+```bash
+python3 tools/update_publication_log_v112.py \
+  --zenodo-json /tmp/zenodo-v1.12-publish.json \
+  --doi-update-commit "$(git rev-parse HEAD)" \
+  --apply
+```
+
+Commit and push the publication-log update, then rebuild the final package once
 more so `COMMIT.txt`, `CHECKSUMS.txt`, and citation metadata agree.  Do not
 write the outer ZIP checksum into a tracked file inside the package; the
 public-readiness audit verifies the final GitHub release target and downloaded

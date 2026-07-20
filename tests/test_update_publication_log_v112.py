@@ -16,6 +16,7 @@ def template():
             "- Production DOI: TODO",
             "- Production DOI URL: TODO",
             "- Published at: TODO",
+            "- DOI metadata update commit: TODO",
         ]
     ) + "\n"
 
@@ -36,6 +37,7 @@ def test_set_field_rejects_missing_field():
 
 
 def test_update_log_text_fills_production_publish_result():
+    doi_update_commit = "1234567890abcdef1234567890abcdef12345678"
     payload = {
         "mode": "published",
         "deposition": {
@@ -52,6 +54,7 @@ def test_update_log_text_fills_production_publish_result():
         current_commit="abc123",
         zip_digest="deadbeef",
         sandbox=False,
+        doi_update_commit=doi_update_commit,
     )
 
     assert "- Target commit: abc123" in updated
@@ -61,6 +64,7 @@ def test_update_log_text_fills_production_publish_result():
     assert "- Production DOI: 10.5281/zenodo.456" in updated
     assert "- Production DOI URL: https://doi.org/10.5281/zenodo.456" in updated
     assert "- Published at: recorded by Zenodo" in updated
+    assert f"- DOI metadata update commit: {doi_update_commit}" in updated
 
 
 def test_update_log_text_fills_sandbox_only_when_requested():
@@ -89,3 +93,12 @@ def test_update_log_text_dry_run_leaves_release_identity_placeholders():
 
     assert "- Target commit: TODO" in updated
     assert "- Asset SHA-256: TODO" in updated
+
+
+def test_validate_commit_rejects_short_sha():
+    try:
+        update_publication_log_v112.validate_commit("abc123")
+    except ValueError as exc:
+        assert "40-character" in str(exc)
+    else:
+        raise AssertionError("expected ValueError")

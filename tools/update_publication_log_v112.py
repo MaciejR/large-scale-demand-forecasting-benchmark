@@ -18,6 +18,7 @@ RELEASE_DIR = Path("release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repai
 ZIP_PATH = Path(f"{RELEASE_DIR}.zip")
 ASSET_NAME = "zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair.zip"
 FIELD_RE = re.compile(r"^(- (?P<label>[^:]+): )(?P<value>.*)$")
+FULL_COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 
 
 def run(cmd: list[str], cwd: Path) -> str:
@@ -68,12 +69,20 @@ def doi_from_payload(deposition: dict[str, Any]) -> str | None:
     return None
 
 
+def validate_commit(value: str) -> str:
+    value = value.strip()
+    if not FULL_COMMIT_RE.match(value):
+        raise ValueError("DOI update commit must be a full 40-character git SHA")
+    return value
+
+
 def update_log_text(
     text: str,
     payload: dict[str, Any],
     current_commit: str,
     zip_digest: str,
     sandbox: bool,
+    doi_update_commit: str | None = None,
 ) -> str:
     deposition = payload.get("deposition") or {}
     deposition_id = deposition.get("id")
@@ -98,19 +107,29 @@ def update_log_text(
         text = set_field(text, "Production DOI URL", f"https://doi.org/{doi}")
     if payload.get("mode") == "published":
         text = set_field(text, "Published at", "recorded by Zenodo")
+    if doi_update_commit:
+        text = set_field(text, "DOI metadata update commit", doi_update_commit)
     return text
 
 
-def planned_update(repo_root: Path, payload: dict[str, Any], sandbox: bool) -> str:
+def planned_update(
+    repo_root: Path,
+    payload: dict[str, Any],
+    sandbox: bool,
+    doi_update_commit: str | None = None,
+) -> str:
     log_path = repo_root / LOG_PATH
     zip_path = repo_root / ZIP_PATH
     current_commit = run(["git", "rev-parse", "HEAD"], repo_root)
+    if doi_update_commit:
+        doi_update_commit = validate_commit(doi_update_commit)
     return update_log_text(
         log_path.read_text(encoding="utf-8"),
         payload,
         current_commit=current_commit,
         zip_digest=sha256(zip_path),
         sandbox=sandbox,
+        doi_update_commit=doi_update_commit,
     )
 
 
@@ -122,13 +141,22 @@ def main(argv: list[str] | None = None) -> int:
         help="Path to JSON output from tools/zenodo_upload_v112.py. Reads stdin if omitted.",
     )
     parser.add_argument("--sandbox", action="store_true", help="Update sandbox fields.")
+    parser.add_argument(
+        "--doi-update-commit",
+        help="Full SHA of the commit that applied the minted DOI to citation/manuscript metadata.",
+    )
     parser.add_argument("--apply", action="store_true", help="Write the publication log.")
     args = parser.parse_args(argv)
 
     repo_root = Path(__file__).resolve().parents[1]
     try:
         payload = load_json(args.zenodo_json)
-        updated = planned_update(repo_root, payload, sandbox=args.sandbox)
+        updated = planned_update(
+            repo_root,
+            payload,
+            sandbox=args.sandbox,
+            doi_update_commit=args.doi_update_commit,
+        )
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         print(f"Publication log update failed: {exc}", file=sys.stderr)
         return 1

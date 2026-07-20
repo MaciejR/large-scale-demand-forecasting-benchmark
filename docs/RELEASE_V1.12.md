@@ -137,7 +137,9 @@ updates README, `CITATION.cff`, manuscript data availability text, and these
 release notes from the GitHub-release citation to the archived DOI.
 `python3 tools/update_publication_log_v112.py` reads the JSON output from
 `tools/zenodo_upload_v112.py` and fills the publication log with the deposition
-ID, record URL, DOI, current commit, and package SHA.
+ID, record URL, DOI, current commit, and package SHA.  After the DOI metadata
+files are committed, pass `--doi-update-commit "$(git rev-parse HEAD)"` to record
+the full SHA of that DOI metadata commit in the publication log.
 `tools/publish_v112_zenodo.sh` wraps the audited dry-run, draft, sandbox-draft,
 and publish flows without bypassing the underlying readiness checks; it writes
 the Zenodo response JSON but leaves publication-log edits to the explicit
