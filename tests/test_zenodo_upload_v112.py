@@ -24,14 +24,20 @@ def test_dry_run_report_contains_package_and_metadata(tmp_path):
         "https://zenodo.org/api",
         zip_path,
         Path("metadata.json"),
-        {"title": "Title", "version": "v1.12"},
+        {
+            "title": "Title",
+            "version": "v1.12",
+            "notes": f"{zenodo_upload_v112.ZIP_SHA_NOTE_PREFIX}: digest",
+        },
         deposition_id=None,
         publish=False,
     )
 
     assert report["mode"] == "dry-run"
     assert report["zip_size"] == 3
+    assert report["zip_sha256"] == "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
     assert report["title"] == "Title"
+    assert report["metadata_notes_include_zip_sha"] is True
     assert report["would_publish"] is False
 
 
@@ -74,3 +80,29 @@ def test_sandbox_default_token_names_are_distinct_from_production():
     assert (
         sandbox_names != zenodo_upload_v112.audit_zenodo_upload_readiness.TOKEN_ENV_VARS
     )
+
+
+def test_metadata_with_zip_sha_appends_non_circular_upload_note(tmp_path):
+    zip_path = tmp_path / "package.zip"
+    zip_path.write_bytes(b"abc")
+    metadata = {"notes": "Existing note."}
+
+    updated = zenodo_upload_v112.metadata_with_zip_sha(metadata, zip_path)
+
+    assert metadata == {"notes": "Existing note."}
+    assert "Existing note." in updated["notes"]
+    assert zenodo_upload_v112.ZIP_SHA_NOTE_PREFIX in updated["notes"]
+    assert "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad" in updated["notes"]
+
+
+def test_metadata_with_zip_sha_is_idempotent(tmp_path):
+    zip_path = tmp_path / "package.zip"
+    zip_path.write_bytes(b"abc")
+    metadata = {
+        "notes": (
+            f"{zenodo_upload_v112.ZIP_SHA_NOTE_PREFIX}: "
+            "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+        )
+    }
+
+    assert zenodo_upload_v112.metadata_with_zip_sha(metadata, zip_path) == metadata

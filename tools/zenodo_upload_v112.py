@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import argparse
+import copy
+import hashlib
 import json
 import os
 import sys
@@ -20,6 +22,7 @@ METADATA_PATH = Path("docs/ZENODO_METADATA_V1.12.json")
 ASSET_NAME = "zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair.zip"
 ZENODO_API = "https://zenodo.org/api"
 SANDBOX_API = "https://sandbox.zenodo.org/api"
+ZIP_SHA_NOTE_PREFIX = "Uploaded archive SHA-256"
 
 
 class ZenodoError(RuntimeError):
@@ -28,6 +31,14 @@ class ZenodoError(RuntimeError):
 
 def load_metadata(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def token_from_env(env_names: list[str]) -> str | None:
@@ -112,6 +123,17 @@ def deposition_summary(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def metadata_with_zip_sha(metadata: dict[str, Any], zip_path: Path) -> dict[str, Any]:
+    result = copy.deepcopy(metadata)
+    zip_digest = sha256(zip_path)
+    note = f"{ZIP_SHA_NOTE_PREFIX}: {zip_digest}; uploaded asset: {ASSET_NAME}."
+    existing_notes = result.get("notes", "")
+    if ZIP_SHA_NOTE_PREFIX in existing_notes:
+        return result
+    result["notes"] = f"{existing_notes.rstrip()} {note}".strip()
+    return result
+
+
 def dry_run_report(
     api_base: str,
     zip_path: Path,
@@ -130,6 +152,8 @@ def dry_run_report(
         "title": metadata.get("title"),
         "version": metadata.get("version"),
         "asset_name": ASSET_NAME,
+        "zip_sha256": sha256(zip_path),
+        "metadata_notes_include_zip_sha": ZIP_SHA_NOTE_PREFIX in metadata.get("notes", ""),
         "would_publish": publish,
     }
 
@@ -152,7 +176,7 @@ def upload(
     if readiness:
         raise ZenodoError("readiness audit failed: " + "; ".join(readiness))
 
-    metadata = load_metadata(metadata_path)
+    metadata = metadata_with_zip_sha(load_metadata(metadata_path), zip_path)
     if dry_run:
         return dry_run_report(api_base, zip_path, metadata_path, metadata, deposition_id, publish)
 

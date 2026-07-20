@@ -100,7 +100,10 @@ python3 tools/zenodo_upload_v112.py --sandbox
 ```
 
 This creates or updates an unpublished Zenodo draft and uploads the audited
-package plus metadata.  Publishing is a separate irreversible step:
+package plus metadata.  The uploader appends the outer ZIP SHA-256 to the
+Zenodo record notes at upload time; this avoids storing a circular checksum in
+the metadata file packaged inside the ZIP.  Publishing is a separate
+irreversible step:
 
 ```bash
 python3 tools/zenodo_upload_v112.py --deposition-id <draft-id> --publish
