@@ -66,3 +66,28 @@ def test_release_audit_includes_publication_log_gate(monkeypatch):
 
     assert audit_publication_readiness.audit_release(Path(".")) == []
     assert ["python3", "tools/audit_publication_log_v112.py"] in commands
+
+
+def test_require_public_runs_download_verified_github_release_audit(monkeypatch):
+    commands = []
+
+    monkeypatch.setattr(audit_publication_readiness, "audit_git", lambda repo_root: [])
+    monkeypatch.setattr(audit_publication_readiness, "audit_release", lambda repo_root: [])
+    monkeypatch.setattr(
+        audit_publication_readiness,
+        "audit_github_visibility",
+        lambda repo_root, require_public: [],
+    )
+
+    def fake_try_run(cmd, cwd):
+        commands.append(cmd)
+        return 0, "", ""
+
+    monkeypatch.setattr(audit_publication_readiness, "try_run", fake_try_run)
+
+    assert audit_publication_readiness.audit(Path("."), require_public=True) == []
+    assert [
+        "python3",
+        "tools/audit_github_release.py",
+        "--verify-download",
+    ] in commands
