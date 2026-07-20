@@ -143,18 +143,26 @@ python3 tools/apply_v112_zenodo_doi.py --doi 10.5281/zenodo.<new-record-id>
 python3 tools/apply_v112_zenodo_doi.py --doi 10.5281/zenodo.<new-record-id> --apply
 ```
 
-Then rerun:
+Then verify the metadata edits before committing:
 
 ```bash
 pytest
+git diff --check
+```
+
+Commit and push the DOI metadata update.  The release builder requires a clean
+tree because `COMMIT.txt` must identify a real commit.  After the DOI metadata
+commit is pushed, rebuild and verify the public release state:
+
+```bash
 tools/build_v112_release.sh
 python3 tools/audit_publication_readiness.py --require-public
 ```
 
-Commit and push the DOI metadata update, then record that full commit SHA in the
-publication log.  The publish JSON includes `published_at_utc`, which the helper
-copies into the `Published at` field; this second log update preserves the
-already-recorded Zenodo-uploaded target commit and asset SHA:
+Then record the full DOI metadata commit SHA in the publication log.  The
+publish JSON includes `published_at_utc`, which the helper copies into the
+`Published at` field; this second log update preserves the already-recorded
+Zenodo-uploaded target commit and asset SHA:
 
 ```bash
 python3 tools/update_publication_log_v112.py \
