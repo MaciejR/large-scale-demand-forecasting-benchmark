@@ -68,6 +68,23 @@ def test_zenodo_metadata_flags_missing_github_release_relation():
     assert any(audit_zenodo_metadata.GITHUB_RELEASE_URL in finding for finding in findings)
 
 
+def test_zenodo_metadata_rejects_historical_doi_as_current_record_relation():
+    metadata = copy.deepcopy(valid_metadata())
+    metadata["related_identifiers"].append(
+        {
+            "identifier": audit_zenodo_metadata.HISTORICAL_DOI,
+            "relation": "isIdenticalTo",
+        }
+    )
+
+    findings = audit_zenodo_metadata.audit_metadata(metadata)
+
+    assert (
+        "historical v1.0 DOI must only appear as isNewVersionOf in v1.12 metadata"
+        in findings
+    )
+
+
 def test_zenodo_metadata_flags_missing_checksums_note():
     metadata = valid_metadata()
     metadata["notes"] = f"GitHub release asset: {audit_zenodo_metadata.ASSET_NAME}; COMMIT.txt"

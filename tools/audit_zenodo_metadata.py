@@ -79,6 +79,14 @@ def audit_metadata(metadata: dict) -> list[str]:
     for key in required_related:
         if key not in related:
             findings.append(f"missing related identifier: {key[0]} ({key[1]})")
+    for item in metadata.get("related_identifiers", []):
+        if (
+            item.get("identifier") == HISTORICAL_DOI
+            and item.get("relation") != "isNewVersionOf"
+        ):
+            findings.append(
+                "historical v1.0 DOI must only appear as isNewVersionOf in v1.12 metadata"
+            )
 
     notes = metadata.get("notes", "")
     for required in [ASSET_NAME, "COMMIT.txt", "CHECKSUMS.txt"]:
