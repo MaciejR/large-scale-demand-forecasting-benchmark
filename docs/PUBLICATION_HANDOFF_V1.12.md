@@ -108,6 +108,13 @@ After a v1.12 DOI is minted, update:
 - `paper/latex/main.tex`
 - `docs/RELEASE_V1.12.md`
 
+Use the scripted DOI update path:
+
+```bash
+python3 tools/apply_v112_zenodo_doi.py --doi 10.5281/zenodo.<new-record-id>
+python3 tools/apply_v112_zenodo_doi.py --doi 10.5281/zenodo.<new-record-id> --apply
+```
+
 Then rerun:
 
 ```bash

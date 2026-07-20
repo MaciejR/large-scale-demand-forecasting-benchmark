@@ -118,3 +118,6 @@ is present without printing it.
 prints the planned Zenodo upload.  Without `--dry-run`, it creates or updates an
 unpublished draft; the irreversible publish action requires an explicit
 `--publish` flag.
+After Zenodo mints the v1.12 DOI, `python3 tools/apply_v112_zenodo_doi.py`
+updates README, `CITATION.cff`, manuscript data availability text, and these
+release notes from the GitHub-release citation to the archived DOI.
