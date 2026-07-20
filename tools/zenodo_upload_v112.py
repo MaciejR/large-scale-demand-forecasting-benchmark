@@ -42,9 +42,13 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def token_from_env(env_names: list[str]) -> str | None:
+def token_from_env(
+    env_names: list[str],
+    environ: dict[str, str] | None = None,
+) -> str | None:
+    environ = os.environ if environ is None else environ
     for name in env_names:
-        value = os.environ.get(name, "").strip()
+        value = environ.get(name, "").strip()
         if value:
             return value
     return None
@@ -192,7 +196,8 @@ def upload(
     if dry_run:
         return dry_run_report(api_base, zip_path, metadata_path, metadata, deposition_id, publish)
 
-    token = token_from_env(token_env)
+    token_environ = audit_zenodo_upload_readiness.load_local_env_tokens(repo_root)
+    token = token_from_env(token_env, environ=token_environ)
     if token is None:
         raise ZenodoError("missing Zenodo token")
 

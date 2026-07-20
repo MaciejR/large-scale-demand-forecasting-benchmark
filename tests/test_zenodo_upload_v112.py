@@ -160,6 +160,15 @@ def test_write_json_result_prints_and_writes_same_payload(tmp_path):
     assert output_path.read_text(encoding="utf-8") == f"{rendered}\n"
 
 
+def test_token_from_env_accepts_explicit_environment():
+    token = zenodo_upload_v112.token_from_env(
+        ["ZENODO_ACCESS_TOKEN"],
+        environ={"ZENODO_ACCESS_TOKEN": "explicit-token"},
+    )
+
+    assert token == "explicit-token"
+
+
 def test_upload_result_records_uploaded_zip_identity(tmp_path, monkeypatch):
     repo = tmp_path
     zip_path = repo / "package.zip"
@@ -192,6 +201,38 @@ def test_upload_result_records_uploaded_zip_identity(tmp_path, monkeypatch):
     assert result["zip_size"] == 3
     assert result["metadata_notes_include_zip_sha"] is True
     assert session.headers["Authorization"] == "Bearer secret-value"
+
+
+def test_upload_uses_known_local_env_tokens(tmp_path, monkeypatch):
+    repo = tmp_path
+    zip_path = repo / "package.zip"
+    metadata_path = repo / "metadata.json"
+    zip_path.write_bytes(b"abc")
+    metadata_path.write_text('{"title":"Title","version":"v1.12","notes":"Note."}', encoding="utf-8")
+    (repo / ".env").write_text("ZENODO_ACCESS_TOKEN=local-token\n", encoding="utf-8")
+    session = Session()
+
+    monkeypatch.delenv("ZENODO_ACCESS_TOKEN", raising=False)
+    monkeypatch.setattr(
+        zenodo_upload_v112.audit_zenodo_upload_readiness,
+        "audit",
+        lambda *args, **kwargs: [],
+    )
+    monkeypatch.setattr(zenodo_upload_v112.requests, "Session", lambda: session)
+
+    result = zenodo_upload_v112.upload(
+        repo_root=repo,
+        api_base="https://zenodo.org/api",
+        zip_path=zip_path,
+        metadata_path=metadata_path,
+        deposition_id=None,
+        publish=False,
+        dry_run=False,
+        token_env=["ZENODO_ACCESS_TOKEN"],
+    )
+
+    assert result["mode"] == "draft"
+    assert session.headers["Authorization"] == "Bearer local-token"
 
 
 def test_published_upload_result_records_utc_timestamp(tmp_path, monkeypatch):
