@@ -39,6 +39,15 @@ def test_release_manifest_flags_missing_required_file(tmp_path):
     assert any("missing required file: replication/analysis/meta_regression.R" in finding for finding in findings)
 
 
+def test_release_manifest_requires_env_example(tmp_path):
+    create_minimal_release(tmp_path)
+    (tmp_path / "replication/.env.example").unlink()
+
+    findings = audit_release_manifest.audit_release(tmp_path)
+
+    assert any("missing required file: replication/.env.example" in finding for finding in findings)
+
+
 def test_release_manifest_flags_claude_state(tmp_path):
     create_minimal_release(tmp_path)
     path = tmp_path / "replication/.claude/scheduled_tasks.lock"

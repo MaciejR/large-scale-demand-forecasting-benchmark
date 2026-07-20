@@ -16,6 +16,7 @@ REQUIRED_FILES = {
     "CHECKSUMS.txt",
     "README.md",
     f"manuscript/{PDF_NAME}",
+    "replication/.env.example",
     "replication/README.md",
     "replication/REPRODUCING.md",
     "replication/ARTIFACTS.md",
