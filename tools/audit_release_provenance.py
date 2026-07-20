@@ -18,6 +18,8 @@ ZIP_PATH = Path("release") / f"{RELEASE_STEM}.zip"
 PDF_NAME = "demand-forecasting-timesfm-fev-bench-wape-covariance-repair-v1.12.pdf"
 REPO_URL = "https://github.com/MaciejR/large-scale-demand-forecasting-benchmark"
 GITHUB_RELEASE_URL = f"{REPO_URL}/releases/tag/v1.12"
+ZENODO_DOI_RE = re.compile(r'10\.5281/zenodo\.[0-9]+')
+ZENODO_DOI_URL_RE = re.compile(r'https://doi\.org/10\.5281/zenodo\.[0-9]+')
 
 
 def read(path: Path) -> str:
@@ -42,6 +44,21 @@ def require_regex(text: str, pattern: str, label: str, findings: list[str]) -> N
         findings.append(f"{label}: missing pattern {pattern!r}")
 
 
+def audit_citation_text(text: str) -> list[str]:
+    findings: list[str] = []
+    require_regex(text, rf'^version:\s*"{re.escape(VERSION)}"$', "CITATION.cff", findings)
+    require_regex(text, rf'^date-released:\s*"{re.escape(RELEASE_DATE)}"$', "CITATION.cff", findings)
+    require_contains(text, REPO_URL, "CITATION.cff", findings)
+
+    has_release_url = GITHUB_RELEASE_URL in text
+    has_zenodo_doi = bool(ZENODO_DOI_RE.search(text) and ZENODO_DOI_URL_RE.search(text))
+    if not has_release_url and not has_zenodo_doi:
+        findings.append(
+            "CITATION.cff: missing GitHub release URL or minted Zenodo DOI citation"
+        )
+    return findings
+
+
 def display_path(path: Path, repo_root: Path) -> str:
     try:
         return path.resolve().relative_to(repo_root.resolve()).as_posix()
@@ -62,10 +79,7 @@ def audit_static_files(repo_root: Path) -> list[str]:
     privacy_audit = read(repo_root / "tools" / "audit_release_privacy.py")
     main_tex = read(repo_root / "paper" / "latex" / "main.tex")
 
-    require_regex(citation, rf'^version:\s*"{re.escape(VERSION)}"$', "CITATION.cff", findings)
-    require_regex(citation, rf'^date-released:\s*"{re.escape(RELEASE_DATE)}"$', "CITATION.cff", findings)
-    require_contains(citation, GITHUB_RELEASE_URL, "CITATION.cff", findings)
-    require_contains(citation, REPO_URL, "CITATION.cff", findings)
+    findings.extend(audit_citation_text(citation))
 
     for label, text in [
         ("README.md", readme),

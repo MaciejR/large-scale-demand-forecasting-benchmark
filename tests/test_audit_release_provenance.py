@@ -12,6 +12,30 @@ def test_current_release_static_metadata_is_consistent():
     assert audit_release_provenance.audit_static_files(repo_root) == []
 
 
+def test_release_provenance_accepts_post_doi_citation_metadata():
+    text = (
+        'version: "v1.12"\n'
+        'date-released: "2026-07-20"\n'
+        'doi: "10.5281/zenodo.99999999"\n'
+        'url: "https://doi.org/10.5281/zenodo.99999999"\n'
+        'repository-code: "https://github.com/MaciejR/large-scale-demand-forecasting-benchmark"\n'
+    )
+
+    assert audit_release_provenance.audit_citation_text(text) == []
+
+
+def test_release_provenance_flags_citation_without_release_or_doi_url():
+    text = (
+        'version: "v1.12"\n'
+        'date-released: "2026-07-20"\n'
+        'repository-code: "https://github.com/MaciejR/large-scale-demand-forecasting-benchmark"\n'
+    )
+
+    findings = audit_release_provenance.audit_citation_text(text)
+
+    assert any("missing GitHub release URL or minted Zenodo DOI" in finding for finding in findings)
+
+
 def test_release_provenance_flags_commit_mismatch(tmp_path):
     release_dir = tmp_path / audit_release_provenance.RELEASE_STEM
     manuscript_dir = release_dir / "manuscript"
