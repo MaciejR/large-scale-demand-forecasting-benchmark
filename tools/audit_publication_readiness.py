@@ -67,6 +67,7 @@ def audit_release(repo_root: Path) -> list[str]:
         ["python3", "tools/audit_release_manifest.py", str(RELEASE_DIR)],
         ["python3", "tools/audit_release_provenance.py", str(RELEASE_DIR)],
         ["python3", "tools/audit_zenodo_metadata.py"],
+        ["python3", "tools/audit_publication_log_v112.py"],
     ]:
         code, _stdout, stderr = try_run(command, repo_root)
         if code != 0:

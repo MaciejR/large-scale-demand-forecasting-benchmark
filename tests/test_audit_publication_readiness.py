@@ -48,3 +48,21 @@ def test_publication_visibility_reports_gh_error(monkeypatch):
     assert audit_publication_readiness.audit_github_visibility(Path("."), require_public=False) == [
         "gh unavailable"
     ]
+
+
+def test_release_audit_includes_publication_log_gate(monkeypatch):
+    commands = []
+
+    monkeypatch.setattr(audit_publication_readiness, "run", lambda cmd, cwd: "abc123")
+
+    def fake_try_run(cmd, cwd):
+        commands.append(cmd)
+        return 0, "", ""
+
+    monkeypatch.setattr(audit_publication_readiness, "try_run", fake_try_run)
+    monkeypatch.setattr(Path, "is_dir", lambda self: True)
+    monkeypatch.setattr(Path, "is_file", lambda self: True)
+    monkeypatch.setattr(Path, "read_text", lambda self, encoding=None: "abc123")
+
+    assert audit_publication_readiness.audit_release(Path(".")) == []
+    assert ["python3", "tools/audit_publication_log_v112.py"] in commands
