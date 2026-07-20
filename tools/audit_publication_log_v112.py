@@ -19,6 +19,7 @@ GITHUB_RELEASE_URL = (
 )
 DOI_RE = re.compile(r"10\.5281/zenodo\.[0-9]+")
 FULL_COMMIT_RE = re.compile(r"[0-9a-f]{40}")
+SHA256_RE = re.compile(r"[0-9a-f]{64}")
 UTC_TIMESTAMP_RE = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z")
 FIELD_RE = re.compile(r"^- (?P<label>[^:]+): (?P<value>.*)$", re.MULTILINE)
 
@@ -110,7 +111,9 @@ def audit(repo_root: Path, require_complete: bool) -> list[str]:
     findings.extend(audit_log_text(text))
 
     commit_value = field_value(text, "Target commit")
-    if commit_value and commit_value != "TODO":
+    doi_value = field_value(text, "Production DOI")
+    has_production_doi = bool(doi_value and doi_value != "TODO")
+    if commit_value and commit_value != "TODO" and not has_production_doi:
         release_commit = commit_path.read_text(encoding="utf-8").strip()
         if commit_value != release_commit:
             findings.append(
@@ -118,7 +121,7 @@ def audit(repo_root: Path, require_complete: bool) -> list[str]:
             )
 
     sha_value = field_value(text, "Asset SHA-256")
-    if sha_value and sha_value != "TODO":
+    if sha_value and sha_value != "TODO" and not has_production_doi:
         current_sha = sha256(zip_path)
         if sha_value != current_sha:
             findings.append(
@@ -126,6 +129,12 @@ def audit(repo_root: Path, require_complete: bool) -> list[str]:
             )
 
     if require_complete:
+        if not commit_value or not FULL_COMMIT_RE.fullmatch(commit_value):
+            findings.append(
+                "publication log Target commit is not a full 40-character git SHA"
+            )
+        if not sha_value or not SHA256_RE.fullmatch(sha_value):
+            findings.append("publication log Asset SHA-256 is not a 64-character SHA-256")
         findings.extend(audit_complete_log_text(text))
     return findings
 

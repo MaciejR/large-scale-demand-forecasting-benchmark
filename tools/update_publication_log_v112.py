@@ -76,6 +76,15 @@ def validate_commit(value: str) -> str:
     return value
 
 
+def has_value(text: str, label: str) -> bool:
+    marker = f"- {label}: "
+    for line in text.splitlines():
+        if line.startswith(marker):
+            value = line[len(marker) :].strip()
+            return bool(value and value != "TODO")
+    raise ValueError(f"expected one publication-log field {label!r}, found 0")
+
+
 def update_log_text(
     text: str,
     payload: dict[str, Any],
@@ -89,7 +98,15 @@ def update_log_text(
     record_url = record_url_from_payload(deposition)
     doi = doi_from_payload(deposition)
 
-    if payload.get("mode") != "dry-run":
+    if doi_update_commit and (
+        not has_value(text, "Target commit") or not has_value(text, "Asset SHA-256")
+    ):
+        raise ValueError(
+            "record the Zenodo-uploaded Target commit and Asset SHA-256 before "
+            "recording the DOI metadata update commit"
+        )
+
+    if payload.get("mode") != "dry-run" and not doi_update_commit:
         text = set_field(text, "Target commit", current_commit)
         text = set_field(text, "Asset SHA-256", zip_digest)
 
@@ -105,8 +122,6 @@ def update_log_text(
     if doi:
         text = set_field(text, "Production DOI", doi)
         text = set_field(text, "Production DOI URL", f"https://doi.org/{doi}")
-    if payload.get("mode") == "published":
-        text = set_field(text, "Published at", "recorded by Zenodo")
     if doi_update_commit:
         text = set_field(text, "DOI metadata update commit", doi_update_commit)
     published_at = payload.get("published_at_utc")
