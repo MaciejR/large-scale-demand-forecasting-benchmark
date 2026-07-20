@@ -60,6 +60,18 @@ def test_release_manifest_requires_publication_tooling(tmp_path):
     )
 
 
+def test_release_manifest_requires_publication_log(tmp_path):
+    create_minimal_release(tmp_path)
+    (tmp_path / "replication/docs/PUBLICATION_LOG_V1.12.md").unlink()
+
+    findings = audit_release_manifest.audit_release(tmp_path)
+
+    assert any(
+        "missing required file: replication/docs/PUBLICATION_LOG_V1.12.md" in finding
+        for finding in findings
+    )
+
+
 def test_release_manifest_flags_claude_state(tmp_path):
     create_minimal_release(tmp_path)
     path = tmp_path / "replication/.claude/scheduled_tasks.lock"

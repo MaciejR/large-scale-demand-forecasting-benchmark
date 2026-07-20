@@ -22,6 +22,7 @@ REQUIRED_FILES = {
     "replication/ARTIFACTS.md",
     "replication/CITATION.cff",
     "replication/docs/PUBLICATION_HANDOFF_V1.12.md",
+    "replication/docs/PUBLICATION_LOG_V1.12.md",
     "replication/docs/RELEASE_V1.12.md",
     "replication/docs/ZENODO_METADATA_V1.12.json",
     "replication/paper/latex/main.tex",
