@@ -12,11 +12,35 @@ Usage:
 Runs the required v1.12 publication audits before calling the Zenodo uploader.
 The publish action is irreversible on Zenodo and therefore requires an explicit
 deposition ID.
+If a local .env file exists, only known Zenodo token variables are imported from
+it when they are not already set in the environment.
 USAGE
 }
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
+
+load_local_env_tokens() {
+  local env_file=".env"
+  local line key value
+  [[ -f "$env_file" ]] || return 0
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    [[ -z "$line" || "$line" == \#* || "$line" != *=* ]] && continue
+    key="${line%%=*}"
+    value="${line#*=}"
+    value="${value%\"}"
+    value="${value#\"}"
+    value="${value%\'}"
+    value="${value#\'}"
+    case "$key" in
+      ZENODO_ACCESS_TOKEN|ZENODO_TOKEN|ZENODO_SANDBOX_ACCESS_TOKEN|ZENODO_SANDBOX_TOKEN)
+        if [[ -z "${!key:-}" ]]; then
+          export "${key}=${value}"
+        fi
+        ;;
+    esac
+  done < "$env_file"
+}
 
 if [[ $# -lt 1 ]]; then
   usage >&2
@@ -57,6 +81,8 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+load_local_env_tokens
 
 python3 tools/audit_publication_readiness.py --require-public
 python3 tools/audit_publication_log_v112.py

@@ -135,6 +135,9 @@ the irreversible publish action requires an explicit `--publish` flag.  Add
 Sandbox upload tests use `ZENODO_SANDBOX_ACCESS_TOKEN` or `ZENODO_SANDBOX_TOKEN`
 via `python3 tools/zenodo_upload_v112.py --sandbox`, keeping sandbox credentials
 separate from production Zenodo credentials.
+`tools/publish_v112_zenodo.sh` reads only known Zenodo token variables from a
+local ignored `.env` file when the same variables are not already exported; the
+Python uploader itself reads only process environment variables.
 After Zenodo mints the v1.12 DOI, `python3 tools/apply_v112_zenodo_doi.py`
 updates README, `CITATION.cff`, manuscript data availability text, and these
 release notes from the GitHub-release citation to the archived DOI.

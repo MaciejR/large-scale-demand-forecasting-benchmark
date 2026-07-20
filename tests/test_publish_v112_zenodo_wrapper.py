@@ -30,6 +30,15 @@ def test_publish_wrapper_requires_tokens_for_mutating_actions():
     )
 
 
+def test_publish_wrapper_imports_only_known_local_env_tokens():
+    text = SCRIPT.read_text()
+
+    assert "load_local_env_tokens" in text
+    assert "ZENODO_ACCESS_TOKEN|ZENODO_TOKEN|ZENODO_SANDBOX_ACCESS_TOKEN|ZENODO_SANDBOX_TOKEN" in text
+    assert 'source ".env"' not in text
+    assert "source .env" not in text
+
+
 def test_publish_wrapper_publish_requires_deposition_id():
     text = SCRIPT.read_text()
 
