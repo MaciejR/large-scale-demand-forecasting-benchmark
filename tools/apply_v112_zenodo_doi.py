@@ -32,8 +32,34 @@ def replace_once(text: str, old: str, new: str, path: Path) -> str:
     return text.replace(old, new)
 
 
+def already_updated(text: str, doi: str, required: list[str], forbidden: list[str]) -> bool:
+    doi_url = f"https://doi.org/{doi}"
+    return (
+        doi in text
+        and doi_url in text
+        and all(marker in text for marker in required)
+        and not any(marker in text for marker in forbidden)
+    )
+
+
 def update_readme(text: str, doi: str) -> str:
     doi_url = f"https://doi.org/{doi}"
+    if already_updated(
+        text,
+        doi,
+        required=[
+            f"[![DOI](https://zenodo.org/badge/DOI/{doi}.svg)]({doi_url})",
+            "For the current repair package, cite the Zenodo archive:",
+            f"Zenodo. {doi_url}",
+            f"doi          = {{{doi}}}",
+            f"url          = {{{doi_url}}}",
+        ],
+        forbidden=[
+            "corresponding Zenodo archive once minted",
+            "The current Zenodo-ready repair package is published as GitHub release",
+        ],
+    ):
+        return text
     text = replace_once(
         text,
         (
@@ -73,6 +99,13 @@ def update_readme(text: str, doi: str) -> str:
 
 def update_citation(text: str, doi: str) -> str:
     doi_url = f"https://doi.org/{doi}"
+    if already_updated(
+        text,
+        doi,
+        required=[f'doi: "{doi}"', f'url: "{doi_url}"'],
+        forbidden=["when minted", f'url: "{GITHUB_RELEASE_URL}"'],
+    ):
+        return text
     text = replace_once(
         text,
         'message: "If you use the current repair package, cite this repository version or the corresponding Zenodo archive when minted."',
@@ -90,6 +123,16 @@ def update_citation(text: str, doi: str) -> str:
 
 def update_main_tex(text: str, doi: str) -> str:
     doi_url = f"https://doi.org/{doi}"
+    if already_updated(
+        text,
+        doi,
+        required=[
+            f"v1.12 is archived at \\url{{{doi_url}}}",
+            f"\\url{{{GITHUB_RELEASE_URL}}}",
+        ],
+        forbidden=["Zenodo-ready archive under \\path{release/}"],
+    ):
+        return text
     old = (
         "the release package corresponding to this manuscript is prepared as a\n"
         "versioned Zenodo-ready archive under \\path{release/} rather than overwriting the\n"
