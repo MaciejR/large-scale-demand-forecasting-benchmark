@@ -8,6 +8,7 @@ def test_publication_handoff_contains_finalization_commands():
         "tools/build_v112_release.sh",
         "python3 tools/audit_publication_readiness.py",
         "python3 tools/audit_publication_readiness.py --require-public",
+        "python3 tools/audit_github_release.py --verify-download",
         "python3 tools/audit_publication_log_v112.py",
         "tools/publish_v112_zenodo.sh dry-run",
         "tools/publish_v112_zenodo.sh publish --deposition-id",

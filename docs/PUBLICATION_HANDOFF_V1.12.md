@@ -42,7 +42,7 @@ replace the GitHub release asset, and rerun:
 
 ```bash
 python3 tools/audit_publication_readiness.py --require-public
-python3 tools/audit_github_release.py
+python3 tools/audit_github_release.py --verify-download
 python3 tools/audit_zenodo_upload_readiness.py
 python3 tools/audit_publication_log_v112.py
 ```

@@ -86,3 +86,23 @@ def test_github_release_payload_flags_duplicate_named_assets(tmp_path):
         f"release has 2 assets named {audit_github_release.ASSET_NAME}, expected 1" in finding
         for finding in findings
     )
+
+
+def test_downloaded_asset_audit_accepts_matching_file(tmp_path):
+    local_zip = tmp_path / "local.zip"
+    downloaded_zip = tmp_path / "downloaded.zip"
+    local_zip.write_bytes(b"abc")
+    downloaded_zip.write_bytes(b"abc")
+
+    assert audit_github_release.audit_downloaded_asset(downloaded_zip, local_zip) == []
+
+
+def test_downloaded_asset_audit_flags_checksum_mismatch(tmp_path):
+    local_zip = tmp_path / "local.zip"
+    downloaded_zip = tmp_path / "downloaded.zip"
+    local_zip.write_bytes(b"abc")
+    downloaded_zip.write_bytes(b"def")
+
+    findings = audit_github_release.audit_downloaded_asset(downloaded_zip, local_zip)
+
+    assert any("downloaded asset SHA-256" in finding for finding in findings)
