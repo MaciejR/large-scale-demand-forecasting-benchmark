@@ -14,7 +14,9 @@ The current manuscript PDF is available at
 The v1.0 technical-report release is archived on Zenodo:
 <https://doi.org/10.5281/zenodo.21338004>.
 
-The current Zenodo-ready repair package is built locally as
+The current Zenodo-ready repair package is published as GitHub release
+[`v1.12`](https://github.com/MaciejR/large-scale-demand-forecasting-benchmark/releases/tag/v1.12)
+and can also be rebuilt locally as
 `release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair.zip`.  It
 contains the manuscript PDF, replication materials, `COMMIT.txt`, and
 `CHECKSUMS.txt`; raw Kaggle data, MLflow stores, model checkpoints, logs, and
@@ -52,7 +54,7 @@ corresponding Zenodo archive once minted:
 ```text
 Rubczynski, M. (2026). When Do Foundation Models Pay Off for Retail Demand
 Forecasting? A PRISMA-Informed Cross-Benchmark Reanalysis (v1.12).
-GitHub. Current v1.12 repair commit.
+GitHub. https://github.com/MaciejR/large-scale-demand-forecasting-benchmark/releases/tag/v1.12
 ```
 
 The historical v1.0 technical-report record remains citable under its original
@@ -73,7 +75,7 @@ BibTeX:
                   A PRISMA-Informed Cross-Benchmark Reanalysis},
   year         = {2026},
   version      = {v1.12},
-  url          = {https://github.com/MaciejR/large-scale-demand-forecasting-benchmark}
+  url          = {https://github.com/MaciejR/large-scale-demand-forecasting-benchmark/releases/tag/v1.12}
 }
 
 @misc{rubczynski2026foundationmodelsretail_v1,
@@ -195,4 +197,5 @@ artifacts on top of the v1.11 TimesFM Source B matched-panel extension, v1.10
 TiRex fev-bench repair, v1.9 Chronos fev-bench repair, and Source B
 matched-panel covariance repair.  The local v1.12 release directory records
 the exact source commit in `COMMIT.txt` and package integrity in
-`CHECKSUMS.txt`.
+`CHECKSUMS.txt`; the public GitHub release is
+<https://github.com/MaciejR/large-scale-demand-forecasting-benchmark/releases/tag/v1.12>.

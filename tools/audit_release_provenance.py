@@ -17,6 +17,7 @@ RELEASE_DIR = Path("release") / RELEASE_STEM
 ZIP_PATH = Path("release") / f"{RELEASE_STEM}.zip"
 PDF_NAME = "demand-forecasting-timesfm-fev-bench-wape-covariance-repair-v1.12.pdf"
 REPO_URL = "https://github.com/MaciejR/large-scale-demand-forecasting-benchmark"
+GITHUB_RELEASE_URL = f"{REPO_URL}/releases/tag/v1.12"
 
 
 def read(path: Path) -> str:
@@ -63,6 +64,7 @@ def audit_static_files(repo_root: Path) -> list[str]:
 
     require_regex(citation, rf'^version:\s*"{re.escape(VERSION)}"$', "CITATION.cff", findings)
     require_regex(citation, rf'^date-released:\s*"{re.escape(RELEASE_DATE)}"$', "CITATION.cff", findings)
+    require_contains(citation, GITHUB_RELEASE_URL, "CITATION.cff", findings)
     require_contains(citation, REPO_URL, "CITATION.cff", findings)
 
     for label, text in [
@@ -88,10 +90,13 @@ def audit_static_files(repo_root: Path) -> list[str]:
         require_contains(text, RELEASE_STEM, label, findings)
 
     require_contains(main_tex, REPO_URL, "paper/latex/main.tex", findings)
+    require_contains(main_tex, GITHUB_RELEASE_URL, "paper/latex/main.tex", findings)
     require_contains(main_tex, "COMMIT.txt", "paper/latex/main.tex", findings)
     require_contains(main_tex, "CHECKSUMS.txt", "paper/latex/main.tex", findings)
     require_contains(zenodo_metadata, str(ZIP_PATH.name), "docs/ZENODO_METADATA_V1.12.json", findings)
     require_contains(zenodo_metadata, REPO_URL, "docs/ZENODO_METADATA_V1.12.json", findings)
+    require_contains(zenodo_metadata, GITHUB_RELEASE_URL, "docs/ZENODO_METADATA_V1.12.json", findings)
+    require_contains(readme, GITHUB_RELEASE_URL, "README.md", findings)
 
     return findings
 
