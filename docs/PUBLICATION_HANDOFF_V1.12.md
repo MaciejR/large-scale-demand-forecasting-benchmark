@@ -42,12 +42,12 @@ replace the GitHub release asset, and rerun:
 
 ```bash
 python3 tools/audit_publication_readiness.py --require-public
-python3 tools/audit_github_release.py --verify-download
 python3 tools/audit_zenodo_upload_readiness.py
 python3 tools/audit_publication_log_v112.py
 ```
 
-The public-ready state is reached only when all four commands pass.
+The public-ready state is reached only when all three commands pass.  The
+public-readiness audit includes the GitHub release download-verification gate.
 
 ## Zenodo Upload
 
@@ -80,8 +80,9 @@ git rev-parse HEAD
 shasum -a 256 release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair.zip
 ```
 
-The first two hashes must match.  Record the zip checksum in the Zenodo notes
-or local publication log if Zenodo does not expose it directly.
+The first two hashes must match.  The uploader records the outer ZIP checksum
+in the Zenodo notes at upload time; do not write that checksum into tracked
+files inside the package.
 
 The scripted upload path is:
 
@@ -146,8 +147,9 @@ python3 tools/audit_publication_readiness.py --require-public
 
 Commit and push the DOI metadata update, then rebuild the final package once
 more so `COMMIT.txt`, `CHECKSUMS.txt`, and citation metadata agree.  Do not
-write the outer ZIP checksum into a tracked file inside the package; verify the
-final release target and asset digest externally with:
+write the outer ZIP checksum into a tracked file inside the package; the
+public-readiness audit verifies the final GitHub release target and downloaded
+asset digest.  You can also run the GitHub release gate directly with:
 
 ```bash
 python3 tools/audit_github_release.py --verify-download

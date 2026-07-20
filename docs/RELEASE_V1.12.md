@@ -103,11 +103,12 @@ source is the LaTeX tree under `paper/latex/`.
 
 Publication readiness is checked separately with
 `python3 tools/audit_publication_readiness.py`.  Run it with
-`--require-public` after every package rebuild and GitHub release asset update.
+`--require-public` after every package rebuild and GitHub release asset update;
+that mode also download-verifies the GitHub release ZIP against the local
+package.
 `python3 tools/audit_github_release.py` checks that tag `v1.12` and the
 uploaded zip asset metadata match the local package; add `--verify-download`
-for the final gate that downloads the asset and compares its SHA-256 to the
-local ZIP.
+to run the same downloaded-asset comparison directly.
 `python3 tools/audit_zenodo_metadata.py` checks that the Zenodo metadata draft
 matches the package version, GitHub release URL, historical DOI relation, asset
 name, commit-provenance note, packaged `CHECKSUMS.txt` note, and root
