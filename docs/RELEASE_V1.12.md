@@ -94,4 +94,6 @@ The package intentionally excludes `.git/`, `release/`, `data/raw/`, `mlruns/`,
 `Umowa*.pdf` files, full
 `benchmark/results/fev_bench_official/` prediction parquet trees, and the
 untracked local `source_b_v1_11_timesfm25_m5_rohlik_100_batched` prediction
-tree.
+tree.  It also excludes superseded working notes such as
+`analysis/baseline_results.md` and `paper/drafts/`; the auditable manuscript
+source is the LaTeX tree under `paper/latex/`.

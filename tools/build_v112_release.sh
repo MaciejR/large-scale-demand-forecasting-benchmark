@@ -85,6 +85,8 @@ rsync -a ./ "$release_dir/replication/" \
   --exclude '*.pt' \
   --exclude '*.pth' \
   --exclude '*.safetensors' \
+  --exclude 'analysis/baseline_results.md' \
+  --exclude 'paper/drafts/' \
   --exclude 'paper/latex/*.aux' \
   --exclude 'paper/latex/*.bbl' \
   --exclude 'paper/latex/*.blg' \

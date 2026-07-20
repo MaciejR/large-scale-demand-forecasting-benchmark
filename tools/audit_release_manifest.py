@@ -57,6 +57,8 @@ REQUIRED_GLOBS = {
 
 FORBIDDEN_GLOBS = {
     "replication/.claude/**",
+    "replication/analysis/baseline_results.md",
+    "replication/paper/drafts/**",
     "replication/paper/latex/*.aux",
     "replication/paper/latex/*.bbl",
     "replication/paper/latex/*.blg",

@@ -57,3 +57,24 @@ def test_release_manifest_flags_latex_build_products(tmp_path):
     findings = audit_release_manifest.audit_release(tmp_path)
 
     assert any("replication/paper/latex/main.aux" in finding for finding in findings)
+
+
+def test_release_manifest_flags_historical_scratchpad(tmp_path):
+    create_minimal_release(tmp_path)
+    path = tmp_path / "replication/analysis/baseline_results.md"
+    path.write_text("historical scratchpad\n")
+
+    findings = audit_release_manifest.audit_release(tmp_path)
+
+    assert any("replication/analysis/baseline_results.md" in finding for finding in findings)
+
+
+def test_release_manifest_flags_paper_drafts(tmp_path):
+    create_minimal_release(tmp_path)
+    path = tmp_path / "replication/paper/drafts/section1_introduction.md"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("superseded draft\n")
+
+    findings = audit_release_manifest.audit_release(tmp_path)
+
+    assert any("replication/paper/drafts/section1_introduction.md" in finding for finding in findings)

@@ -369,4 +369,5 @@ private files, local filesystem paths, and token-shaped secrets before upload.
 The release manifest audit checks that the package includes the manuscript,
 LaTeX source, replication scripts, study/provenance tables, PRISMA artifacts,
 fev-bench covariance outputs, Source B audit outputs, checksums, and commit
-provenance while excluding local tool state and LaTeX build products.
+provenance while excluding local tool state, LaTeX build products, and
+superseded working notes/drafts.
