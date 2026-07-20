@@ -184,6 +184,9 @@ def upload(
     dry_run: bool,
     token_env: list[str],
 ) -> dict[str, Any]:
+    if publish and not deposition_id:
+        raise ZenodoError("publish requires --deposition-id")
+
     readiness = audit_zenodo_upload_readiness.audit(
         repo_root,
         require_token=not dry_run,

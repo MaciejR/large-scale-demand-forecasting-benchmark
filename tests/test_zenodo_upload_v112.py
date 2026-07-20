@@ -43,6 +43,16 @@ class Session:
             },
         )
 
+    def get(self, url):
+        self.calls.append(("get", url, None))
+        return Response(
+            200,
+            {
+                "id": 123,
+                "links": {"bucket": "https://zenodo.org/api/files/bucket-id"},
+            },
+        )
+
     def put(self, url, data=None, json=None):
         self.calls.append(("put", url, json if json is not None else "data"))
         if url.endswith("/deposit/depositions/123"):
@@ -257,7 +267,7 @@ def test_published_upload_result_records_utc_timestamp(tmp_path, monkeypatch):
         api_base="https://zenodo.org/api",
         zip_path=zip_path,
         metadata_path=metadata_path,
-        deposition_id=None,
+        deposition_id="123",
         publish=True,
         dry_run=False,
         token_env=["ZENODO_ACCESS_TOKEN"],
@@ -265,3 +275,38 @@ def test_published_upload_result_records_utc_timestamp(tmp_path, monkeypatch):
 
     assert result["mode"] == "published"
     assert result["published_at_utc"] == "2026-07-20T10:30:00Z"
+
+
+def test_publish_requires_existing_deposition_id_before_network_calls(tmp_path, monkeypatch):
+    repo = tmp_path
+    zip_path = repo / "package.zip"
+    metadata_path = repo / "metadata.json"
+    zip_path.write_bytes(b"abc")
+    metadata_path.write_text('{"title":"Title","version":"v1.12","notes":"Note."}', encoding="utf-8")
+    session = Session()
+
+    monkeypatch.setenv("ZENODO_ACCESS_TOKEN", "secret-value")
+    monkeypatch.setattr(
+        zenodo_upload_v112.audit_zenodo_upload_readiness,
+        "audit",
+        lambda *args, **kwargs: [],
+    )
+    monkeypatch.setattr(zenodo_upload_v112.requests, "Session", lambda: session)
+
+    try:
+        zenodo_upload_v112.upload(
+            repo_root=repo,
+            api_base="https://zenodo.org/api",
+            zip_path=zip_path,
+            metadata_path=metadata_path,
+            deposition_id=None,
+            publish=True,
+            dry_run=False,
+            token_env=["ZENODO_ACCESS_TOKEN"],
+        )
+    except zenodo_upload_v112.ZenodoError as exc:
+        assert "publish requires --deposition-id" in str(exc)
+    else:
+        raise AssertionError("expected ZenodoError")
+
+    assert session.calls == []
