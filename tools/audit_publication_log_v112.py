@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import re
 import sys
 from pathlib import Path
@@ -17,6 +18,22 @@ GITHUB_RELEASE_URL = (
     "https://github.com/MaciejR/large-scale-demand-forecasting-benchmark/releases/tag/v1.12"
 )
 DOI_RE = re.compile(r"10\.5281/zenodo\.[0-9]+")
+FIELD_RE = re.compile(r"^- (?P<label>[^:]+): (?P<value>.*)$", re.MULTILINE)
+
+
+def sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def field_value(text: str, label: str) -> str | None:
+    for match in FIELD_RE.finditer(text):
+        if match.group("label") == label:
+            return match.group("value").strip()
+    return None
 
 
 def audit_log_text(text: str) -> list[str]:
@@ -71,6 +88,23 @@ def audit(repo_root: Path, require_complete: bool) -> list[str]:
 
     text = log_path.read_text(encoding="utf-8")
     findings.extend(audit_log_text(text))
+
+    commit_value = field_value(text, "Target commit")
+    if commit_value and commit_value != "TODO":
+        release_commit = commit_path.read_text(encoding="utf-8").strip()
+        if commit_value != release_commit:
+            findings.append(
+                f"publication log Target commit {commit_value} does not match release COMMIT.txt {release_commit}"
+            )
+
+    sha_value = field_value(text, "Asset SHA-256")
+    if sha_value and sha_value != "TODO":
+        current_sha = sha256(zip_path)
+        if sha_value != current_sha:
+            findings.append(
+                f"publication log Asset SHA-256 {sha_value} does not match release zip {current_sha}"
+            )
+
     if require_complete:
         findings.extend(audit_complete_log_text(text))
     return findings
