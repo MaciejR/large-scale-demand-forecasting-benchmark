@@ -90,8 +90,10 @@ files inside the package.
 The scripted upload path is:
 
 ```bash
-python3 tools/zenodo_upload_v112.py --dry-run
-python3 tools/zenodo_upload_v112.py
+python3 tools/zenodo_upload_v112.py --dry-run --output-json /tmp/zenodo-v1.12-dry-run.json
+python3 tools/zenodo_upload_v112.py --output-json /tmp/zenodo-v1.12-draft.json
+# or update an existing unpublished draft:
+python3 tools/zenodo_upload_v112.py --deposition-id <draft-id> --output-json /tmp/zenodo-v1.12-draft.json
 ```
 
 The wrapper path is:
@@ -117,7 +119,7 @@ For a non-archival sandbox check, use a separate sandbox token:
 
 ```bash
 python3 tools/audit_zenodo_upload_readiness.py --require-token --sandbox-token
-python3 tools/zenodo_upload_v112.py --sandbox
+python3 tools/zenodo_upload_v112.py --sandbox --output-json /tmp/zenodo-v1.12-sandbox.json
 tools/publish_v112_zenodo.sh sandbox-draft --output-json /tmp/zenodo-v1.12-sandbox.json
 ```
 

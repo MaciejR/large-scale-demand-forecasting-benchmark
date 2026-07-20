@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 
 def test_publication_handoff_contains_finalization_commands():
@@ -80,3 +81,29 @@ def test_publication_handoff_reuploads_release_after_publication_log_update():
         < public_audit_index
         < download_audit_index
     )
+
+
+def test_publication_handoff_records_json_for_direct_zenodo_uploads():
+    text = Path("docs/PUBLICATION_HANDOFF_V1.12.md").read_text()
+
+    required_commands = [
+        (
+            "python3 tools/zenodo_upload_v112.py --dry-run "
+            "--output-json /tmp/zenodo-v1.12-dry-run.json"
+        ),
+        "python3 tools/zenodo_upload_v112.py --output-json /tmp/zenodo-v1.12-draft.json",
+        (
+            "python3 tools/zenodo_upload_v112.py --deposition-id <draft-id> "
+            "--output-json /tmp/zenodo-v1.12-draft.json"
+        ),
+        (
+            "python3 tools/zenodo_upload_v112.py --sandbox "
+            "--output-json /tmp/zenodo-v1.12-sandbox.json"
+        ),
+    ]
+
+    for command in required_commands:
+        assert command in text
+
+    bare_uploads = re.findall(r"^python3 tools/zenodo_upload_v112\\.py(?!.*--output-json).*$", text, re.M)
+    assert bare_uploads == []
