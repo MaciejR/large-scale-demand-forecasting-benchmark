@@ -16,6 +16,50 @@ class Response:
         return self._payload
 
 
+class Session:
+    def __init__(self):
+        self.headers = {}
+        self.calls = []
+
+    def post(self, url, json=None):
+        self.calls.append(("post", url, json))
+        if url.endswith("/actions/publish"):
+            return Response(
+                202,
+                {
+                    "id": 123,
+                    "record_id": 456,
+                    "state": "done",
+                    "submitted": True,
+                    "links": {"html": "https://zenodo.org/records/456"},
+                    "metadata": {"title": "Title", "doi": "10.5281/zenodo.456"},
+                },
+            )
+        return Response(
+            201,
+            {
+                "id": 123,
+                "links": {"bucket": "https://zenodo.org/api/files/bucket-id"},
+            },
+        )
+
+    def put(self, url, data=None, json=None):
+        self.calls.append(("put", url, json if json is not None else "data"))
+        if url.endswith("/deposit/depositions/123"):
+            return Response(
+                200,
+                {
+                    "id": 123,
+                    "record_id": 456,
+                    "state": "unsubmitted",
+                    "submitted": False,
+                    "links": {"html": "https://zenodo.org/deposit/123"},
+                    "metadata": json["metadata"],
+                },
+            )
+        return Response(201, {"filename": zenodo_upload_v112.ASSET_NAME})
+
+
 def test_dry_run_report_contains_package_and_metadata(tmp_path):
     zip_path = tmp_path / "package.zip"
     zip_path.write_bytes(b"abc")
@@ -114,3 +158,37 @@ def test_write_json_result_prints_and_writes_same_payload(tmp_path):
 
     assert '"id": 123' in rendered
     assert output_path.read_text(encoding="utf-8") == f"{rendered}\n"
+
+
+def test_upload_result_records_uploaded_zip_identity(tmp_path, monkeypatch):
+    repo = tmp_path
+    zip_path = repo / "package.zip"
+    metadata_path = repo / "metadata.json"
+    zip_path.write_bytes(b"abc")
+    metadata_path.write_text('{"title":"Title","version":"v1.12","notes":"Note."}', encoding="utf-8")
+    session = Session()
+
+    monkeypatch.setenv("ZENODO_ACCESS_TOKEN", "secret-value")
+    monkeypatch.setattr(
+        zenodo_upload_v112.audit_zenodo_upload_readiness,
+        "audit",
+        lambda *args, **kwargs: [],
+    )
+    monkeypatch.setattr(zenodo_upload_v112.requests, "Session", lambda: session)
+
+    result = zenodo_upload_v112.upload(
+        repo_root=repo,
+        api_base="https://zenodo.org/api",
+        zip_path=zip_path,
+        metadata_path=metadata_path,
+        deposition_id=None,
+        publish=False,
+        dry_run=False,
+        token_env=["ZENODO_ACCESS_TOKEN"],
+    )
+
+    assert result["mode"] == "draft"
+    assert result["zip_sha256"] == "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+    assert result["zip_size"] == 3
+    assert result["metadata_notes_include_zip_sha"] is True
+    assert session.headers["Authorization"] == "Bearer secret-value"

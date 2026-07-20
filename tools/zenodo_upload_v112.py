@@ -211,6 +211,9 @@ def upload(
         "deposition": deposition_summary(updated),
         "asset_name": ASSET_NAME,
         "zip": str(zip_path),
+        "zip_sha256": sha256(zip_path),
+        "zip_size": zip_path.stat().st_size,
+        "metadata_notes_include_zip_sha": ZIP_SHA_NOTE_PREFIX in metadata.get("notes", ""),
     }
     if publish:
         result["deposition"] = deposition_summary(
