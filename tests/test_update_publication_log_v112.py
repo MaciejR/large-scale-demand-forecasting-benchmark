@@ -115,6 +115,44 @@ def test_update_log_text_records_doi_metadata_commit_without_overwriting_uploade
     assert f"- DOI metadata update commit: {doi_update_commit}" in updated
 
 
+def test_update_log_text_supports_full_publish_then_doi_commit_sequence():
+    payload = {
+        "mode": "published",
+        "asset_name": update_publication_log_v112.ASSET_NAME,
+        "zip_sha256": VALID_SHA,
+        "published_at_utc": "2026-07-20T10:30:00Z",
+        "deposition": {
+            "id": 123,
+            "record_id": 456,
+            "html": "https://zenodo.org/records/456",
+            "doi": "10.5281/zenodo.456",
+        },
+    }
+    upload_commit = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    doi_commit = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+
+    after_publish = update_publication_log_v112.update_log_text(
+        template(),
+        payload,
+        current_commit=upload_commit,
+        zip_digest=VALID_SHA,
+        sandbox=False,
+    )
+    after_doi_commit = update_publication_log_v112.update_log_text(
+        after_publish,
+        payload,
+        current_commit=doi_commit,
+        zip_digest=POST_DOI_SHA,
+        sandbox=False,
+        doi_update_commit=doi_commit,
+    )
+
+    assert f"- Target commit: {upload_commit}" in after_doi_commit
+    assert f"- Asset SHA-256: {VALID_SHA}" in after_doi_commit
+    assert f"- DOI metadata update commit: {doi_commit}" in after_doi_commit
+    assert POST_DOI_SHA not in after_doi_commit
+
+
 def test_update_log_text_repeated_publish_preserves_uploaded_identity():
     payload = {
         "mode": "published",
