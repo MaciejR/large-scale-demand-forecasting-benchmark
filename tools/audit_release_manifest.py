@@ -53,6 +53,12 @@ REQUIRED_FILES = {
     "replication/tools/audit_publication_readiness.py",
     "replication/tools/audit_github_release.py",
     "replication/tools/audit_zenodo_metadata.py",
+    "replication/tools/audit_zenodo_upload_readiness.py",
+    "replication/tools/audit_publication_log_v112.py",
+    "replication/tools/publish_v112_zenodo.sh",
+    "replication/tools/zenodo_upload_v112.py",
+    "replication/tools/update_publication_log_v112.py",
+    "replication/tools/apply_v112_zenodo_doi.py",
 }
 
 REQUIRED_GLOBS = {
