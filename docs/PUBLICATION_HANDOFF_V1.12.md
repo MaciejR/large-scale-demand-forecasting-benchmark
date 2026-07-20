@@ -82,6 +82,20 @@ shasum -a 256 release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair.zip
 The first two hashes must match.  Record the zip checksum in the Zenodo notes
 or local publication log if Zenodo does not expose it directly.
 
+The scripted upload path is:
+
+```bash
+python3 tools/zenodo_upload_v112.py --dry-run
+python3 tools/zenodo_upload_v112.py
+```
+
+This creates or updates an unpublished Zenodo draft and uploads the audited
+package plus metadata.  Publishing is a separate irreversible step:
+
+```bash
+python3 tools/zenodo_upload_v112.py --deposition-id <draft-id> --publish
+```
+
 ## After Zenodo Minting
 
 After a v1.12 DOI is minted, update:

@@ -11,6 +11,7 @@ def valid_metadata():
         "title": "When Do Foundation Models Pay Off for Retail Demand Forecasting? v1.12 TimesFM fev-bench WAPE Covariance Repair",
         "upload_type": "publication",
         "publication_type": "technicalnote",
+        "publication_date": "2026-07-20",
         "creators": [{"name": "Rubczynski, Maciej"}],
         "description": "A package.",
         "keywords": [
@@ -21,6 +22,7 @@ def valid_metadata():
         ],
         "version": audit_zenodo_metadata.VERSION,
         "language": "eng",
+        "access_right": "open",
         "license": "cc-by-4.0",
         "related_identifiers": [
             {

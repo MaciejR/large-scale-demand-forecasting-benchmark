@@ -45,8 +45,10 @@ def audit_metadata(metadata: dict) -> list[str]:
     expected = {
         "upload_type": "publication",
         "publication_type": "technicalnote",
+        "publication_date": "2026-07-20",
         "version": VERSION,
         "language": "eng",
+        "access_right": "open",
         "license": "cc-by-4.0",
     }
     for key, value in expected.items():
