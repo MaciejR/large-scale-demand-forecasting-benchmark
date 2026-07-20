@@ -118,6 +118,9 @@ is present without printing it.
 prints the planned Zenodo upload.  Without `--dry-run`, it creates or updates an
 unpublished draft; the irreversible publish action requires an explicit
 `--publish` flag.
+Sandbox upload tests use `ZENODO_SANDBOX_ACCESS_TOKEN` or `ZENODO_SANDBOX_TOKEN`
+via `python3 tools/zenodo_upload_v112.py --sandbox`, keeping sandbox credentials
+separate from production Zenodo credentials.
 After Zenodo mints the v1.12 DOI, `python3 tools/apply_v112_zenodo_doi.py`
 updates README, `CITATION.cff`, manuscript data availability text, and these
 release notes from the GitHub-release citation to the archived DOI.

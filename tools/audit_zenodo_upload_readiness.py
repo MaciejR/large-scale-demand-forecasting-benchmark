@@ -18,6 +18,7 @@ BRANCH = "v1.7-tirex-m5-rohlik"
 RELEASE_DIR = Path("release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair")
 ZIP_PATH = Path(f"{RELEASE_DIR}.zip")
 TOKEN_ENV_VARS = ("ZENODO_ACCESS_TOKEN", "ZENODO_TOKEN")
+SANDBOX_TOKEN_ENV_VARS = ("ZENODO_SANDBOX_ACCESS_TOKEN", "ZENODO_SANDBOX_TOKEN")
 
 
 def run(cmd: list[str], cwd: Path) -> str:
@@ -60,23 +61,31 @@ def audit_package_files(repo_root: Path) -> list[str]:
     return findings
 
 
-def audit_token(require_token: bool, environ: dict[str, str] | None = None) -> list[str]:
+def audit_token(
+    require_token: bool,
+    environ: dict[str, str] | None = None,
+    token_env_vars: tuple[str, ...] = TOKEN_ENV_VARS,
+) -> list[str]:
     if not require_token:
         return []
 
     environ = os.environ if environ is None else environ
-    if any(environ.get(name, "").strip() for name in TOKEN_ENV_VARS):
+    if any(environ.get(name, "").strip() for name in token_env_vars):
         return []
-    names = " or ".join(TOKEN_ENV_VARS)
+    names = " or ".join(token_env_vars)
     return [f"missing Zenodo API token environment variable ({names})"]
 
 
-def audit(repo_root: Path, require_token: bool) -> list[str]:
+def audit(
+    repo_root: Path,
+    require_token: bool,
+    token_env_vars: tuple[str, ...] = TOKEN_ENV_VARS,
+) -> list[str]:
     findings = audit_git_state(repo_root)
     findings.extend(audit_package_files(repo_root))
     findings.extend(audit_zenodo_metadata.audit(repo_root))
     findings.extend(audit_github_release.audit(repo_root))
-    findings.extend(audit_token(require_token))
+    findings.extend(audit_token(require_token, token_env_vars=token_env_vars))
     return findings
 
 
@@ -87,17 +96,27 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Fail unless ZENODO_ACCESS_TOKEN or ZENODO_TOKEN is set.",
     )
+    parser.add_argument(
+        "--sandbox-token",
+        action="store_true",
+        help="Check ZENODO_SANDBOX_ACCESS_TOKEN or ZENODO_SANDBOX_TOKEN instead.",
+    )
     args = parser.parse_args(argv)
 
     repo_root = Path(__file__).resolve().parents[1]
-    findings = audit(repo_root, require_token=args.require_token)
+    token_env_vars = SANDBOX_TOKEN_ENV_VARS if args.sandbox_token else TOKEN_ENV_VARS
+    findings = audit(repo_root, require_token=args.require_token, token_env_vars=token_env_vars)
     if findings:
         print("Zenodo upload readiness audit failed:", file=sys.stderr)
         for finding in findings:
             print(f"  - {finding}", file=sys.stderr)
         return 1
 
-    token_status = "token present" if audit_token(True) == [] else "token not checked"
+    token_status = (
+        "token present"
+        if audit_token(True, token_env_vars=token_env_vars) == []
+        else "token not checked"
+    )
     print(f"Zenodo upload readiness audit passed ({token_status})")
     return 0
 

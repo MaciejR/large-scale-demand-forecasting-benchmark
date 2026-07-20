@@ -92,6 +92,13 @@ python3 tools/zenodo_upload_v112.py --dry-run
 python3 tools/zenodo_upload_v112.py
 ```
 
+For a non-archival sandbox check, use a separate sandbox token:
+
+```bash
+python3 tools/audit_zenodo_upload_readiness.py --require-token --sandbox-token
+python3 tools/zenodo_upload_v112.py --sandbox
+```
+
 This creates or updates an unpublished Zenodo draft and uploads the audited
 package plus metadata.  Publishing is a separate irreversible step:
 

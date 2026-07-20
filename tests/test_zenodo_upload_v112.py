@@ -65,3 +65,12 @@ def test_deposition_summary_prefers_links_and_doi():
     assert summary["id"] == 10
     assert summary["title"] == "Title"
     assert summary["doi"] == "10.5072/zenodo.10"
+
+
+def test_sandbox_default_token_names_are_distinct_from_production():
+    sandbox_names = zenodo_upload_v112.audit_zenodo_upload_readiness.SANDBOX_TOKEN_ENV_VARS
+
+    assert "ZENODO_SANDBOX_ACCESS_TOKEN" in sandbox_names
+    assert (
+        sandbox_names != zenodo_upload_v112.audit_zenodo_upload_readiness.TOKEN_ENV_VARS
+    )

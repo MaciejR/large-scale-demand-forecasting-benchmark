@@ -147,6 +147,7 @@ def upload(
     readiness = audit_zenodo_upload_readiness.audit(
         repo_root,
         require_token=not dry_run,
+        token_env_vars=tuple(token_env),
     )
     if readiness:
         raise ZenodoError("readiness audit failed: " + "; ".join(readiness))
@@ -205,7 +206,12 @@ def main(argv: list[str] | None = None) -> int:
 
     repo_root = Path(__file__).resolve().parents[1]
     api_base = SANDBOX_API if args.sandbox else ZENODO_API
-    token_env = args.token_env or list(audit_zenodo_upload_readiness.TOKEN_ENV_VARS)
+    if args.token_env:
+        token_env = args.token_env
+    elif args.sandbox:
+        token_env = list(audit_zenodo_upload_readiness.SANDBOX_TOKEN_ENV_VARS)
+    else:
+        token_env = list(audit_zenodo_upload_readiness.TOKEN_ENV_VARS)
 
     try:
         result = upload(
