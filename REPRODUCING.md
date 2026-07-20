@@ -358,6 +358,7 @@ python3 tools/audit_prisma_counts.py
 python3 tools/audit_release_privacy.py release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair
 python3 tools/audit_release_manifest.py release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair
 python3 tools/audit_release_provenance.py release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair
+python3 tools/audit_publication_readiness.py
 ```
 
 The manuscript audit checks the rendered PDF and current LaTeX source for
@@ -376,3 +377,8 @@ provenance while excluding local tool state, LaTeX build products, and
 superseded working notes/drafts.
 The release provenance audit checks that `CITATION.cff`, release notes, package
 paths, manuscript PDF naming, `COMMIT.txt`, and the current git `HEAD` agree.
+The publication-readiness audit checks the branch, remote URL, clean worktree,
+HEAD/origin/package commit agreement, release audits, and GitHub visibility.
+Before making the repository public, run it without flags; after changing
+GitHub visibility, rerun `python3 tools/audit_publication_readiness.py
+--require-public`.
