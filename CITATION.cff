@@ -7,7 +7,7 @@ authors:
     given-names: Maciej
     affiliation: Independent researcher
 version: "v1.12"
-date-released: "2026-07-18"
+date-released: "2026-07-20"
 url: "https://github.com/MaciejR/large-scale-demand-forecasting-benchmark"
 repository-code: "https://github.com/MaciejR/large-scale-demand-forecasting-benchmark"
 abstract: "A PRISMA-informed exploratory cross-benchmark reanalysis of foundation models and conventional baselines for short-term retail demand forecasting, with paired WAPE covariance repairs for Source B and a fev-bench retail slice."

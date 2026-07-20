@@ -1,0 +1,63 @@
+import sys
+from pathlib import Path
+
+sys.path.insert(0, "tools")
+
+import audit_release_provenance
+
+
+def test_current_release_static_metadata_is_consistent():
+    repo_root = Path(".").resolve()
+
+    assert audit_release_provenance.audit_static_files(repo_root) == []
+
+
+def test_release_provenance_flags_commit_mismatch(tmp_path):
+    release_dir = tmp_path / audit_release_provenance.RELEASE_STEM
+    manuscript_dir = release_dir / "manuscript"
+    docs_dir = release_dir / "replication/docs"
+    manuscript_dir.mkdir(parents=True)
+    docs_dir.mkdir(parents=True)
+
+    (release_dir / "COMMIT.txt").write_text("deadbeef\n")
+    Path(f"{release_dir}.zip").write_text("zip placeholder\n")
+    (manuscript_dir / audit_release_provenance.PDF_NAME).write_text("pdf placeholder\n")
+    release_note = (
+        f"`{audit_release_provenance.ZIP_PATH}`\n"
+        f"- `manuscript/{audit_release_provenance.PDF_NAME}`\n"
+    )
+    (release_dir / "README.md").write_text(release_note)
+    (docs_dir / "RELEASE_V1.12.md").write_text(release_note)
+
+    findings = audit_release_provenance.audit_release_dir(
+        Path(".").resolve(),
+        release_dir,
+        expected_head="cafebabe",
+    )
+
+    assert any("COMMIT.txt=deadbeef, expected HEAD=cafebabe" in finding for finding in findings)
+
+
+def test_release_provenance_accepts_minimal_matching_release(tmp_path):
+    release_dir = tmp_path / audit_release_provenance.RELEASE_STEM
+    manuscript_dir = release_dir / "manuscript"
+    docs_dir = release_dir / "replication/docs"
+    manuscript_dir.mkdir(parents=True)
+    docs_dir.mkdir(parents=True)
+
+    expected_head = "cafebabe"
+    (release_dir / "COMMIT.txt").write_text(f"{expected_head}\n")
+    Path(f"{release_dir}.zip").write_text("zip placeholder\n")
+    (manuscript_dir / audit_release_provenance.PDF_NAME).write_text("pdf placeholder\n")
+    release_note = (
+        f"`{audit_release_provenance.ZIP_PATH}`\n"
+        f"- `manuscript/{audit_release_provenance.PDF_NAME}`\n"
+    )
+    (release_dir / "README.md").write_text(release_note)
+    (docs_dir / "RELEASE_V1.12.md").write_text(release_note)
+
+    assert audit_release_provenance.audit_release_dir(
+        Path(".").resolve(),
+        release_dir,
+        expected_head=expected_head,
+    ) == []

@@ -337,6 +337,8 @@ policy used for the audited package:
 tools/build_v112_release.sh
 ```
 
+The package path is
+`release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair.zip`.
 The script writes `COMMIT.txt`, copies the checked-in manuscript PDF, creates
 `CHECKSUMS.txt`, zips the package, validates checksums and zip integrity, and
 fails if excluded private or heavyweight artifacts are present. It also runs
@@ -355,6 +357,7 @@ python3 tools/audit_citations.py
 python3 tools/audit_prisma_counts.py
 python3 tools/audit_release_privacy.py release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair
 python3 tools/audit_release_manifest.py release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair
+python3 tools/audit_release_provenance.py release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair
 ```
 
 The manuscript audit checks the rendered PDF and current LaTeX source for
@@ -371,3 +374,5 @@ LaTeX source, replication scripts, study/provenance tables, PRISMA artifacts,
 fev-bench covariance outputs, Source B audit outputs, checksums, and commit
 provenance while excluding local tool state, LaTeX build products, and
 superseded working notes/drafts.
+The release provenance audit checks that `CITATION.cff`, release notes, package
+paths, manuscript PDF naming, `COMMIT.txt`, and the current git `HEAD` agree.
