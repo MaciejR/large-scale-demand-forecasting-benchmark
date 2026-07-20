@@ -152,10 +152,13 @@ git diff --check
 
 Commit and push the DOI metadata update.  The release builder requires a clean
 tree because `COMMIT.txt` must identify a real commit.  After the DOI metadata
-commit is pushed, rebuild and verify the public release state:
+commit is pushed, rebuild the package, replace the GitHub release asset, and
+verify the public release state:
 
 ```bash
 tools/build_v112_release.sh
+gh release edit v1.12 --target "$(git rev-parse HEAD)"
+gh release upload v1.12 release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair.zip --clobber
 python3 tools/audit_publication_readiness.py --require-public
 ```
 
@@ -172,12 +175,17 @@ python3 tools/update_publication_log_v112.py \
 ```
 
 Commit and push the publication-log update, then rebuild the final package once
-more so `COMMIT.txt`, `CHECKSUMS.txt`, and citation metadata agree.  Do not
-write the outer ZIP checksum into a tracked file inside the package; the
-public-readiness audit verifies the final GitHub release target and downloaded
-asset digest.  You can also run the GitHub release gate directly with:
+more so `COMMIT.txt`, `CHECKSUMS.txt`, and citation metadata agree.  Replace the
+GitHub release asset again before the public-readiness audit.  Do not write the
+outer ZIP checksum into a tracked file inside the package; the public-readiness
+audit verifies the final GitHub release target and downloaded asset digest.  You
+can also run the GitHub release gate directly with:
 
 ```bash
+tools/build_v112_release.sh
+gh release edit v1.12 --target "$(git rev-parse HEAD)"
+gh release upload v1.12 release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair.zip --clobber
+python3 tools/audit_publication_readiness.py --require-public
 python3 tools/audit_github_release.py --verify-download
 ```
 
