@@ -64,8 +64,12 @@ def audit_paths(root: Path) -> list[str]:
     findings: list[str] = []
     for path in root.rglob("*"):
         rel = relative_posix(path, root)
+        parts = path.relative_to(root).parts
         for forbidden in FORBIDDEN_PATH_PARTS:
-            if forbidden in rel:
+            if (
+                ("/" in forbidden and forbidden in rel)
+                or ("/" not in forbidden and forbidden in parts)
+            ):
                 findings.append(f"path:{rel}: forbidden path component {forbidden}")
         if path.is_file():
             for pattern in FORBIDDEN_NAME_PATTERNS:

@@ -47,3 +47,15 @@ def test_release_privacy_audit_flags_private_file_names(tmp_path):
     findings = audit_release_privacy.audit_release(release_dir)
 
     assert any("forbidden file name" in finding for finding in findings)
+
+
+def test_release_privacy_allows_env_example_but_flags_env(tmp_path):
+    release_dir = tmp_path / "release"
+    release_dir.mkdir()
+    (release_dir / ".env.example").write_text("ZENODO_ACCESS_TOKEN=\n")
+    (release_dir / ".env").write_text("TOKEN=secret\n")
+
+    findings = audit_release_privacy.audit_release(release_dir)
+
+    assert any("path:.env:" in finding for finding in findings)
+    assert not any(".env.example" in finding for finding in findings)

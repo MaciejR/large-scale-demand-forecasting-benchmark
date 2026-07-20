@@ -74,6 +74,8 @@ python3 tools/audit_zenodo_upload_readiness.py --require-token
 
 The root `.zenodo.json` is intentionally kept equivalent as JSON data to
 `docs/ZENODO_METADATA_V1.12.json`; the metadata audit fails if they diverge.
+Token variable names are documented in `.env.example`; keep real values only in
+local `.env`, which is ignored and excluded from release packages.
 
 Before uploading, verify package provenance:
 
