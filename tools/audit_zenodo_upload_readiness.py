@@ -19,6 +19,7 @@ RELEASE_DIR = Path("release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repai
 ZIP_PATH = Path(f"{RELEASE_DIR}.zip")
 TOKEN_ENV_VARS = ("ZENODO_ACCESS_TOKEN", "ZENODO_TOKEN")
 SANDBOX_TOKEN_ENV_VARS = ("ZENODO_SANDBOX_ACCESS_TOKEN", "ZENODO_SANDBOX_TOKEN")
+PLACEHOLDER_TOKENS = {"...", "<token>", "<your-token>", "changeme", "todo", "token"}
 
 
 def run(cmd: list[str], cwd: Path) -> str:
@@ -70,9 +71,19 @@ def audit_token(
         return []
 
     environ = os.environ if environ is None else environ
-    if any(environ.get(name, "").strip() for name in token_env_vars):
+    values = {name: environ.get(name, "").strip() for name in token_env_vars}
+    present = {name: value for name, value in values.items() if value}
+    valid = {
+        name: value
+        for name, value in present.items()
+        if value.lower() not in PLACEHOLDER_TOKENS
+    }
+    if valid:
         return []
     names = " or ".join(token_env_vars)
+    if present:
+        present_names = ", ".join(sorted(present))
+        return [f"Zenodo API token environment variable is a placeholder ({present_names})"]
     return [f"missing Zenodo API token environment variable ({names})"]
 
 

@@ -56,3 +56,23 @@ def test_token_audit_reports_sandbox_token_names_when_requested():
         "missing Zenodo API token environment variable "
         "(ZENODO_SANDBOX_ACCESS_TOKEN or ZENODO_SANDBOX_TOKEN)"
     ]
+
+
+def test_token_audit_rejects_placeholder_values():
+    findings = audit_zenodo_upload_readiness.audit_token(
+        True,
+        {"ZENODO_ACCESS_TOKEN": "TODO"},
+    )
+
+    assert findings == [
+        "Zenodo API token environment variable is a placeholder (ZENODO_ACCESS_TOKEN)"
+    ]
+
+
+def test_token_audit_accepts_valid_token_when_other_alias_is_placeholder():
+    findings = audit_zenodo_upload_readiness.audit_token(
+        True,
+        {"ZENODO_ACCESS_TOKEN": "changeme", "ZENODO_TOKEN": "secret-value"},
+    )
+
+    assert findings == []
