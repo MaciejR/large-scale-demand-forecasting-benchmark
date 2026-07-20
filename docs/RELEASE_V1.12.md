@@ -121,7 +121,8 @@ remaining placeholders.
 `python3 tools/zenodo_upload_v112.py --dry-run` validates the same package and
 prints the planned Zenodo upload.  Without `--dry-run`, it creates or updates an
 unpublished draft and appends the outer ZIP SHA-256 to the Zenodo record notes;
-the irreversible publish action requires an explicit `--publish` flag.
+the irreversible publish action requires an explicit `--publish` flag.  Add
+`--output-json` to persist the Zenodo response for the publication-log helper.
 Sandbox upload tests use `ZENODO_SANDBOX_ACCESS_TOKEN` or `ZENODO_SANDBOX_TOKEN`
 via `python3 tools/zenodo_upload_v112.py --sandbox`, keeping sandbox credentials
 separate from production Zenodo credentials.

@@ -106,3 +106,11 @@ def test_metadata_with_zip_sha_is_idempotent(tmp_path):
     }
 
     assert zenodo_upload_v112.metadata_with_zip_sha(metadata, zip_path) == metadata
+
+
+def test_write_json_result_prints_and_writes_same_payload(tmp_path):
+    output_path = tmp_path / "result.json"
+    rendered = zenodo_upload_v112.write_json_result({"mode": "draft", "id": 123}, output_path)
+
+    assert '"id": 123' in rendered
+    assert output_path.read_text(encoding="utf-8") == f"{rendered}\n"

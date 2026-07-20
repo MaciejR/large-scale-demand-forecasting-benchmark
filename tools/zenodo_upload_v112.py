@@ -158,6 +158,13 @@ def dry_run_report(
     }
 
 
+def write_json_result(result: dict[str, Any], output_path: Path | None) -> str:
+    rendered = json.dumps(result, indent=2, sort_keys=True)
+    if output_path is not None:
+        output_path.write_text(f"{rendered}\n", encoding="utf-8")
+    return rendered
+
+
 def upload(
     repo_root: Path,
     api_base: str,
@@ -218,6 +225,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--publish", action="store_true", help="Publish after uploading.")
     parser.add_argument("--sandbox", action="store_true", help="Use sandbox.zenodo.org.")
     parser.add_argument("--dry-run", action="store_true", help="Validate and print planned actions.")
+    parser.add_argument("--output-json", type=Path, help="Also write the JSON result to this path.")
     parser.add_argument("--zip", default=str(ZIP_PATH), help="Release zip path.")
     parser.add_argument("--metadata", default=str(METADATA_PATH), help="Zenodo metadata JSON.")
     parser.add_argument(
@@ -252,7 +260,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Zenodo upload failed: {exc}", file=sys.stderr)
         return 1
 
-    print(json.dumps(result, indent=2, sort_keys=True))
+    print(write_json_result(result, args.output_json))
     return 0
 
 
