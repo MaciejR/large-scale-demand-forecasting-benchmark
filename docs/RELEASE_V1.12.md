@@ -87,6 +87,7 @@ The Zenodo-ready archive contains:
   release documentation
 - `replication/docs/PUBLICATION_HANDOFF_V1.12.md` with the final GitHub/Zenodo
   publication checklist
+- `replication/docs/ZENODO_METADATA_V1.12.json` with the Zenodo metadata draft
 - `COMMIT.txt` with the source commit used to build the package
 - `CHECKSUMS.txt` with SHA-256 hashes for packaged files
 
@@ -105,3 +106,6 @@ Publication readiness is checked separately with
 repository visibility, then rerun with `--require-public` after making GitHub
 public.  After the GitHub release is created, `python3 tools/audit_github_release.py`
 checks that tag `v1.12` and the uploaded zip asset match the local package.
+`python3 tools/audit_zenodo_metadata.py` checks that the Zenodo metadata draft
+matches the package version, GitHub release URL, historical DOI relation, asset
+name, and SHA-256 digest.

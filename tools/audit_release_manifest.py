@@ -22,6 +22,7 @@ REQUIRED_FILES = {
     "replication/CITATION.cff",
     "replication/docs/PUBLICATION_HANDOFF_V1.12.md",
     "replication/docs/RELEASE_V1.12.md",
+    "replication/docs/ZENODO_METADATA_V1.12.json",
     "replication/paper/latex/main.tex",
     "replication/paper/references.bib",
     "replication/analysis/meta_regression.R",
@@ -50,6 +51,7 @@ REQUIRED_FILES = {
     "replication/analysis/figures/fev_timesfm25_paired_wape_covariance.csv",
     "replication/tools/audit_publication_readiness.py",
     "replication/tools/audit_github_release.py",
+    "replication/tools/audit_zenodo_metadata.py",
 }
 
 REQUIRED_GLOBS = {

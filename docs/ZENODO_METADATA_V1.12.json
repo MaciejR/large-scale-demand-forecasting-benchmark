@@ -1,0 +1,48 @@
+{
+  "title": "When Do Foundation Models Pay Off for Retail Demand Forecasting? v1.12 TimesFM fev-bench WAPE Covariance Repair",
+  "upload_type": "publication",
+  "publication_type": "technicalnote",
+  "creators": [
+    {
+      "name": "Rubczynski, Maciej",
+      "affiliation": "Independent researcher"
+    }
+  ],
+  "description": "v1.12 repair package for a PRISMA-informed exploratory cross-benchmark reanalysis of foundation models in retail demand forecasting. This version completes the official fev-bench retail WAPE prediction-level covariance repair for TimesFM 2.5, alongside Seasonal Naive, Chronos-Bolt-Tiny, Chronos-2, and TiRex across all 20 retail tasks. The package includes the manuscript PDF, LaTeX source, extraction/provenance tables, release audits, fev-bench WAPE covariance artifacts, Source B matched-panel artifacts, and replication code. SQL, MASE, GIFT-Eval, stronger best-baseline comparisons, GPU throughput, covariate-aware FM variants, and additional independent benchmark suites remain outside the confirmatory covariance repair.",
+  "keywords": [
+    "demand forecasting",
+    "foundation models",
+    "retail",
+    "time series",
+    "benchmark reanalysis",
+    "fev-bench",
+    "TimesFM",
+    "bootstrap covariance",
+    "reproducibility"
+  ],
+  "version": "v1.12-timesfm-fev-bench-wape-covariance-repair",
+  "language": "eng",
+  "license": "cc-by-4.0",
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/MaciejR/large-scale-demand-forecasting-benchmark",
+      "relation": "isSupplementTo",
+      "scheme": "url",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "https://github.com/MaciejR/large-scale-demand-forecasting-benchmark/releases/tag/v1.12",
+      "relation": "isIdenticalTo",
+      "scheme": "url",
+      "resource_type": "other"
+    },
+    {
+      "identifier": "10.5281/zenodo.21338004",
+      "relation": "isNewVersionOf",
+      "scheme": "doi",
+      "resource_type": "publication-technicalnote"
+    }
+  ],
+  "communities": [],
+  "notes": "GitHub release asset: zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair.zip; SHA-256: 729df9188657f41a7a569e073ea5245d15ce8b5e8a474776ae102a1ef22cb9f1; source commit recorded in COMMIT.txt inside the archive."
+}

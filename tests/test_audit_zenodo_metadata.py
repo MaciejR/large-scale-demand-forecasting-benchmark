@@ -1,0 +1,73 @@
+import copy
+import sys
+
+sys.path.insert(0, "tools")
+
+import audit_zenodo_metadata
+
+
+def valid_metadata():
+    return {
+        "title": "When Do Foundation Models Pay Off for Retail Demand Forecasting? v1.12 TimesFM fev-bench WAPE Covariance Repair",
+        "upload_type": "publication",
+        "publication_type": "technicalnote",
+        "creators": [{"name": "Rubczynski, Maciej"}],
+        "description": "A package.",
+        "keywords": [
+            "demand forecasting",
+            "foundation models",
+            "TimesFM",
+            "reproducibility",
+        ],
+        "version": audit_zenodo_metadata.VERSION,
+        "language": "eng",
+        "license": "cc-by-4.0",
+        "related_identifiers": [
+            {
+                "identifier": audit_zenodo_metadata.GITHUB_REPO_URL,
+                "relation": "isSupplementTo",
+            },
+            {
+                "identifier": audit_zenodo_metadata.GITHUB_RELEASE_URL,
+                "relation": "isIdenticalTo",
+            },
+            {
+                "identifier": audit_zenodo_metadata.HISTORICAL_DOI,
+                "relation": "isNewVersionOf",
+            },
+        ],
+        "notes": (
+            f"GitHub release asset: {audit_zenodo_metadata.ASSET_NAME}; "
+            "SHA-256: abc123; source commit recorded in COMMIT.txt inside the archive."
+        ),
+    }
+
+
+def test_zenodo_metadata_accepts_valid_minimal_metadata():
+    assert audit_zenodo_metadata.audit_metadata(valid_metadata(), "abc123") == []
+
+
+def test_zenodo_metadata_flags_wrong_version():
+    metadata = valid_metadata()
+    metadata["version"] = "v1.0"
+
+    findings = audit_zenodo_metadata.audit_metadata(metadata, "abc123")
+
+    assert any("version='v1.0'" in finding for finding in findings)
+
+
+def test_zenodo_metadata_flags_missing_github_release_relation():
+    metadata = copy.deepcopy(valid_metadata())
+    metadata["related_identifiers"] = metadata["related_identifiers"][:1]
+
+    findings = audit_zenodo_metadata.audit_metadata(metadata, "abc123")
+
+    assert any(audit_zenodo_metadata.GITHUB_RELEASE_URL in finding for finding in findings)
+
+
+def test_zenodo_metadata_flags_checksum_mismatch():
+    metadata = valid_metadata()
+
+    findings = audit_zenodo_metadata.audit_metadata(metadata, "def456")
+
+    assert findings == ["notes missing 'def456'"]

@@ -21,6 +21,7 @@ pytest
 git diff --check
 tools/build_v112_release.sh
 python3 tools/audit_publication_readiness.py
+python3 tools/audit_zenodo_metadata.py
 ```
 
 Expected state before changing visibility:
@@ -62,6 +63,11 @@ release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair.zip
 Use the release notes in `docs/RELEASE_V1.12.md` as the description.  Keep the
 historical v1.0 DOI unchanged; publish v1.12 as a separate repair package or as
 a new version only if that is the intended archival policy.
+Use `docs/ZENODO_METADATA_V1.12.json` as the metadata draft and verify it with:
+
+```bash
+python3 tools/audit_zenodo_metadata.py
+```
 
 Before uploading, verify package provenance:
 

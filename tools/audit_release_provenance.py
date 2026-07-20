@@ -54,6 +54,7 @@ def audit_static_files(repo_root: Path) -> list[str]:
     citation = read(repo_root / "CITATION.cff")
     readme = read(repo_root / "README.md")
     release_notes = read(repo_root / "docs" / "RELEASE_V1.12.md")
+    zenodo_metadata = read(repo_root / "docs" / "ZENODO_METADATA_V1.12.json")
     reproducing = read(repo_root / "REPRODUCING.md")
     build_script = read(repo_root / "tools" / "build_v112_release.sh")
     manifest_audit = read(repo_root / "tools" / "audit_release_manifest.py")
@@ -89,6 +90,8 @@ def audit_static_files(repo_root: Path) -> list[str]:
     require_contains(main_tex, REPO_URL, "paper/latex/main.tex", findings)
     require_contains(main_tex, "COMMIT.txt", "paper/latex/main.tex", findings)
     require_contains(main_tex, "CHECKSUMS.txt", "paper/latex/main.tex", findings)
+    require_contains(zenodo_metadata, str(ZIP_PATH.name), "docs/ZENODO_METADATA_V1.12.json", findings)
+    require_contains(zenodo_metadata, REPO_URL, "docs/ZENODO_METADATA_V1.12.json", findings)
 
     return findings
 
