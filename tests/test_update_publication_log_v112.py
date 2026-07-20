@@ -5,6 +5,9 @@ sys.path.insert(0, "tools")
 import update_publication_log_v112
 
 
+VALID_SHA = "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+
+
 def template():
     return "\n".join(
         [
@@ -27,8 +30,7 @@ def filled_release_identity_template():
         "- Target commit: abcdef1234567890abcdef1234567890abcdef12",
     ).replace(
         "- Asset SHA-256: TODO",
-        "- Asset SHA-256: "
-        "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+        f"- Asset SHA-256: {VALID_SHA}",
     )
 
 
@@ -50,6 +52,8 @@ def test_set_field_rejects_missing_field():
 def test_update_log_text_fills_production_publish_result():
     payload = {
         "mode": "published",
+        "asset_name": update_publication_log_v112.ASSET_NAME,
+        "zip_sha256": VALID_SHA,
         "published_at_utc": "2026-07-20T10:30:00Z",
         "deposition": {
             "id": 123,
@@ -63,12 +67,12 @@ def test_update_log_text_fills_production_publish_result():
         template(),
         payload,
         current_commit="abc123",
-        zip_digest="deadbeef",
+        zip_digest=VALID_SHA,
         sandbox=False,
     )
 
     assert "- Target commit: abc123" in updated
-    assert "- Asset SHA-256: deadbeef" in updated
+    assert f"- Asset SHA-256: {VALID_SHA}" in updated
     assert "- Production deposition ID: 123" in updated
     assert "- Production record URL: https://zenodo.org/records/456" in updated
     assert "- Production DOI: 10.5281/zenodo.456" in updated
@@ -81,6 +85,8 @@ def test_update_log_text_records_doi_metadata_commit_without_overwriting_uploade
     doi_update_commit = "1234567890abcdef1234567890abcdef12345678"
     payload = {
         "mode": "published",
+        "asset_name": update_publication_log_v112.ASSET_NAME,
+        "zip_sha256": VALID_SHA,
         "published_at_utc": "2026-07-20T10:30:00Z",
         "deposition": {
             "id": 123,
@@ -94,7 +100,7 @@ def test_update_log_text_records_doi_metadata_commit_without_overwriting_uploade
         filled_release_identity_template(),
         payload,
         current_commit="ffffffffffffffffffffffffffffffffffffffff",
-        zip_digest="eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        zip_digest=VALID_SHA,
         sandbox=False,
         doi_update_commit=doi_update_commit,
     )
@@ -112,9 +118,20 @@ def test_update_log_text_rejects_doi_metadata_commit_before_release_identity():
     try:
         update_publication_log_v112.update_log_text(
             template(),
-            {"mode": "published"},
+            {
+                "mode": "published",
+                "asset_name": update_publication_log_v112.ASSET_NAME,
+                "zip_sha256": VALID_SHA,
+                "published_at_utc": "2026-07-20T10:30:00Z",
+                "deposition": {
+                    "id": 123,
+                    "record_id": 456,
+                    "html": "https://zenodo.org/records/456",
+                    "doi": "10.5281/zenodo.456",
+                },
+            },
             current_commit="ffffffffffffffffffffffffffffffffffffffff",
-            zip_digest="eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            zip_digest=VALID_SHA,
             sandbox=False,
             doi_update_commit="1234567890abcdef1234567890abcdef12345678",
         )
@@ -125,13 +142,18 @@ def test_update_log_text_rejects_doi_metadata_commit_before_release_identity():
 
 
 def test_update_log_text_fills_sandbox_only_when_requested():
-    payload = {"mode": "draft", "deposition": {"id": 999}}
+    payload = {
+        "mode": "draft",
+        "asset_name": update_publication_log_v112.ASSET_NAME,
+        "zip_sha256": VALID_SHA,
+        "deposition": {"id": 999},
+    }
 
     updated = update_publication_log_v112.update_log_text(
         template(),
         payload,
         current_commit="abc123",
-        zip_digest="deadbeef",
+        zip_digest=VALID_SHA,
         sandbox=True,
     )
 
@@ -150,6 +172,51 @@ def test_update_log_text_dry_run_leaves_release_identity_placeholders():
 
     assert "- Target commit: TODO" in updated
     assert "- Asset SHA-256: TODO" in updated
+
+
+def test_update_log_text_rejects_stale_zenodo_json_zip_sha():
+    try:
+        update_publication_log_v112.update_log_text(
+            template(),
+            {
+                "mode": "draft",
+                "asset_name": update_publication_log_v112.ASSET_NAME,
+                "zip_sha256": "stale",
+                "deposition": {"id": 123},
+            },
+            current_commit="abc123",
+            zip_digest=VALID_SHA,
+            sandbox=False,
+        )
+    except ValueError as exc:
+        assert "does not match current release zip" in str(exc)
+    else:
+        raise AssertionError("expected ValueError")
+
+
+def test_update_log_text_rejects_published_payload_without_doi():
+    try:
+        update_publication_log_v112.update_log_text(
+            template(),
+            {
+                "mode": "published",
+                "asset_name": update_publication_log_v112.ASSET_NAME,
+                "zip_sha256": VALID_SHA,
+                "published_at_utc": "2026-07-20T10:30:00Z",
+                "deposition": {
+                    "id": 123,
+                    "record_id": 456,
+                    "html": "https://zenodo.org/records/456",
+                },
+            },
+            current_commit="abc123",
+            zip_digest=VALID_SHA,
+            sandbox=False,
+        )
+    except ValueError as exc:
+        assert "does not include a production Zenodo DOI" in str(exc)
+    else:
+        raise AssertionError("expected ValueError")
 
 
 def test_validate_commit_rejects_short_sha():

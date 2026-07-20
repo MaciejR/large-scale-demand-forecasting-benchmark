@@ -19,6 +19,10 @@ ZIP_PATH = Path(f"{RELEASE_DIR}.zip")
 ASSET_NAME = "zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair.zip"
 FIELD_RE = re.compile(r"^(- (?P<label>[^:]+): )(?P<value>.*)$")
 FULL_COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
+ZENODO_DOI_RE = re.compile(r"^10\.5281/zenodo\.[0-9]+$")
+UTC_TIMESTAMP_RE = re.compile(
+    r"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+)
 
 
 def run(cmd: list[str], cwd: Path) -> str:
@@ -85,6 +89,43 @@ def has_value(text: str, label: str) -> bool:
     raise ValueError(f"expected one publication-log field {label!r}, found 0")
 
 
+def validate_payload_for_log_update(
+    payload: dict[str, Any],
+    zip_digest: str,
+    sandbox: bool,
+    doi_update_commit: str | None,
+) -> None:
+    mode = payload.get("mode")
+    if mode not in {"dry-run", "draft", "published"}:
+        raise ValueError(f"unexpected Zenodo JSON mode: {mode!r}")
+    if mode != "dry-run":
+        payload_sha = payload.get("zip_sha256")
+        if payload_sha != zip_digest:
+            raise ValueError(
+                f"Zenodo JSON zip_sha256 {payload_sha!r} does not match current release zip {zip_digest}"
+            )
+        asset_name = payload.get("asset_name")
+        if asset_name != ASSET_NAME:
+            raise ValueError(
+                f"Zenodo JSON asset_name {asset_name!r} does not match expected {ASSET_NAME}"
+            )
+    if sandbox or mode != "published":
+        return
+
+    deposition = payload.get("deposition") or {}
+    doi = doi_from_payload(deposition)
+    record_url = record_url_from_payload(deposition)
+    published_at = payload.get("published_at_utc")
+    if not doi or not ZENODO_DOI_RE.fullmatch(doi):
+        raise ValueError("published Zenodo JSON does not include a production Zenodo DOI")
+    if not record_url or not record_url.startswith("https://zenodo.org/records/"):
+        raise ValueError("published Zenodo JSON does not include a production record URL")
+    if not isinstance(published_at, str) or not UTC_TIMESTAMP_RE.fullmatch(published_at):
+        raise ValueError("published Zenodo JSON does not include an ISO-8601 UTC published_at_utc")
+    if doi_update_commit and not doi_from_payload(deposition):
+        raise ValueError("cannot record DOI metadata commit without a published DOI")
+
+
 def update_log_text(
     text: str,
     payload: dict[str, Any],
@@ -93,6 +134,7 @@ def update_log_text(
     sandbox: bool,
     doi_update_commit: str | None = None,
 ) -> str:
+    validate_payload_for_log_update(payload, zip_digest, sandbox, doi_update_commit)
     deposition = payload.get("deposition") or {}
     deposition_id = deposition.get("id")
     record_url = record_url_from_payload(deposition)
