@@ -72,3 +72,17 @@ def test_github_release_payload_flags_missing_asset(tmp_path):
     )
 
     assert findings == [f"missing release asset: {audit_github_release.ASSET_NAME}"]
+
+
+def test_github_release_payload_flags_duplicate_named_assets(tmp_path):
+    zip_path = tmp_path / audit_github_release.ASSET_NAME
+    zip_path.write_bytes(b"abc")
+    release = payload()
+    release["assets"] = [release["assets"][0], dict(release["assets"][0])]
+
+    findings = audit_github_release.audit_payload(release, "abc123", zip_path)
+
+    assert any(
+        f"release has 2 assets named {audit_github_release.ASSET_NAME}, expected 1" in finding
+        for finding in findings
+    )

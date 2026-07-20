@@ -55,6 +55,10 @@ def find_asset(payload: dict, name: str) -> dict | None:
     return None
 
 
+def matching_assets(payload: dict, name: str) -> list[dict]:
+    return [asset for asset in payload.get("assets", []) if asset.get("name") == name]
+
+
 def audit_payload(payload: dict, expected_commit: str, zip_path: Path) -> list[str]:
     findings: list[str] = []
 
@@ -71,10 +75,13 @@ def audit_payload(payload: dict, expected_commit: str, zip_path: Path) -> list[s
     if payload.get("isPrerelease"):
         findings.append("release is marked prerelease")
 
-    asset = find_asset(payload, ASSET_NAME)
-    if asset is None:
+    assets = matching_assets(payload, ASSET_NAME)
+    if not assets:
         findings.append(f"missing release asset: {ASSET_NAME}")
         return findings
+    if len(assets) != 1:
+        findings.append(f"release has {len(assets)} assets named {ASSET_NAME}, expected 1")
+    asset = assets[0]
 
     local_size = zip_path.stat().st_size if zip_path.is_file() else None
     if local_size is None:
