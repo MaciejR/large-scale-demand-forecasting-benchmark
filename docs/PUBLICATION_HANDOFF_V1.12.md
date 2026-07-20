@@ -97,6 +97,10 @@ tools/publish_v112_zenodo.sh dry-run
 tools/publish_v112_zenodo.sh draft --output-json /tmp/zenodo-v1.12-draft.json
 ```
 
+The wrapper does not modify tracked files.  Inspect the draft JSON before
+deciding whether to update the publication log, commit a draft note, or proceed
+to publication.
+
 For a non-archival sandbox check, use a separate sandbox token:
 
 ```bash

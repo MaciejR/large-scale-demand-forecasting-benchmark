@@ -70,12 +70,10 @@ case "$action" in
   draft)
     python3 tools/audit_zenodo_upload_readiness.py --require-token
     python3 tools/zenodo_upload_v112.py --output-json "$output_json"
-    python3 tools/update_publication_log_v112.py --zenodo-json "$output_json" --apply
     ;;
   sandbox-draft)
     python3 tools/audit_zenodo_upload_readiness.py --require-token --sandbox-token
     python3 tools/zenodo_upload_v112.py --sandbox --output-json "$output_json"
-    python3 tools/update_publication_log_v112.py --sandbox --zenodo-json "$output_json" --apply
     ;;
   publish)
     if [[ -z "$deposition_id" ]]; then
@@ -87,7 +85,6 @@ case "$action" in
       --deposition-id "$deposition_id" \
       --publish \
       --output-json "$output_json"
-    python3 tools/update_publication_log_v112.py --zenodo-json "$output_json" --apply
     ;;
   -h|--help)
     usage

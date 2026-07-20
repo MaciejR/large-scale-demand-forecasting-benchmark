@@ -31,3 +31,9 @@ def test_publish_wrapper_publish_requires_deposition_id():
     assert 'echo "publish requires --deposition-id ID"' in text
     assert "--publish" in text
     assert '--deposition-id "$deposition_id"' in text
+
+
+def test_publish_wrapper_does_not_mutate_publication_log():
+    text = SCRIPT.read_text()
+
+    assert "tools/update_publication_log_v112.py" not in text
