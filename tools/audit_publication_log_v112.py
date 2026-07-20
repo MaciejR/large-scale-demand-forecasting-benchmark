@@ -17,6 +17,8 @@ ASSET_NAME = "zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair.zip"
 GITHUB_RELEASE_URL = (
     "https://github.com/MaciejR/large-scale-demand-forecasting-benchmark/releases/tag/v1.12"
 )
+FINAL_PACKAGE_SHA_VALUE = "external GitHub release asset digest"
+FINAL_RELEASE_TARGET_VALUE = "external GitHub release targetCommitish"
 DOI_RE = re.compile(r"10\.5281/zenodo\.[0-9]+")
 FULL_COMMIT_RE = re.compile(r"[0-9a-f]{40}")
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
@@ -74,6 +76,8 @@ def audit_complete_log_text(text: str) -> list[str]:
     record_url = field_value(text, "Production record URL")
     published_at = field_value(text, "Published at")
     update_commit = field_value(text, "DOI metadata update commit")
+    final_package_sha = field_value(text, "Final package SHA-256 after DOI update")
+    final_release_target = field_value(text, "Final GitHub release target after DOI update")
     if not doi or not DOI_RE.fullmatch(doi):
         findings.append("publication log does not contain a Zenodo DOI")
     expected_doi_url = f"https://doi.org/{doi}" if doi else None
@@ -91,6 +95,14 @@ def audit_complete_log_text(text: str) -> list[str]:
         )
     if not published_at or not UTC_TIMESTAMP_RE.fullmatch(published_at):
         findings.append("publication log Published at is not an ISO-8601 UTC timestamp")
+    if final_package_sha != FINAL_PACKAGE_SHA_VALUE:
+        findings.append(
+            "publication log Final package SHA-256 after DOI update must defer to the external GitHub release asset digest"
+        )
+    if final_release_target != FINAL_RELEASE_TARGET_VALUE:
+        findings.append(
+            "publication log Final GitHub release target after DOI update must defer to the external GitHub release targetCommitish"
+        )
     return findings
 
 

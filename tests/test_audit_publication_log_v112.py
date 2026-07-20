@@ -59,7 +59,9 @@ def test_complete_publication_log_accepts_doi_record_and_no_todo():
         "- Production DOI URL: https://doi.org/10.5281/zenodo.99999999\n"
         "- Production record URL: https://zenodo.org/records/99999999\n"
         "- Published at: 2026-07-20T10:30:00Z\n"
-        "- DOI metadata update commit: 1234567890abcdef1234567890abcdef12345678"
+        "- DOI metadata update commit: 1234567890abcdef1234567890abcdef12345678\n"
+        "- Final package SHA-256 after DOI update: external GitHub release asset digest\n"
+        "- Final GitHub release target after DOI update: external GitHub release targetCommitish"
     )
 
     assert audit_publication_log_v112.audit_complete_log_text(text) == []
@@ -73,7 +75,9 @@ def test_complete_publication_log_flags_mismatched_doi_url_and_short_commit():
         "- Production DOI URL: https://doi.org/10.5281/zenodo.11111111\n"
         "- Production record URL: https://zenodo.org/records/99999999\n"
         "- Published at: recorded by Zenodo\n"
-        "- DOI metadata update commit: 123abc"
+        "- DOI metadata update commit: 123abc\n"
+        "- Final package SHA-256 after DOI update: stale\n"
+        "- Final GitHub release target after DOI update: stale"
     )
 
     findings = audit_publication_log_v112.audit_complete_log_text(text)
@@ -84,6 +88,8 @@ def test_complete_publication_log_flags_mismatched_doi_url_and_short_commit():
         in findings
     )
     assert "publication log Published at is not an ISO-8601 UTC timestamp" in findings
+    assert any("Final package SHA-256" in finding for finding in findings)
+    assert any("Final GitHub release target" in finding for finding in findings)
 
 
 def test_publication_log_checks_known_commit_and_sha_against_package(tmp_path):
