@@ -5,8 +5,8 @@ usage() {
   cat <<'USAGE'
 Usage:
   tools/publish_v112_zenodo.sh dry-run
-  tools/publish_v112_zenodo.sh draft [--output-json PATH]
-  tools/publish_v112_zenodo.sh sandbox-draft [--output-json PATH]
+  tools/publish_v112_zenodo.sh draft [--deposition-id ID] [--output-json PATH]
+  tools/publish_v112_zenodo.sh sandbox-draft [--deposition-id ID] [--output-json PATH]
   tools/publish_v112_zenodo.sh publish --deposition-id ID [--output-json PATH]
 
 Runs the required v1.12 publication audits before calling the Zenodo uploader.
@@ -94,11 +94,19 @@ case "$action" in
     ;;
   draft)
     python3 tools/audit_zenodo_upload_readiness.py --require-token
-    python3 tools/zenodo_upload_v112.py --output-json "$output_json"
+    upload_args=(--output-json "$output_json")
+    if [[ -n "$deposition_id" ]]; then
+      upload_args+=(--deposition-id "$deposition_id")
+    fi
+    python3 tools/zenodo_upload_v112.py "${upload_args[@]}"
     ;;
   sandbox-draft)
     python3 tools/audit_zenodo_upload_readiness.py --require-token --sandbox-token
-    python3 tools/zenodo_upload_v112.py --sandbox --output-json "$output_json"
+    upload_args=(--sandbox --output-json "$output_json")
+    if [[ -n "$deposition_id" ]]; then
+      upload_args+=(--deposition-id "$deposition_id")
+    fi
+    python3 tools/zenodo_upload_v112.py "${upload_args[@]}"
     ;;
   publish)
     if [[ -z "$deposition_id" ]]; then

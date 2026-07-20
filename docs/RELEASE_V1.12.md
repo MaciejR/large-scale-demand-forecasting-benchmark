@@ -154,3 +154,5 @@ the Zenodo response JSON but leaves publication-log edits to the explicit
 `tools/update_publication_log_v112.py` step.  Its public-readiness gate already
 download-verifies the GitHub release asset, so the wrapper avoids a duplicate
 download before invoking the uploader.
+Pass `--deposition-id` to `draft` or `sandbox-draft` to update an existing
+unpublished Zenodo draft instead of creating a new one.

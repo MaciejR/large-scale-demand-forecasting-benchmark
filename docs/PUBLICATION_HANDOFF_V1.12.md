@@ -100,6 +100,8 @@ The wrapper path is:
 ```bash
 tools/publish_v112_zenodo.sh dry-run
 tools/publish_v112_zenodo.sh draft --output-json /tmp/zenodo-v1.12-draft.json
+# or update an existing unpublished draft:
+tools/publish_v112_zenodo.sh draft --deposition-id <draft-id> --output-json /tmp/zenodo-v1.12-draft.json
 ```
 
 The wrapper does not modify tracked files.  Inspect the draft JSON before

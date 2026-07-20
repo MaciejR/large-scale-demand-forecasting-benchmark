@@ -47,6 +47,15 @@ def test_publish_wrapper_publish_requires_deposition_id():
     assert '--deposition-id "$deposition_id"' in text
 
 
+def test_publish_wrapper_passes_optional_deposition_id_to_draft_updates():
+    text = SCRIPT.read_text()
+
+    assert "tools/publish_v112_zenodo.sh draft [--deposition-id ID]" in text
+    assert "tools/publish_v112_zenodo.sh sandbox-draft [--deposition-id ID]" in text
+    assert "upload_args+=(--deposition-id \"$deposition_id\")" in text
+    assert 'python3 tools/zenodo_upload_v112.py "${upload_args[@]}"' in text
+
+
 def test_publish_wrapper_does_not_mutate_publication_log():
     text = SCRIPT.read_text()
 
