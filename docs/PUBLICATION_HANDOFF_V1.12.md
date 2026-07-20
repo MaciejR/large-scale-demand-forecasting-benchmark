@@ -145,8 +145,16 @@ python3 tools/audit_publication_readiness.py --require-public
 ```
 
 Commit and push the DOI metadata update, then rebuild the final package once
-more so `COMMIT.txt`, `CHECKSUMS.txt`, and citation metadata agree.
-Finally fill `docs/PUBLICATION_LOG_V1.12.md` and verify:
+more so `COMMIT.txt`, `CHECKSUMS.txt`, and citation metadata agree.  Do not
+write the outer ZIP checksum into a tracked file inside the package; verify the
+final release target and asset digest externally with:
+
+```bash
+python3 tools/audit_github_release.py --verify-download
+```
+
+Finally fill the Zenodo DOI fields in `docs/PUBLICATION_LOG_V1.12.md` and
+verify:
 
 ```bash
 python3 tools/audit_publication_log_v112.py --require-complete

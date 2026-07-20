@@ -23,5 +23,5 @@ the draft or production record is created.
 ## Post-Minting Follow-Up
 
 - DOI metadata update commit: TODO
-- Final package SHA-256 after DOI update: TODO
-- Final GitHub release target after DOI update: TODO
+- Final package SHA-256 after DOI update: external GitHub release asset digest
+- Final GitHub release target after DOI update: external GitHub release targetCommitish
