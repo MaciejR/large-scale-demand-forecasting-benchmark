@@ -132,3 +132,5 @@ release notes from the GitHub-release citation to the archived DOI.
 `python3 tools/update_publication_log_v112.py` reads the JSON output from
 `tools/zenodo_upload_v112.py` and fills the publication log with the deposition
 ID, record URL, DOI, current commit, and package SHA.
+`tools/publish_v112_zenodo.sh` wraps the audited dry-run, draft, sandbox-draft,
+and publish flows without bypassing the underlying readiness checks.

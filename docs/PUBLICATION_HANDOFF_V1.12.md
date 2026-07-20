@@ -95,11 +95,19 @@ python3 tools/zenodo_upload_v112.py --dry-run
 python3 tools/zenodo_upload_v112.py
 ```
 
+The wrapper path is:
+
+```bash
+tools/publish_v112_zenodo.sh dry-run
+tools/publish_v112_zenodo.sh draft --output-json /tmp/zenodo-v1.12-draft.json
+```
+
 For a non-archival sandbox check, use a separate sandbox token:
 
 ```bash
 python3 tools/audit_zenodo_upload_readiness.py --require-token --sandbox-token
 python3 tools/zenodo_upload_v112.py --sandbox
+tools/publish_v112_zenodo.sh sandbox-draft --output-json /tmp/zenodo-v1.12-sandbox.json
 ```
 
 This creates or updates an unpublished Zenodo draft and uploads the audited
@@ -111,6 +119,7 @@ irreversible step:
 ```bash
 python3 tools/zenodo_upload_v112.py --deposition-id <draft-id> --publish --output-json /tmp/zenodo-v1.12-publish.json
 python3 tools/update_publication_log_v112.py --zenodo-json /tmp/zenodo-v1.12-publish.json --apply
+tools/publish_v112_zenodo.sh publish --deposition-id <draft-id> --output-json /tmp/zenodo-v1.12-publish.json
 ```
 
 ## After Zenodo Minting
