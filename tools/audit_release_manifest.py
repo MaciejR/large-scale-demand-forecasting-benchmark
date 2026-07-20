@@ -49,6 +49,7 @@ REQUIRED_FILES = {
     "replication/analysis/figures/fev_tirex_paired_wape_covariance.csv",
     "replication/analysis/figures/fev_timesfm25_paired_wape_covariance.csv",
     "replication/tools/audit_publication_readiness.py",
+    "replication/tools/audit_github_release.py",
 }
 
 REQUIRED_GLOBS = {

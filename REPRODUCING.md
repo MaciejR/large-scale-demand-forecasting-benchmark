@@ -359,6 +359,7 @@ python3 tools/audit_release_privacy.py release/zenodo-v1.12-timesfm-fev-bench-wa
 python3 tools/audit_release_manifest.py release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair
 python3 tools/audit_release_provenance.py release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair
 python3 tools/audit_publication_readiness.py
+python3 tools/audit_github_release.py
 ```
 
 The manuscript audit checks the rendered PDF and current LaTeX source for
@@ -382,3 +383,5 @@ HEAD/origin/package commit agreement, release audits, and GitHub visibility.
 Before making the repository public, run it without flags; after changing
 GitHub visibility, rerun `python3 tools/audit_publication_readiness.py
 --require-public`.
+The GitHub release audit checks that tag `v1.12`, its target commit, uploaded
+zip asset, size, URL, and SHA-256 digest match the local release package.

@@ -106,6 +106,10 @@ def audit(repo_root: Path, require_public: bool) -> list[str]:
     findings = audit_git(repo_root) + audit_release(repo_root)
     visibility_findings = audit_github_visibility(repo_root, require_public)
     findings.extend(visibility_findings)
+    if require_public:
+        code, _stdout, stderr = try_run(["python3", "tools/audit_github_release.py"], repo_root)
+        if code != 0:
+            findings.append(f"python3 tools/audit_github_release.py failed: {stderr}")
     return findings
 
 

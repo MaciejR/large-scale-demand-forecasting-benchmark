@@ -46,9 +46,10 @@ Then rerun:
 
 ```bash
 python3 tools/audit_publication_readiness.py --require-public
+python3 tools/audit_github_release.py
 ```
 
-The public-ready state is reached only when this command passes.
+The public-ready state is reached only when both commands pass.
 
 ## Zenodo Upload
 

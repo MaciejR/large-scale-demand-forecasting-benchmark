@@ -103,4 +103,5 @@ source is the LaTeX tree under `paper/latex/`.
 Publication readiness is checked separately with
 `python3 tools/audit_publication_readiness.py`.  Run it once before changing
 repository visibility, then rerun with `--require-public` after making GitHub
-public.
+public.  After the GitHub release is created, `python3 tools/audit_github_release.py`
+checks that tag `v1.12` and the uploaded zip asset match the local package.
