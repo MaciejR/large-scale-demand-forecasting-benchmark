@@ -92,6 +92,25 @@ def test_complete_publication_log_flags_mismatched_doi_url_and_short_commit():
     assert any("Final GitHub release target" in finding for finding in findings)
 
 
+def test_complete_publication_log_rejects_historical_v1_doi():
+    text = (
+        "- Target commit: 1234567890abcdef1234567890abcdef12345678\n"
+        "- Asset SHA-256: "
+        "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef\n"
+        "- Production DOI: 10.5281/zenodo.21338004\n"
+        "- Production DOI URL: https://doi.org/10.5281/zenodo.21338004\n"
+        "- Production record URL: https://zenodo.org/records/21338004\n"
+        "- Published at: 2026-07-20T10:30:00Z\n"
+        "- DOI metadata update commit: 1234567890abcdef1234567890abcdef12345678\n"
+        "- Final package SHA-256 after DOI update: external GitHub release asset digest\n"
+        "- Final GitHub release target after DOI update: external GitHub release targetCommitish"
+    )
+
+    findings = audit_publication_log_v112.audit_complete_log_text(text)
+
+    assert "publication log uses the historical v1.0 DOI as the v1.12 DOI" in findings
+
+
 def test_publication_log_checks_known_commit_and_sha_against_package(tmp_path):
     repo = tmp_path
     log = repo / audit_publication_log_v112.LOG_PATH

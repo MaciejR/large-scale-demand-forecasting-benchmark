@@ -19,6 +19,7 @@ GITHUB_RELEASE_URL = (
 )
 FINAL_PACKAGE_SHA_VALUE = "external GitHub release asset digest"
 FINAL_RELEASE_TARGET_VALUE = "external GitHub release targetCommitish"
+HISTORICAL_DOI = "10.5281/zenodo.21338004"
 DOI_RE = re.compile(r"10\.5281/zenodo\.[0-9]+")
 FULL_COMMIT_RE = re.compile(r"[0-9a-f]{40}")
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
@@ -80,6 +81,8 @@ def audit_complete_log_text(text: str) -> list[str]:
     final_release_target = field_value(text, "Final GitHub release target after DOI update")
     if not doi or not DOI_RE.fullmatch(doi):
         findings.append("publication log does not contain a Zenodo DOI")
+    elif doi == HISTORICAL_DOI:
+        findings.append("publication log uses the historical v1.0 DOI as the v1.12 DOI")
     expected_doi_url = f"https://doi.org/{doi}" if doi else None
     if not doi_url or not DOI_RE.search(doi_url):
         findings.append("publication log does not contain a production DOI URL")

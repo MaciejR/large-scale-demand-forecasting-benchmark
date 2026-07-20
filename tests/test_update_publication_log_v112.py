@@ -287,6 +287,32 @@ def test_update_log_text_rejects_published_payload_without_doi():
         raise AssertionError("expected ValueError")
 
 
+def test_update_log_text_rejects_historical_v1_doi_for_v112():
+    try:
+        update_publication_log_v112.update_log_text(
+            template(),
+            {
+                "mode": "published",
+                "asset_name": update_publication_log_v112.ASSET_NAME,
+                "zip_sha256": VALID_SHA,
+                "published_at_utc": "2026-07-20T10:30:00Z",
+                "deposition": {
+                    "id": 123,
+                    "record_id": 21338004,
+                    "html": "https://zenodo.org/records/21338004",
+                    "doi": "10.5281/zenodo.21338004",
+                },
+            },
+            current_commit="abc123",
+            zip_digest=VALID_SHA,
+            sandbox=False,
+        )
+    except ValueError as exc:
+        assert "historical v1.0 DOI" in str(exc)
+    else:
+        raise AssertionError("expected ValueError")
+
+
 def test_update_log_text_rejects_doi_metadata_commit_with_mismatched_uploaded_sha():
     try:
         update_publication_log_v112.update_log_text(

@@ -17,6 +17,7 @@ LOG_PATH = Path("docs/PUBLICATION_LOG_V1.12.md")
 RELEASE_DIR = Path("release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair")
 ZIP_PATH = Path(f"{RELEASE_DIR}.zip")
 ASSET_NAME = "zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair.zip"
+HISTORICAL_DOI = "10.5281/zenodo.21338004"
 FIELD_RE = re.compile(r"^(- (?P<label>[^:]+): )(?P<value>.*)$")
 FULL_COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 ZENODO_DOI_RE = re.compile(r"^10\.5281/zenodo\.[0-9]+$")
@@ -135,6 +136,8 @@ def validate_payload_for_log_update(
     published_at = payload.get("published_at_utc")
     if not doi or not ZENODO_DOI_RE.fullmatch(doi):
         raise ValueError("published Zenodo JSON does not include a production Zenodo DOI")
+    if doi == HISTORICAL_DOI:
+        raise ValueError("published Zenodo JSON uses the historical v1.0 DOI as the v1.12 DOI")
     if not record_url or not record_url.startswith("https://zenodo.org/records/"):
         raise ValueError("published Zenodo JSON does not include a production record URL")
     if not isinstance(published_at, str) or not UTC_TIMESTAMP_RE.fullmatch(published_at):
