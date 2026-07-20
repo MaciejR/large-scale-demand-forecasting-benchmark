@@ -146,6 +146,35 @@ def test_publication_log_checks_known_commit_and_sha_against_package(tmp_path):
     assert audit_publication_log_v112.audit(repo, require_complete=False) == []
 
 
+def test_publication_log_audit_accepts_unpacked_release_context(tmp_path):
+    replication = tmp_path / "replication"
+    docs = replication / "docs"
+    docs.mkdir(parents=True)
+    (tmp_path / "COMMIT.txt").write_text("commit-a\n", encoding="utf-8")
+    (tmp_path / "CHECKSUMS.txt").write_text("checksum placeholder\n", encoding="utf-8")
+    (docs / "PUBLICATION_LOG_V1.12.md").write_text(
+        "\n".join(
+            [
+                audit_publication_log_v112.GITHUB_RELEASE_URL,
+                audit_publication_log_v112.ASSET_NAME,
+                "- Target commit: commit-a",
+                "- Asset SHA-256: TODO",
+                "- Production deposition ID: TODO",
+                "- Production record URL: TODO",
+                "- Production DOI: TODO",
+                "- Production DOI URL: TODO",
+                "- Published at: TODO",
+                "- DOI metadata update commit: TODO",
+                "- Final package SHA-256 after DOI update: TODO",
+                "- Final GitHub release target after DOI update: TODO",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    assert audit_publication_log_v112.audit(replication, require_complete=False) == []
+
+
 def test_publication_log_flags_stale_known_commit_and_sha(tmp_path):
     repo = tmp_path
     log = repo / audit_publication_log_v112.LOG_PATH

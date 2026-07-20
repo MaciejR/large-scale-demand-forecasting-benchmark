@@ -85,3 +85,36 @@ def test_release_provenance_accepts_minimal_matching_release(tmp_path):
         release_dir,
         expected_head=expected_head,
     ) == []
+
+
+def test_release_provenance_accepts_unpacked_release_without_outer_zip(tmp_path):
+    release_dir = tmp_path / audit_release_provenance.RELEASE_STEM
+    manuscript_dir = release_dir / "manuscript"
+    docs_dir = release_dir / "replication/docs"
+    manuscript_dir.mkdir(parents=True)
+    docs_dir.mkdir(parents=True)
+
+    expected_head = "cafebabe"
+    (release_dir / "COMMIT.txt").write_text(f"{expected_head}\n")
+    (release_dir / "CHECKSUMS.txt").write_text("checksum placeholder\n")
+    (manuscript_dir / audit_release_provenance.PDF_NAME).write_text("pdf placeholder\n")
+    release_note = (
+        f"`{audit_release_provenance.ZIP_PATH}`\n"
+        f"- `manuscript/{audit_release_provenance.PDF_NAME}`\n"
+    )
+    (release_dir / "README.md").write_text(release_note)
+    (docs_dir / "RELEASE_V1.12.md").write_text(release_note)
+
+    assert audit_release_provenance.audit_release_dir(
+        tmp_path,
+        release_dir,
+        expected_head=expected_head,
+    ) == []
+
+
+def test_release_provenance_reads_commit_from_unpacked_release_parent(tmp_path):
+    replication = tmp_path / "replication"
+    replication.mkdir()
+    (tmp_path / "COMMIT.txt").write_text("cafebabe\n", encoding="utf-8")
+
+    assert audit_release_provenance.current_git_head(replication) == "cafebabe"

@@ -98,3 +98,21 @@ def test_root_zenodo_metadata_matches_draft():
     assert audit_zenodo_metadata.load_metadata(
         audit_zenodo_metadata.ROOT_METADATA_PATH
     ) == audit_zenodo_metadata.load_metadata(audit_zenodo_metadata.METADATA_PATH)
+
+
+def test_zenodo_metadata_audit_accepts_unpacked_release_context(tmp_path):
+    replication = tmp_path / "replication"
+    docs = replication / "docs"
+    docs.mkdir(parents=True)
+    (replication / ".zenodo.json").write_text(
+        audit_zenodo_metadata.METADATA_PATH.read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (docs / "ZENODO_METADATA_V1.12.json").write_text(
+        audit_zenodo_metadata.METADATA_PATH.read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (tmp_path / "COMMIT.txt").write_text("abc123\n", encoding="utf-8")
+    (tmp_path / "CHECKSUMS.txt").write_text("checksum placeholder\n", encoding="utf-8")
+
+    assert audit_zenodo_metadata.audit(replication) == []

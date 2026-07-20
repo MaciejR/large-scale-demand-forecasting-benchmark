@@ -27,11 +27,18 @@ def read(path: Path) -> str:
 
 
 def current_git_head(repo_root: Path) -> str:
-    return subprocess.check_output(
-        ["git", "rev-parse", "HEAD"],
-        cwd=repo_root,
-        text=True,
-    ).strip()
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            cwd=repo_root,
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except subprocess.CalledProcessError:
+        package_commit_path = repo_root.parent / "COMMIT.txt"
+        if package_commit_path.is_file():
+            return package_commit_path.read_text(encoding="utf-8").strip()
+        raise
 
 
 def require_contains(text: str, needle: str, label: str, findings: list[str]) -> None:
@@ -119,13 +126,14 @@ def audit_release_dir(repo_root: Path, release_dir: Path, expected_head: str) ->
     findings: list[str] = []
     commit_path = release_dir / "COMMIT.txt"
     zip_path = Path(f"{release_dir}.zip")
+    checksums_path = release_dir / "CHECKSUMS.txt"
     pdf_path = release_dir / "manuscript" / PDF_NAME
     package_readme = release_dir / "README.md"
     replication_release_notes = release_dir / "replication" / "docs" / "RELEASE_V1.12.md"
 
     if not release_dir.is_dir():
         return [f"release directory does not exist: {release_dir}"]
-    if not zip_path.is_file():
+    if not zip_path.is_file() and not checksums_path.is_file():
         findings.append(f"missing release zip: {zip_path}")
     if not pdf_path.is_file():
         findings.append(f"missing manuscript PDF: {display_path(pdf_path, repo_root)}")

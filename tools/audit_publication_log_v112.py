@@ -112,15 +112,20 @@ def audit_complete_log_text(text: str) -> list[str]:
 def audit(repo_root: Path, require_complete: bool) -> list[str]:
     log_path = repo_root / LOG_PATH
     zip_path = repo_root / ZIP_PATH
-    commit_path = repo_root / RELEASE_DIR / "COMMIT.txt"
+    repo_commit_path = repo_root / RELEASE_DIR / "COMMIT.txt"
+    package_root = repo_root.parent
+    package_commit_path = package_root / "COMMIT.txt"
+    package_checksums_path = package_root / "CHECKSUMS.txt"
+    in_packaged_replication = package_commit_path.is_file() and package_checksums_path.is_file()
+    commit_path = repo_commit_path if repo_commit_path.is_file() else package_commit_path
     findings: list[str] = []
 
     if not log_path.is_file():
         return [f"missing publication log: {LOG_PATH}"]
-    if not zip_path.is_file():
+    if not zip_path.is_file() and not in_packaged_replication:
         return [f"missing release zip: {ZIP_PATH}"]
     if not commit_path.is_file():
-        return [f"missing release COMMIT.txt: {RELEASE_DIR / 'COMMIT.txt'}"]
+        return [f"missing release COMMIT.txt: {RELEASE_DIR / 'COMMIT.txt'} or ../COMMIT.txt"]
 
     text = log_path.read_text(encoding="utf-8")
     findings.extend(audit_log_text(text))
@@ -137,10 +142,15 @@ def audit(repo_root: Path, require_complete: bool) -> list[str]:
 
     sha_value = field_value(text, "Asset SHA-256")
     if sha_value and sha_value != "TODO" and not has_production_doi:
-        current_sha = sha256(zip_path)
-        if sha_value != current_sha:
+        if zip_path.is_file():
+            current_sha = sha256(zip_path)
+            if sha_value != current_sha:
+                findings.append(
+                    f"publication log Asset SHA-256 {sha_value} does not match release zip {current_sha}"
+                )
+        else:
             findings.append(
-                f"publication log Asset SHA-256 {sha_value} does not match release zip {current_sha}"
+                "publication log Asset SHA-256 cannot be checked without the outer release zip"
             )
 
     if require_complete:

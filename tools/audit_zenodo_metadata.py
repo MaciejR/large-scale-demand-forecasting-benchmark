@@ -100,17 +100,24 @@ def audit(repo_root: Path) -> list[str]:
     metadata_path = repo_root / METADATA_PATH
     root_metadata_path = repo_root / ROOT_METADATA_PATH
     zip_path = repo_root / ZIP_PATH
-    commit_path = repo_root / RELEASE_DIR / "COMMIT.txt"
+    repo_commit_path = repo_root / RELEASE_DIR / "COMMIT.txt"
+    package_root = repo_root.parent
+    package_commit_path = package_root / "COMMIT.txt"
+    package_checksums_path = package_root / "CHECKSUMS.txt"
+    in_packaged_replication = package_commit_path.is_file() and package_checksums_path.is_file()
+    commit_path = repo_commit_path if repo_commit_path.is_file() else package_commit_path
 
     findings: list[str] = []
     if not metadata_path.is_file():
         return [f"missing metadata file: {METADATA_PATH}"]
     if not root_metadata_path.is_file():
         findings.append(f"missing root metadata file: {ROOT_METADATA_PATH}")
-    if not zip_path.is_file():
+    if not zip_path.is_file() and not in_packaged_replication:
         return [f"missing release zip: {ZIP_PATH}"]
     if not commit_path.is_file():
-        findings.append(f"missing release COMMIT.txt: {RELEASE_DIR / 'COMMIT.txt'}")
+        findings.append(
+            f"missing release COMMIT.txt: {RELEASE_DIR / 'COMMIT.txt'} or ../COMMIT.txt"
+        )
 
     metadata = load_metadata(metadata_path)
     if root_metadata_path.is_file():
@@ -121,7 +128,8 @@ def audit(repo_root: Path) -> list[str]:
     # is itself packaged inside the zip, so embedding that hash would be
     # circular.  Package hashes are audited through CHECKSUMS.txt and the GitHub
     # release asset digest instead.
-    sha256(zip_path)
+    if zip_path.is_file():
+        sha256(zip_path)
     findings.extend(audit_metadata(metadata))
     return findings
 
