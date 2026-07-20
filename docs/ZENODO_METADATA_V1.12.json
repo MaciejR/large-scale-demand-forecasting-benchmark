@@ -9,13 +9,13 @@
       "affiliation": "Independent researcher"
     }
   ],
-  "description": "v1.12 repair package for a PRISMA-informed exploratory cross-benchmark reanalysis of foundation models in retail demand forecasting. This version completes the official fev-bench retail WAPE prediction-level covariance repair for TimesFM 2.5, alongside Seasonal Naive, Chronos-Bolt-Tiny, Chronos-2, and TiRex across all 20 retail tasks. The package includes the manuscript PDF, LaTeX source, extraction/provenance tables, release audits, fev-bench WAPE covariance artifacts, Source B matched-panel artifacts, and replication code. SQL, MASE, GIFT-Eval, stronger best-baseline comparisons, GPU throughput, covariate-aware FM variants, and additional independent benchmark suites remain outside the confirmatory covariance repair.",
+  "description": "v1.12 release package for a retail demand forecasting benchmark study of foundation models and conventional baselines, supported by a structured literature search. This version completes the official fev-bench retail WAPE prediction-level covariance repair for TimesFM 2.5, alongside Seasonal Naive, Chronos-Bolt-Tiny, Chronos-2, and TiRex across all 20 retail tasks. The package includes the manuscript PDF, LaTeX source, extraction/provenance tables, release audits, fev-bench WAPE covariance artifacts, Source B matched-panel artifacts, and replication code. SQL, MASE, GIFT-Eval, stronger best-baseline comparisons, GPU throughput, covariate-aware FM variants, and additional independent benchmark suites remain outside the confirmatory covariance repair.",
   "keywords": [
     "demand forecasting",
     "foundation models",
     "retail",
     "time series",
-    "benchmark reanalysis",
+    "benchmark study",
     "fev-bench",
     "TimesFM",
     "bootstrap covariance",

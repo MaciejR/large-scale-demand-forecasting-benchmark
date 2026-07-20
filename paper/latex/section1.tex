@@ -51,20 +51,21 @@ We address four research questions across three complementary lenses
 \subsection{Approach}
 \label{sec:approach}
 
-This study combines a PRISMA-informed systematic review with
-original gap-filling experiments and structured extraction from two
-large forecasting benchmarks (fev-bench, GIFT-Eval).  Because the
-paired statistical mass comes mainly from these benchmark suites, we
-treat the pooled estimate as a benchmark-level synthesis and report
-metric-specific and leave-one-suite-out analyses alongside it.
+This study is a benchmark study supported by a structured literature
+search.  The search defines the retail evidence gap and documents which
+published FM evaluations are extractable; the main evidence comes from
+benchmark extraction and matched-panel experiments.  Because the paired
+statistical mass comes mainly from fev-bench and GIFT-Eval, we avoid
+systematic-review branding in the main claim and report metric-specific,
+suite-specific, and leave-one-suite-out summaries.
 
 \begin{enumerate}
   \item \textbf{Source~A (literature + benchmark extraction).} We
-    screen 150 identified records (2020--2026) from retained
+    use 150 identified records (2020--2026) from retained
     Google Scholar/web, Semantic Scholar, and arXiv searches, applying
     retail-domain inclusion criteria. Scopus and Web of Science target
-    strings are reported as non-retained audit limitations rather than
-    auditable exports. We supplement the extraction with per-model
+    strings are reported as non-retained search limitations rather than
+    exportable logs. We supplement the extraction with per-model
     per-task results from fev-bench \citep{shchur2025fevbench}
     (20~retail tasks, 7~FMs vs LightGBM/CatBoost baselines) and
     GIFT-Eval \citep{aksu2024gift} (4~Sales-domain tasks, 7~FMs vs
@@ -78,14 +79,13 @@ metric-specific and leave-one-suite-out analyses alongside it.
     TimesFM~2.5; 9--200\,M parameters) on a consumer MacBook
     (Apple~Silicon MPS / CPU), and three baselines
     (lightgbm\_cov, lightgbm\_direct, seasonal\_naive) on Azure~ML.
-    Source~B produces gap-filling rows with runtime, cost, and
-    CO\textsubscript{2} metadata.  The integrity audit showed that
-    the legacy rows were not consistently evaluated on the same series
-    workload across all models.  The current repair reports a matched
-    100-series M5, Rohlik, and Favorita panel for Chronos-Bolt-Tiny, Chronos-2,
-    Moirai~2.0-Small, batched TiRex, TimesFM~2.5, and the baseline variants;
-    the remaining legacy Source~B rows are treated as descriptive and
-    as sensitivity checks rather than as primary inferential evidence.
+    Source~B produces matched-panel rows with runtime, cost, and
+    CO\textsubscript{2} metadata for a 100-series M5, Rohlik, and
+    Favorita panel.  The final analysis reports this shared panel for
+    Chronos-Bolt-Tiny, Chronos-2, Moirai~2.0-Small, batched TiRex,
+    TimesFM~2.5, and the baseline variants.  Earlier unmatched Source~B
+    sweeps are retained only as provenance and data-integrity material in
+    the appendices, not as primary evidence.
 \end{enumerate}
 
 The primary reanalysis (\S\ref{sec:meta-regression}) uses Source~A
@@ -94,11 +94,9 @@ $\log(\text{FM metric}/\text{best conventional baseline metric})$.  The
 primary file has $k = 498$ Source~A pairs.  We also generate heuristic
 weighted \texttt{rma.mv} diagnostics for continuity, but the
 $1/n_{\text{FM}}+1/n_{\text{baseline}}$ term is treated as a workload
-proxy rather than as a validated sampling variance.  The full auditable
-contrast table contains $k = 543$ rows after adding the legacy Source~B
-export, but those 45 Source~B contrasts are reported separately because
-they lack row-level paired prediction-error covariance.  The matched-panel
-Source~B repair is reported separately from both files.
+proxy rather than as a validated sampling variance.  The matched-panel
+Source~B experiments are reported separately because they have their own
+prediction-level paired bootstrap covariance matrices.
 
 \subsection{Headline findings}
 \label{sec:headline-findings}
@@ -127,10 +125,10 @@ Three findings motivate the sections that follow:
   \item \textbf{The LightGBM protocol gap varies across panels,
     metrics, and budgets.} \S\ref{sec:baseline-reliability} shows that
     the direct-vs-recursive multi-step gap changes with dataset,
-    workload, metric aggregation, and compute budget.  Legacy
-    per-series \WAPE{} makes M5 look strongly direct-favourable, while
-    the matched aggregate-\WAPE{} panel makes M5 close at short horizons
-    and mixed on Favorita.  Intermittency is a plausible stratification
+    workload, metric aggregation, and compute budget.  The matched
+    aggregate-\WAPE{} panel makes M5 close at short horizons and mixed
+    on Favorita, while per-series \WAPE{} is much more sensitive to
+    small denominators.  Intermittency is a plausible stratification
     variable, but the evidence supports a protocol hypothesis to
     validate, not a hard threshold rule.  No retail-benchmark protocol
     recommendation that ignores demand distribution, metric choice, and
@@ -141,14 +139,15 @@ Three findings motivate the sections that follow:
 \label{sec:contributions}
 
 \begin{enumerate}
-  \item \textbf{PRISMA-informed systematic review} of foundation
-    models for retail demand forecasting (802 extraction-schema rows,
-    9~datasets, 2020--2026).
+  \item \textbf{Structured literature search} of foundation models for
+    retail demand forecasting, used to document the extractability gap and
+    motivate the benchmark study (802 extraction-schema rows, 9~datasets,
+    2020--2026).
   \item \textbf{Cross-benchmark extraction} from fev-bench and
     GIFT-Eval, yielding 498 Source~A model-level paired comparisons
     across 7~FMs and conventional baselines, plus 45 Source~B
-    descriptive contrasts.
-  \item \textbf{Model-level cross-benchmark reanalysis} ($k = 498$
+    descriptive contrasts retained outside the primary evidence.
+  \item \textbf{Model-level benchmark analysis} ($k = 498$
     primary) showing metric-specific FM-vs-best-baseline log-ratio
     patterns, with heuristic weighted diagnostics kept separate from
     confirmatory inference.
@@ -164,24 +163,25 @@ Three findings motivate the sections that follow:
 \label{sec:paper-structure}
 
 \S\ref{sec:background} surveys the forecasting taxonomy and existing
-benchmarks. \S\ref{sec:methods} describes the PRISMA search
+benchmarks. \S\ref{sec:methods} describes the structured search
 protocol, extraction schema, and gap-filling experimental design.
-\S\ref{sec:prisma-results} reports the literature extraction results
-(PRISMA flow, descriptive statistics). \S\ref{sec:experiments}
+\S\ref{sec:prisma-results} reports the structured-search extraction results
+(search flow, descriptive statistics). \S\ref{sec:experiments}
 presents the gap-filling experiments:
 \S\ref{sec:experimental-setup}--\ref{sec:perdataset}
 experimental setup and per-dataset results,
 \S\ref{sec:baseline-reliability} baseline reliability (direct vs
 recursive), \S\ref{sec:fm-consumer-box} foundation model
 consumer-box results. \S\ref{sec:meta-regression} reports the
-cross-benchmark reanalysis: Source~A best-baseline log-ratios
+benchmark analysis: Source~A best-baseline log-ratios
 (\S\ref{sec:rq1-accuracy}), moderator hypotheses
 (\S\ref{sec:moderator-results}),
 cost-error scatter diagnostics (\S\ref{sec:cost-accuracy}),
 heterogeneity diagnostics (\S\ref{sec:heterogeneity}), and
 preliminary findings (\S\ref{sec:rq1-accuracy}).
 \S\ref{sec:discussion} translates the findings into a practitioner
-decision framework. \S\ref{sec:limitations} discusses limitations
-(single author, metric sensitivity, consumer-HW-only Source~B).
+validation checklist. \S\ref{sec:limitations} discusses limitations
+(single author, metric sensitivity, fixed-budget baselines, and
+consumer-HW-only Source~B).
 \S\ref{sec:conclusion} concludes with per-RQ answers and future
 work.

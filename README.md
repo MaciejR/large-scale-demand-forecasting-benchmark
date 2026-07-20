@@ -6,7 +6,7 @@ This repository contains the manuscript, extraction table, experiment code, and
 analysis outputs for:
 
 **When Do Foundation Models Pay Off for Retail Demand Forecasting?  
-A PRISMA-Informed Cross-Benchmark Reanalysis**
+A Benchmark Study with Structured Literature Search**
 
 The current manuscript PDF is available at
 [`paper/latex/main.pdf`](paper/latex/main.pdf).
@@ -53,7 +53,7 @@ corresponding Zenodo archive once minted:
 
 ```text
 Rubczynski, M. (2026). When Do Foundation Models Pay Off for Retail Demand
-Forecasting? A PRISMA-Informed Cross-Benchmark Reanalysis (v1.12).
+Forecasting? A Benchmark Study with Structured Literature Search (v1.12).
 GitHub. https://github.com/MaciejR/large-scale-demand-forecasting-benchmark/releases/tag/v1.12
 ```
 
@@ -72,7 +72,7 @@ BibTeX:
 @misc{rubczynski2026foundationmodelsretail_v112,
   author       = {Rubczynski, Maciej},
   title        = {When Do Foundation Models Pay Off for Retail Demand Forecasting?
-                  A PRISMA-Informed Cross-Benchmark Reanalysis},
+                  A Benchmark Study with Structured Literature Search},
   year         = {2026},
   version      = {v1.12},
   url          = {https://github.com/MaciejR/large-scale-demand-forecasting-benchmark/releases/tag/v1.12}

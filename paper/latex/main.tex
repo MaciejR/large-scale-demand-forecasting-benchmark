@@ -13,9 +13,9 @@
 \hypersetup{
   hidelinks,
   hypertexnames=false,
-  pdftitle={When Do Foundation Models Pay Off for Retail Demand Forecasting? A PRISMA-Informed Cross-Benchmark Reanalysis},
+  pdftitle={When Do Foundation Models Pay Off for Retail Demand Forecasting? A Benchmark Study with Structured Literature Search},
   pdfauthor={Maciej Rubczynski},
-  pdfkeywords={demand forecasting, foundation models, benchmark reanalysis, LightGBM, systematic review, retail, time series}
+  pdfkeywords={demand forecasting, foundation models, benchmark study, LightGBM, structured literature search, retail, time series}
 }
 \usepackage{natbib}
 \usepackage{xcolor}
@@ -46,7 +46,7 @@
 \begin{frontmatter}
 
 \title{When Do Foundation Models Pay Off for Retail Demand Forecasting?\\
-A PRISMA-Informed Cross-Benchmark Reanalysis}
+A Benchmark Study with Structured Literature Search}
 
 \author[inst1]{Maciej Rubczynski\corref{cor1}}
 \ead{rubczynski.maciej@gmail.com}
@@ -54,46 +54,44 @@ A PRISMA-Informed Cross-Benchmark Reanalysis}
 \affiliation[inst1]{organization={Independent researcher}}
 
 \begin{abstract}
-We present a PRISMA-informed review and exploratory cross-benchmark
-reanalysis of foundation models for short-term retail demand forecasting.
-The primary quantitative file contains $k=498$ Source~A comparisons from
-two benchmark suites, fev-bench and GIFT-Eval.  This repair uses
-$\log(\text{FM metric}/\text{best conventional baseline metric})$ as the
-main contrast and treats the recorded series-count term
-$1/n_{\text{FM}}+1/n_{\text{baseline}}$ only as a weighting proxy, not as a
-validated sampling variance.  Results are therefore reported as
-suite- and metric-specific benchmark summaries rather than as a
-confirmatory pooled meta-analysis.  SQL shows the strongest directional FM
-advantage (median log-ratio $-0.229$, FM better in 92\% of rows), while
-\WAPE{}/ND (median $-0.047$, 66\%) and \MASE{} (median $-0.036$, 61\%)
-are much closer to the best baseline.  GIFT-Eval is uniformly favourable
-to FMs in this extraction, whereas fev-bench is more heterogeneous.
-To address the strongest variance critique for a concrete Source~A slice, we
-rerun official fev-bench retail windows for Seasonal Naive,
-Chronos-Bolt-Tiny, Chronos-2, TiRex, and TimesFM~2.5, store prediction-level outputs, and compute
-paired bootstrap \WAPE{} log-ratio covariance matrices for 20 retail tasks
-and 179,258 paired series-window units for each FM contrast.
-The current matched-panel Source~B repair covers M5, Rohlik, and
-Favorita: 100 shared top-volume series per dataset, common rolling-origin
-windows, prediction-level outputs, run ledgers, and paired bootstrap
-contrasts with an empirical log-ratio covariance matrix for Seasonal Naive,
+We study when zero-shot time-series foundation models improve short-term
+retail demand forecasts relative to conventional baselines.  The paper is
+framed as a benchmark study supported by a structured literature search, not
+as a confirmatory pooled meta-analysis.  The literature search establishes a
+gap: published retail evaluations rarely report model families, metrics,
+baselines, and workloads in a way that supports paired FM-vs-tree inference.
+We therefore combine two external benchmark suites (fev-bench and GIFT-Eval)
+with matched-panel local experiments on M5, Rohlik, and Favorita.
+For the external suites, the primary descriptive file contains $k=498$
+Source~A contrasts of
+$\log(\text{FM metric}/\text{best conventional baseline metric})$.
+Because the recorded series-count term
+$1/n_{\text{FM}}+1/n_{\text{baseline}}$ is a workload proxy rather than a
+validated sampling variance, we report suite- and metric-specific summaries:
+SQL has the clearest directional FM advantage (median log-ratio $-0.229$,
+FM lower in 92\% of rows), whereas \WAPE{}/ND (median $-0.047$, 66\%) and
+\MASE{} (median $-0.036$, 61\%) are much closer to the best baseline.
+For a concrete Source~A slice, we rerun official fev-bench retail windows for
+Seasonal Naive, Chronos-Bolt-Tiny, Chronos-2, TiRex, and TimesFM~2.5, store
+prediction-level outputs, and compute paired bootstrap \WAPE{} log-ratio
+covariance matrices for 20 retail tasks and 179,258 paired series-window units
+per FM contrast.  The local Source~B matched panel uses 100 shared top-volume
+series per dataset, common rolling-origin windows, prediction-level outputs,
+run ledgers, and paired bootstrap covariance matrices for Seasonal Naive,
 recursive/direct LightGBM, Chronos-Bolt-Tiny, Chronos-2, Moirai~2.0-Small,
-batched TiRex, and TimesFM~2.5 on all three datasets.
-In this repaired subset Chronos-2 is lower than
-the best local baseline in all nine dataset--horizon cells; Moirai is lower
-in all nine point estimates; TiRex is lower in all nine point estimates
-with bootstrap intervals excluding zero in seven; Chronos-Bolt is
-approximately tied on M5 and worse on Rohlik and Favorita; and TimesFM~2.5 is
-lower on M5 and Rohlik but near parity on Favorita.  The defensible conclusion
-is conditional: observed rankings depend on metric, baseline choice,
-protocol, workload matching, and demand characteristics.  We provide a
-validation checklist and cost-error diagnostics instead of deterministic
+batched TiRex, and TimesFM~2.5.  In this panel, Chronos-2, Moirai, and TiRex
+are lower than the best local baseline in all nine dataset--horizon point
+estimates, though the baseline is intentionally fixed-budget rather than
+strongly tuned.  The defensible conclusion is conditional: rankings depend on
+metric, baseline strength, multi-step protocol, workload matching, and demand
+characteristics.  We provide prediction-level artefacts, covariance matrices,
+and a validation checklist for retail bake-offs rather than deterministic
 deployment rules.
 \end{abstract}
 
 \begin{keyword}
-demand forecasting \sep foundation models \sep benchmark reanalysis \sep
-LightGBM \sep systematic review \sep retail \sep time series
+demand forecasting \sep foundation models \sep benchmark study \sep
+LightGBM \sep structured literature search \sep retail \sep time series
 \end{keyword}
 
 \end{frontmatter}
@@ -134,7 +132,7 @@ draft, Writing -- review \& editing, Visualization.
 \section*{Data availability}
 A historical technical-report snapshot is archived on Zenodo at
 \url{https://doi.org/10.5281/zenodo.21338004}.  The live repository for the
-repaired analysis is
+current analysis is
 \url{https://github.com/MaciejR/large-scale-demand-forecasting-benchmark};
 the release package corresponding to this manuscript is prepared as a
 versioned Zenodo-ready archive under \path{release/} rather than overwriting the

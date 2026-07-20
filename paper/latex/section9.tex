@@ -2,12 +2,12 @@
 \section{Conclusions}
 \label{sec:conclusions}\label{sec:conclusion}
 
-We presented a PRISMA-informed review and exploratory cross-benchmark
-reanalysis of foundation models for retail demand forecasting, augmented
-with original gap-filling experiments.  The primary quantitative file now
-contains $k = 498$ Source~A best-baseline comparisons from two benchmark
-suites, fev-bench and GIFT-Eval, plus a separate matched-panel Source~B
-repair on M5, Rohlik, and Favorita.
+We presented a benchmark study of foundation models for retail demand
+forecasting, supported by a structured literature search and original
+matched-panel experiments.  The primary quantitative file contains
+$k = 498$ Source~A best-baseline comparisons from two benchmark suites,
+fev-bench and GIFT-Eval, plus a separate matched-panel Source~B experiment
+on M5, Rohlik, and Favorita.
 Because the available benchmark papers do not provide paired
 prediction-level variances and covariances, this version does not claim a
 confirmatory pooled meta-analysis.  We summarise the findings per research
@@ -19,7 +19,7 @@ question and close with directions for future work.
 \paragraph{RQ1 (Accuracy): Do zero-shot foundation models outperform
 conventional baselines on retail demand forecasting?}
 
-The repaired answer is conditional.  In the Source~A best-baseline corpus,
+The answer is conditional.  In the Source~A best-baseline corpus,
 the metric-specific descriptive summaries are directionally favourable to
 FMs: SQL has median log-ratio $-0.229$ with FMs lower in 92\% of rows,
 \WAPE{}/ND has median $-0.047$ with FMs lower in 66\% of rows, and
@@ -33,7 +33,7 @@ not universal evidence that FMs outperform conventional baselines in all
 retail demand settings.}  Rankings depend on metric, baseline strength,
 covariates, leakage controls, and evaluation protocol.
 
-The Source~B matched-panel repair is directionally consistent with a narrower
+The Source~B matched-panel experiment is directionally consistent with a narrower
 local version of that claim, but it is also model-specific.  On the same
 100-series panels and forecast origins, Chronos-2 has lower aggregate
 \WAPE{} than the best local baseline across all nine M5, Rohlik, and Favorita
@@ -57,9 +57,9 @@ hypothesis-generating because the independent source count is small:
 
 \begin{itemize}
   \item \textbf{Dataset:} No stable dataset-level moderator survives the
-    repaired clustering.
+    suite-level clustering.
   \item \textbf{Model scale:} No stable scale effect appears in the
-    9\,M--200\,M legacy range.  In the matched Source~B panel,
+    9\,M--200\,M Source~B range.  In the matched Source~B panel,
     Chronos-2 is consistently stronger than Chronos-Bolt-Tiny, but
     Moirai~2.0-Small is also competitive and TimesFM~2.5 does not dominate
     the smaller models across M5, Rohlik, and Favorita.  That pattern is too narrow to claim a
@@ -69,9 +69,9 @@ hypothesis-generating because the independent source count is small:
     statistical baselines (Auto~ETS, Seasonal Naive) than against
     gradient-boosted trees, as expected.
   \item \textbf{LightGBM protocol:} The direct-vs-recursive multi-step gap
-    differs across datasets, metric aggregation, and budgets.  The legacy
-    per-series audit made M5 look strongly direct-favourable, but the matched
-    aggregate-\WAPE{} panel makes M5 close at short horizons,
+    differs across datasets, metric aggregation, and budgets.  Per-series
+    \WAPE{} made M5 look strongly direct-favourable in earlier descriptive
+    outputs, but the matched aggregate-\WAPE{} panel makes M5 close at short horizons,
     recursive-favourable on Rohlik, and mixed on Favorita: recursive is lower
     at horizons 7 and 14, while direct is lower at horizon 28.  The scaled
     direct variant is identical to direct at horizon 7 and worse at horizons
@@ -117,10 +117,10 @@ are validation hypotheses, not universal deployment rules.
 \subsection{Future work}
 \label{subsec:future-work}
 
-\paragraph{Complete the Source~B repair.}
-The current shared-panel repair covers M5, Rohlik, and Favorita for Chronos-Bolt,
+\paragraph{Strengthen the Source~B matched panel.}
+The current shared-panel experiment covers M5, Rohlik, and Favorita for Chronos-Bolt,
 Chronos-2, Moirai~2.0-Small, batched TiRex, and TimesFM~2.5.  The remaining
-repair is to add GPU throughput measurements, covariate-aware FM variants,
+work is to add tuned baselines, GPU throughput measurements, covariate-aware FM variants,
 larger workloads, and larger model families, then test whether the local
 100-series rankings survive these scaling changes.
 
