@@ -95,6 +95,7 @@ def update_log_text(
         text = set_field(text, "Production record URL", record_url)
     if doi:
         text = set_field(text, "Production DOI", doi)
+        text = set_field(text, "Production DOI URL", f"https://doi.org/{doi}")
     if payload.get("mode") == "published":
         text = set_field(text, "Published at", "recorded by Zenodo")
     return text

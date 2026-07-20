@@ -14,6 +14,7 @@ def template():
             "- Production deposition ID: TODO",
             "- Production record URL: TODO",
             "- Production DOI: TODO",
+            "- Production DOI URL: TODO",
             "- Published at: TODO",
         ]
     ) + "\n"
@@ -58,6 +59,7 @@ def test_update_log_text_fills_production_publish_result():
     assert "- Production deposition ID: 123" in updated
     assert "- Production record URL: https://zenodo.org/records/456" in updated
     assert "- Production DOI: 10.5281/zenodo.456" in updated
+    assert "- Production DOI URL: https://doi.org/10.5281/zenodo.456" in updated
     assert "- Published at: recorded by Zenodo" in updated
 
 

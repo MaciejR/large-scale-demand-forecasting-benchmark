@@ -51,6 +51,7 @@ def audit_log_text(text: str) -> list[str]:
         "Production deposition ID:",
         "Production record URL:",
         "Production DOI:",
+        "Production DOI URL:",
         "DOI metadata update commit:",
         "Final package SHA-256 after DOI update:",
         "Final GitHub release target after DOI update:",

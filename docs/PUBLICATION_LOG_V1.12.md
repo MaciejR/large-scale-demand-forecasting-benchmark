@@ -17,6 +17,7 @@ the draft or production record is created.
 - Production deposition ID: TODO
 - Production record URL: TODO
 - Production DOI: TODO
+- Production DOI URL: TODO
 - Published at: TODO
 
 ## Post-Minting Follow-Up
