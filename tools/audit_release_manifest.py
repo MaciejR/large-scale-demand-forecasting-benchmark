@@ -20,6 +20,7 @@ REQUIRED_FILES = {
     "replication/REPRODUCING.md",
     "replication/ARTIFACTS.md",
     "replication/CITATION.cff",
+    "replication/docs/PUBLICATION_HANDOFF_V1.12.md",
     "replication/docs/RELEASE_V1.12.md",
     "replication/paper/latex/main.tex",
     "replication/paper/references.bib",

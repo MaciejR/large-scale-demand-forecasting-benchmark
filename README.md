@@ -19,6 +19,8 @@ The current Zenodo-ready repair package is built locally as
 contains the manuscript PDF, replication materials, `COMMIT.txt`, and
 `CHECKSUMS.txt`; raw Kaggle data, MLflow stores, model checkpoints, logs, and
 full fev-bench prediction parquet trees are intentionally excluded.
+The final publication checklist is in
+[`docs/PUBLICATION_HANDOFF_V1.12.md`](docs/PUBLICATION_HANDOFF_V1.12.md).
 
 ## Key Findings
 

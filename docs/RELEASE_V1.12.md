@@ -85,6 +85,8 @@ The Zenodo-ready archive contains:
 - `manuscript/demand-forecasting-timesfm-fev-bench-wape-covariance-repair-v1.12.pdf`
 - `replication/` with source, tests, derived analysis artifacts, manifests, and
   release documentation
+- `replication/docs/PUBLICATION_HANDOFF_V1.12.md` with the final GitHub/Zenodo
+  publication checklist
 - `COMMIT.txt` with the source commit used to build the package
 - `CHECKSUMS.txt` with SHA-256 hashes for packaged files
 
