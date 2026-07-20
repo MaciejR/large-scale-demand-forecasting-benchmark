@@ -49,9 +49,10 @@ Then rerun:
 python3 tools/audit_publication_readiness.py --require-public
 python3 tools/audit_github_release.py
 python3 tools/audit_zenodo_upload_readiness.py
+python3 tools/audit_publication_log_v112.py
 ```
 
-The public-ready state is reached only when all three commands pass.
+The public-ready state is reached only when all four commands pass.
 
 ## Zenodo Upload
 
@@ -135,3 +136,8 @@ python3 tools/audit_publication_readiness.py --require-public
 
 Commit and push the DOI metadata update, then rebuild the final package once
 more so `COMMIT.txt`, `CHECKSUMS.txt`, and citation metadata agree.
+Finally fill `docs/PUBLICATION_LOG_V1.12.md` and verify:
+
+```bash
+python3 tools/audit_publication_log_v112.py --require-complete
+```

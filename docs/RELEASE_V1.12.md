@@ -114,6 +114,10 @@ name, commit-provenance note, packaged `CHECKSUMS.txt` note, and root
 Zenodo metadata, package provenance, clean-tree, and pushed-HEAD checks.  Add
 `--require-token` immediately before an API upload to verify that a Zenodo token
 is present without printing it.
+`python3 tools/audit_publication_log_v112.py` checks that
+`docs/PUBLICATION_LOG_V1.12.md` records the current GitHub release target and
+asset checksum; after Zenodo publication, add `--require-complete` to fail on
+remaining placeholders.
 `python3 tools/zenodo_upload_v112.py --dry-run` validates the same package and
 prints the planned Zenodo upload.  Without `--dry-run`, it creates or updates an
 unpublished draft and appends the outer ZIP SHA-256 to the Zenodo record notes;
