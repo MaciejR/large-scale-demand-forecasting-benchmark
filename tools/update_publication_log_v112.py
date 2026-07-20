@@ -114,7 +114,7 @@ def validate_payload_for_log_update(
         payload_sha = payload.get("zip_sha256")
         expected_sha = (
             field_value(text, "Asset SHA-256")
-            if doi_update_commit
+            if doi_update_commit or (not sandbox and has_value(text, "Asset SHA-256"))
             else zip_digest
         )
         if payload_sha != expected_sha:
@@ -166,8 +166,10 @@ def update_log_text(
     validate_payload_for_log_update(text, payload, zip_digest, sandbox, doi_update_commit)
 
     if payload.get("mode") != "dry-run" and not doi_update_commit:
-        text = set_field(text, "Target commit", current_commit)
-        text = set_field(text, "Asset SHA-256", zip_digest)
+        if not sandbox and not has_value(text, "Target commit"):
+            text = set_field(text, "Target commit", current_commit)
+        if not sandbox and not has_value(text, "Asset SHA-256"):
+            text = set_field(text, "Asset SHA-256", zip_digest)
 
     if sandbox:
         if deposition_id is not None:
