@@ -175,8 +175,9 @@ manifest, writes prediction-level Parquet files, and computes paired
 bootstrap log-ratio contrasts against the best available baseline in the
 same dataset--horizon cell.  The completed matched panel covers
 Seasonal Naive, recursive \LGBM{}, direct \LGBM{}, horizon-scaled direct
-\LGBM{}, tuned recursive \LGBM{}, Chronos-Bolt-Tiny, Chronos-2, Moirai~2.0-Small, TimesFM~2.5,
-and batched TiRex for M5, Rohlik, and Favorita at $h\in\{7,14,28\}$.
+\LGBM{}, tuned recursive \LGBM{}, tuned direct \LGBM{}, Chronos-Bolt-Tiny,
+Chronos-2, Moirai~2.0-Small, TimesFM~2.5, and batched TiRex for M5, Rohlik,
+and Favorita at $h\in\{7,14,28\}$.
 Generated outputs are written to
 \texttt{analysis/figures/source\_b\_paired\_panel\_*}.
 
@@ -214,15 +215,23 @@ covariate set:
   horizon immediately before the evaluation panel.  The selected parameters
   are then refit on the standard training window and evaluated on the same
   matched panel as all other models.
+
+\item \textbf{LightGBM tuned direct} --- the same direct feature set and
+  validation-origin search budget as the tuned recursive comparator.  The
+  selected direct configuration is refit as $h$ horizon-specific models on
+  the standard training window, which makes it the strongest but slowest
+  local \LGBM{} comparator in the matched panel.
 \end{itemize}
 
 The direct-vs-recursive contrast with everything else held
 constant is the core protocol comparison of \S\ref{sec:baseline}.
-Hyperparameters are intentionally untuned beyond library defaults:
-the point of \S\ref{sec:baseline} is to characterize the
-\emph{protocol gap} between direct and recursive variants of an
-otherwise-fixed LightGBM, not to reach the M5 winner.  Ceiling
-claims for tuned LightGBM require additional experiments and are treated
+The fixed recursive and fixed direct hyperparameters are intentionally untuned
+beyond library defaults: the point of \S\ref{sec:baseline} is to characterize
+the \emph{protocol gap} between direct and recursive variants of an
+otherwise-fixed LightGBM, not to reach the M5 winner.  The tuned recursive and
+tuned direct runs are narrower 10-trial comparators used for the best-baseline
+matched-panel analysis, not exhaustive LightGBM optimisation.  Ceiling claims
+for LightGBM require larger tuning budgets and are treated
 as future work in \S\ref{sec:threats}.
 
 For each training window we use the \textbf{last 365 days of the
@@ -631,11 +640,11 @@ M5 & Chronos-Bolt-Tiny & 14 & tuned recursive \LGBM{} & 0.331 & 0.332 & $-0.004$
 M5 & Moirai~2.0-Small & 14 & tuned recursive \LGBM{} & 0.310 & 0.332 & $-0.068$ [$-0.087$, $-0.048$] \\
 M5 & TimesFM~2.5 & 14 & tuned recursive \LGBM{} & 0.311 & 0.332 & $-0.066$ [$-0.082$, $-0.048$] \\
 M5 & TiRex & 14 & tuned recursive \LGBM{} & 0.312 & 0.332 & $-0.062$ [$-0.078$, $-0.045$] \\
-M5 & Chronos-2 & 28 & direct \LGBM{} & 0.339 & 0.359 & $-0.056$ [$-0.084$, $-0.030$] \\
-M5 & Chronos-Bolt-Tiny & 28 & direct \LGBM{} & 0.360 & 0.359 & 0.003 [$-0.030$, 0.034] \\
-M5 & Moirai~2.0-Small & 28 & direct \LGBM{} & 0.329 & 0.359 & $-0.086$ [$-0.111$, $-0.063$] \\
-M5 & TimesFM~2.5 & 28 & direct \LGBM{} & 0.332 & 0.359 & $-0.079$ [$-0.106$, $-0.052$] \\
-M5 & TiRex & 28 & direct \LGBM{} & 0.348 & 0.359 & $-0.031$ [$-0.065$, 0.003] \\
+M5 & Chronos-2 & 28 & tuned direct \LGBM{} & 0.339 & 0.359 & $-0.056$ [$-0.084$, $-0.028$] \\
+M5 & Chronos-Bolt-Tiny & 28 & tuned direct \LGBM{} & 0.360 & 0.359 & 0.003 [$-0.028$, 0.034] \\
+M5 & Moirai~2.0-Small & 28 & tuned direct \LGBM{} & 0.329 & 0.359 & $-0.086$ [$-0.108$, $-0.063$] \\
+M5 & TimesFM~2.5 & 28 & tuned direct \LGBM{} & 0.332 & 0.359 & $-0.078$ [$-0.105$, $-0.052$] \\
+M5 & TiRex & 28 & tuned direct \LGBM{} & 0.348 & 0.359 & $-0.031$ [$-0.063$, 0.003] \\
 Rohlik & Chronos-2 & 7 & recursive \LGBM{} & 0.180 & 0.191 & $-0.061$ [$-0.080$, $-0.039$] \\
 Rohlik & Chronos-Bolt-Tiny & 7 & recursive \LGBM{} & 0.199 & 0.191 & 0.041 [0.021, 0.063] \\
 Rohlik & Moirai~2.0-Small & 7 & recursive \LGBM{} & 0.188 & 0.191 & $-0.016$ [$-0.040$, 0.010] \\
@@ -661,18 +670,18 @@ Favorita & Chronos-Bolt-Tiny & 14 & tuned recursive \LGBM{} & 0.330 & 0.277 & 0.
 Favorita & Moirai~2.0-Small & 14 & tuned recursive \LGBM{} & 0.272 & 0.277 & $-0.018$ [$-0.035$, $-0.002$] \\
 Favorita & TimesFM~2.5 & 14 & tuned recursive \LGBM{} & 0.283 & 0.277 & 0.020 [$-0.012$, 0.052] \\
 Favorita & TiRex & 14 & tuned recursive \LGBM{} & 0.265 & 0.277 & $-0.046$ [$-0.071$, $-0.023$] \\
-Favorita & Chronos-2 & 28 & direct \LGBM{} & 0.270 & 0.292 & $-0.077$ [$-0.137$, $-0.029$] \\
-Favorita & Chronos-Bolt-Tiny & 28 & direct \LGBM{} & 0.337 & 0.292 & 0.143 [0.088, 0.199] \\
-Favorita & Moirai~2.0-Small & 28 & direct \LGBM{} & 0.287 & 0.292 & $-0.017$ [$-0.063$, 0.027] \\
-Favorita & TimesFM~2.5 & 28 & direct \LGBM{} & 0.293 & 0.292 & 0.006 [$-0.036$, 0.051] \\
-Favorita & TiRex & 28 & direct \LGBM{} & 0.279 & 0.292 & $-0.045$ [$-0.098$, 0.001] \\
+Favorita & Chronos-2 & 28 & tuned direct \LGBM{} & 0.270 & 0.286 & $-0.057$ [$-0.108$, $-0.015$] \\
+Favorita & Chronos-Bolt-Tiny & 28 & tuned direct \LGBM{} & 0.337 & 0.286 & 0.162 [0.116, 0.214] \\
+Favorita & Moirai~2.0-Small & 28 & tuned direct \LGBM{} & 0.287 & 0.286 & 0.003 [$-0.039$, 0.040] \\
+Favorita & TimesFM~2.5 & 28 & tuned direct \LGBM{} & 0.293 & 0.286 & 0.025 [$-0.012$, 0.066] \\
+Favorita & TiRex & 28 & tuned direct \LGBM{} & 0.279 & 0.286 & $-0.025$ [$-0.070$, 0.014] \\
 \bottomrule
 \end{tabular}
 \end{table*}
 
 Chronos-2 has lower aggregate \WAPE{} than the best local baseline across all
 nine matched M5, Rohlik, and Favorita cells, and every bootstrap interval
-excludes zero after adding the tuned recursive \LGBM{} comparator.
+excludes zero after adding tuned recursive and tuned direct \LGBM{} comparators.
 Moirai~2.0-Small and batched TiRex are also lower in all nine point estimates,
 with bootstrap intervals excluding zero in seven cells.  TimesFM~2.5 is lower
 than the best baseline on all six M5 and Rohlik cells, with intervals excluding
@@ -690,13 +699,15 @@ cell, as expected.  This supplies local Source~B uncertainty accounting;
 it does not create missing prediction-level covariance for Source~A
 benchmark-paper rows.
 
-\textbf{Tuned \LGBM{} comparator.}  The tuned recursive \LGBM{} run uses
-10 validation-origin random-search trials per dataset--horizon cell.  It
-becomes the best local baseline for M5 at $h=7$ and $h=14$ and Favorita at
-$h=14$, but not for M5 $h=28$, Rohlik, or Favorita $h=7,28$.  The best-baseline
-column in Table~\ref{tab:sourceb-paired} therefore uses the strongest observed
-baseline among Seasonal Naive, fixed recursive \LGBM{}, fixed direct \LGBM{},
-horizon-scaled direct \LGBM{}, and tuned recursive \LGBM{}.
+\textbf{Tuned \LGBM{} comparators.}  The tuned recursive and tuned direct
+\LGBM{} runs use 10 validation-origin random-search trials per
+dataset--horizon cell.  Tuned recursive becomes the best local baseline for M5
+at $h=7$ and $h=14$ and Favorita at $h=14$; tuned direct becomes the best local
+baseline for M5 and Favorita at $h=28$.  Neither tuned run improves the Rohlik
+best baseline.  The best-baseline column in Table~\ref{tab:sourceb-paired}
+therefore uses the strongest observed baseline among Seasonal Naive, fixed
+recursive \LGBM{}, fixed direct \LGBM{}, horizon-scaled direct \LGBM{}, tuned
+recursive \LGBM{}, and tuned direct \LGBM{}.
 
 \textbf{TiRex throughput note.}  The original series-by-series TiRex path
 was too slow for the 100-series matched panel.  The current implementation uses TiRex's

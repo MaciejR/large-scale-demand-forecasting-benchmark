@@ -464,6 +464,7 @@ def write_integrity_summary(local: pd.DataFrame) -> None:
         "lightgbm_direct",
         "lightgbm_direct_scaled",
         "lightgbm_tuned_cov",
+        "lightgbm_tuned_direct",
         "moirai2",
         "seasonal_naive",
         "timesfm25",
@@ -473,7 +474,7 @@ def write_integrity_summary(local: pd.DataFrame) -> None:
         lambda s: set(s)
     )
     matched_panel_complete = (
-        len(matched_panel) == 90
+        len(matched_panel) == 99
         and len(matched_coverage) == 9
         and all(models == expected_matched_models for models in matched_coverage)
     )

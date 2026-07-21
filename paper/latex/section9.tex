@@ -38,7 +38,7 @@ local version of that claim, but it is also model-specific.  On the same
 100-series panels and forecast origins, Chronos-2 has lower aggregate
 \WAPE{} than the best local baseline across all nine M5, Rohlik, and Favorita
 dataset--horizon cells, including cells where the best baseline is tuned
-recursive \LGBM{}.  Moirai~2.0-Small is lower in all nine point
+recursive or tuned direct \LGBM{}.  Moirai~2.0-Small is lower in all nine point
 estimates, with bootstrap intervals excluding zero in seven.  Chronos-Bolt-Tiny
 is near parity on M5 and worse on Rohlik and Favorita.  TimesFM~2.5 is lower
 than the best local baseline on M5 and Rohlik but near parity on Favorita, while
@@ -121,8 +121,8 @@ are validation hypotheses, not universal deployment rules.
 \paragraph{Strengthen the Source~B matched panel.}
 The current shared-panel experiment covers M5, Rohlik, and Favorita for Chronos-Bolt,
 Chronos-2, Moirai~2.0-Small, batched TiRex, TimesFM~2.5, and a 10-trial tuned
-recursive \LGBM{} comparator.  The remaining
-work is to add tuned direct baselines, GPU throughput measurements, covariate-aware FM variants,
+recursive and tuned direct \LGBM{} comparator.  The remaining
+work is to add larger tuning budgets, GPU throughput measurements, covariate-aware FM variants,
 larger workloads, and larger model families, then test whether the local
 100-series rankings survive these scaling changes.
 

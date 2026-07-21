@@ -76,7 +76,7 @@ def test_cost_audit_outputs_are_explicitly_descriptive(tmp_path, monkeypatch):
         assert frame["cost_basis_note"].str.contains("descriptive legacy Source B").all()
 
 
-def test_current_matched_panel_has_complete_nine_model_coverage():
+def test_current_matched_panel_has_complete_eleven_model_coverage():
     path = Path("analysis/figures/source_b_paired_panel_cell_summary.csv")
     summary = pd.read_csv(path)
     expected_models = {
@@ -86,13 +86,14 @@ def test_current_matched_panel_has_complete_nine_model_coverage():
         "lightgbm_direct",
         "lightgbm_direct_scaled",
         "lightgbm_tuned_cov",
+        "lightgbm_tuned_direct",
         "moirai2",
         "seasonal_naive",
         "timesfm25",
         "tirex",
     }
 
-    assert len(summary) == 90
+    assert len(summary) == 99
     assert not summary.duplicated(["dataset", "horizon", "model_name"]).any()
     assert set(summary["model_name"]) == expected_models
 

@@ -1,0 +1,25 @@
+{
+  "datasets": [
+    "m5",
+    "rohlik",
+    "favorita"
+  ],
+  "hardware": "M_SERIES_MAC",
+  "horizons": [
+    7,
+    14,
+    28
+  ],
+  "lightgbm_tuning_trials": 10,
+  "max_series": 100,
+  "models": [
+    "lightgbm_tuned_direct"
+  ],
+  "n_bootstrap": 1000,
+  "out_dir": "benchmark/results/source_b_paired_panel",
+  "run_id": "source_b_v1_13_tuned_lightgbm_direct_100",
+  "seed": 20260714,
+  "series_selection": "top_volume",
+  "train_fraction": 0.8,
+  "train_window_days": 365
+}

@@ -1,6 +1,6 @@
 gate,status,evidence_file,evidence_summary,manuscript_consequence
 legacy_source_b_pairing,failed,analysis/figures/source_b_integrity_flags.csv,9 dataset-horizon cells have unequal recorded n_series values across models,legacy Source B remains descriptive and is not pooled into Source A
-matched_panel_coverage,passed,analysis/figures/source_b_paired_panel_cell_summary.csv,90 model-dataset-horizon rows; 9 dataset-horizon cells,matched-panel Source B analysis can be reported as local paired evidence
+matched_panel_coverage,passed,analysis/figures/source_b_paired_panel_cell_summary.csv,99 model-dataset-horizon rows; 9 dataset-horizon cells,matched-panel Source B analysis can be reported as local paired evidence
 legacy_cost_reconciliation,failed,analysis/figures/source_b_cost_total.csv,not_reconciled_single_ledger,legacy Source B costs remain descriptive until one run ledger reconciles tables
 legacy_direct_scaled_protocol,failed,analysis/figures/source_b_direct_scaled_audit.csv,h=7 scaled direct has the same nominal 300-tree count as base direct but a different WAPE,"legacy direct_scaled Favorita run remains a rerun target, not ranking evidence"
 source_b_formal_pooling,blocked_by_design,analysis/figures/source_b_integrity_audit_summary.csv,formal pooling requires prediction-level covariance on the target estimand and reconciled workloads,Source B is separated from Source A and used as local sensitivity evidence
