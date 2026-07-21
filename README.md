@@ -139,6 +139,8 @@ instructions.
   [`analysis/figures/source_b_paired_panel_fm_vs_best_baseline.csv`](analysis/figures/source_b_paired_panel_fm_vs_best_baseline.csv)
 - Source B LightGBM tuning trials:
   [`analysis/figures/source_b_paired_panel_lightgbm_tuning_trials.csv`](analysis/figures/source_b_paired_panel_lightgbm_tuning_trials.csv)
+- Source B M5 stratified-panel Chronos sensitivity:
+  [`analysis/figures/source_b_m5_stratified_chronos_contrasts.csv`](analysis/figures/source_b_m5_stratified_chronos_contrasts.csv)
 - Source B matched-panel contrasts currently include Chronos-Bolt-Tiny,
   Chronos-2, Moirai 2.0-Small, batched TiRex, and TimesFM 2.5 on the
   M5/Rohlik/Favorita 100-series panels against the best observed local

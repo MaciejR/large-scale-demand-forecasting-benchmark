@@ -15,6 +15,7 @@ from run_source_b_paired_panel import (
     evaluate_lightgbm_recursive,
     eval_starts_for,
     make_wide,
+    select_series_ids,
     tune_lightgbm_params,
 )
 
@@ -82,3 +83,31 @@ def test_tune_lightgbm_params_records_trials_and_returns_selected_params():
     )
     assert y_true.shape == y_pred.shape
     assert np.isfinite(y_pred).all()
+
+
+def test_stratified_volume_zero_selection_includes_intermittent_tail():
+    rows = []
+    dates = pd.date_range("2025-01-01", periods=20, freq="D")
+    for idx in range(40):
+        sid = f"S{idx:02d}"
+        if idx < 10:
+            y = np.full(len(dates), 100 + idx, dtype=float)
+        elif idx < 20:
+            y = np.where(np.arange(len(dates)) % 2 == 0, 10 + idx, 0.0)
+        elif idx < 30:
+            y = np.full(len(dates), 5 + idx / 10, dtype=float)
+        else:
+            y = np.where(np.arange(len(dates)) % 5 == 0, 2.0, 0.0)
+        for ds, yi in zip(dates, y):
+            rows.append({"series_id": sid, "ds": ds, "y": yi})
+    frame = pd.DataFrame(rows)
+
+    selected = select_series_ids(frame, max_series=12, method="stratified_volume_zero", seed=7)
+    selected_stats = frame[frame["series_id"].isin(selected)].groupby("series_id")["y"].agg(
+        total_volume="sum",
+        zero_fraction=lambda s: float((s <= 0).mean()),
+    )
+
+    assert len(selected) == 12
+    assert selected_stats["zero_fraction"].max() >= 0.75
+    assert selected_stats["total_volume"].min() < selected_stats["total_volume"].max()

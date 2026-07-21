@@ -160,6 +160,46 @@ def select_series_ids(df: pd.DataFrame, max_series: int, method: str, seed: int)
         if len(ids) <= max_series:
             return ids
         return np.array(sorted(rng.choice(ids, size=max_series, replace=False)))
+    if method == "stratified_volume_zero":
+        stats = (
+            df.groupby("series_id", sort=False)["y"]
+            .agg(total_volume="sum", zero_fraction=lambda s: float((s <= 0).mean()))
+            .reset_index()
+        )
+        if len(stats) <= max_series:
+            return np.array(sorted(stats["series_id"].astype(str)))
+
+        n_volume_bins = min(4, len(stats))
+        stats["volume_bin"] = pd.qcut(
+            stats["total_volume"].rank(method="first"),
+            q=n_volume_bins,
+            labels=False,
+            duplicates="drop",
+        )
+        n_zero_bins = min(4, len(stats))
+        stats["zero_bin"] = pd.qcut(
+            stats["zero_fraction"].rank(method="first"),
+            q=n_zero_bins,
+            labels=False,
+            duplicates="drop",
+        )
+        rng = np.random.default_rng(seed)
+        selected: list[str] = []
+        strata = [
+            group
+            for _, group in stats.groupby(["volume_bin", "zero_bin"], sort=True)
+            if not group.empty
+        ]
+        base_n = max_series // len(strata)
+        remainder = max_series % len(strata)
+        for idx, group in enumerate(strata):
+            take = min(len(group), base_n + (1 if idx < remainder else 0))
+            if take:
+                selected.extend(rng.choice(group["series_id"].astype(str), size=take, replace=False))
+        if len(selected) < max_series:
+            remaining = stats[~stats["series_id"].astype(str).isin(selected)]["series_id"].astype(str)
+            selected.extend(rng.choice(remaining.to_numpy(), size=max_series - len(selected), replace=False))
+        return np.array(sorted(selected))
     raise ValueError(f"Unknown series selection method: {method}")
 
 
@@ -969,7 +1009,11 @@ def main() -> None:
     parser.add_argument("--models", nargs="+", default=["seasonal_naive", "lightgbm_cov", "lightgbm_direct"])
     parser.add_argument("--horizons", nargs="+", type=int, default=[7, 14, 28])
     parser.add_argument("--max-series", type=int, default=100)
-    parser.add_argument("--series-selection", choices=["top_volume", "random"], default="top_volume")
+    parser.add_argument(
+        "--series-selection",
+        choices=["top_volume", "random", "stratified_volume_zero"],
+        default="top_volume",
+    )
     parser.add_argument("--seed", type=int, default=20260714)
     parser.add_argument("--train-fraction", type=float, default=0.8)
     parser.add_argument("--train-window-days", type=int, default=365)

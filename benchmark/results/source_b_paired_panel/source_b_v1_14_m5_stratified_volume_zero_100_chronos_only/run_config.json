@@ -1,0 +1,30 @@
+{
+  "datasets": [
+    "m5"
+  ],
+  "hardware": "M_SERIES_MAC",
+  "horizons": [
+    7,
+    14,
+    28
+  ],
+  "lightgbm_tuning_trials": 10,
+  "max_series": 100,
+  "models": [
+    "seasonal_naive",
+    "lightgbm_cov",
+    "lightgbm_direct",
+    "lightgbm_direct_scaled",
+    "lightgbm_tuned_cov",
+    "lightgbm_tuned_direct",
+    "chronos_bolt_tiny",
+    "chronos2"
+  ],
+  "n_bootstrap": 1000,
+  "out_dir": "benchmark/results/source_b_paired_panel",
+  "run_id": "source_b_v1_14_m5_stratified_volume_zero_100_chronos_only",
+  "seed": 20260714,
+  "series_selection": "stratified_volume_zero",
+  "train_fraction": 0.8,
+  "train_window_days": 365
+}

@@ -709,6 +709,22 @@ therefore uses the strongest observed baseline among Seasonal Naive, fixed
 recursive \LGBM{}, fixed direct \LGBM{}, horizon-scaled direct \LGBM{}, tuned
 recursive \LGBM{}, and tuned direct \LGBM{}.
 
+\textbf{M5 stratified-panel sensitivity.}  The top-volume M5 panel deliberately
+tests high-sales series.  To check whether the Chronos-2 result survives a
+harder intermittent sample, we reran M5 for Seasonal Naive, fixed/tuned
+recursive and direct \LGBM{}, Chronos-Bolt-Tiny, and Chronos-2 on a separate
+100-series panel stratified by total volume and zero fraction.  The stratified
+panel has median zero fraction 0.773 and median total volume 938.5, compared
+with 0.108 and 48{,}699.5 for the top-volume panel.  Chronos-2 remains below
+the best local \LGBM{} baseline at all three horizons: $\ell=-0.116$
+[$-0.146$,$-0.089$] at $h=7$, $\ell=-0.160$ [$-0.208$,$-0.116$] at $h=14$,
+and $\ell=-0.147$ [$-0.218$,$-0.079$] at $h=28$.  Chronos-Bolt-Tiny is also
+below the best local \LGBM{} baseline in the same three cells.  This is a
+model-specific robustness check, not a replacement for full M5 long-tail
+evaluation; Moirai, TiRex, and TimesFM were not included in this stratified
+rerun because their local inference paths did not complete reliably in the
+current MacBook environment.
+
 \textbf{TiRex throughput note.}  The original series-by-series TiRex path
 was too slow for the 100-series matched panel.  The current implementation uses TiRex's
 2D context interface to batch all series within a forecast origin and runs

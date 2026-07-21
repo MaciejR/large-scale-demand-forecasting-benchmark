@@ -82,7 +82,9 @@ recursive/direct/tuned-recursive/tuned-direct LightGBM, Chronos-Bolt-Tiny,
 Chronos-2, Moirai~2.0-Small, batched TiRex, and TimesFM~2.5.  In this panel, Chronos-2,
 Moirai, and TiRex are lower than the best observed local baseline in all nine
 dataset--horizon point estimates; Chronos-2 intervals exclude zero in all nine
-cells, while Moirai and TiRex do so in seven.  The defensible conclusion is conditional: rankings depend on
+cells, while Moirai and TiRex do so in seven.  A separate M5 sensitivity panel
+stratified by volume and zero fraction preserves the Chronos-2 advantage over
+the best local \LGBM{} baseline at $h=7,14,28$.  The defensible conclusion is conditional: rankings depend on
 metric, baseline strength, multi-step protocol, workload matching, and demand
 characteristics.  We provide prediction-level artefacts, covariance matrices,
 and a validation checklist for retail bake-offs rather than deterministic
