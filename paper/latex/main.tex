@@ -78,11 +78,11 @@ covariance matrices for 20 retail tasks and 179,258 paired series-window units
 per FM contrast.  The local Source~B matched panel uses 100 shared top-volume
 series per dataset, common rolling-origin windows, prediction-level outputs,
 run ledgers, and paired bootstrap covariance matrices for Seasonal Naive,
-recursive/direct LightGBM, Chronos-Bolt-Tiny, Chronos-2, Moirai~2.0-Small,
-batched TiRex, and TimesFM~2.5.  In this panel, Chronos-2, Moirai, and TiRex
-are lower than the best local baseline in all nine dataset--horizon point
-estimates, though the baseline is intentionally fixed-budget rather than
-strongly tuned.  The defensible conclusion is conditional: rankings depend on
+recursive/direct/tuned-recursive LightGBM, Chronos-Bolt-Tiny, Chronos-2,
+Moirai~2.0-Small, batched TiRex, and TimesFM~2.5.  In this panel, Chronos-2,
+Moirai, and TiRex are lower than the best observed local baseline in all nine
+dataset--horizon point estimates; Chronos-2 intervals exclude zero in all nine
+cells, while Moirai and TiRex do so in seven.  The defensible conclusion is conditional: rankings depend on
 metric, baseline strength, multi-step protocol, workload matching, and demand
 characteristics.  We provide prediction-level artefacts, covariance matrices,
 and a validation checklist for retail bake-offs rather than deterministic

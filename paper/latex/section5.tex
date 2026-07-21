@@ -175,7 +175,7 @@ manifest, writes prediction-level Parquet files, and computes paired
 bootstrap log-ratio contrasts against the best available baseline in the
 same dataset--horizon cell.  The completed matched panel covers
 Seasonal Naive, recursive \LGBM{}, direct \LGBM{}, horizon-scaled direct
-\LGBM{}, Chronos-Bolt-Tiny, Chronos-2, Moirai~2.0-Small, TimesFM~2.5,
+\LGBM{}, tuned recursive \LGBM{}, Chronos-Bolt-Tiny, Chronos-2, Moirai~2.0-Small, TimesFM~2.5,
 and batched TiRex for M5, Rohlik, and Favorita at $h\in\{7,14,28\}$.
 Generated outputs are written to
 \texttt{analysis/figures/source\_b\_paired\_panel\_*}.
@@ -206,6 +206,14 @@ covariate set:
   the recursive variant, but model $k$ predicts $y[t + k]$ from
   lags and rolling means known at $t$ plus future-known covariates
   at $t + k$.  No output feedback, no recursion.
+
+\item \textbf{LightGBM tuned recursive} --- the same recursive feature set,
+  but with a 10-trial validation-origin hyperparameter search over learning
+  rate, leaves, tree count, child samples, subsampling, column sampling,
+  regularisation, and Tweedie variance power.  The validation origin is the
+  horizon immediately before the evaluation panel.  The selected parameters
+  are then refit on the standard training window and evaluated on the same
+  matched panel as all other models.
 \end{itemize}
 
 The direct-vs-recursive contrast with everything else held
@@ -613,16 +621,16 @@ $\ell$ favours the FM.}
 \toprule
 Dataset & Model & $h$ & Best baseline & FM \WAPE{} & Baseline \WAPE{} & $\ell$ (95\% bootstrap CI) \\
 \midrule
-M5 & Chronos-2 & 7 & recursive \LGBM{} & 0.294 & 0.320 & $-0.085$ [$-0.100$, $-0.070$] \\
-M5 & Chronos-Bolt-Tiny & 7 & recursive \LGBM{} & 0.314 & 0.320 & $-0.017$ [$-0.035$, $-0.000$] \\
-M5 & Moirai~2.0-Small & 7 & recursive \LGBM{} & 0.298 & 0.320 & $-0.070$ [$-0.087$, $-0.055$] \\
-M5 & TimesFM~2.5 & 7 & recursive \LGBM{} & 0.299 & 0.320 & $-0.067$ [$-0.085$, $-0.052$] \\
-M5 & TiRex & 7 & recursive \LGBM{} & 0.298 & 0.320 & $-0.069$ [$-0.086$, $-0.054$] \\
-M5 & Chronos-2 & 14 & recursive \LGBM{} & 0.307 & 0.334 & $-0.083$ [$-0.100$, $-0.068$] \\
-M5 & Chronos-Bolt-Tiny & 14 & recursive \LGBM{} & 0.331 & 0.334 & $-0.009$ [$-0.031$, 0.011] \\
-M5 & Moirai~2.0-Small & 14 & recursive \LGBM{} & 0.310 & 0.334 & $-0.074$ [$-0.095$, $-0.056$] \\
-M5 & TimesFM~2.5 & 14 & recursive \LGBM{} & 0.311 & 0.334 & $-0.071$ [$-0.091$, $-0.052$] \\
-M5 & TiRex & 14 & recursive \LGBM{} & 0.312 & 0.334 & $-0.067$ [$-0.086$, $-0.050$] \\
+M5 & Chronos-2 & 7 & tuned recursive \LGBM{} & 0.294 & 0.312 & $-0.062$ [$-0.076$, $-0.048$] \\
+M5 & Chronos-Bolt-Tiny & 7 & tuned recursive \LGBM{} & 0.314 & 0.312 & 0.006 [$-0.011$, 0.024] \\
+M5 & Moirai~2.0-Small & 7 & tuned recursive \LGBM{} & 0.298 & 0.312 & $-0.047$ [$-0.063$, $-0.032$] \\
+M5 & TimesFM~2.5 & 7 & tuned recursive \LGBM{} & 0.299 & 0.312 & $-0.044$ [$-0.060$, $-0.029$] \\
+M5 & TiRex & 7 & tuned recursive \LGBM{} & 0.298 & 0.312 & $-0.047$ [$-0.062$, $-0.032$] \\
+M5 & Chronos-2 & 14 & tuned recursive \LGBM{} & 0.307 & 0.332 & $-0.078$ [$-0.094$, $-0.061$] \\
+M5 & Chronos-Bolt-Tiny & 14 & tuned recursive \LGBM{} & 0.331 & 0.332 & $-0.004$ [$-0.025$, 0.019] \\
+M5 & Moirai~2.0-Small & 14 & tuned recursive \LGBM{} & 0.310 & 0.332 & $-0.068$ [$-0.087$, $-0.048$] \\
+M5 & TimesFM~2.5 & 14 & tuned recursive \LGBM{} & 0.311 & 0.332 & $-0.066$ [$-0.082$, $-0.048$] \\
+M5 & TiRex & 14 & tuned recursive \LGBM{} & 0.312 & 0.332 & $-0.062$ [$-0.078$, $-0.045$] \\
 M5 & Chronos-2 & 28 & direct \LGBM{} & 0.339 & 0.359 & $-0.056$ [$-0.084$, $-0.030$] \\
 M5 & Chronos-Bolt-Tiny & 28 & direct \LGBM{} & 0.360 & 0.359 & 0.003 [$-0.030$, 0.034] \\
 M5 & Moirai~2.0-Small & 28 & direct \LGBM{} & 0.329 & 0.359 & $-0.086$ [$-0.111$, $-0.063$] \\
@@ -648,11 +656,11 @@ Favorita & Chronos-Bolt-Tiny & 7 & recursive \LGBM{} & 0.327 & 0.271 & 0.190 [0.
 Favorita & Moirai~2.0-Small & 7 & recursive \LGBM{} & 0.264 & 0.271 & $-0.024$ [$-0.040$, $-0.009$] \\
 Favorita & TimesFM~2.5 & 7 & recursive \LGBM{} & 0.275 & 0.271 & 0.017 [$-0.014$, 0.052] \\
 Favorita & TiRex & 7 & recursive \LGBM{} & 0.258 & 0.271 & $-0.049$ [$-0.072$, $-0.028$] \\
-Favorita & Chronos-2 & 14 & recursive \LGBM{} & 0.255 & 0.283 & $-0.105$ [$-0.126$, $-0.084$] \\
-Favorita & Chronos-Bolt-Tiny & 14 & recursive \LGBM{} & 0.330 & 0.283 & 0.155 [0.108, 0.203] \\
-Favorita & Moirai~2.0-Small & 14 & recursive \LGBM{} & 0.272 & 0.283 & $-0.037$ [$-0.055$, $-0.021$] \\
-Favorita & TimesFM~2.5 & 14 & recursive \LGBM{} & 0.283 & 0.283 & 0.001 [$-0.034$, 0.039] \\
-Favorita & TiRex & 14 & recursive \LGBM{} & 0.265 & 0.283 & $-0.065$ [$-0.085$, $-0.046$] \\
+Favorita & Chronos-2 & 14 & tuned recursive \LGBM{} & 0.255 & 0.277 & $-0.086$ [$-0.112$, $-0.061$] \\
+Favorita & Chronos-Bolt-Tiny & 14 & tuned recursive \LGBM{} & 0.330 & 0.277 & 0.174 [0.125, 0.221] \\
+Favorita & Moirai~2.0-Small & 14 & tuned recursive \LGBM{} & 0.272 & 0.277 & $-0.018$ [$-0.035$, $-0.002$] \\
+Favorita & TimesFM~2.5 & 14 & tuned recursive \LGBM{} & 0.283 & 0.277 & 0.020 [$-0.012$, 0.052] \\
+Favorita & TiRex & 14 & tuned recursive \LGBM{} & 0.265 & 0.277 & $-0.046$ [$-0.071$, $-0.023$] \\
 Favorita & Chronos-2 & 28 & direct \LGBM{} & 0.270 & 0.292 & $-0.077$ [$-0.137$, $-0.029$] \\
 Favorita & Chronos-Bolt-Tiny & 28 & direct \LGBM{} & 0.337 & 0.292 & 0.143 [0.088, 0.199] \\
 Favorita & Moirai~2.0-Small & 28 & direct \LGBM{} & 0.287 & 0.292 & $-0.017$ [$-0.063$, 0.027] \\
@@ -663,14 +671,13 @@ Favorita & TiRex & 28 & direct \LGBM{} & 0.279 & 0.292 & $-0.045$ [$-0.098$, 0.0
 \end{table*}
 
 Chronos-2 has lower aggregate \WAPE{} than the best local baseline across all
-nine matched M5, Rohlik, and Favorita cells.  Moirai~2.0-Small is also lower in
-all nine point estimates, with the bootstrap interval excluding zero in
-seven.  Batched TiRex is lower in all nine point estimates, with intervals
-excluding zero in seven and near-parity uncertainty at M5 $h=28$ and
-Favorita $h=28$.  TimesFM~2.5 is lower than the best baseline on all
-six M5 and Rohlik cells, with intervals excluding zero in all six, but remains
-near parity on Favorita.  Chronos-Bolt-Tiny is near parity on M5 and worse on
-Rohlik and Favorita.
+nine matched M5, Rohlik, and Favorita cells, and every bootstrap interval
+excludes zero after adding the tuned recursive \LGBM{} comparator.
+Moirai~2.0-Small and batched TiRex are also lower in all nine point estimates,
+with bootstrap intervals excluding zero in seven cells.  TimesFM~2.5 is lower
+than the best baseline on all six M5 and Rohlik cells, with intervals excluding
+zero in all six, but remains near parity on Favorita.  Chronos-Bolt-Tiny is
+near parity on M5 and worse on Rohlik and Favorita.
 These are paired local results for 100-series
 panels, not a claim that the same ranking holds for larger workloads, GPU
 inference, or covariate-aware FM variants.
@@ -682,6 +689,14 @@ correlations occur within the same dataset/model or same dataset--horizon
 cell, as expected.  This supplies local Source~B uncertainty accounting;
 it does not create missing prediction-level covariance for Source~A
 benchmark-paper rows.
+
+\textbf{Tuned \LGBM{} comparator.}  The tuned recursive \LGBM{} run uses
+10 validation-origin random-search trials per dataset--horizon cell.  It
+becomes the best local baseline for M5 at $h=7$ and $h=14$ and Favorita at
+$h=14$, but not for M5 $h=28$, Rohlik, or Favorita $h=7,28$.  The best-baseline
+column in Table~\ref{tab:sourceb-paired} therefore uses the strongest observed
+baseline among Seasonal Naive, fixed recursive \LGBM{}, fixed direct \LGBM{},
+horizon-scaled direct \LGBM{}, and tuned recursive \LGBM{}.
 
 \textbf{TiRex throughput note.}  The original series-by-series TiRex path
 was too slow for the 100-series matched panel.  The current implementation uses TiRex's

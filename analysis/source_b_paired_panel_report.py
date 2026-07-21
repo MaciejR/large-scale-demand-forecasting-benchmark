@@ -24,6 +24,8 @@ BASELINE_MODELS = {
     "lightgbm_cov",
     "lightgbm_direct",
     "lightgbm_direct_scaled",
+    "lightgbm_tuned_cov",
+    "lightgbm_tuned_direct",
 }
 
 
@@ -88,6 +90,22 @@ def aggregate_runs(run_dirs: list[Path]) -> tuple[pd.DataFrame, pd.DataFrame, pd
         else pd.DataFrame()
     )
     return summary, metric_rows, ledger
+
+
+def aggregate_tuning_trials(run_dirs: list[Path]) -> pd.DataFrame:
+    trials = []
+    for run_dir in run_dirs:
+        path = run_dir / "lightgbm_tuning_trials.csv"
+        if path.exists():
+            frame = pd.read_csv(path)
+            frame["source_run_dir"] = run_dir.name
+            trials.append(frame)
+    if not trials:
+        return pd.DataFrame()
+    return sort_report_frame(
+        pd.concat(trials, ignore_index=True),
+        ["dataset", "horizon", "model_name", "trial", "source_run_dir"],
+    )
 
 
 def paired_log_ratio(
@@ -427,6 +445,7 @@ def main() -> None:
     run_root = Path(args.run_root)
     run_dirs = [run_root / run for run in args.runs]
     summary, metrics, ledger = aggregate_runs(run_dirs)
+    tuning_trials = aggregate_tuning_trials(run_dirs)
 
     fm_contrasts, boot_draws, covariance, covariance_long = compute_fm_contrasts_with_covariance(
         summary,
@@ -462,6 +481,8 @@ def main() -> None:
     metrics.to_csv(FIG_DIR / "source_b_paired_panel_per_series_metrics.csv", index=False)
     if not ledger.empty:
         ledger.to_csv(FIG_DIR / "source_b_paired_panel_run_ledger.csv", index=False)
+    if not tuning_trials.empty:
+        tuning_trials.to_csv(FIG_DIR / "source_b_paired_panel_lightgbm_tuning_trials.csv", index=False)
     fm_contrasts.to_csv(FIG_DIR / "source_b_paired_panel_fm_vs_best_baseline.csv", index=False)
     boot_draws.to_csv(FIG_DIR / "source_b_paired_panel_bootstrap_draws.csv", index=False)
     covariance.to_csv(FIG_DIR / "source_b_paired_panel_logratio_covariance.csv", index=False)

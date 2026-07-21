@@ -45,7 +45,14 @@ from models.baselines.seasonal_naive import seasonal_naive_forecast
 
 LAGS = (1, 7, 14)
 WINDOWS = (7, 14)
-BASELINE_MODELS = {"seasonal_naive", "lightgbm_cov", "lightgbm_direct", "lightgbm_direct_scaled"}
+BASELINE_MODELS = {
+    "seasonal_naive",
+    "lightgbm_cov",
+    "lightgbm_direct",
+    "lightgbm_direct_scaled",
+    "lightgbm_tuned_cov",
+    "lightgbm_tuned_direct",
+}
 FM_MODELS = {"chronos_bolt_tiny", "chronos2", "timesfm25", "tirex", "moirai2"}
 CONTRAST_COLUMNS = [
     "run_id",
@@ -63,6 +70,21 @@ CONTRAST_COLUMNS = [
     "ci95_high",
     "n_boot",
 ]
+
+DEFAULT_LIGHTGBM_PARAMS = {
+    "objective": "tweedie",
+    "tweedie_variance_power": 1.1,
+    "learning_rate": 0.05,
+    "num_leaves": 63,
+    "n_estimators": 300,
+    "min_child_samples": 20,
+    "subsample": 1.0,
+    "colsample_bytree": 1.0,
+    "reg_alpha": 0.0,
+    "reg_lambda": 0.0,
+    "verbosity": -1,
+    "random_state": 20260714,
+}
 
 
 @dataclass(frozen=True)
@@ -281,6 +303,196 @@ def feature_matrix_at(
     return np.column_stack(cols).astype(np.float32, copy=False)
 
 
+def _lightgbm_params(overrides: dict | None = None, seed: int = 20260714) -> dict:
+    params = dict(DEFAULT_LIGHTGBM_PARAMS)
+    params["random_state"] = int(seed)
+    if overrides:
+        params.update(overrides)
+    return params
+
+
+def sample_lightgbm_params(rng: np.random.Generator, trial: int, seed: int) -> dict:
+    if trial == 0:
+        return _lightgbm_params(seed=seed)
+    return _lightgbm_params(
+        {
+            "learning_rate": float(rng.choice([0.015, 0.025, 0.04, 0.06, 0.08])),
+            "num_leaves": int(rng.choice([15, 31, 63, 127])),
+            "n_estimators": int(rng.choice([150, 300, 600, 900])),
+            "min_child_samples": int(rng.choice([10, 20, 50, 100])),
+            "subsample": float(rng.choice([0.7, 0.85, 1.0])),
+            "subsample_freq": 1,
+            "colsample_bytree": float(rng.choice([0.7, 0.85, 1.0])),
+            "reg_alpha": float(rng.choice([0.0, 0.01, 0.1, 1.0])),
+            "reg_lambda": float(rng.choice([0.0, 0.1, 1.0, 5.0])),
+            "tweedie_variance_power": float(rng.choice([1.05, 1.1, 1.2, 1.4])),
+        },
+        seed=seed + trial,
+    )
+
+
+def validation_start_for(starts: list[int], horizon: int) -> int:
+    validation_start = starts[0] - horizon
+    min_required = max(max(LAGS), max(WINDOWS), 7)
+    if validation_start <= min_required:
+        raise ValueError(
+            f"Cannot create validation origin before first eval start={starts[0]} "
+            f"for horizon={horizon}"
+        )
+    return validation_start
+
+
+def _fit_lightgbm_recursive_model(
+    y_wide: np.ndarray,
+    cov_wide: dict[str, np.ndarray],
+    covariate_cols: tuple[str, ...],
+    dates: np.ndarray,
+    train_until: int,
+    train_window_days: int,
+    params: dict,
+):
+    from lightgbm import LGBMRegressor
+
+    train_start = max(max(max(LAGS), max(WINDOWS)), train_until - train_window_days)
+    dayofweek = pd.to_datetime(dates).dayofweek.to_numpy(dtype=np.int8)
+    train_times = list(range(train_start, train_until))
+    x_train = np.vstack([
+        feature_matrix_at(t, y_wide, cov_wide, covariate_cols, dayofweek)
+        for t in train_times
+    ])
+    y_train = np.concatenate([y_wide[:, t] for t in train_times])
+    model = LGBMRegressor(**params)
+    model.fit(x_train, y_train)
+    return model
+
+
+def _predict_lightgbm_recursive_block(
+    model,
+    y_wide: np.ndarray,
+    cov_wide: dict[str, np.ndarray],
+    covariate_cols: tuple[str, ...],
+    dates: np.ndarray,
+    t0: int,
+    horizon: int,
+) -> np.ndarray:
+    n_series = y_wide.shape[0]
+    dayofweek = pd.to_datetime(dates).dayofweek.to_numpy(dtype=np.int8)
+    y_buf = y_wide.copy()
+    block = np.empty((n_series, horizon), dtype=np.float32)
+    for k in range(horizon):
+        t = t0 + k
+        x_step = feature_matrix_at(t, y_buf, cov_wide, covariate_cols, dayofweek)
+        pred = np.maximum(model.predict(x_step).astype(np.float32), 0.0)
+        y_buf[:, t] = pred
+        block[:, k] = pred
+    return block
+
+
+def _fit_lightgbm_direct_models(
+    y_wide: np.ndarray,
+    cov_wide: dict[str, np.ndarray],
+    covariate_cols: tuple[str, ...],
+    dates: np.ndarray,
+    train_until: int,
+    horizon: int,
+    train_window_days: int,
+    params: dict,
+) -> list:
+    from lightgbm import LGBMRegressor
+
+    train_start = max(max(max(LAGS), max(WINDOWS)), train_until - train_window_days)
+    dayofweek = pd.to_datetime(dates).dayofweek.to_numpy(dtype=np.int8)
+    models = []
+    for k in range(horizon):
+        train_times = list(range(train_start, train_until - k))
+        x_train = np.vstack([
+            feature_matrix_at(t, y_wide, cov_wide, covariate_cols, dayofweek, step_offset=k)
+            for t in train_times
+        ])
+        y_train = np.concatenate([y_wide[:, t + k] for t in train_times])
+        model = LGBMRegressor(**params)
+        model.fit(x_train, y_train)
+        models.append(model)
+    return models
+
+
+def _predict_lightgbm_direct_block(
+    models: list,
+    y_wide: np.ndarray,
+    cov_wide: dict[str, np.ndarray],
+    covariate_cols: tuple[str, ...],
+    dates: np.ndarray,
+    t0: int,
+    horizon: int,
+) -> np.ndarray:
+    n_series = y_wide.shape[0]
+    dayofweek = pd.to_datetime(dates).dayofweek.to_numpy(dtype=np.int8)
+    block = np.empty((n_series, horizon), dtype=np.float32)
+    for k, model in enumerate(models):
+        x_step = feature_matrix_at(t0, y_wide, cov_wide, covariate_cols, dayofweek, step_offset=k)
+        block[:, k] = np.maximum(model.predict(x_step).astype(np.float32), 0.0)
+    return block
+
+
+def tune_lightgbm_params(
+    protocol: str,
+    y_wide: np.ndarray,
+    cov_wide: dict[str, np.ndarray],
+    covariate_cols: tuple[str, ...],
+    dates: np.ndarray,
+    starts: list[int],
+    horizon: int,
+    train_window_days: int,
+    n_trials: int,
+    seed: int,
+) -> tuple[dict, pd.DataFrame]:
+    """Tune LightGBM on the origin immediately before the evaluation panel."""
+    if n_trials <= 0:
+        return _lightgbm_params(seed=seed), pd.DataFrame()
+
+    val_start = validation_start_for(starts, horizon)
+    rng = np.random.default_rng(seed)
+    rows = []
+    best_score = np.inf
+    best_params = None
+    for trial in range(n_trials):
+        params = sample_lightgbm_params(rng, trial, seed)
+        if protocol == "recursive":
+            model = _fit_lightgbm_recursive_model(
+                y_wide, cov_wide, covariate_cols, dates, val_start, train_window_days, params
+            )
+            pred = _predict_lightgbm_recursive_block(
+                model, y_wide, cov_wide, covariate_cols, dates, val_start, horizon
+            )
+        elif protocol == "direct":
+            models = _fit_lightgbm_direct_models(
+                y_wide, cov_wide, covariate_cols, dates, val_start, horizon, train_window_days, params
+            )
+            pred = _predict_lightgbm_direct_block(
+                models, y_wide, cov_wide, covariate_cols, dates, val_start, horizon
+            )
+        else:
+            raise ValueError(f"Unknown LightGBM protocol: {protocol}")
+        truth = y_wide[:, val_start : val_start + horizon]
+        score = wape(truth.reshape(-1), pred.reshape(-1))
+        row = {
+            "trial": trial,
+            "protocol": protocol,
+            "validation_start_idx": val_start,
+            "validation_horizon": horizon,
+            "validation_WAPE_aggregate": float(score),
+            "params_json": json.dumps(params, sort_keys=True),
+        }
+        rows.append(row)
+        if np.isfinite(score) and score < best_score:
+            best_score = float(score)
+            best_params = params
+    trials = pd.DataFrame(rows)
+    if best_params is None:
+        best_params = _lightgbm_params(seed=seed)
+    return best_params, trials
+
+
 def evaluate_lightgbm_recursive(
     y_wide: np.ndarray,
     cov_wide: dict[str, np.ndarray],
@@ -289,47 +501,28 @@ def evaluate_lightgbm_recursive(
     starts: list[int],
     horizon: int,
     train_window_days: int,
-    n_estimators: int = 300,
+    params: dict | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    from lightgbm import LGBMRegressor
-
-    n_series, n_days = y_wide.shape
+    n_series, _ = y_wide.shape
     train_until = starts[0]
-    train_start = max(max(max(LAGS), max(WINDOWS)), train_until - train_window_days)
-    dayofweek = pd.to_datetime(dates).dayofweek.to_numpy(dtype=np.int8)
-
-    train_times = list(range(train_start, train_until))
-    x_train = np.vstack([
-        feature_matrix_at(t, y_wide, cov_wide, covariate_cols, dayofweek)
-        for t in train_times
-    ])
-    y_train = np.concatenate([y_wide[:, t] for t in train_times])
-
-    model = LGBMRegressor(
-        objective="tweedie",
-        tweedie_variance_power=1.1,
-        learning_rate=0.05,
-        num_leaves=63,
-        n_estimators=n_estimators,
-        min_child_samples=20,
-        verbosity=-1,
+    model = _fit_lightgbm_recursive_model(
+        y_wide,
+        cov_wide,
+        covariate_cols,
+        dates,
+        train_until,
+        train_window_days,
+        params or _lightgbm_params(),
     )
-    model.fit(x_train, y_train)
 
     pred_blocks = []
     true_blocks = []
     eval_t = []
     origin_t = []
-    y_buf = y_wide.copy()
     for t0 in starts:
-        block = np.empty((n_series, horizon), dtype=np.float32)
-        for k in range(horizon):
-            t = t0 + k
-            x_step = feature_matrix_at(t, y_buf, cov_wide, covariate_cols, dayofweek)
-            pred = np.maximum(model.predict(x_step).astype(np.float32), 0.0)
-            y_buf[:, t] = pred
-            block[:, k] = pred
-        y_buf[:, t0 : t0 + horizon] = y_wide[:, t0 : t0 + horizon]
+        block = _predict_lightgbm_recursive_block(
+            model, y_wide, cov_wide, covariate_cols, dates, t0, horizon
+        )
         pred_blocks.append(block)
         true_blocks.append(y_wide[:, t0 : t0 + horizon])
         eval_t.extend(range(t0, t0 + horizon))
@@ -350,43 +543,29 @@ def evaluate_lightgbm_direct(
     starts: list[int],
     horizon: int,
     train_window_days: int,
-    n_estimators: int,
+    params: dict | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    from lightgbm import LGBMRegressor
-
     n_series, _ = y_wide.shape
     train_until = starts[0]
-    train_start = max(max(max(LAGS), max(WINDOWS)), train_until - train_window_days)
-    dayofweek = pd.to_datetime(dates).dayofweek.to_numpy(dtype=np.int8)
-    models = []
-    for k in range(horizon):
-        train_times = list(range(train_start, train_until - k))
-        x_train = np.vstack([
-            feature_matrix_at(t, y_wide, cov_wide, covariate_cols, dayofweek, step_offset=k)
-            for t in train_times
-        ])
-        y_train = np.concatenate([y_wide[:, t + k] for t in train_times])
-        model = LGBMRegressor(
-            objective="tweedie",
-            tweedie_variance_power=1.1,
-            learning_rate=0.05,
-            num_leaves=63,
-            n_estimators=n_estimators,
-            min_child_samples=20,
-            verbosity=-1,
-        )
-        model.fit(x_train, y_train)
-        models.append(model)
+    models = _fit_lightgbm_direct_models(
+        y_wide,
+        cov_wide,
+        covariate_cols,
+        dates,
+        train_until,
+        horizon,
+        train_window_days,
+        params or _lightgbm_params(),
+    )
 
     pred_blocks = []
     true_blocks = []
     eval_t = []
     origin_t = []
     for t0 in starts:
-        block = np.empty((n_series, horizon), dtype=np.float32)
-        for k, model in enumerate(models):
-            x_step = feature_matrix_at(t0, y_wide, cov_wide, covariate_cols, dayofweek, step_offset=k)
-            block[:, k] = np.maximum(model.predict(x_step).astype(np.float32), 0.0)
+        block = _predict_lightgbm_direct_block(
+            models, y_wide, cov_wide, covariate_cols, dates, t0, horizon
+        )
         pred_blocks.append(block)
         true_blocks.append(y_wide[:, t0 : t0 + horizon])
         eval_t.extend(range(t0, t0 + horizon))
@@ -613,7 +792,7 @@ def run_cell(
     args: argparse.Namespace,
     run_id: str,
     panel_id: str,
-) -> tuple[pd.DataFrame, dict]:
+) -> tuple[pd.DataFrame, dict, pd.DataFrame]:
     print(f"[{dataset} h={horizon}] {model_name}: {len(series_ids)} series, {len(starts)} origins", flush=True)
     tracker = CostTracker(args.hardware)
     start_time = time.time()
@@ -621,23 +800,105 @@ def run_cell(
     if model_name == "seasonal_naive":
         y_true, y_pred, eval_t, origin_t = evaluate_seasonal_naive(y_wide, starts, horizon)
         model_params = {}
+        tuning_trials = pd.DataFrame()
     elif model_name == "lightgbm_cov":
         y_true, y_pred, eval_t, origin_t = evaluate_lightgbm_recursive(
-            y_wide, cov_wide, covariate_cols, dates, starts, horizon, args.train_window_days
+            y_wide,
+            cov_wide,
+            covariate_cols,
+            dates,
+            starts,
+            horizon,
+            args.train_window_days,
+            params=_lightgbm_params(seed=args.seed),
         )
         model_params = {"n_estimators": 300, "protocol": "recursive"}
+        tuning_trials = pd.DataFrame()
+    elif model_name == "lightgbm_tuned_cov":
+        tuned_params, tuning_trials = tune_lightgbm_params(
+            "recursive",
+            y_wide,
+            cov_wide,
+            covariate_cols,
+            dates,
+            starts,
+            horizon,
+            args.train_window_days,
+            args.lightgbm_tuning_trials,
+            args.seed + horizon,
+        )
+        y_true, y_pred, eval_t, origin_t = evaluate_lightgbm_recursive(
+            y_wide,
+            cov_wide,
+            covariate_cols,
+            dates,
+            starts,
+            horizon,
+            args.train_window_days,
+            params=tuned_params,
+        )
+        model_params = {
+            "protocol": "recursive_tuned",
+            "tuning_trials": args.lightgbm_tuning_trials,
+            "selected_params": tuned_params,
+        }
     elif model_name == "lightgbm_direct":
         y_true, y_pred, eval_t, origin_t = evaluate_lightgbm_direct(
-            y_wide, cov_wide, covariate_cols, dates, starts, horizon, args.train_window_days, n_estimators=300
+            y_wide,
+            cov_wide,
+            covariate_cols,
+            dates,
+            starts,
+            horizon,
+            args.train_window_days,
+            params=_lightgbm_params(seed=args.seed),
         )
         model_params = {"n_estimators_per_head": 300, "protocol": "direct"}
+        tuning_trials = pd.DataFrame()
     elif model_name == "lightgbm_direct_scaled":
         n_estimators = int(300 * horizon / 7)
         y_true, y_pred, eval_t, origin_t = evaluate_lightgbm_direct(
-            y_wide, cov_wide, covariate_cols, dates, starts, horizon, args.train_window_days, n_estimators=n_estimators
+            y_wide,
+            cov_wide,
+            covariate_cols,
+            dates,
+            starts,
+            horizon,
+            args.train_window_days,
+            params=_lightgbm_params({"n_estimators": n_estimators}, seed=args.seed),
         )
         model_params = {"n_estimators_per_head": n_estimators, "protocol": "direct_scaled"}
+        tuning_trials = pd.DataFrame()
+    elif model_name == "lightgbm_tuned_direct":
+        tuned_params, tuning_trials = tune_lightgbm_params(
+            "direct",
+            y_wide,
+            cov_wide,
+            covariate_cols,
+            dates,
+            starts,
+            horizon,
+            args.train_window_days,
+            args.lightgbm_tuning_trials,
+            args.seed + 1000 + horizon,
+        )
+        y_true, y_pred, eval_t, origin_t = evaluate_lightgbm_direct(
+            y_wide,
+            cov_wide,
+            covariate_cols,
+            dates,
+            starts,
+            horizon,
+            args.train_window_days,
+            params=tuned_params,
+        )
+        model_params = {
+            "protocol": "direct_tuned",
+            "tuning_trials": args.lightgbm_tuning_trials,
+            "selected_params": tuned_params,
+        }
     elif model_name in FM_MODELS:
+        tuning_trials = pd.DataFrame()
         if model_name == "timesfm25":
             from models.foundation.timesfm25 import TimesFM25Forecaster
 
@@ -684,7 +945,14 @@ def run_cell(
         "series_selection": args.series_selection,
         "model_params_json": json.dumps(model_params, sort_keys=True),
     }
-    return predictions, meta
+    if not tuning_trials.empty:
+        tuning_trials = tuning_trials.copy()
+        tuning_trials.insert(0, "run_id", run_id)
+        tuning_trials.insert(1, "panel_id", panel_id)
+        tuning_trials.insert(2, "dataset", dataset)
+        tuning_trials.insert(3, "horizon", horizon)
+        tuning_trials.insert(4, "model_name", model_name)
+    return predictions, meta, tuning_trials
 
 
 def portable_path(path_value: str) -> str:
@@ -705,6 +973,7 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=20260714)
     parser.add_argument("--train-fraction", type=float, default=0.8)
     parser.add_argument("--train-window-days", type=int, default=365)
+    parser.add_argument("--lightgbm-tuning-trials", type=int, default=20)
     parser.add_argument("--hardware", default="M_SERIES_MAC")
     parser.add_argument("--n-bootstrap", type=int, default=1000)
     parser.add_argument("--out-dir", default=str(REPO_ROOT / "benchmark/results/source_b_paired_panel"))
@@ -718,6 +987,7 @@ def main() -> None:
 
     all_predictions = []
     run_meta = []
+    tuning_trial_frames = []
     panel_rows = []
     for dataset_arg in args.datasets:
         bundle = load_dataset(dataset_arg)
@@ -744,20 +1014,32 @@ def main() -> None:
         for horizon in args.horizons:
             starts = eval_starts_for(len(dates), horizon, args.train_fraction)
             for model_name in args.models:
-                predictions, meta = run_cell(
+                predictions, meta, tuning_trials = run_cell(
                     model_name, bundle.name, horizon, series_ids, dates, y_wide,
                     cov_wide, bundle.covariate_cols, starts, args, run_id, panel_id
                 )
                 all_predictions.append(predictions)
                 run_meta.append(meta)
+                if not tuning_trials.empty:
+                    tuning_trial_frames.append(tuning_trials)
                 cell_slug = f"{bundle.name.lower()}_h{horizon}_{model_name}"
                 predictions.to_parquet(out_dir / f"predictions_{cell_slug}.parquet", index=False)
                 pd.DataFrame(run_meta).to_csv(out_dir / "run_ledger_incremental.csv", index=False)
+                if tuning_trial_frames:
+                    pd.concat(tuning_trial_frames, ignore_index=True).to_csv(
+                        out_dir / "lightgbm_tuning_trials_incremental.csv",
+                        index=False,
+                    )
 
     predictions_df = pd.concat(all_predictions, ignore_index=True) if all_predictions else pd.DataFrame()
     metrics_df = per_series_metrics(predictions_df)
     summary_df = cell_summary(metrics_df, run_meta)
     contrasts_df = paired_bootstrap(metrics_df, summary_df, args.n_bootstrap, args.seed)
+    tuning_trials_df = (
+        pd.concat(tuning_trial_frames, ignore_index=True)
+        if tuning_trial_frames
+        else pd.DataFrame()
+    )
 
     pd.DataFrame(panel_rows).to_csv(out_dir / "panel_manifest.csv", index=False)
     pd.DataFrame(run_meta).to_csv(out_dir / "run_ledger.csv", index=False)
@@ -765,6 +1047,8 @@ def main() -> None:
     metrics_df.to_csv(out_dir / "per_series_metrics.csv", index=False)
     summary_df.to_csv(out_dir / "cell_summary.csv", index=False)
     contrasts_df.to_csv(out_dir / "paired_bootstrap_contrasts.csv", index=False)
+    if not tuning_trials_df.empty:
+        tuning_trials_df.to_csv(out_dir / "lightgbm_tuning_trials.csv", index=False)
     with (out_dir / "run_config.json").open("w", encoding="utf-8") as fh:
         config = vars(args) | {"out_dir": portable_path(args.out_dir), "run_id": run_id}
         json.dump(config, fh, indent=2, sort_keys=True)

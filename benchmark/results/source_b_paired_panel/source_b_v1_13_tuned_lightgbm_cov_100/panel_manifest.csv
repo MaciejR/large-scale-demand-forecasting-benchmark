@@ -1,0 +1,4 @@
+run_id,panel_id,dataset,n_series,n_dates,first_date,last_date,series_selection,seed
+source_b_v1_13_tuned_lightgbm_cov_100,m5_top_volume_100_20260714,M5,100,1913,2011-01-29,2016-04-24,top_volume,20260714
+source_b_v1_13_tuned_lightgbm_cov_100,rohlik_top_volume_100_20260714,Rohlik,100,1402,2020-08-01,2024-06-02,top_volume,20260714
+source_b_v1_13_tuned_lightgbm_cov_100,favorita_top_volume_100_20260714,Favorita,100,1679,2013-01-02,2017-08-15,top_volume,20260714

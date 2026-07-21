@@ -178,6 +178,8 @@ Standard\_E4ds\_v4 (4~vCPU, 32~GB), CPU-only.  Three baseline models:
     covariates): 9~cells.
   \item \textbf{lightgbm\_direct} (LightGBM direct, Tweedie + 6
     covariates, per-horizon head): 9~cells.
+  \item \textbf{lightgbm\_tuned\_cov} (LightGBM recursive with
+    validation-origin hyperparameter search): 9~cells.
   \item \textbf{seasonal\_naive}: 9~cells.
 \end{itemize}
 
@@ -197,7 +199,7 @@ selects the same 100 top-volume series per dataset, uses the same
 rolling-origin windows for every model, writes prediction-level parquet
 files keyed by series, origin date, target date, and forecast step, and
 records a machine-readable run ledger.  Completed matched-panel runs cover
-Seasonal Naive, recursive LightGBM, direct LightGBM, horizon-scaled direct
+Seasonal Naive, recursive LightGBM, tuned recursive LightGBM, direct LightGBM, horizon-scaled direct
 LightGBM, Chronos-Bolt-Tiny, Chronos-2, Moirai~2.0-Small, batched TiRex,
 and TimesFM~2.5 on M5, Rohlik, and Favorita at $h\in\{7,14,28\}$.  TiRex uses a CPU
 batched path on the MacBook because the MPS xLSTM fallback is slower for this

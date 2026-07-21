@@ -42,6 +42,7 @@ REQUIRED_FILES = {
     "replication/analysis/figures/source_b_integrity_audit_summary.csv",
     "replication/analysis/figures/source_b_paired_panel_fm_vs_best_baseline.csv",
     "replication/analysis/figures/source_b_paired_panel_logratio_covariance.csv",
+    "replication/analysis/figures/source_b_paired_panel_lightgbm_tuning_trials.csv",
     "replication/analysis/figures/source_b_paired_panel_run_ledger.csv",
     "replication/analysis/figures/fev_official_run_manifest.csv",
     "replication/analysis/figures/fev_official_model_coverage.csv",

@@ -463,6 +463,7 @@ def write_integrity_summary(local: pd.DataFrame) -> None:
         "lightgbm_cov",
         "lightgbm_direct",
         "lightgbm_direct_scaled",
+        "lightgbm_tuned_cov",
         "moirai2",
         "seasonal_naive",
         "timesfm25",
@@ -472,7 +473,7 @@ def write_integrity_summary(local: pd.DataFrame) -> None:
         lambda s: set(s)
     )
     matched_panel_complete = (
-        len(matched_panel) == 81
+        len(matched_panel) == 90
         and len(matched_coverage) == 9
         and all(models == expected_matched_models for models in matched_coverage)
     )
@@ -506,7 +507,7 @@ def write_integrity_summary(local: pd.DataFrame) -> None:
                 f"{len(matched_coverage)} dataset-horizon cells"
             ),
             "manuscript_consequence": (
-                "matched-panel Source B repair can be reported as local paired evidence"
+                "matched-panel Source B analysis can be reported as local paired evidence"
             ),
         },
         {

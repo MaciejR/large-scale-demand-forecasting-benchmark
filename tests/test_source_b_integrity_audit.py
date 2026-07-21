@@ -85,13 +85,14 @@ def test_current_matched_panel_has_complete_nine_model_coverage():
         "lightgbm_cov",
         "lightgbm_direct",
         "lightgbm_direct_scaled",
+        "lightgbm_tuned_cov",
         "moirai2",
         "seasonal_naive",
         "timesfm25",
         "tirex",
     }
 
-    assert len(summary) == 81
+    assert len(summary) == 90
     assert not summary.duplicated(["dataset", "horizon", "model_name"]).any()
     assert set(summary["model_name"]) == expected_models
 
