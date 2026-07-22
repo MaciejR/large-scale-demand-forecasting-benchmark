@@ -85,6 +85,55 @@ def test_tune_lightgbm_params_records_trials_and_returns_selected_params():
     assert np.isfinite(y_pred).all()
 
 
+def test_tune_lightgbm_params_resumes_from_checkpoint(tmp_path):
+    dates, y_wide, cov_wide, covariate_cols = _small_panel()
+    starts = eval_starts_for(len(dates), horizon=7, train_fraction=0.75)
+    checkpoint_path = tmp_path / "tuning_trials.csv"
+
+    first_params, first_trials = tune_lightgbm_params(
+        "recursive",
+        y_wide,
+        cov_wide,
+        covariate_cols,
+        dates,
+        starts,
+        horizon=7,
+        train_window_days=40,
+        n_trials=2,
+        seed=99,
+        checkpoint_path=checkpoint_path,
+    )
+
+    assert checkpoint_path.exists()
+    assert len(first_trials) == 2
+
+    resumed_params, resumed_trials = tune_lightgbm_params(
+        "recursive",
+        y_wide,
+        cov_wide,
+        covariate_cols,
+        dates,
+        starts,
+        horizon=7,
+        train_window_days=40,
+        n_trials=4,
+        seed=99,
+        checkpoint_path=checkpoint_path,
+    )
+
+    checkpoint = pd.read_csv(checkpoint_path)
+    assert len(resumed_trials) == 4
+    assert len(checkpoint) == 4
+    assert checkpoint["trial"].tolist() == [0, 1, 2, 3]
+    pd.testing.assert_frame_equal(
+        first_trials.reset_index(drop=True),
+        resumed_trials.iloc[:2].reset_index(drop=True),
+        check_dtype=False,
+    )
+    assert first_params["objective"] == "tweedie"
+    assert resumed_params["objective"] == "tweedie"
+
+
 def test_stratified_volume_zero_selection_includes_intermittent_tail():
     rows = []
     dates = pd.date_range("2025-01-01", periods=20, freq="D")

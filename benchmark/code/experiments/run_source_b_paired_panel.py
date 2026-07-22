@@ -485,6 +485,7 @@ def tune_lightgbm_params(
     train_window_days: int,
     n_trials: int,
     seed: int,
+    checkpoint_path: Path | None = None,
 ) -> tuple[dict, pd.DataFrame]:
     """Tune LightGBM on the origin immediately before the evaluation panel."""
     if n_trials <= 0:
@@ -493,10 +494,28 @@ def tune_lightgbm_params(
     val_start = validation_start_for(starts, horizon)
     rng = np.random.default_rng(seed)
     rows = []
+    completed_trials: set[int] = set()
+    if checkpoint_path is not None and checkpoint_path.exists():
+        checkpoint = pd.read_csv(checkpoint_path)
+        if not checkpoint.empty:
+            rows.extend(checkpoint.to_dict("records"))
+            completed_trials = set(checkpoint["trial"].astype(int).tolist())
+            print(
+                f"Resuming {protocol} tuning from {checkpoint_path}: "
+                f"{len(completed_trials)}/{n_trials} trials complete",
+                flush=True,
+            )
     best_score = np.inf
     best_params = None
+    for row in rows:
+        score = float(row["validation_WAPE_aggregate"])
+        if np.isfinite(score) and score < best_score:
+            best_score = score
+            best_params = json.loads(row["params_json"])
     for trial in range(n_trials):
         params = sample_lightgbm_params(rng, trial, seed)
+        if trial in completed_trials:
+            continue
         if protocol == "recursive":
             model = _fit_lightgbm_recursive_model(
                 y_wide, cov_wide, covariate_cols, dates, val_start, train_window_days, params
@@ -524,6 +543,9 @@ def tune_lightgbm_params(
             "params_json": json.dumps(params, sort_keys=True),
         }
         rows.append(row)
+        if checkpoint_path is not None:
+            checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+            pd.DataFrame(rows).sort_values(["trial"]).to_csv(checkpoint_path, index=False)
         if np.isfinite(score) and score < best_score:
             best_score = float(score)
             best_params = params
@@ -855,6 +877,11 @@ def run_cell(
         model_params = {"n_estimators": 300, "protocol": "recursive"}
         tuning_trials = pd.DataFrame()
     elif model_name == "lightgbm_tuned_cov":
+        checkpoint_path = (
+            Path(args.out_dir)
+            / run_id
+            / f"tuning_trials_{dataset.lower()}_h{horizon}_{model_name}.csv"
+        )
         tuned_params, tuning_trials = tune_lightgbm_params(
             "recursive",
             y_wide,
@@ -866,6 +893,7 @@ def run_cell(
             args.train_window_days,
             args.lightgbm_tuning_trials,
             args.seed + horizon,
+            checkpoint_path=checkpoint_path,
         )
         y_true, y_pred, eval_t, origin_t = evaluate_lightgbm_recursive(
             y_wide,
@@ -910,6 +938,11 @@ def run_cell(
         model_params = {"n_estimators_per_head": n_estimators, "protocol": "direct_scaled"}
         tuning_trials = pd.DataFrame()
     elif model_name == "lightgbm_tuned_direct":
+        checkpoint_path = (
+            Path(args.out_dir)
+            / run_id
+            / f"tuning_trials_{dataset.lower()}_h{horizon}_{model_name}.csv"
+        )
         tuned_params, tuning_trials = tune_lightgbm_params(
             "direct",
             y_wide,
@@ -921,6 +954,7 @@ def run_cell(
             args.train_window_days,
             args.lightgbm_tuning_trials,
             args.seed + 1000 + horizon,
+            checkpoint_path=checkpoint_path,
         )
         y_true, y_pred, eval_t, origin_t = evaluate_lightgbm_direct(
             y_wide,

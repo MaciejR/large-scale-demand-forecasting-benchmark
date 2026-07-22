@@ -79,3 +79,50 @@ git diff --check
 The manuscript should promote the 200-trial best-baseline result only if all
 models are evaluated on the same series IDs, origins, target dates, and
 aggregate-WAPE definition as the existing matched-panel Source B runs.
+
+## Reviewer-Salient Challenge Shards
+
+For an initial submission-facing stress test, run the reviewer-salient cells as
+independent shards.  The runner writes per-cell tuning checkpoints named
+`tuning_trials_<dataset>_h<horizon>_<model>.csv`, so an interrupted shard can
+be launched again with the same `--run-id` and it will skip completed tuning
+trials.
+
+```bash
+for dataset in m5 rohlik favorita; do
+  for horizon in 7; do
+    for model in lightgbm_tuned_cov lightgbm_tuned_direct; do
+      python3 benchmark/code/experiments/run_source_b_paired_panel.py \
+        --datasets "$dataset" \
+        --models "$model" \
+        --horizons "$horizon" \
+        --max-series 100 \
+        --series-selection top_volume \
+        --seed 20260714 \
+        --train-window-days 365 \
+        --lightgbm-tuning-trials 200 \
+        --run-id "source_b_v1_15_${dataset}_h${horizon}_${model}_200trial"
+    done
+  done
+done
+
+for horizon in 14 28; do
+  for model in lightgbm_tuned_cov lightgbm_tuned_direct; do
+    python3 benchmark/code/experiments/run_source_b_paired_panel.py \
+      --datasets m5 \
+      --models "$model" \
+      --horizons "$horizon" \
+      --max-series 100 \
+      --series-selection top_volume \
+      --seed 20260714 \
+      --train-window-days 365 \
+      --lightgbm-tuning-trials 200 \
+      --run-id "source_b_v1_15_m5_h${horizon}_${model}_200trial"
+  done
+done
+```
+
+This challenge set covers all M5 horizons plus the shortest-horizon Rohlik and
+Favorita cells.  It is intended to test whether the local FM advantage survives
+a much larger LightGBM tuning budget on the cells most likely to draw reviewer
+attention.
