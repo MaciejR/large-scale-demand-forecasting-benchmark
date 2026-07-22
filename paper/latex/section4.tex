@@ -27,14 +27,14 @@ fev-bench and GIFT-Eval) before the gap-filling experiments
 \toprule
 Stage & Count & Notes \\
 \midrule
-Records identified       & 150 & Google Scholar + Semantic Scholar + arXiv; Scopus/Web of Science target strings were not retained as auditable exports \\
+Records identified       & 150 & Google Scholar + Semantic Scholar + arXiv; Scopus/Web of Science target strings were not retained as machine-readable exports \\
 Duplicates removed       & 30  & Cross-database overlap, especially arXiv $\leftrightarrow$ Scopus \\
 Records screened (title/abstract) & 120 & \\
 Excluded at screening    & 50  & Non-retail, no quantitative results, financial only \\
 Full-text assessed       & 70  & \\
 Excluded at full-text    & 38  & No retail dataset, no FM evaluation, duplicate/non-comparable results \\
 Source~A studies included & 32 & External papers and benchmark sources \\
-Source~B experiment blocks & 7 & Own experiments; not PRISMA included studies \\
+Source~B experiment blocks & 7 & Own experiments; not included literature records \\
 Extraction schema rows   & 802       & Multiple rows per study; incl.\ per-task fev-bench/GIFT-Eval \\
 \bottomrule
 \end{tabularx}
@@ -65,7 +65,7 @@ The Source~A extraction and Source~B experiment blocks break down as follows:
     45 rows retained in \texttt{analysis/extraction\_schema.csv} for
     provenance.  The separate local Source~B sweep file adds 72 rows
     (five FM models plus three baselines across three datasets and
-    three horizons) and is not counted as a PRISMA included study.
+    three horizons) and is not counted as an included literature record.
 \end{itemize}
 
 \subsection{Descriptive statistics}
@@ -185,7 +185,7 @@ Source~B (\S\ref{subsec:gapfilling}) remains necessary for two
 reasons: (1)~it adds the consumer-hardware cost dimension absent from
 benchmark evaluations, and (2)~it provides per-series \WAPE{} on
 individual retail datasets (M5, Favorita, Rohlik) under a controlled
-rolling-origin protocol.  Because the earlier Source~B rows had unequal
+rolling-origin protocol.  Because the unmatched Source~B rows had unequal
 workloads, we report Source~B separately rather than as part of the primary
 Source~A contrast file.  The matched Source~B analysis is also reported
 separately because it has a local 100-series aggregate-\WAPE{} estimand.

@@ -9,12 +9,14 @@ Source~A benchmark analysis.
 \subsection{Structured search protocol}
 \label{subsec:search}
 
-We use the PRISMA 2020 reporting guidelines \citep{page2021prisma}
-as a reporting template for a single-author structured search, but do not
-claim full PRISMA compliance because the study does not include independent
-duplicate screening, pre-registration, or inter-rater reliability.  The full search protocol is committed at
-\texttt{analysis/prisma\_search\_protocol.md}; we summarise the key
-parameters here.
+The search is used to document the retail benchmark evidence gap and to
+identify extractable FM-vs-baseline results.  It is a single-author structured
+search, not a registered systematic review: there is no independent duplicate
+screening or inter-rater reliability estimate.  \ref{app:search}
+reports a structured-search flow diagram for transparency, and the full protocol is
+committed at \texttt{analysis/prisma\_search\_protocol.md}; the main text
+summarises only the search parameters needed to interpret the benchmark
+extraction.
 
 \noindent\textbf{Search sources.}
 The retained auditable log covers Google Scholar/web searches, Semantic
@@ -126,7 +128,7 @@ task/dataset/frequency/horizon cell.
 \texttt{D} = cross-domain papers (3 papers, 3 rows),
 \texttt{F} = fev-bench entries (1 paper, 8 rows),
 \texttt{OWN\_*} = Source~B baseline rows retained for provenance.
-Source~B rows are not counted as PRISMA included studies.
+Source~B rows are not counted as included literature records.
 
 \noindent\textbf{Normalisation.}
 Raw \texttt{dataset} values are collapsed to five canonical names
@@ -150,60 +152,29 @@ under matched conditions with a shared \texttt{paper\_id}, so
 within-paper pairing (the original within-paper design) is
 structurally empty on Source~A.
 
-Source~B fills these gaps with 72 rows from two hardware backends:
-
-\noindent\textbf{Consumer MacBook (M\_SERIES\_MAC).}
-Apple M3 Air, 16~GB unified memory, PyTorch MPS backend.  Five FM
-models:
-\begin{itemize}
-  \item \textbf{Chronos-Bolt-Tiny} (9~M params, public checkpoint):
-    9/9 cells (3~datasets $\times$ 3~horizons), all on MPS.
-  \item \textbf{Moirai~2.0-Small} (11~M params, decoder-only quantile model):
-    9/9 cells, all on MPS.
-  \item \textbf{TiRex} ($\sim$35~M params, xLSTM): 9/9 cells.  Seven
-    completed on MPS; two (Rohlik $h=14$, $h=28$) required CPU fallback
-    (\texttt{TIREX\_FORCE\_CPU=1}).
-  \item \textbf{Chronos-2} ($\sim$120~M params, public Chronos-2
-    checkpoint):
-    9/9 cells, all on MPS.
-  \item \textbf{TimesFM~2.5} ($\sim$200~M params, decoder-only,
-    continuous quantile head): 9/9 cells, CPU-only (MPS quantile
-    head ops unsupported).  Largest model in Source~B.
-\end{itemize}
-
-\noindent\textbf{Azure ML batch (AZURE\_E4DS\_V4).}
-Standard\_E4ds\_v4 (4~vCPU, 32~GB), CPU-only.  Three baseline models:
-\begin{itemize}
-  \item \textbf{lightgbm\_cov} (LightGBM recursive, Tweedie + 6
-    covariates): 9~cells.
-  \item \textbf{lightgbm\_direct} (LightGBM direct, Tweedie + 6
-    covariates, per-horizon head): 9~cells.
-  \item \textbf{lightgbm\_tuned\_cov} (LightGBM recursive with
-    validation-origin hyperparameter search): 9~cells.
-  \item \textbf{seasonal\_naive}: 9~cells.
-\end{itemize}
-
-The original 72-cell local sweep used the same metric definitions and
-rolling-origin design where available, but the saved cells did not share a
-common 100-series workload across all models.  Runtime, cost, and
-CO\textsubscript{2} were logged per run via MLflow (local file store for
-MacBook runs, Azure ML workspace for batch runs).  The export script
-\texttt{tools/export\_mlflow\_to\_csv.py} pulls both backends into a single
-CSV.  These rows are retained for provenance and cost accounting, but not
-for paired inference.
-
-The main Source~B analysis uses matched-panel reruns for M5, Rohlik,
-and Favorita.  The runner
+Source~B fills these gaps with matched-panel reruns for M5, Rohlik, and
+Favorita.  The runner
 \texttt{benchmark/code/experiments/run\_source\_b\_paired\_panel.py}
 selects the same 100 top-volume series per dataset, uses the same
 rolling-origin windows for every model, writes prediction-level parquet
 files keyed by series, origin date, target date, and forecast step, and
 records a machine-readable run ledger.  Completed matched-panel runs cover
-Seasonal Naive, recursive LightGBM, tuned recursive LightGBM, direct LightGBM, horizon-scaled direct
-LightGBM, Chronos-Bolt-Tiny, Chronos-2, Moirai~2.0-Small, batched TiRex,
-and TimesFM~2.5 on M5, Rohlik, and Favorita at $h\in\{7,14,28\}$.  TiRex uses a CPU
+Seasonal Naive, recursive \LGBM{}, tuned recursive \LGBM{}, direct
+\LGBM{}, horizon-scaled direct \LGBM{}, tuned direct \LGBM{},
+Chronos-Bolt-Tiny, Chronos-2, Moirai~2.0-Small, batched TiRex, and
+TimesFM~2.5 on all three datasets at $h\in\{7,14,28\}$.  TiRex uses a CPU
 batched path on the MacBook because the MPS xLSTM fallback is slower for this
 workload.
+
+For M5, we also run a stratified-panel sensitivity check.  Instead of selecting
+the top 100 volume series, the panel samples across bins of total volume and
+zero fraction.  This produces a much more intermittent 100-series sample and
+tests whether the main Chronos-2 result is driven by high-volume SKUs.
+
+An unmatched local sweep is retained only as provenance and cost-accounting
+material.  It used related metric definitions and rolling-origin settings, but
+the saved cells did not share a common series workload across models, so it is
+not used for paired Source~B inference.
 
 \subsection{Reanalysis specification}
 \label{subsec:metaspec}
@@ -218,14 +189,13 @@ $\ell_i = \log\{\text{metric}(\text{FM}_i) /
 \end{quote}
 
 \noindent The primary Source~A model-level pairing produces $k = 498$
-observations across fev-bench and GIFT-Eval.  The older Source~B export
-yields a $k = 543$ contrast file when appended to Source~A, but those 45
-Source~B contrasts are descriptive because they do not share a common
-workload.  The matched-panel Source~B analysis is
-reported separately as a prediction-level paired analysis on 45 FM-vs-best
-baseline WAPE contrasts with a shared-bootstrap log-ratio covariance matrix.
-\ref{app:sensitivity} also reports a
-coarser bucket-level analysis for comparison.
+observations across fev-bench and GIFT-Eval.  The older Source~B export can be
+appended for provenance, but those rows are descriptive because they do not
+share a common workload.  The matched-panel Source~B analysis is reported
+separately as a prediction-level paired analysis on FM-vs-best-baseline
+aggregate-\WAPE{} contrasts with shared-bootstrap log-ratio covariance
+matrices.  \ref{app:sensitivity} also reports a coarser bucket-level analysis
+for comparison.
 
 \noindent\textbf{Notation convention.}
 Throughout this paper, $\hat{\ell}$ denotes a reported log-ratio summary of

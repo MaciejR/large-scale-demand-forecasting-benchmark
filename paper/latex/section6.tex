@@ -6,8 +6,8 @@ The primary Source~A evidence comes from two benchmark suites:
 fev-bench \citep{shchur2025fevbench} and GIFT-Eval
 \citep{aksu2024gift}.  The stricter comparator is the default:
 each foundation-model row is compared with the best available
-conventional baseline in the same task and metric cell.  The earlier
-average-baseline comparator is retained as a sensitivity artifact.
+conventional baseline in the same task and metric cell.  The
+average-baseline comparator is retained as a sensitivity check.
 
 Source~B is excluded from this primary Source~A pool.  The original local
 rows do not consistently share the same series workload, and paired
@@ -175,7 +175,7 @@ fev-bench & \MASE{}      & 138 & $-0.006$ & $-0.010$ & 0.53 & Approximately pari
 \subsection{Heuristic-Weight Diagnostics}
 \label{subsec:sensitivity}\label{sec:heterogeneity}
 
-For continuity with the earlier exploratory pipeline, the pipeline still fits a multilevel
+As an exploratory diagnostic, the pipeline still fits a multilevel
 \texttt{rma.mv} model using the workload-count proxy $v_i$.  The generated
 best-baseline diagnostic has point estimate $\hat{\ell}=-0.225$ with only
 two suite clusters; the average-baseline diagnostic is
@@ -237,7 +237,7 @@ GPU benchmark.}
 Moderator analyses are hypothesis-generating.  Metric choice is the most
 visible row-level moderator.  Dataset, horizon, model scale, baseline
 family, and covariate availability cannot be interpreted causally from two
-benchmark suites and a descriptive local audit.  The defensible conclusion
+benchmark suites and a descriptive local Source~B panel.  The defensible conclusion
 is therefore deliberately narrow: FMs often have favourable recorded
 benchmark-level log-ratios, especially on SQL, but rankings depend on the
 metric, baseline, benchmark protocol, and demand characteristics.

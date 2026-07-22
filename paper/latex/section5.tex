@@ -165,7 +165,7 @@ gives a clean, reviewer-auditable split.  Specifically:
 
 \textbf{Source~B matched-panel design.}  The main Source~B analysis evaluates
 each FM and baseline on the same fixed 100-series sample per dataset.  An
-earlier 72-row local sweep did not share that workload across all models, so
+unmatched 72-row local sweep did not share that workload across all models, so
 it is retained only as provenance and cost-accounting material.  The
 matched-panel run covers
 M5, Rohlik, and Favorita: the runner
@@ -393,7 +393,7 @@ LightGBM'' on one protocol and lose to it on another, with no
 change in the FM itself.
 
 The \textbf{direction} of the protocol gap is not constant
-across datasets or metric definitions.  In the earlier full-workload
+across datasets or metric definitions.  In the full-workload
 per-series \WAPE{} grid, direct LightGBM is much better than recursive
 LightGBM on M5, while recursive is better on Rohlik and Favorita under
 the fixed-budget runs.  In the matched 100-series aggregate-\WAPE{}
@@ -431,7 +431,7 @@ same protocol.
 We ran a three-variant sweep (Seasonal Naive, LightGBM recursive,
 LightGBM direct) on all three datasets.  The detailed per-dataset tables
 are in \ref{app:baseline-detail}; Table~\ref{tab:t58}
-summarises the earlier full-workload per-series \WAPE{} pattern.  The
+summarises the full-workload per-series \WAPE{} pattern.  The
 matched-panel aggregate-\WAPE{} analysis is reported immediately
 after the table.
 
@@ -454,7 +454,7 @@ Favorita & ${\sim}15$--$25\,\%$ & $-4.1\,\%$ & $-7.5\,\%$ & $-9.6\,\%$ & recursi
 \end{tabular}
 \end{table}
 
-The matched-panel analysis changes the protocol conclusion for
+The matched-panel analysis gives a different protocol conclusion for
 M5, Rohlik, and Favorita.  On the same 100 top-volume series and aggregate-\WAPE{}
 metric used for Table~\ref{tab:sourceb-paired}, direct \LGBM{} is slightly
 worse than recursive on M5 at $h=7$ (+0.4\% error) and $h=14$ (+1.1\%),
@@ -462,15 +462,15 @@ but better at $h=28$ (-2.1\%).  On Rohlik, direct is consistently worse
 than recursive by about 3.9--4.3\%.  On Favorita, recursive is lower at
 $h=7$ (+4.6\% direct error) and $h=14$ (+2.2\%), while direct is lower at
 $h=28$ (-4.9\%).  The horizon-scaled direct variant is identical to direct
-at $h=7$ and worse at $h=14,28$ in the matched panel, so the earlier
-unexplained \texttt{direct\_scaled} $h=7$ anomaly is resolved in the
-paired panel.
+at $h=7$ and worse at $h=14,28$ in the matched panel, so the
+\texttt{direct\_scaled} rows are interpreted as budget diagnostics rather than
+as evidence for a stable direct advantage.
 
 Three key findings:
 
 \begin{enumerate}
 \item \textbf{Direction varies across datasets, workloads, and metric
-  aggregation.}  The earlier per-series grid gives a strong M5 direct
+  aggregation.}  The per-series grid gives a strong M5 direct
   advantage, but the matched aggregate-\WAPE{} panel makes M5 close
   at short horizons.  Rohlik remains recursive-favourable in both views,
   while Favorita is recursive-favourable at short horizons and
@@ -484,9 +484,10 @@ Three key findings:
   describes a panel-level pattern; the current three-dataset evidence
   cannot assign the difference to sparsity alone.
 
-\item \textbf{Budget effects remain real.}  The matched panel resolves
-  the earlier \texttt{direct\_scaled} $h=7$ inconsistency, because the
-  scaled and unscaled direct runs are identical when both use 300 trees.
+\item \textbf{Budget effects remain real.}  The matched panel separates the
+  \texttt{direct\_scaled} budget diagnostic from the fixed-budget comparison:
+  the scaled and unscaled direct runs are identical at $h=7$ when both use
+  300 trees.
   At $h=14$ and $h=28$, the scaled direct variant is more expensive and
   does not improve aggregate \WAPE{} in this matched panel.
 \end{enumerate}
@@ -611,8 +612,9 @@ contrasts.
 
 \subsubsection{Consumer-Box Run: Results}\label{sec:fm_results}
 
-The Source~B matched-panel analysis supersedes the earlier row-level
-comparison for completed panels.  The main 100-series table has 45 FM-vs-best-baseline
+The Source~B matched-panel analysis is the paired local evidence for completed
+panels and replaces the unmatched row-level comparison.  The main 100-series
+table has 45 FM-vs-best-baseline
 contrasts: five FMs on each of M5, Rohlik, and Favorita.
 The generated replication files include shared bootstrap draws, a wide
 log-ratio covariance matrix, and a long covariance/correlation table under
@@ -775,7 +777,7 @@ gradient; they do not establish that one named checkpoint reliably
 outperforms another.
 
 \textbf{Log-ratio status.}  Source~A remains the only input to the
-\S\ref{subsec:pooling-strategy} benchmark analysis.  The earlier
+\S\ref{subsec:pooling-strategy} benchmark analysis.  The unmatched
 45 Source~B FM rows are retained in a descriptive contrast file for
 provenance.  The matched-panel Source~B contrasts are reported separately
 in Table~\ref{tab:sourceb-paired}, because their estimand is local
