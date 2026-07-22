@@ -817,11 +817,12 @@ Azure job-level accounting and unequal workloads, so
 as ``16$\times$ cheaper per cell'' are not treated as general cost
 results.
 
-\textbf{Caveats.}  The LightGBM baselines use a fixed hyperparameter
-grid with no dataset-specific tuning; the FMs are zero-shot; this
-section is point-forecast only; the matched panel currently covers
-100-series M5, Rohlik, and Favorita for completed models including batched TiRex,
-but not GPU throughput, larger workloads, or covariate-aware FM
+\textbf{Caveats.}  The LightGBM comparators include fixed-budget variants and
+10-trial tuned recursive/direct variants, but they are not exhaustive
+competition-grade or dataset-specialised LightGBM systems.  The FMs are
+zero-shot; this section is point-forecast only; the matched panel currently
+covers 100-series M5, Rohlik, and Favorita for completed models including
+batched TiRex, but not GPU throughput, larger workloads, or covariate-aware FM
 configurations.
 
 \subsubsection{Reproducibility}\label{sec:fm_repro}

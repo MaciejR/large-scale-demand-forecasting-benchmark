@@ -63,8 +63,10 @@ leaf mean) are penalised disproportionately.
 Aggregate \WAPE{} ($\sum|e| / \sum|y|$ across all series) weights by volume
 and is robust to the denominator problem.  Our sanity check
 (\S\ref{sec:experiments}) shows that aggregate \WAPE{} deflates FM scores on
-M5 by ${\sim}$11\% in the available rows.  A full conclusion requires
-recomputing aggregate \WAPE{} from a common prediction panel for all models.
+M5 by ${\sim}$11\% in the available rows.  Source~B addresses this locally with
+matched prediction panels; the remaining limitation is that Source~A and
+full-suite benchmark comparisons cannot be recomputed on common aggregate-\WAPE{}
+prediction panels for every model.
 
 \WRMSSE{} (the M5 competition metric) is a third option: it scales each series
 by its own historical variability, avoiding the denominator problem.  The M5
