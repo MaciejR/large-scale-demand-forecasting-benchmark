@@ -1,0 +1,23 @@
+{
+  "datasets": [
+    "m5"
+  ],
+  "hardware": "M_SERIES_MAC",
+  "horizons": [
+    7,
+    14,
+    28
+  ],
+  "lightgbm_tuning_trials": 10,
+  "max_series": 100,
+  "models": [
+    "lightgbm_rich_tuned"
+  ],
+  "n_bootstrap": 1000,
+  "out_dir": "benchmark/results/source_b_paired_panel",
+  "run_id": "source_b_v1_19_m5_rich_lightgbm_100",
+  "seed": 20260714,
+  "series_selection": "top_volume",
+  "train_fraction": 0.8,
+  "train_window_days": 365
+}

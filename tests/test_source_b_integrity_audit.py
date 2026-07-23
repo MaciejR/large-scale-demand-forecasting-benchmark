@@ -76,10 +76,10 @@ def test_cost_audit_outputs_are_explicitly_descriptive(tmp_path, monkeypatch):
         assert frame["cost_basis_note"].str.contains("descriptive legacy Source B").all()
 
 
-def test_current_matched_panel_has_complete_eleven_model_coverage():
+def test_current_matched_panel_has_expected_model_coverage():
     path = Path("analysis/figures/source_b_paired_panel_cell_summary.csv")
     summary = pd.read_csv(path)
-    expected_models = {
+    common_models = {
         "chronos2",
         "chronos_bolt_tiny",
         "lightgbm_cov",
@@ -92,14 +92,20 @@ def test_current_matched_panel_has_complete_eleven_model_coverage():
         "timesfm25",
         "tirex",
     }
+    rich_m5_model = "lightgbm_rich_tuned"
+    expected_models = common_models | {rich_m5_model}
 
-    assert len(summary) == 99
+    assert len(summary) == 102
     assert not summary.duplicated(["dataset", "horizon", "model_name"]).any()
     assert set(summary["model_name"]) == expected_models
 
     coverage = summary.groupby(["dataset", "horizon"])["model_name"].agg(set)
     assert len(coverage) == 9
-    assert all(models == expected_models for models in coverage)
+    assert all(common_models.issubset(models) for models in coverage)
+    assert all(
+        (rich_m5_model in models) == (dataset == "M5")
+        for (dataset, _horizon), models in coverage.items()
+    )
 
 
 def test_risk_of_bias_assessment_is_study_level():

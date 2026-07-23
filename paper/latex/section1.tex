@@ -44,7 +44,7 @@ We address three research questions and one descriptive accounting scope:
   \item \textbf{Cost accounting scope:} Source~B runtime, electricity,
     cloud-recosting, and CO\textsubscript{2} calculations are reported as
     descriptive deployment accounting, not as a universal cost-effectiveness
-    test, because the legacy Azure ledger is not fully reconciled
+    test, because the Azure ledger is not fully reconciled
     (\S\ref{sec:cost-accuracy}; \ref{app:cost-envelope}).
 \end{itemize}
 
@@ -77,11 +77,11 @@ benchmark suites that can be re-extracted descriptively.
     experiments under a unified evaluation protocol
     (\S\ref{sec:experimental-setup}): five foundation models
     (Chronos-Bolt-Tiny, Moirai~2.0-Small, TiRex, Chronos-2,
-    TimesFM~2.5; 9--200\,M parameters) on a consumer MacBook
-    (Apple~Silicon MPS / CPU), and three baseline families
+    TimesFM~2.5; 9--200\,M parameters) on a MacBook Air M3
+    (16\,GB, MPS/CPU), and three baseline families
     (seasonal naive, recursive \LGBM{}, and direct \LGBM{}), expanded into
-    six baseline variants after fixed-budget, horizon-scaled, and tuned
-    \LGBM{} checks.
+    seven baseline variants after fixed-budget, horizon-scaled, tuned, and
+    richer-feature \LGBM{} checks.
     Source~B produces matched-panel rows with runtime, cost, and
     CO\textsubscript{2} metadata for a 100-series M5, Rohlik, and
     Favorita panel.  The final analysis reports this shared panel for
@@ -108,10 +108,10 @@ Four findings motivate the sections that follow:
   \item \textbf{Matched-panel local evidence favours several FMs against
     pragmatic LightGBM baselines.}
     Chronos-2 is below the best observed local baseline in all nine
-    M5, Rohlik~v2, and Favorita cells, including the M5 200-trial
-    \LGBM{} stress test.  The claim is local to 100-series panels and a
-    fixed feature set; it is not a claim against competition-grade M5
-    feature engineering.
+    M5, Rohlik~v2, and Favorita cells, including M5 richer-feature and
+    200-trial \LGBM{} stress tests.  The claim is local to 100-series panels
+    and the tested feature sets; it is not a claim against competition-grade
+    M5 feature engineering.
 
   \item \textbf{Prediction-level fev-bench reruns strengthen one public
     benchmark slice.}
@@ -144,10 +144,11 @@ Four findings motivate the sections that follow:
 
 \begin{enumerate}
   \item \textbf{Matched-panel Source~B benchmark} covering five zero-shot FMs
-    and six pragmatic baseline variants on shared 100-series M5, Rohlik~v2,
+    and seven pragmatic baseline variants on shared 100-series M5, Rohlik~v2,
     and Favorita panels, with paired series-bootstrap covariance.
   \item \textbf{Baseline stress tests} including an M5 stratified intermittent
-    panel and a 200-trial M5 LightGBM tuning sensitivity.
+    panel, richer-feature M5 \LGBM{}, and a 200-trial M5 LightGBM tuning
+    sensitivity.
   \item \textbf{Prediction-level fev-bench \WAPE{} reruns} with empirical
     covariance matrices for 20 retail tasks.
   \item \textbf{Structured benchmark extraction} from fev-bench and

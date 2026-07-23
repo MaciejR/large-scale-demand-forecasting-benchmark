@@ -667,7 +667,7 @@ write_risk_of_bias_assessment <- function(study_df, csv_path, tex_path) {
       overall_risk = case_when(
         suite_id == "GIFT-Eval" ~ "moderate",
         suite_id == "fev-bench" ~ "moderate",
-        suite_id == "SourceB" ~ "high legacy / moderate repair",
+        suite_id == "SourceB" ~ "high (superseded unmatched runs) / moderate (matched panel)",
         TRUE ~ "high/unclear"
       ),
       assessment_rationale = case_when(

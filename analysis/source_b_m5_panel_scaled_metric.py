@@ -30,6 +30,7 @@ BASELINE_MODELS = {
     "lightgbm_direct_scaled",
     "lightgbm_tuned_cov",
     "lightgbm_tuned_direct",
+    "lightgbm_rich_tuned",
 }
 FOCUS_MODELS = ["chronos2", "tirex", "timesfm25", "moirai2", "chronos_bolt_tiny"]
 

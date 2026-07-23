@@ -457,7 +457,7 @@ def write_integrity_summary(local: pd.DataFrame) -> None:
     cost_total = pd.read_csv(FIG_DIR / "source_b_cost_total.csv")
     matched_panel = pd.read_csv(FIG_DIR / "source_b_paired_panel_cell_summary.csv")
 
-    expected_matched_models = {
+    expected_common_models = {
         "chronos2",
         "chronos_bolt_tiny",
         "lightgbm_cov",
@@ -470,13 +470,18 @@ def write_integrity_summary(local: pd.DataFrame) -> None:
         "timesfm25",
         "tirex",
     }
+    rich_m5_model = "lightgbm_rich_tuned"
     matched_coverage = matched_panel.groupby(["dataset", "horizon"])["model_name"].agg(
         lambda s: set(s)
     )
     matched_panel_complete = (
-        len(matched_panel) == 99
+        len(matched_panel) == 102
         and len(matched_coverage) == 9
-        and all(models == expected_matched_models for models in matched_coverage)
+        and all(expected_common_models.issubset(models) for models in matched_coverage)
+        and all(
+            (rich_m5_model in models) == (dataset == "M5")
+            for (dataset, _horizon), models in matched_coverage.items()
+        )
     )
     direct_scaled_h7_flagged = (
         "same_nominal_tree_count_but_wape_changed"

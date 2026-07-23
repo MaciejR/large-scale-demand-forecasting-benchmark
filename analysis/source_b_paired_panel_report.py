@@ -26,6 +26,7 @@ BASELINE_MODELS = {
     "lightgbm_direct_scaled",
     "lightgbm_tuned_cov",
     "lightgbm_tuned_direct",
+    "lightgbm_rich_tuned",
 }
 
 

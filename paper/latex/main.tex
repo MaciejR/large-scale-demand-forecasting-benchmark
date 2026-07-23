@@ -57,7 +57,7 @@ Evidence from Matched Panels and Public Benchmarks}
 We study when zero-shot time-series foundation models improve short-term
 retail demand forecasts relative to pragmatic LightGBM and statistical
 baselines.  The core evidence is a matched-panel Source~B experiment on M5,
-Rohlik~v2, and Favorita: five zero-shot foundation models and six baseline
+Rohlik~v2, and Favorita: five zero-shot foundation models and seven baseline
 variants are evaluated on the same 100-series rolling-origin panels, with
 paired series-bootstrap log-ratio covariance.  Chronos-2 has lower aggregate
 \WAPE{} than the best observed local baseline in all nine dataset--horizon
@@ -65,14 +65,13 @@ cells; TiRex is lower in all nine point estimates and Moirai~2.0-Small in
 eight of nine; both have intervals excluding zero in seven cells.  On M5, a
 stratified intermittent panel
 preserves the Chronos-2 advantage against the 10-trial tuned \LGBM{} baseline,
-and a 200-trial \LGBM{} stress test leaves Chronos-2 below the best observed
-high-budget \LGBM{} envelope within the fixed feature set at all three
-horizons ($\ell=-0.063,-0.073,-0.061$).  The local pattern includes
+and richer-feature plus 200-trial \LGBM{} stress tests leave Chronos-2 below
+the best observed M5 \LGBM{} envelopes at all three horizons.  The local pattern includes
 Rohlik~v2, for which the evaluated model papers provide no documented
 pretraining exposure, although this is not a leakage audit.  A separate
-prediction-level rerun of
-official fev-bench retail windows provides paired \WAPE{} covariance matrices
-for 20 tasks.  Public fev-bench and GIFT-Eval extraction is used descriptively:
+prediction-level rerun of official fev-bench retail windows provides paired
+\WAPE{} covariance matrices against Seasonal Naive for 20 tasks.  Public
+fev-bench and GIFT-Eval extraction is used descriptively:
 SQL shows the clearest directional FM advantage (median log-ratio $-0.229$;
 FM lower in 92\% of rows), whereas \WAPE{}/ND (median $-0.047$; 66\%) and
 \MASE{} (median $-0.036$; 61\%) are closer to conventional baselines.  The
@@ -128,8 +127,8 @@ The live repository for the current analysis is available at
 \href{https://github.com/MaciejR/large-scale-demand-forecasting-benchmark}{GitHub};
 the release package corresponding to this manuscript is prepared as a
 versioned Zenodo-ready archive under \path{release/} rather than overwriting the
-historical snapshot, and is prepared as GitHub release v1.18 at
-\href{https://github.com/MaciejR/large-scale-demand-forecasting-benchmark/releases/tag/v1.18}{the v1.18 release}.
+historical snapshot, and is prepared as GitHub release v1.19 at
+\href{https://github.com/MaciejR/large-scale-demand-forecasting-benchmark/releases/tag/v1.19}{the v1.19 release}.
 The package records the source commit in
 \path{COMMIT.txt} and file hashes in \path{CHECKSUMS.txt}.
 The repository includes derived extraction tables, analysis code, generated
@@ -142,8 +141,8 @@ is available via the
 \href{https://www.kaggle.com/competitions/rohlik-sales-forecasting-challenge-v2}{Rohlik~v2 Kaggle competition}.
 
 \section*{Acknowledgements}
-Experiments were conducted on a consumer MacBook (Apple M-series,
-MPS backend) and Azure ML (E4DS\_V4 instances).  The author thanks
+Experiments were conducted on a MacBook Air M3 (16\,GB, MPS/CPU backend)
+and Azure ML (E4DS\_V4 instances).  The author thanks
 the developers of \texttt{metafor} \citep{viechtbauer2010metafor}
 and the maintainers of the M5, Favorita, and Rohlik benchmark
 datasets.

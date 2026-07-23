@@ -92,8 +92,8 @@ All jobs run on Azure ML compute cluster \texttt{cc-forecast-batch}
 \texttt{forecast-benchmark-cpu-env:1}.  We use
 \texttt{cc-forecast-batch} for the classical and ML baselines of
 \S\ref{sec:results}--\S\ref{sec:baseline}.  Foundation model
-sweeps (\S\ref{sec:fm}) run on consumer hardware (Apple M-series
-MPS); setup details are in \S\ref{sec:fm_scope}.
+sweeps (\S\ref{sec:fm}) run on a MacBook Air M3
+(16\,GB, MPS/CPU); setup details are in \S\ref{sec:fm_scope}.
 
 Experiment orchestration uses Azure ML pipelines under
 \path{benchmark/code/pipelines/}, including the M5, Rohlik, and Favorita
@@ -244,7 +244,7 @@ portion may improve \WRMSSE{} on M5.  The
 same cap applies on Rohlik and Favorita for comparability.
 
 Foundation models are evaluated zero-shot with each model's published
-inference script on consumer hardware (Apple M-series MPS/CPU).  The
+inference script on a MacBook Air M3 (16\,GB, MPS/CPU).  The
 matched-panel Source~B experiment evaluates five FMs on M5, Rohlik, and
 Favorita with shared series IDs, shared forecast origins, and paired
 prediction outputs.
@@ -360,7 +360,7 @@ model.  Summing the saved Source~B local sweep file gives 72 rows,
 241.6 wall hours, \$3.18 recorded cost, and 4.63\,kg CO$_2$eq under
 the recorded hardware assumptions; the baseline-only appendix tables use
 Azure job-level costs and are not directly commensurate
-with MacBook marginal-electricity accounting.  We therefore use the cost
+with MacBook Air M3 marginal-electricity accounting.  We therefore use the cost
 figures for within-scenario comparisons and avoid a single universal
 break-even rule.
 
@@ -515,8 +515,8 @@ remain a protocol hypothesis and a rerun target.
 
 Foundation model rows come from two complementary data sources:
 the structured literature extraction (\S\ref{sec:fm_scope}--\S\ref{sec:fm_extraction})
-and a local consumer-box sensitivity run on a MacBook via PyTorch
-MPS (\S\ref{sec:fm_local}--\S\ref{sec:fm_results}).
+and a local consumer-box sensitivity run on a MacBook Air M3 via PyTorch
+MPS/CPU (\S\ref{sec:fm_local}--\S\ref{sec:fm_results}).
 
 \subsubsection{Scope and Two-Source Strategy}\label{sec:fm_scope}
 
@@ -524,7 +524,7 @@ FM rows come from two sources.  \textbf{Source~A} (primary) draws
 on the structured extraction (\S\ref{sec:prisma-results}): 9~FM papers plus fev-bench (B02) and
 GIFT-Eval (B01) populate the FM grid entirely from published numbers.
 \textbf{Source~B} (secondary) adds local consumer-box sensitivity runs on
-a MacBook (M-series, 16\,GB, MPS/CPU backend).  The Source~B experiment
+a MacBook Air M3 (16\,GB, MPS/CPU backend).  The Source~B experiment
 contains five FMs (Chronos-Bolt-Tiny, Moirai~2.0-Small, TiRex,
 Chronos-2, TimesFM~2.5; 9--200\,M parameters).  The matched-panel analysis
 is paired: Chronos-Bolt-Tiny,
@@ -552,7 +552,7 @@ covariate set --- is recorded as a moderator
 \subsubsection{Local Consumer-Box Protocol
 (Source~B)}\label{sec:fm_local}\label{sec:fm-consumer-box}
 
-The local sensitivity run uses a single M-series MacBook with
+The local sensitivity run uses a single MacBook Air M3 with
 16\,GB unified memory, Python~3.11 in a dedicated venv
 (\texttt{\~{}/venvs/fm-local/}), and PyTorch~2.3 with the MPS
 backend.  Inference is executed serially (no batching across series
@@ -636,16 +636,16 @@ M5 & Chronos-Bolt-Tiny & 7 & tuned recursive \LGBM{} & 0.314 & 0.312 & 0.006 [$-
 M5 & Moirai~2.0-Small & 7 & tuned recursive \LGBM{} & 0.298 & 0.312 & $-0.047$ [$-0.063$, $-0.032$] \\
 M5 & TimesFM~2.5 & 7 & tuned recursive \LGBM{} & 0.299 & 0.312 & $-0.044$ [$-0.060$, $-0.029$] \\
 M5 & TiRex & 7 & tuned recursive \LGBM{} & 0.298 & 0.312 & $-0.047$ [$-0.062$, $-0.032$] \\
-M5 & Chronos-2 & 14 & tuned recursive \LGBM{} & 0.307 & 0.332 & $-0.078$ [$-0.094$, $-0.061$] \\
-M5 & Chronos-Bolt-Tiny & 14 & tuned recursive \LGBM{} & 0.331 & 0.332 & $-0.004$ [$-0.025$, 0.019] \\
-M5 & Moirai~2.0-Small & 14 & tuned recursive \LGBM{} & 0.310 & 0.332 & $-0.068$ [$-0.087$, $-0.048$] \\
-M5 & TimesFM~2.5 & 14 & tuned recursive \LGBM{} & 0.311 & 0.332 & $-0.066$ [$-0.082$, $-0.048$] \\
-M5 & TiRex & 14 & tuned recursive \LGBM{} & 0.312 & 0.332 & $-0.062$ [$-0.078$, $-0.045$] \\
-M5 & Chronos-2 & 28 & tuned direct \LGBM{} & 0.339 & 0.359 & $-0.056$ [$-0.084$, $-0.028$] \\
-M5 & Chronos-Bolt-Tiny & 28 & tuned direct \LGBM{} & 0.360 & 0.359 & 0.003 [$-0.028$, 0.034] \\
-M5 & Moirai~2.0-Small & 28 & tuned direct \LGBM{} & 0.329 & 0.359 & $-0.086$ [$-0.108$, $-0.063$] \\
-M5 & TimesFM~2.5 & 28 & tuned direct \LGBM{} & 0.332 & 0.359 & $-0.078$ [$-0.105$, $-0.052$] \\
-M5 & TiRex & 28 & tuned direct \LGBM{} & 0.348 & 0.359 & $-0.031$ [$-0.063$, 0.003] \\
+M5 & Chronos-2 & 14 & rich tuned recursive \LGBM{} & 0.307 & 0.320 & $-0.042$ [$-0.057$, $-0.029$] \\
+M5 & Chronos-Bolt-Tiny & 14 & rich tuned recursive \LGBM{} & 0.331 & 0.320 & 0.032 [0.011, 0.053] \\
+M5 & Moirai~2.0-Small & 14 & rich tuned recursive \LGBM{} & 0.310 & 0.320 & $-0.033$ [$-0.049$, $-0.015$] \\
+M5 & TimesFM~2.5 & 14 & rich tuned recursive \LGBM{} & 0.311 & 0.320 & $-0.030$ [$-0.047$, $-0.011$] \\
+M5 & TiRex & 14 & rich tuned recursive \LGBM{} & 0.312 & 0.320 & $-0.026$ [$-0.042$, $-0.010$] \\
+M5 & Chronos-2 & 28 & rich tuned recursive \LGBM{} & 0.339 & 0.352 & $-0.038$ [$-0.060$, $-0.015$] \\
+M5 & Chronos-Bolt-Tiny & 28 & rich tuned recursive \LGBM{} & 0.360 & 0.352 & 0.021 [$-0.003$, 0.048] \\
+M5 & Moirai~2.0-Small & 28 & rich tuned recursive \LGBM{} & 0.329 & 0.352 & $-0.068$ [$-0.092$, $-0.047$] \\
+M5 & TimesFM~2.5 & 28 & rich tuned recursive \LGBM{} & 0.332 & 0.352 & $-0.061$ [$-0.082$, $-0.035$] \\
+M5 & TiRex & 28 & rich tuned recursive \LGBM{} & 0.348 & 0.352 & $-0.013$ [$-0.036$, 0.015] \\
 Rohlik & Chronos-2 & 7 & recursive \LGBM{} & 0.180 & 0.191 & $-0.061$ [$-0.080$, $-0.039$] \\
 Rohlik & Chronos-Bolt-Tiny & 7 & recursive \LGBM{} & 0.199 & 0.191 & 0.041 [0.021, 0.063] \\
 Rohlik & Moirai~2.0-Small & 7 & recursive \LGBM{} & 0.188 & 0.191 & $-0.016$ [$-0.040$, 0.010] \\
@@ -682,7 +682,7 @@ Favorita & TiRex & 28 & tuned direct \LGBM{} & 0.279 & 0.286 & $-0.025$ [$-0.070
 
 Chronos-2 has lower aggregate \WAPE{} than the best local baseline across all
 nine matched M5, Rohlik, and Favorita cells, and every bootstrap interval
-excludes zero after adding tuned recursive and tuned direct \LGBM{} comparators.
+excludes zero after adding tuned, richer-feature, and direct \LGBM{} comparators.
 Batched TiRex is also lower in all nine point estimates, while
 Moirai~2.0-Small is lower in eight of nine and effectively tied at Favorita
 $h=28$; both have bootstrap intervals excluding zero in seven cells.
@@ -702,19 +702,42 @@ cell, as expected.  This supplies local Source~B uncertainty accounting;
 it does not create missing prediction-level covariance for Source~A
 benchmark-paper rows.
 
-\textbf{Tuned \LGBM{} comparators.}  The tuned recursive and tuned direct
+\textbf{Tuned and richer-feature \LGBM{} comparators.}  The tuned recursive and tuned direct
 \LGBM{} runs use 10 validation-origin random-search trials per
 dataset--horizon cell.  Tuned recursive becomes the best local baseline for M5
-at $h=7$ and $h=14$ and Favorita at $h=14$; tuned direct becomes the best local
-baseline for M5 and Favorita at $h=28$.  Neither tuned run improves the Rohlik
-best baseline.  The best-baseline column in Table~\ref{tab:sourceb-paired}
+at $h=7$ and Favorita at $h=14$; tuned direct becomes the best local
+baseline for Favorita at $h=28$.  A richer-feature recursive \LGBM{} sensitivity
+on M5 adds lags \{1,7,14,21,28,56\}, rolling mean/std windows \{7,14,28\},
+an expanding mean, price momentum, and SNAP--weekday interactions.  It becomes
+the best observed M5 baseline at $h=14$ and $h=28$ but remains above Chronos-2.
+Neither tuned run improves the Rohlik best baseline.  The best-baseline column in Table~\ref{tab:sourceb-paired}
 therefore uses the strongest observed baseline among Seasonal Naive, fixed
 recursive \LGBM{}, fixed direct \LGBM{}, horizon-scaled direct \LGBM{}, tuned
-recursive \LGBM{}, and tuned direct \LGBM{}.
+recursive \LGBM{}, tuned direct \LGBM{}, and richer-feature tuned recursive
+\LGBM{} where available.
 This selection is conservative for FM point effects because the comparator is
 the best observed baseline in the same cell, but the bootstrap intervals
 condition on the selected baseline and do not include baseline-selection
 uncertainty.
+
+\textbf{Prespecified-baseline sensitivity.}  To separate the model comparison
+from post-hoc baseline selection, we also recomputed all Source~B contrasts
+against a fixed comparator, tuned recursive \LGBM{}
+(\texttt{lightgbm\_tuned\_cov}), in every dataset--horizon cell.  For
+Chronos-2, Table~\ref{tab:prespecified-tuned-recursive} shows the same
+direction in all nine cells, with bootstrap intervals excluding zero.  This
+does not replace the best-observed-baseline envelope; it verifies that the
+Chronos-2 direction is not created by switching comparators across cells.
+
+\begin{table}[htbp]
+\centering
+\caption{Prespecified-comparator sensitivity for Chronos-2 versus tuned
+recursive \LGBM{} in every Source~B dataset--horizon cell.  Negative
+$\ell$ favours Chronos-2.}
+\label{tab:prespecified-tuned-recursive}
+\small
+\input{../../analysis/figures/source_b_prespecified_lightgbm_tuned_cov_chronos2.tex}
+\end{table}
 
 \textbf{M5 200-trial \LGBM{} sensitivity.}  To test whether the M5 finding is
 an artefact of the 10-trial tuning budget, we reran tuned recursive and tuned
@@ -778,42 +801,15 @@ runtime envelope or were not yet stable under the stratified batching code.
 \textbf{TiRex throughput note.}  The original series-by-series TiRex path
 was too slow for the 100-series matched panel.  The current implementation uses TiRex's
 2D context interface to batch all series within a forecast origin and runs
-the MacBook path on CPU, which completed the M5, Rohlik, and Favorita
+the MacBook Air M3 path on CPU, which completed the M5, Rohlik, and Favorita
 100-series panel at $h\in\{7,14,28\}$.  GPU throughput and larger workloads
 remain separate scaling checks.
 
-\textbf{Per-cell \WAPE{} (descriptive Source~B grid).}  Numbers below are
-per-series \WAPE{} means from the saved result file.  Because
-\texttt{n\_series} varies within every dataset--horizon cell, the table is
-provenance material and should not be read as a fully paired model comparison.
-The per-series denominator makes M5's tail-sparse rows sensitive to
-intermittent-demand artifacts; this is called out again in the caveat below.
-
-\begin{table*}[htbp]
-\centering
-\caption{Source~B \WAPE{} grid (per-series mean, rolling origin) across
-models, datasets, and horizons.  Lower is better.  The grid is complete,
-but \texttt{n\_series} differs across models; see
-\texttt{source\_b\_n\_series\_matrix.csv}.}
-\label{tab:t59}
-\scriptsize
-\begin{tabular}{llrrrrrrrrr}
-\toprule
-Model & Family & \multicolumn{3}{c}{Favorita} & \multicolumn{3}{c}{M5} & \multicolumn{3}{c}{Rohlik~v2} \\
-\cmidrule(lr){3-5} \cmidrule(lr){6-8} \cmidrule(lr){9-11}
- & & $h{=}7$ & $h{=}14$ & $h{=}28$ & $h{=}7$ & $h{=}14$ & $h{=}28$ & $h{=}7$ & $h{=}14$ & $h{=}28$ \\
-\midrule
-Chronos-Bolt-Tiny & FM & 0.482 & 0.485 & 0.489 & 0.897 & 0.902 & 0.911 & 0.334 & 0.345 & 0.361 \\
-Moirai~2.0-Small & FM & 0.477 & 0.482 & 0.487 & 0.887 & 0.893 & 0.901 & 0.324 & 0.337 & 0.354 \\
-TiRex & FM & 0.525 & 0.531 & 0.539 & 0.903 & 0.907 & 0.914 & 0.323 & 0.337 & 0.353 \\
-Chronos-2 & FM & 0.477 & 0.481 & 0.486 & 0.879 & 0.887 & 0.899 & 0.324 & 0.339 & 0.357 \\
-TimesFM~2.5 & FM & 0.528 & 0.534 & 0.542 & 0.944 & 0.944 & 0.948 & 0.324 & 0.338 & 0.353 \\
-\texttt{lightgbm\_cov} & ML\_TREE & 0.530 & 0.531 & 0.538 & 1.625 & 1.729 & 1.936 & 0.365 & 0.395 & 0.432 \\
-\texttt{lightgbm\_direct} & ML\_TREE & 0.551 & 0.571 & 0.589 & 1.351 & 1.410 & 1.513 & 0.382 & 0.407 & 0.444 \\
-\texttt{seasonal\_naive} & STATS & 0.636 & 0.647 & 0.664 & 1.307 & 1.322 & 1.329 & 0.402 & 0.403 & 0.412 \\
-\bottomrule
-\end{tabular}
-\end{table*}
+\textbf{Descriptive Source~B grid.}  The unmatched per-series \WAPE{} grid is
+provenance material and is moved to \ref{app:sourceb-grid}.  It is not
+read as a fully paired model comparison because \texttt{n\_series} varies
+within dataset--horizon cells and M5's per-series denominator is sensitive to
+tail-sparsity artifacts.
 
 \textbf{Descriptive FM point estimates are clustered, but not paired.}
 Favorita and Rohlik show narrow FM spreads in the saved grid, while
@@ -883,7 +879,7 @@ interpretation rather than a universal FM win.
 
 \textbf{Cost and runtime footprint.}  The saved 72-row Source~B file sums
 to 241.6 wall hours, \$3.18, and 4.63\,kg CO$_2$eq under the recorded
-hardware assumptions.  These totals mix MacBook marginal electricity with
+hardware assumptions.  These totals mix MacBook Air M3 marginal electricity with
 Azure job-level accounting and unequal workloads, so
 \S\ref{sec:cost-accuracy} uses them only as scenario inputs.  Claims such
 as ``16$\times$ cheaper per cell'' are not treated as general cost
