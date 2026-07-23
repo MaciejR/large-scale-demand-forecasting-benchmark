@@ -239,7 +239,7 @@ For each training window we use the \textbf{last 365 days of the
 training portion} as the training set.  This cap is a deliberate
 scalability choice --- fitting ${\sim}10$--$30$\,M rows per
 LightGBM model takes 180--240\,s on E4DS\_V4 --- and we estimate
-in \S\ref{sec:threats} that extending to the full training
+in \S\ref{sec:limitations} that extending to the full training
 portion may improve \WRMSSE{} on M5.  The
 same cap applies on Rohlik and Favorita for comparability.
 
