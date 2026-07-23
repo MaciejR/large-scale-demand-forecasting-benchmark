@@ -72,8 +72,11 @@ Chronos-2 is below the best observed local baseline in all nine M5, Rohlik, and
 Favorita dataset--horizon cells; Moirai~2.0-Small and TiRex are lower in all
 nine point estimates and have intervals excluding zero in seven.  A harder M5
 panel stratified by volume and zero fraction preserves the Chronos-2 advantage
-over the best local \LGBM{} baseline at $h=7,14,28$.  The practical conclusion
-is conditional: rankings depend on metric, baseline strength, multi-step
+over the 10-trial tuned \LGBM{} baseline at $h=7,14,28$.  A separate 200-trial
+M5 LightGBM sensitivity check leaves Chronos-2 below the best observed
+high-budget \LGBM{} envelope within the fixed feature set at all three horizons
+($\ell=-0.063,-0.073,-0.061$).  The practical conclusion is conditional:
+rankings depend on metric, baseline strength, multi-step
 protocol, workload matching, leakage risk, and demand characteristics.  We
 release prediction-level artefacts, covariance matrices, and a validation
 checklist for retail bake-offs.

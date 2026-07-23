@@ -229,10 +229,11 @@ The fixed recursive and fixed direct hyperparameters are intentionally untuned
 beyond library defaults: the point of \S\ref{sec:baseline} is to characterize
 the \emph{protocol gap} between direct and recursive variants of an
 otherwise-fixed LightGBM, not to reach the M5 winner.  The tuned recursive and
-tuned direct runs are narrower 10-trial comparators used for the best-baseline
-matched-panel analysis, not exhaustive LightGBM optimisation.  Ceiling claims
-for LightGBM require larger tuning budgets and are treated
-as future work in \S\ref{sec:threats}.
+tuned direct runs are narrower 10-trial comparators used for the common
+M5--Rohlik--Favorita matched-panel analysis.  We additionally ran a 200-trial
+\LGBM{} sensitivity check on the M5 top-volume panel; Rohlik, Favorita, the
+M5 stratified panel, and larger workloads remain outside that high-budget
+sensitivity.
 
 For each training window we use the \textbf{last 365 days of the
 training portion} as the training set.  This cap is a deliberate
@@ -711,6 +712,47 @@ therefore uses the strongest observed baseline among Seasonal Naive, fixed
 recursive \LGBM{}, fixed direct \LGBM{}, horizon-scaled direct \LGBM{}, tuned
 recursive \LGBM{}, and tuned direct \LGBM{}.
 
+\textbf{M5 200-trial \LGBM{} sensitivity.}  To test whether the M5 finding is
+an artefact of the 10-trial tuning budget, we reran tuned recursive and tuned
+direct \LGBM{} with 200 validation-origin trials on the same top-volume
+100-series panel.  Table~\ref{tab:m5-200trial} reports the observed
+high-budget envelope selected by test aggregate \WAPE{} within each horizon.
+The selection is therefore a sensitivity envelope, not a pre-registered
+confirmatory baseline selector.  Because the envelope chooses the better
+\LGBM{} variant on the test panel, its point estimates are optimistic for
+\LGBM{} and conservative for the FM-vs-baseline point effect; the reported
+intervals condition on the selected baseline and do not include selection
+uncertainty.  Recursive \LGBM{} is best at $h=7$ and $h=14$, while direct
+\LGBM{} is best at $h=28$.  The direct 200-trial path is slower than the
+recursive path by $6.3{\times}$, $3.1{\times}$, and $2.3{\times}$ at
+$h=7,14,28$, respectively.  Chronos-2 remains below the high-budget \LGBM{}
+envelope in all three M5 horizons with paired series-bootstrap intervals
+excluding zero.  Chronos-Bolt-Tiny remains a near-parity model: its 200-trial
+M5 intervals cross zero at all three horizons.
+
+\begin{table}[htbp]
+\centering
+\caption{M5 high-budget LightGBM sensitivity on the same top-volume
+100-series panel.  The best 200-trial baseline is selected by observed test
+aggregate \WAPE{} within horizon; $\ell=\log(\WAPE{}_{\text{Chronos-2}}/
+\WAPE{}_{\text{baseline}})$, so negative values favour Chronos-2.}
+\label{tab:m5-200trial}
+\small
+\begin{tabular}{rlrrr}
+\toprule
+$h$ & Best 200-trial baseline & Baseline \WAPE{} & Chronos-2 \WAPE{} &
+$\ell$ (95\% bootstrap CI) \\
+\midrule
+7 & tuned recursive \LGBM{} & 0.313 & 0.294 &
+$-0.063$ [$-0.077$, $-0.050$] \\
+14 & tuned recursive \LGBM{} & 0.330 & 0.307 &
+$-0.073$ [$-0.091$, $-0.058$] \\
+28 & tuned direct \LGBM{} & 0.360 & 0.339 &
+$-0.061$ [$-0.089$, $-0.032$] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \textbf{M5 stratified-panel sensitivity.}  The top-volume M5 panel deliberately
 tests high-sales series.  To check whether the Chronos-2 result survives a
 harder intermittent sample, we reran M5 for Seasonal Naive, fixed/tuned
@@ -718,12 +760,14 @@ recursive and direct \LGBM{}, Chronos-Bolt-Tiny, and Chronos-2 on a separate
 100-series panel stratified by total volume and zero fraction.  The stratified
 panel has median zero fraction 0.773 and median total volume 938.5, compared
 with 0.108 and 48{,}699.5 for the top-volume panel.  Chronos-2 remains below
-the best local \LGBM{} baseline at all three horizons: $\ell=-0.116$
+the 10-trial tuned \LGBM{} baseline at all three horizons: $\ell=-0.116$
 [$-0.146$,$-0.089$] at $h=7$, $\ell=-0.160$ [$-0.208$,$-0.116$] at $h=14$,
 and $\ell=-0.147$ [$-0.218$,$-0.079$] at $h=28$.  Chronos-Bolt-Tiny is also
-below the best local \LGBM{} baseline in the same three cells.  This is a
-model-specific robustness check, not a replacement for full M5 long-tail
-evaluation; Moirai, TiRex, and TimesFM were not included in this stratified
+below the 10-trial tuned \LGBM{} baseline in the same three cells.  This
+stratified sensitivity uses the original 10-trial tuned \LGBM{} baselines.  It
+is a model-specific robustness check, not a replacement for full M5 long-tail
+evaluation or for a 200-trial stratified-panel \LGBM{} rerun; Moirai, TiRex,
+and TimesFM were not included in this stratified
 rerun because their local inference paths did not complete reliably in the
 current MacBook environment.
 
@@ -818,12 +862,14 @@ as ``16$\times$ cheaper per cell'' are not treated as general cost
 results.
 
 \textbf{Caveats.}  The LightGBM comparators include fixed-budget variants and
-10-trial tuned recursive/direct variants, but they are not exhaustive
-competition-grade or dataset-specialised LightGBM systems.  The FMs are
-zero-shot; this section is point-forecast only; the matched panel currently
-covers 100-series M5, Rohlik, and Favorita for completed models including
-batched TiRex, but not GPU throughput, larger workloads, or covariate-aware FM
-configurations.
+10-trial tuned recursive/direct variants for all three datasets, plus a
+200-trial tuned recursive/direct sensitivity on the M5 top-volume panel.
+They are still not exhaustive competition-grade or dataset-specialised
+LightGBM systems, and the 200-trial stress test has not yet been extended to
+Rohlik, Favorita, or the M5 stratified panel.  The FMs are zero-shot; this
+section is point-forecast only; the matched panel currently covers 100-series
+M5, Rohlik, and Favorita for completed models including batched TiRex, but not
+GPU throughput, larger workloads, or covariate-aware FM configurations.
 
 \subsubsection{Reproducibility}\label{sec:fm_repro}
 

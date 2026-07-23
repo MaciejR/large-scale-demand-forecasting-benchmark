@@ -1,0 +1,21 @@
+{
+  "datasets": [
+    "m5"
+  ],
+  "hardware": "M_SERIES_MAC",
+  "horizons": [
+    14
+  ],
+  "lightgbm_tuning_trials": 200,
+  "max_series": 100,
+  "models": [
+    "lightgbm_tuned_cov"
+  ],
+  "n_bootstrap": 1000,
+  "out_dir": "benchmark/results/source_b_paired_panel",
+  "run_id": "source_b_v1_15_m5_h14_lightgbm_tuned_cov_200trial",
+  "seed": 20260714,
+  "series_selection": "top_volume",
+  "train_fraction": 0.8,
+  "train_window_days": 365
+}

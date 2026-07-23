@@ -1,0 +1,39 @@
+{
+  "artifact": "m5_lightgbm_200trial_v1.15",
+  "description": "Allow-listed complete M5 top-volume 100-series LightGBM 200-trial sensitivity runs.",
+  "run_root": "benchmark/results/source_b_paired_panel",
+  "analysis_source": "analysis/source_b_m5_200trial_sensitivity.py",
+  "excluded_dirs": [
+    "source_b_v1_15_strong_lightgbm_200trial_top_volume_100"
+  ],
+  "expected_dirs": [
+    "source_b_v1_15_m5_h7_lightgbm_tuned_cov_200trial",
+    "source_b_v1_15_m5_h14_lightgbm_tuned_cov_200trial",
+    "source_b_v1_15_m5_h28_lightgbm_tuned_cov_200trial",
+    "source_b_v1_15_m5_h7_lightgbm_tuned_direct_200trial",
+    "source_b_v1_15_m5_h14_lightgbm_tuned_direct_200trial",
+    "source_b_v1_15_m5_h28_lightgbm_tuned_direct_200trial"
+  ],
+  "required_files_per_dir": [
+    "cell_summary.csv",
+    "per_series_metrics.csv",
+    "lightgbm_tuning_trials.csv",
+    "run_ledger.csv",
+    "panel_manifest.csv",
+    "panel_series_m5.csv",
+    "predictions_all.parquet",
+    "run_config.json"
+  ],
+  "required_counts": {
+    "lightgbm_tuning_trials_rows": 200,
+    "cell_summary_rows": 1,
+    "per_series_metrics_rows": 100
+  },
+  "primary_metric": "WAPE_aggregate",
+  "bootstrap": {
+    "unit": "series_id",
+    "n_bootstrap_default": 1000,
+    "seed_default": 20260714,
+    "estimand": "log(sum(abs_error_fm)/sum(abs_y) divided by sum(abs_error_baseline)/sum(abs_y))"
+  }
+}

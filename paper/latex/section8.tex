@@ -115,9 +115,11 @@ local models.  This adds a shared-bootstrap covariance matrix for the 45 complet
 FM-vs-best-baseline log-ratios.  The matched panel now includes
 Chronos-Bolt-Tiny, Chronos-2, Moirai~2.0-Small, batched TiRex, and
 TimesFM~2.5 on M5, Rohlik, and Favorita.  The matched panel still does not
-cover GPU throughput, covariate-aware FM variants,
-or larger workloads, so Source~B remains a local sensitivity analysis rather
-than a confirmatory cross-benchmark experiment.
+cover GPU throughput, covariate-aware FM variants, larger workloads, or
+200-trial \LGBM{} tuning on Rohlik and Favorita.  The M5 top-volume panel has
+a separate 200-trial \LGBM{} sensitivity check, but Source~B as a whole
+remains a local sensitivity analysis rather than a confirmatory
+cross-benchmark experiment.
 
 \paragraph{Approximate sampling variance.}
 The exploratory weighted model uses a proxy variance

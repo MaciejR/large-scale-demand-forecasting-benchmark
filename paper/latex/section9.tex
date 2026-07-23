@@ -47,8 +47,10 @@ point estimates, with uncertainty crossing zero at M5 $h=28$ and Favorita
 $h=28$.
 The separate M5 stratified-panel sensitivity check makes the local Chronos-2
 claim less dependent on top-volume series: on a panel with median zero fraction
-0.773, Chronos-2 remains lower than the best local \LGBM{} baseline at
-$h=7,14,28$.
+0.773, Chronos-2 remains lower than the 10-trial tuned \LGBM{} baseline at
+$h=7,14,28$.  On the top-volume M5 panel, an additional 200-trial \LGBM{}
+sensitivity leaves Chronos-2 below the best observed high-budget
+\LGBM{} envelope at all three horizons.
 These results are paired local evidence, not a replacement for the broader
 Source~A benchmark analysis.
 
@@ -125,10 +127,12 @@ are validation hypotheses, not universal deployment rules.
 \paragraph{Strengthen the Source~B matched panel.}
 The current shared-panel experiment covers M5, Rohlik, and Favorita for Chronos-Bolt,
 Chronos-2, Moirai~2.0-Small, batched TiRex, TimesFM~2.5, and a 10-trial tuned
-recursive and tuned direct \LGBM{} comparator.  The remaining
-work is to add larger tuning budgets, GPU throughput measurements, covariate-aware FM variants,
-larger workloads, and larger model families, then test whether the local
-100-series rankings survive these scaling changes.
+recursive and tuned direct \LGBM{} comparator.  M5 also has a completed
+200-trial tuned recursive/direct \LGBM{} sensitivity check on the top-volume
+panel.  The remaining work is to extend the 200-trial baseline stress test to
+Rohlik, Favorita, and stratified or larger panels, then add GPU throughput
+measurements, covariate-aware FM variants, larger workloads, and larger model
+families.
 
 \paragraph{Acquire prediction-level benchmark artifacts.}
 The Source~A benchmark analysis remains descriptive because fev-bench and GIFT-Eval

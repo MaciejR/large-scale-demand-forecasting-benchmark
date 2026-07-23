@@ -26,10 +26,12 @@ outputs/
 benchmark/results/_local_only_export_check.csv
 benchmark/results/fev_bench_official/
 benchmark/results/source_b_paired_panel/smoke_*/
+benchmark/results/source_b_paired_panel/_quarantine/
 benchmark/results/source_b_paired_panel/source_b_repair_baselines_m5_rohlik_100/
 benchmark/results/source_b_paired_panel/source_b_repair_fm_timesfm25_m5_rohlik_100*/
 benchmark/results/source_b_paired_panel/source_b_repair_fm_tirex_m5_rohlik_100/
 benchmark/results/source_b_paired_panel/source_b_v1_11_timesfm25_m5_rohlik_100_batched/
+benchmark/results/source_b_paired_panel/source_b_v1_15_strong_lightgbm_200trial_top_volume_100/
 release/zenodo-v*/
 release/zenodo-v*.zip
 
