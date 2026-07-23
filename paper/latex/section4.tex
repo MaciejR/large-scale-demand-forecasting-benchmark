@@ -1,26 +1,29 @@
-% === Section 4: Literature Results ===
-\section{Literature Results}
+% === Section 4: Structured Search and Benchmark Extraction ===
+\section{Structured Search and Benchmark Extraction}
 \label{sec:literature}\label{sec:prisma-results}
 
-This section reports the outcome of the structured literature search and describes
-the 802-row extraction schema (including per-task re-extraction from
-fev-bench and GIFT-Eval) before the gap-filling experiments
+This supporting section reports the outcome of the structured search and
+describes the 802-row extraction schema (including per-task re-extraction from
+fev-bench and GIFT-Eval) before the matched-panel experiments
 (\S\ref{sec:experiments}) and benchmark analysis
-(\S\ref{sec:metaanalysis}) operate on it.
+(\S\ref{sec:metaanalysis}) use it descriptively.  The search is not used as a
+standalone systematic review; its main result is the evidence gap documented in
+\S\ref{subsec:structural-finding}.
 
-\subsection{Search flow}
+\subsection{Search and extraction flow}
 \label{subsec:prisma-flow}
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.86\textwidth]{prisma_flow.pdf}
-\caption{Structured-search flow of records from identification to extraction.}
+\caption{Structured-search and benchmark-extraction flow of records from
+identification to extraction.}
 \label{fig:prisma-flow}
 \end{figure}
 
 \begin{table}[htbp]
 \centering
-\caption{Structured-search flow summary.}
+\caption{Structured-search and benchmark-extraction flow summary.}
 \label{tab:prisma-flow}
 \small
 \begin{tabularx}{\textwidth}{l r X}
@@ -64,7 +67,7 @@ The Source~A extraction and Source~B experiment blocks break down as follows:
   \item \textbf{OWN\_* (own experiments):} 7 experiment blocks,
     45 rows retained in \texttt{analysis/extraction\_schema.csv} for
     provenance.  The separate local Source~B sweep file adds 72 rows
-    (five FM models plus three baselines across three datasets and
+    (five FM models plus three baseline families across three datasets and
     three horizons) and is not counted as an included literature record.
 \end{itemize}
 

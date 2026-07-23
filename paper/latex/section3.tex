@@ -204,50 +204,20 @@ $\hat{\ell}$ means FM is better}; \textbf{positive $\hat{\ell}$ means
 baseline is better}.  The older raw difference $\Dhat$ is retained only
 in provenance outputs and descriptive columns.
 
-The exploratory weighted diagnostic model is:
-
-\begin{alltt}
-rma.mv(yi = log_ratio, V = vi,
-       random = list(~ 1 | suite_id / task_id,
-                     ~ 1 | model_name),
-       data = delta_model,
-       test = "t", dfs = "contain",
-       method = "REML")
-\end{alltt}
-
-\noindent\textbf{Random effects.}
-\texttt{\~{} 1 | suite\_id / task\_id} nests tasks within source
-suites.  A crossed \texttt{\~{} 1 | model\_name} random effect
-accounts for non-independence when the same FM appears across
-multiple tasks and datasets.  The suite level captures the strongest
-dependence induced by benchmark-suite protocols; the task level
-accounts for repeated models and metrics within a benchmark task.
-
-\noindent\textbf{Variance.}
+\noindent\textbf{Workload proxy.}
 For Source~A pairs, $v_i = 1/n_{\mathrm{FM}} + 1/n_{\mathrm{baseline}}$ where
 $n_\text{series}$ is the number of series in the evaluation task.
 For the older Source~B export, the same proxy is computed with the recorded
 \texttt{n\_series} value for provenance only.  The proxy is not a sampling
 variance for a paired log-ratio: it does not capture metric dispersion,
 shared baselines, covariance between FM and baseline errors, or
-within-series autocorrelation.  This is flagged as a limitation in
-\S\ref{subsec:limitations} and is why this paper does not present the weighted Source~A model as a
-confirmatory meta-analysis.
+within-series autocorrelation.  It is used only to reproduce historical
+weighted diagnostics in generated files and \ref{app:sensitivity};
+the main text relies on suite-, metric-, and prediction-level paired summaries.
 
-\noindent\textbf{Small-sample and cluster-robust diagnostics.}
-\texttt{test = "t", dfs = "contain"} uses containment degrees of
-freedom in \texttt{metafor::rma.mv}; it is reported only as an exploratory
-small-sample diagnostic.  We also report \texttt{clubSandwich::coef\_test}
-CR2 diagnostics clustered by \texttt{task\_id}, with sensitivity checks
-for \texttt{suite\_id} and \texttt{study\_id}.  Because the primary
-model has a crossed \texttt{model\_name} random effect, the CR2 tables
-are generated from cluster-compatible sensitivity fits and explicitly
-labelled in the output files.
-
-\noindent\textbf{Moderator diagnostics (exploratory).}
-We test three moderators individually.  These analyses are exploratory
---- no multiplicity adjustment is applied, and results are
-hypothesis-generating rather than confirmatory:
+\noindent\textbf{Moderator summaries.}
+Moderator rows are reported descriptively.  We inspect three row-level
+groupings, without multiplicity-adjusted hypothesis tests:
 
 \begin{enumerate}
   \item \texttt{mods = \~{} dataset\_norm} --- tests whether the

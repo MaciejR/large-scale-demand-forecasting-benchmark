@@ -2,15 +2,15 @@
 \section{Detailed Baseline Reliability Analysis}\label{app:baseline-detail}
 
 This appendix keeps the per-dataset baseline tables used by
-\S\ref{sec:baseline-reliability}.  The repaired analysis treats the
+\S\ref{sec:baseline-reliability}.  The main analysis treats the
 direct-vs-recursive pattern as a fixed-budget diagnostic, not as a causal
-intermittency result.  The stronger claims from earlier drafts are replaced
-by three audit conclusions: (i) the legacy fixed-budget protocol ranking
-differs across datasets, (ii) the matched-panel aggregate-\WAPE{}
-repair makes M5 and Rohlik more conservative than the legacy per-series view
-and gives a mixed Favorita protocol ranking, and (iii) the 200-trial M5
+intermittency result.  Three reproducibility checks matter most:
+(i) the earlier fixed-budget protocol ranking differs across datasets,
+(ii) the matched-panel aggregate-\WAPE{} view makes M5 and Rohlik more
+conservative than the earlier per-series view and gives a mixed Favorita
+protocol ranking, and (iii) the 200-trial M5
 \LGBM{} sensitivity changes the tuning-budget interpretation without removing
-the Chronos-2 M5 advantage.  The legacy Favorita \texttt{direct\_scaled} run
+the Chronos-2 M5 advantage.  The Favorita \texttt{direct\_scaled} run
 should not be used as inferential evidence.
 
 \subsection{M5 Results}
@@ -119,18 +119,18 @@ file as the $h=7$ same-tree-count inconsistency.  Until the exact protocol
 difference is recovered, the scaled run is a rerun target rather than
 evidence for a new ranking.
 
-\subsection{Legacy Fixed-Budget Protocol Summary}
+\subsection{Earlier Fixed-Budget Protocol Summary}
 
 \begin{table}[htbp]
 \centering
-\caption{Legacy full-workload summary of the fixed-budget
+\caption{Earlier full-workload summary of the fixed-budget
 direct-vs-recursive LightGBM gap using per-series \WAPE{} means
 (positive = direct lower, negative = recursive lower).}
 \label{tab:t58-appendix}
 \small
 \begin{tabularx}{\textwidth}{llrrrX}
 \toprule
-Dataset & Zero-day frac. & $h = 7$ & $h = 14$ & $h = 28$ & Interpretation \\
+Dataset & Series-day zero frac. & $h = 7$ & $h = 14$ & $h = 28$ & Interpretation \\
 \midrule
 M5 & ${\sim}70\,\%$ & $+16.8\,\%$ & $+18.5\,\%$ & $+21.8\,\%$ & Direct lower in this protocol \\
 Rohlik & ${\sim}1.2\,\%$ & $-4.4\,\%$ & $-3.0\,\%$ & $-2.8\,\%$ & Recursive lower and cheaper \\
@@ -141,7 +141,7 @@ Favorita & ${\sim}15$--$25\,\%$ & $-4.1\,\%$ & $-7.5\,\%$ & $-9.6\,\%$ & Recursi
 
 \subsection{Matched-Panel Protocol Check}
 
-The matched-panel repair recomputes the M5, Rohlik, and Favorita LightGBM protocol
+The matched-panel analysis recomputes the M5, Rohlik, and Favorita LightGBM protocol
 contrast on the same 100 top-volume series used for the FM-vs-baseline
 paired panel.  Using aggregate \WAPE{}, direct is slightly worse than
 recursive on M5 at $h=7$ and $h=14$, slightly better at $h=28$, and worse
@@ -149,7 +149,7 @@ than recursive on Rohlik at all horizons.  On Favorita, recursive is lower
 at $h=7$ and $h=14$, while direct is lower at $h=28$.  The horizon-scaled
 direct run equals the unscaled direct run at $h=7$ on all three datasets,
 as expected when both use 300 trees.  This resolves the same-tree-count
-anomaly in the repaired panel.
+anomaly in the matched panel.
 
 The combined evidence supports a cautious hypothesis: the best LightGBM
 protocol can change with the dataset, metric aggregation, sampled workload,
@@ -165,7 +165,7 @@ not yet reconcile to one ledger.
 \input{../../analysis/figures/source_b_cost_consistency_audit.tex}
 
 The cost plots in \S\ref{sec:cost-accuracy} therefore remain cost-error
-scatterplots.  The matched-panel repair writes a local run ledger for
+scatterplots.  The matched-panel analysis writes a local run ledger for
 the completed M5, Rohlik, and Favorita reruns.  The older Azure
 summary/detail tables still need a single reconciled ledger before cost
 claims are promoted beyond descriptive accounting.

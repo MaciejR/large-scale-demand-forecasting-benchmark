@@ -29,7 +29,7 @@ per-series with no cross-series learning. Their value in this paper
 is as a sanity-check baseline: any global model that loses to
 Seasonal Naive on a given (dataset, horizon) cell is failing in a
 way that demands explanation, not hand-waving. We include Croston
-because M5 has a \textasciitilde{}70\,\% zero-day fraction and
+because M5 has a \textasciitilde{}70\,\% series-day zero fraction and
 Croston is the textbook method for intermittent demand. In our
 extraction schema these models carry
 \texttt{model\_family = "statistical"}.
@@ -130,7 +130,7 @@ from 2011--2016, predating modern promotional patterns, and (2)
 many foundation model papers report per-series \WAPE{} rather than
 \WRMSSE{} on M5, creating a metric mismatch that
 \S\ref{sec:fm-m5-metric} documents in detail. On per-series
-\WAPE{}, the \textasciitilde{}70\,\% zero-day fraction in M5's long
+\WAPE{}, the \textasciitilde{}70\,\% series-day zero fraction in M5's long
 tail causes denominator explosions that make \LGBM{} appear to
 perform worse than Seasonal Naive --- a metric artefact, not a
 model failure.

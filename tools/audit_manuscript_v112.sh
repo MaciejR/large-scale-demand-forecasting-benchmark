@@ -52,7 +52,7 @@ required_pdf_patterns=(
   "Cost-Error Scatter"
   "Total auditable query families: 25"
   "Source A external studies included:"
-  "not a validated sampling variance"
+  "not a sampling variance"
   "confirmatory pooled meta-analysis"
 )
 

@@ -1,16 +1,16 @@
 % appendix_c.tex — Per-Series Metric Distributions
 \section{Per-Series Metric Distributions}\label{app:metrics}
 
-\subsection{Legacy 100-Series Bootstrap for Source B FM Cells}
+\subsection{Descriptive 100-Series Bootstrap for Source B FM Cells}
 
-Table~\ref{tab:bootstrap-se} reports the legacy 10{,}000-iteration
-bootstrap standard error of mean \WAPE{} for the Source~B
+Table~\ref{tab:bootstrap-se} reports the 10{,}000-iteration bootstrap
+standard error of mean \WAPE{} for the Source~B
 foundation-model cells for which per-series bootstrap files were
 available.  The file
 contains 36 cells (4~FMs $\times$ 3 datasets $\times$ 3 horizons) and
 omits TimesFM~2.5.  It is therefore retained as a descriptive uncertainty
 check, not as the sampling-variance input to the Source~A reanalysis
-of \S\ref{sec:metaanalysis}.  These values come from the legacy small-sample workload and are
+of \S\ref{sec:metaanalysis}.  These values come from the earlier small-sample workload and are
 not directly comparable to the unmatched saved-sweep estimates in
 Table~\ref{tab:t59}.  The matched-panel paired bootstrap is reported
 separately in Table~\ref{tab:sourceb-paired} and in
@@ -22,7 +22,7 @@ empirical covariance inputs for local Source~B paired log-ratio contrasts.
 
 \begin{table}[htbp]
 \centering
-\caption{Legacy 100-series bootstrap standard error and 95\% CI for
+\caption{Descriptive 100-series bootstrap standard error and 95\% CI for
 available Source~B FM
 cells (4~FMs $\times$ 3~datasets $\times$ 3~horizons = 36~cells,
 TimesFM~2.5 missing, $B = 10{,}000$).}\label{tab:bootstrap-se}
@@ -86,8 +86,8 @@ Interpretation:
 \begin{itemize}[nosep]
   \item These bootstrap intervals describe the available FM cells only.
     They do not provide paired FM-minus-baseline uncertainty.
-  \item TimesFM~2.5 is absent from this legacy 100-series bootstrap table.
-    The separate matched-panel repair now covers TimesFM~2.5 on
+  \item TimesFM~2.5 is absent from this descriptive 100-series bootstrap
+    table.  The separate matched-panel analysis covers TimesFM~2.5 on
     M5, Rohlik, and Favorita with paired FM-vs-baseline bootstrap contrasts.
   \item The Favorita ``close call'' of 0.3 pp at $h = 7$ is within
     roughly 1 SE in the available cells and should not be over-interpreted.

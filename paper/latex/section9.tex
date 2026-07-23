@@ -2,16 +2,17 @@
 \section{Conclusions}
 \label{sec:conclusions}\label{sec:conclusion}
 
-We presented a benchmark study of foundation models for retail demand
-forecasting, supported by a structured literature search and original
-matched-panel experiments.  The primary quantitative file contains
-$k = 498$ Source~A best-baseline comparisons from two benchmark suites,
-fev-bench and GIFT-Eval, plus a separate matched-panel Source~B experiment
-on M5, Rohlik, and Favorita.
-Because the available benchmark papers do not provide paired
-prediction-level variances and covariances, this version does not claim a
-confirmatory pooled meta-analysis.  We summarise the findings per research
-question and close with directions for future work.
+We presented a matched-panel benchmark study of foundation models for retail
+demand forecasting, supported by structured public-benchmark extraction.  The
+core evidence is Source~B: shared 100-series M5, Rohlik~v2, and Favorita
+panels with paired series-bootstrap covariance, plus M5 baseline stress tests.
+The second prediction-level component reruns official fev-bench retail windows
+for paired \WAPE{} covariance.  Source~A contributes $k=498$ descriptive
+best-baseline comparisons from fev-bench and GIFT-Eval; because those published
+benchmark tables do not provide paired prediction-level variances and
+covariances, this version does not claim a confirmatory pooled meta-analysis.
+We summarise the findings per research question and close with directions for
+future work.
 
 \subsection{Answers to the research questions}
 \label{subsec:answers-rq}
@@ -19,26 +20,14 @@ question and close with directions for future work.
 \paragraph{RQ1 (Accuracy): Do zero-shot foundation models outperform
 conventional baselines on retail demand forecasting?}
 
-The answer is conditional.  In the Source~A best-baseline corpus,
-the metric-specific descriptive summaries are directionally favourable to
-FMs: SQL has median log-ratio $-0.229$ with FMs lower in 92\% of rows,
-\WAPE{}/ND has median $-0.047$ with FMs lower in 66\% of rows, and
-\MASE{} has median $-0.036$ with FMs lower in 61\% of rows.  GIFT-Eval is
-uniformly favourable to FMs in this extraction, while fev-bench is much
-closer to parity on point-forecast metrics.
-
-\textbf{The defensible conclusion is that FMs show an observed
-benchmark-level advantage, especially on distributional metrics, but this is
-not universal evidence that FMs outperform conventional baselines in all
-retail demand settings.}  Rankings depend on metric, baseline strength,
-covariates, leakage controls, and evaluation protocol.
-
-The Source~B matched-panel experiment is directionally consistent with a narrower
-local version of that claim, but it is also model-specific.  On the same
+The answer is conditional.  On the same
 100-series panels and forecast origins, Chronos-2 has lower aggregate
-\WAPE{} than the best local baseline across all nine M5, Rohlik, and Favorita
+\WAPE{} than the best local baseline across all nine M5, Rohlik~v2, and Favorita
 dataset--horizon cells, including cells where the best baseline is tuned
-recursive or tuned direct \LGBM{}.  Moirai~2.0-Small is lower in all nine point
+recursive or tuned direct \LGBM{}.  Rohlik~v2 is the youngest local dataset
+and the least exposed to known pretraining-corpus leakage risk, so the same
+Chronos-2 direction there is an important guard against an M5/Favorita-only
+interpretation.  Moirai~2.0-Small is lower in all nine point
 estimates, with bootstrap intervals excluding zero in seven.  Chronos-Bolt-Tiny
 is near parity on M5 and worse on Rohlik and Favorita.  TimesFM~2.5 is lower
 than the best local baseline on M5 and Rohlik but near parity on Favorita, while
@@ -52,7 +41,16 @@ $h=7,14,28$.  On the top-volume M5 panel, an additional 200-trial \LGBM{}
 sensitivity leaves Chronos-2 below the best observed high-budget
 \LGBM{} envelope at all three horizons.
 These results are paired local evidence, not a replacement for the broader
-Source~A benchmark analysis.
+Source~A benchmark extraction.
+
+In the Source~A best-baseline corpus, the metric-specific descriptive summaries
+are directionally favourable to FMs: SQL has median log-ratio $-0.229$ with
+FMs lower in 92\% of rows, \WAPE{}/ND has median $-0.047$ with FMs lower in
+66\% of rows, and \MASE{} has median $-0.036$ with FMs lower in 61\% of rows.
+GIFT-Eval is uniformly favourable to FMs in this extraction, while fev-bench is
+much closer to parity on point-forecast metrics.  The defensible conclusion is
+therefore not universal FM superiority; rankings depend on metric, baseline
+feature set, covariates, leakage controls, and evaluation protocol.
 
 \paragraph{RQ2 (Moderators): Which characteristics moderate the
 FM-vs-baseline gap?}

@@ -51,16 +51,15 @@ We address four research questions across three complementary lenses
 \subsection{Approach}
 \label{sec:approach}
 
-This study is a benchmark study supported by a structured literature
-search.  The search defines the retail evidence gap and documents which
-published FM evaluations are extractable; the main evidence comes from
-benchmark extraction and matched-panel experiments.  Because the paired
-statistical mass comes mainly from fev-bench and GIFT-Eval, the paper reports
-metric-specific, suite-specific, and leave-one-suite-out summaries rather than
-a single confirmatory pooled claim.
+This study is a matched-panel benchmark study supported by public-benchmark
+extraction.  The strongest evidence comes from prediction-level comparisons
+where the same series, origins, and actuals are shared across models.  The
+structured search serves a narrower role: it documents why standalone papers do
+not provide matched FM-vs-LightGBM retail comparisons and identifies the public
+benchmark suites that can be re-extracted descriptively.
 
 \begin{enumerate}
-  \item \textbf{Source~A (literature + benchmark extraction).} We
+  \item \textbf{Source~A (structured search + benchmark extraction).} We
     use 150 identified records (2020--2026) from retained
     Google Scholar/web, Semantic Scholar, and arXiv searches, applying
     retail-domain inclusion criteria. Scopus and Web of Science target
@@ -70,15 +69,19 @@ a single confirmatory pooled claim.
     (20~retail tasks, 7~FMs vs LightGBM/CatBoost baselines) and
     GIFT-Eval \citep{aksu2024gift} (4~Sales-domain tasks, 7~FMs vs
     statistical baselines). The frozen extraction schema contains 802~rows
-    across 9~retail datasets (\S\ref{sec:extraction-schema}).
+    across 9~as-reported retail dataset names before normalisation
+    (\S\ref{sec:extraction-schema}).  These rows are used for descriptive
+    suite- and metric-level summaries, not for a confirmatory meta-analysis.
 
   \item \textbf{Source~B (gap-filling experiments).} We run our own
     experiments under a unified evaluation protocol
     (\S\ref{sec:experimental-setup}): five foundation models
     (Chronos-Bolt-Tiny, Moirai~2.0-Small, TiRex, Chronos-2,
     TimesFM~2.5; 9--200\,M parameters) on a consumer MacBook
-    (Apple~Silicon MPS / CPU), and three baselines
-    (lightgbm\_cov, lightgbm\_direct, seasonal\_naive) on Azure~ML.
+    (Apple~Silicon MPS / CPU), and three baseline families
+    (seasonal naive, recursive \LGBM{}, and direct \LGBM{}), expanded into
+    six baseline variants after fixed-budget, horizon-scaled, and tuned
+    \LGBM{} checks.
     Source~B produces matched-panel rows with runtime, cost, and
     CO\textsubscript{2} metadata for a 100-series M5, Rohlik, and
     Favorita panel.  The final analysis reports this shared panel for
@@ -88,39 +91,40 @@ a single confirmatory pooled claim.
     the appendices, not as primary evidence.
 \end{enumerate}
 
-The primary benchmark analysis (\S\ref{sec:meta-regression}) uses Source~A
-benchmark rows: for each (FM, task, metric) pair we compute
+For public-benchmark extraction, each (FM, task, metric) row is summarised as
 $\log(\text{FM metric}/\text{best conventional baseline metric})$.  The
-primary file has $k = 498$ Source~A pairs.  We also generate heuristic
-weighted \texttt{rma.mv} diagnostics for continuity, but the
-$1/n_{\text{FM}}+1/n_{\text{baseline}}$ term is treated as a workload
-proxy rather than as a validated sampling variance.  The matched-panel
-Source~B experiments are reported separately because they have their own
-prediction-level paired bootstrap covariance matrices.
+primary descriptive file has $k = 498$ Source~A pairs from fev-bench and
+GIFT-Eval.  Heuristic weighted diagnostics remain generated for pipeline
+continuity, but the manuscript does not treat them as inferential evidence
+because the $1/n_{\text{FM}}+1/n_{\text{baseline}}$ term is a workload proxy,
+not a sampling variance.
 
 \subsection{Headline findings}
 \label{sec:headline-findings}
 
-Three findings motivate the sections that follow:
+Four findings motivate the sections that follow:
 
 \begin{enumerate}
-  \item \textbf{The observed FM advantage is benchmark-level and
-    metric-dependent.}
-    Across $k = 498$ Source~A benchmark pairs, SQL has the clearest
-    directional advantage (median log-ratio $-0.229$; FMs lower in
-    92\% of rows), while \WAPE{}/ND and \MASE{} are closer to the best
-    baseline (median log-ratios $-0.047$ and $-0.036$).  The finding is
-    therefore an observed benchmark-corpus pattern, not a universal claim.
+  \item \textbf{Matched-panel local evidence favours several FMs against
+    pragmatic LightGBM baselines.}
+    Chronos-2 is below the best observed local baseline in all nine
+    M5, Rohlik~v2, and Favorita cells, including the M5 200-trial
+    \LGBM{} stress test.  The claim is local to 100-series panels and a
+    fixed feature set; it is not a claim against competition-grade M5
+    feature engineering.
 
-  \item \textbf{Model scale is not a stable predictor in the current
-    benchmark corpus.}  Source~B point estimates are clustered across
-    several small and medium FMs, while Source~A does not yield a stable
-    scale moderator.  Because Source~B is not fully paired, this is a
-    hypothesis about the absence of a simple size--accuracy gradient,
-    not evidence that one named checkpoint dominates another.
-    This is consistent with
-    \citet{shchur2025fevbench}'s finding that architecture may matter
-    more than parameter count.
+  \item \textbf{Prediction-level fev-bench reruns strengthen one public
+    benchmark slice.}
+    For official fev-bench retail windows, paired \WAPE{} covariance matrices
+    can be generated for Seasonal Naive versus Chronos-Bolt-Tiny, Chronos-2,
+    TiRex, and TimesFM~2.5 across 20 tasks.  This is stronger evidence than
+    the extracted leaderboard rows, but it is metric- and comparator-specific.
+
+  \item \textbf{The broader public-benchmark pattern is metric-dependent.}
+    Across $k = 498$ descriptive Source~A benchmark pairs, SQL has the clearest
+    directional FM advantage (median log-ratio $-0.229$; FMs lower in 92\% of
+    rows), while \WAPE{}/ND and \MASE{} are closer to the best baseline.  This
+    motivates matched bake-offs rather than a universal FM ranking.
 
   \item \textbf{The LightGBM protocol gap varies across panels,
     metrics, and budgets.} \S\ref{sec:baseline-reliability} shows that
@@ -139,18 +143,16 @@ Three findings motivate the sections that follow:
 \label{sec:contributions}
 
 \begin{enumerate}
-  \item \textbf{Structured literature search} of foundation models for
-    retail demand forecasting, used to document the extractability gap and
-    motivate the benchmark study (802 extraction-schema rows, 9~datasets,
-    2020--2026).
-  \item \textbf{Cross-benchmark extraction} from fev-bench and
-    GIFT-Eval, yielding 498 Source~A model-level paired comparisons
-    across 7~FMs and conventional baselines, plus 45 Source~B
-    descriptive contrasts retained outside the primary evidence.
-  \item \textbf{Model-level benchmark analysis} ($k = 498$
-    primary) showing metric-specific FM-vs-best-baseline log-ratio
-    patterns, with heuristic weighted diagnostics kept separate from
-    confirmatory inference.
+  \item \textbf{Matched-panel Source~B benchmark} covering five zero-shot FMs
+    and six pragmatic baseline variants on shared 100-series M5, Rohlik~v2,
+    and Favorita panels, with paired series-bootstrap covariance.
+  \item \textbf{Baseline stress tests} including an M5 stratified intermittent
+    panel and a 200-trial M5 LightGBM tuning sensitivity.
+  \item \textbf{Prediction-level fev-bench \WAPE{} reruns} with empirical
+    covariance matrices for 20 retail tasks.
+  \item \textbf{Structured benchmark extraction} from fev-bench and
+    GIFT-Eval, used descriptively to document metric-specific public
+    benchmark patterns and the extractability gap in standalone papers.
   \item \textbf{Baseline reliability analysis} documenting the
     conditional direct-vs-recursive LightGBM gap across three
     datasets.
@@ -163,11 +165,11 @@ Three findings motivate the sections that follow:
 \label{sec:paper-structure}
 
 \S\ref{sec:background} surveys the forecasting taxonomy and existing
-benchmarks. \S\ref{sec:methods} describes the structured search
-protocol, extraction schema, and gap-filling experimental design.
-\S\ref{sec:prisma-results} reports the structured-search extraction results
-(search flow, descriptive statistics). \S\ref{sec:experiments}
-presents the gap-filling experiments:
+benchmarks. \S\ref{sec:methods} describes the structured search,
+extraction schema, and gap-filling experimental design.
+\S\ref{sec:prisma-results} summarises the supporting search and
+benchmark-extraction rows. \S\ref{sec:experiments}
+presents the matched-panel experiments:
 \S\ref{sec:experimental-setup}--\ref{sec:perdataset}
 experimental setup and per-dataset results,
 \S\ref{sec:baseline-reliability} baseline reliability (direct vs

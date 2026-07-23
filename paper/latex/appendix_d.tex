@@ -1,5 +1,5 @@
-% appendix_d.tex — Sensitivity Analyses
-\section{Sensitivity Analyses}\label{app:sensitivity}
+% appendix_d.tex — Supplemental heuristic-weight diagnostics
+\section{Supplemental Heuristic-Weight Diagnostics}\label{app:sensitivity}
 
 The Source~A sensitivity variants use model-level log-ratios,
 \texttt{metafor::rma.mv} with REML, \texttt{test = "t"},
@@ -15,7 +15,7 @@ statistics below are diagnostic output, not confirmatory meta-analysis.
 \begin{table}[htbp]
 \centering
 \caption{Heuristic-weight diagnostic variants of the model-level log-ratio reanalysis
-  ($k = 498$ Source~A primary pool; legacy Source~B descriptive).}\label{tab:sensitivity-summary}
+  ($k = 498$ Source~A descriptive pool; Source~B provenance rows excluded).}\label{tab:sensitivity-summary}
 \small
 \begin{tabular}{lrlllr}
 \toprule
@@ -39,20 +39,20 @@ Equal-weight           & 498 & $-0.215$ & $[-2.054,\; 1.623]$ & 0.377 & 33 \\
 
 The sign is stable across sensitivity variants, but conservative
 suite-level containment intervals cross zero.  This remains the key
-methodology repair: the benchmark rows provide many task-level comparisons,
-but they do not provide many independent source clusters.  The
+methodological constraint: the benchmark rows provide many task-level
+comparisons, but they do not provide many independent source clusters.  The
 Source~B matched-panel rerun is useful local paired evidence, but it is not
 pooled into these Source~A diagnostic variants.
 
 Task-clustered CR2 sensitivity fits are more optimistic because they treat
 the 24 benchmark tasks as clusters.  These are retained as software
-diagnostics only; they do not repair the missing paired sampling covariance.
+diagnostics only; they do not replace the missing paired sampling covariance.
 
 \subsection{\texorpdfstring{Bucket-Level Variant ($k = 43$)}{Bucket-Level Variant (k = 43)}}
 
 For comparison, a coarser bucket-level aggregation
 (mean FM vs mean ML\_TREE per dataset--horizon--metric cell) yields
 $k = 43$ and $\hat{\ell}=-0.180$ (95\% CI $[-0.313,-0.047]$,
-$p=0.015$).  This variant is retained only as a legacy sensitivity check;
+$p=0.015$).  This variant is retained only as a historical sensitivity check;
 it averages away within-task model heterogeneity and is not the primary
 estimand.

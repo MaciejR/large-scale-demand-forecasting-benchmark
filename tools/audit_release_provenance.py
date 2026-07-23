@@ -18,6 +18,9 @@ ZIP_PATH = Path("release") / f"{RELEASE_STEM}.zip"
 PDF_NAME = "demand-forecasting-timesfm-fev-bench-wape-covariance-repair-v1.12.pdf"
 REPO_URL = "https://github.com/MaciejR/large-scale-demand-forecasting-benchmark"
 GITHUB_RELEASE_URL = f"{REPO_URL}/releases/tag/v1.12"
+CURRENT_MANUSCRIPT_RELEASE_URL_RE = re.compile(
+    rf'{re.escape(REPO_URL)}/releases/tag/v[0-9]+\.[0-9]+'
+)
 ZENODO_DOI_RE = re.compile(r'10\.5281/zenodo\.[0-9]+')
 ZENODO_DOI_URL_RE = re.compile(r'https://doi\.org/10\.5281/zenodo\.[0-9]+')
 
@@ -111,7 +114,13 @@ def audit_static_files(repo_root: Path) -> list[str]:
         require_contains(text, RELEASE_STEM, label, findings)
 
     require_contains(main_tex, REPO_URL, "paper/latex/main.tex", findings)
-    require_contains(main_tex, GITHUB_RELEASE_URL, "paper/latex/main.tex", findings)
+    if not (
+        GITHUB_RELEASE_URL in main_tex
+        or CURRENT_MANUSCRIPT_RELEASE_URL_RE.search(main_tex)
+    ):
+        findings.append(
+            "paper/latex/main.tex: missing GitHub release URL for manuscript package"
+        )
     require_contains(main_tex, "COMMIT.txt", "paper/latex/main.tex", findings)
     require_contains(main_tex, "CHECKSUMS.txt", "paper/latex/main.tex", findings)
     require_contains(zenodo_metadata, str(ZIP_PATH.name), "docs/ZENODO_METADATA_V1.12.json", findings)

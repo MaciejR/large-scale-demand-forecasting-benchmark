@@ -1,17 +1,17 @@
 """
-Generate PRISMA 2020 flow diagram for the systematic review.
+Generate structured-search flow diagram for the benchmark study.
 
 Produces: analysis/figures/prisma_flow.pdf + prisma_flow.png
 
-Based on: Page MJ, et al. The PRISMA 2020 statement: an updated guideline
-for reporting systematic reviews. BMJ 2021;372:n71.
+The figure is a transparency aid for a single-author structured search and
+benchmark extraction.  It is not a claim of full PRISMA compliance.
 """
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import subprocess
 
-# PRISMA flow numbers aligned with the repaired manuscript.
+# Structured-search flow numbers aligned with the manuscript.
 # Identification
 N_DB_RECORDS = 150          # Records identified through database/web searching
 N_QUERIES = 25              # Auditable query families retained in Appendix B
@@ -113,10 +113,10 @@ def main():
     ax.axis("off")
 
     # Title
-    ax.text(5, 10.7, "PRISMA-Informed Flow Diagram", ha="center", va="center",
+    ax.text(5, 10.7, "Structured Search and Benchmark Extraction Flow", ha="center", va="center",
             fontsize=14, fontweight="bold", family="sans-serif")
     ax.text(5, 10.4,
-            "Systematic Review: Foundation Models for Retail Demand Forecasting",
+            "Foundation Models for Retail Demand Forecasting",
             ha="center", va="center", fontsize=9, fontstyle="italic",
             family="sans-serif", color="#555555")
 
@@ -209,7 +209,7 @@ def main():
              color="#E8EAF6", border="#3F51B5", bold_first_line=True)
 
     draw_box(ax, 8.2, 4.3, 2.5, 0.55,
-             f"Source B: own experiments\n(not PRISMA studies; local sweep n=72)",
+             f"Source B: own experiments\n(separate matched-panel evidence)",
              color="#F3E5F5", border="#7B1FA2")
     draw_side_arrow(ax, 5.95, 4.3, 6.95, 4.3, color="#7B1FA2")
 
