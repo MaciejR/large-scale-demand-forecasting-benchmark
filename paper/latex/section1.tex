@@ -24,11 +24,10 @@ as the available benchmark evidence allows. By ``when'' we mean: on
 which datasets, horizons, demand distributions, metrics, and hardware
 budgets.
 
-\subsection{Research questions}
+\subsection{Research Questions and Accounting Scope}
 \label{sec:research-questions}
 
-We address four research questions across three complementary lenses
-(accuracy, moderators, and cost):
+We address three research questions and one descriptive accounting scope:
 
 \begin{itemize}
   \item \textbf{RQ1 (Accuracy):} Do zero-shot foundation models
@@ -38,14 +37,15 @@ We address four research questions across three complementary lenses
     metric choice, demand intermittency, model scale, forecast
     horizon --- moderate the FM-vs-baseline gap?
     (\S\ref{sec:moderator-results})
-  \item \textbf{RQ3 (Cost):} What cost-error tradeoffs appear when
-    consumer-hardware electricity, cloud-GPU list price, and
-    CO\textsubscript{2} footprint are included?
-    (\S\ref{sec:cost-accuracy})
-  \item \textbf{RQ4 (Guidance):} Under what conditions should a
+  \item \textbf{RQ3 (Guidance):} Under what conditions should a
     retail forecasting team deploy a foundation model instead of
     investing in feature engineering for LightGBM?
     (\S\ref{sec:framework})
+  \item \textbf{Cost accounting scope:} Source~B runtime, electricity,
+    cloud-recosting, and CO\textsubscript{2} calculations are reported as
+    descriptive deployment accounting, not as a universal cost-effectiveness
+    test, because the legacy Azure ledger is not fully reconciled
+    (\S\ref{sec:cost-accuracy}; \ref{app:cost-envelope}).
 \end{itemize}
 
 \subsection{Approach}
@@ -157,7 +157,7 @@ Four findings motivate the sections that follow:
     conditional direct-vs-recursive LightGBM gap across three
     datasets.
   \item \textbf{Practitioner validation checklist} mapping data
-    characteristics to bake-off steps and cost-accuracy diagnostics,
+    characteristics to bake-off steps and deployment-accounting diagnostics,
     rather than deterministic model-family rules.
 \end{enumerate}
 
@@ -175,10 +175,10 @@ experimental setup and per-dataset results,
 \S\ref{sec:baseline-reliability} baseline reliability (direct vs
 recursive), \S\ref{sec:fm-consumer-box} foundation model
 consumer-box results. \S\ref{sec:meta-regression} reports the
-benchmark analysis: Source~A best-baseline log-ratios
+supporting public-benchmark analysis: Source~A best-baseline log-ratios
 (\S\ref{sec:rq1-accuracy}), moderator hypotheses
 (\S\ref{sec:moderator-results}),
-cost-error scatter diagnostics (\S\ref{sec:cost-accuracy}),
+deployment-accounting diagnostics (\S\ref{sec:cost-accuracy}),
 heterogeneity diagnostics (\S\ref{sec:heterogeneity}), and the
 prediction-level fev-bench analysis (\S\ref{subsec:fev-prediction-level-repair}).
 \S\ref{sec:framework} translates the findings into a practitioner

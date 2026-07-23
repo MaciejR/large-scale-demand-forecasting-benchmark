@@ -11,8 +11,8 @@ for paired \WAPE{} covariance.  Source~A contributes $k=498$ descriptive
 best-baseline comparisons from fev-bench and GIFT-Eval; because those published
 benchmark tables do not provide paired prediction-level variances and
 covariances, this version does not claim a confirmatory pooled meta-analysis.
-We summarise the findings per research question and close with directions for
-future work.
+We summarise the findings per research question, then state what the
+descriptive cost accounting can and cannot support.
 
 \subsection{Answers to the research questions}
 \label{subsec:answers-rq}
@@ -84,16 +84,7 @@ hypothesis-generating because the independent source count is small:
     budget diagnostic rather than a robust result.
 \end{itemize}
 
-\paragraph{RQ3 (Cost): What is the cost-error tradeoff?}
-
-Consumer-hardware FM inference can be inexpensive for the Source~B setup,
-but the cost comparison is scenario-dependent.  It depends on batch size,
-available hardware, GPU recosting assumptions, and whether a team already
-has a tuned \LGBM{} pipeline.  The cost plots should be read as
-scenario-specific cost-error scatterplots, not as a universal efficiency
-frontier or break-even rule.
-
-\paragraph{RQ4 (Guidance): When should a retail team deploy a foundation
+\paragraph{RQ3 (Guidance): When should a retail team deploy a foundation
 model?}
 
 The \S\ref{sec:framework} decision framework distils the findings into
@@ -118,6 +109,15 @@ conditions where an FM is worth testing first:
 The FM may not pay off when: (a)~the team has rich covariates and a tuned
 feature pipeline, or (b)~batch throughput at scale is the constraint.  These
 are validation hypotheses, not universal deployment rules.
+
+\paragraph{Descriptive cost accounting.}
+
+Consumer-hardware FM inference can be inexpensive for the Source~B setup,
+but the cost comparison is scenario-dependent.  It depends on batch size,
+available hardware, GPU recosting assumptions, and whether a team already
+has a tuned \LGBM{} pipeline.  The cost plots should be read as
+scenario-specific cost-error scatterplots, not as a universal efficiency
+frontier or break-even rule.
 
 \subsection{Future work}
 \label{subsec:future-work}

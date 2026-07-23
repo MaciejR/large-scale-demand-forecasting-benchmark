@@ -49,7 +49,7 @@ done
 
 required_pdf_patterns=(
   "Omitted Asymmetry Diagnostics"
-  "Cost-Error Scatter"
+  "Deployment Cost Accounting"
   "Total auditable query families: 25"
   "Source A external studies included:"
   "not a sampling variance"
