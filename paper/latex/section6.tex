@@ -58,8 +58,7 @@ The Source~A descriptive file contains $k=498$ best-baseline log-ratios:
 2 suite clusters, 2 study clusters, 7 foundation models, and three metric
 families.  The full generated contrast table contains 543 rows after adding
 45 descriptive Source~B provenance rows; the matched-panel Source~B analysis
-is stored in a separate file,
-\texttt{source\_b\_paired\_panel\_fm\_vs\_best\_baseline.csv}.
+is stored as a separate generated artifact.
 
 \subsection{Suite-Level Patterns}
 \label{subsec:cross-paper-pooled}\label{sec:rq1-accuracy}
@@ -207,7 +206,9 @@ The Source~B cost plots are retained only as descriptive deployment-accounting
 scatterplots.  They do not show an efficiency frontier because raw \WAPE{}
 values come from different datasets, horizons, workloads, and cost bases.
 The figures therefore illustrate deployment accounting questions rather
-than estimate a general break-even rule.
+than estimate a general break-even rule.  We show only the recorded-hardware
+accounting scatter; cloud-GPU recosting remains an assumption exercise until a
+measured GPU ledger exists for the same workloads.
 
 \begin{figure}[htbp]
 \centering
@@ -215,15 +216,6 @@ than estimate a general break-even rule.
 \caption{Descriptive Source~B deployment-accounting scatter on the recorded hardware
 cost basis.  X-axis: USD cost (log scale).  Y-axis: \WAPE{}.}
 \label{fig:cost-scatter-hw}
-\end{figure}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\textwidth]{figure_6_5_cost_error_scatter_cloud_gpu.pdf}
-\caption{Descriptive Source~B deployment-accounting scatter under the cloud-GPU
-recosting scenario.  The assumptions are illustrative and not a measured
-GPU benchmark.}
-\label{fig:cost-scatter-gpu}
 \end{figure}
 
 \subsection{Moderator Interpretation}

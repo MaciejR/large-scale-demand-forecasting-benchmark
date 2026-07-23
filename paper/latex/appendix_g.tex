@@ -116,8 +116,8 @@ $h=7$ scaled run still has 300 trees per head, the same nominal count as
 the base direct run, while \WAPE{} changes from 0.5513 to 0.4878.  This is
 flagged in the generated \texttt{source\_b\_direct\_scaled\_audit.csv}
 file as the $h=7$ same-tree-count inconsistency.  Until the exact protocol
-difference is recovered, the scaled run is a rerun target rather than
-evidence for a new ranking.
+difference in that legacy saved sweep is recovered, the legacy scaled run is a
+rerun target rather than evidence for a new ranking.
 
 \subsection{Earlier Fixed-Budget Protocol Summary}
 
@@ -149,7 +149,8 @@ than recursive on Rohlik at all horizons.  On Favorita, recursive is lower
 at $h=7$ and $h=14$, while direct is lower at $h=28$.  The horizon-scaled
 direct run equals the unscaled direct run at $h=7$ on all three datasets,
 as expected when both use 300 trees.  This resolves the same-tree-count
-anomaly in the matched panel.
+behaviour inside the new matched-panel protocol; it does not retroactively
+explain the earlier unmatched \texttt{direct\_scaled\_favorita.csv} anomaly.
 
 The combined evidence supports a cautious hypothesis: the best LightGBM
 protocol can change with the dataset, metric aggregation, sampled workload,

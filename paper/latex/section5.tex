@@ -540,11 +540,10 @@ analysis rather than pooled into Source~A.
 \subsubsection{Literature-Extraction Protocol
 (Source~A)}\label{sec:fm_extraction}
 
-Extraction follows the structured search protocol of \S\ref{sec:prisma-results} and
-records \texttt{paper\_id}, \texttt{dataset\_variant},
-\texttt{metric\_name/value}, and a
-\texttt{baseline\_quality\_tier}~$\in$~\{weak, standard, strong\}
-per row.  M5 has the densest FM coverage (8 papers); Favorita has 7;
+Extraction follows the structured search protocol of
+\S\ref{sec:prisma-results} and records study identifiers, dataset variants,
+metric names and values, and a baseline-quality tier per row.  M5 has the
+densest FM coverage (8 papers); Favorita has 7;
 Rohlik~v2 has 3 (all from fev-bench).  Covariate asymmetry ---
 most extracted FMs are univariate while LightGBM uses the full
 covariate set --- is recorded as a moderator
@@ -684,8 +683,10 @@ Favorita & TiRex & 28 & tuned direct \LGBM{} & 0.279 & 0.286 & $-0.025$ [$-0.070
 Chronos-2 has lower aggregate \WAPE{} than the best local baseline across all
 nine matched M5, Rohlik, and Favorita cells, and every bootstrap interval
 excludes zero after adding tuned recursive and tuned direct \LGBM{} comparators.
-Moirai~2.0-Small and batched TiRex are also lower in all nine point estimates,
-with bootstrap intervals excluding zero in seven cells.  TimesFM~2.5 is lower
+Batched TiRex is also lower in all nine point estimates, while
+Moirai~2.0-Small is lower in eight of nine and effectively tied at Favorita
+$h=28$; both have bootstrap intervals excluding zero in seven cells.
+TimesFM~2.5 is lower
 than the best baseline on all six M5 and Rohlik cells, with intervals excluding
 zero in all six, but remains near parity on Favorita.  Chronos-Bolt-Tiny is
 near parity on M5 and worse on Rohlik and Favorita.
@@ -710,6 +711,10 @@ best baseline.  The best-baseline column in Table~\ref{tab:sourceb-paired}
 therefore uses the strongest observed baseline among Seasonal Naive, fixed
 recursive \LGBM{}, fixed direct \LGBM{}, horizon-scaled direct \LGBM{}, tuned
 recursive \LGBM{}, and tuned direct \LGBM{}.
+This selection is conservative for FM point effects because the comparator is
+the best observed baseline in the same cell, but the bootstrap intervals
+condition on the selected baseline and do not include baseline-selection
+uncertainty.
 
 \textbf{M5 200-trial \LGBM{} sensitivity.}  To test whether the M5 finding is
 an artefact of the 10-trial tuning budget, we reran tuned recursive and tuned
@@ -843,14 +848,38 @@ A sanity check recasting \WAPE{} in aggregate form
 descriptive rows.  The matched-panel results therefore use aggregate
 \WAPE{} from shared predictions as the local Source~B estimand.
 
+\textbf{M5 panel-scaled sensitivity.}  Official M5 WRMSSE is defined on the
+full coherent 12-level hierarchy, so it is not available for the 100
+item--store matched panel.  As a scaled-error check, we recomputed an
+M5-style bottom-level RMSSE on the same M5 prediction panel, using
+origin-specific last-28-day dollar weights and scales estimated only from
+history available before each forecast origin.  Table~\ref{tab:m5-panel-scaled}
+shows that Chronos-2 remains below the best observed baseline on this
+panel-weighted scaled metric at all three horizons.  This is not the official
+competition WRMSSE; it tests whether the local M5 finding survives a
+scale-adjusted metric on the matched panel.
+
+\begin{table}[htbp]
+\centering
+\caption{M5 matched-panel scaled-error sensitivity for Chronos-2 versus the
+best observed local baseline.  The metric is a bottom-level,
+origin-specific, dollar-weighted RMSSE on the same 100 item--store panel, not
+official M5 WRMSSE.}
+\label{tab:m5-panel-scaled}
+\small
+\input{../../analysis/figures/source_b_m5_panel_scaled_metric_chronos2.tex}
+\end{table}
+
 \textbf{Favorita is now the matched ``close call'' dataset.}
-On the shared 100-series Favorita panel, \texttt{lightgbm\_cov} is the best
-baseline at $h=7$ and $h=14$, while direct \LGBM{} is best at $h=28$.
-Chronos-2 is clearly lower than the best baseline on all three horizons,
-Moirai~2.0-Small is lower at $h=7$ and $h=14$ and close at $h=28$, and
-TimesFM~2.5 is close to parity but slow.  By contrast, TimesFM~2.5 is lower
-than the best baseline on the matched M5 and Rohlik cells.  The result supports a
-matched bake-off interpretation rather than a universal FM win.
+On the shared 100-series Favorita panel, recursive \LGBM{} is the best
+observed baseline at $h=7$, tuned recursive \LGBM{} at $h=14$, and tuned
+direct \LGBM{} at $h=28$.  Chronos-2 is clearly lower than the selected
+baseline on all three horizons.  Batched TiRex is lower in all three point
+estimates, although the $h=28$ interval crosses zero; Moirai~2.0-Small is
+lower at $h=7$ and $h=14$ and effectively tied at $h=28$; TimesFM~2.5 is close
+to parity but slow.  By contrast, TimesFM~2.5 is lower than the best baseline
+on the matched M5 and Rohlik cells.  The result supports a matched bake-off
+interpretation rather than a universal FM win.
 
 \textbf{Cost and runtime footprint.}  The saved 72-row Source~B file sums
 to 241.6 wall hours, \$3.18, and 4.63\,kg CO$_2$eq under the recorded
