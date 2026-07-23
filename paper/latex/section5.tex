@@ -653,7 +653,7 @@ Rohlik & TimesFM~2.5 & 7 & recursive \LGBM{} & 0.184 & 0.191 & $-0.040$ [$-0.063
 Rohlik & TiRex & 7 & recursive \LGBM{} & 0.184 & 0.191 & $-0.037$ [$-0.061$, $-0.011$] \\
 Rohlik & Chronos-2 & 14 & recursive \LGBM{} & 0.185 & 0.199 & $-0.076$ [$-0.095$, $-0.054$] \\
 Rohlik & Chronos-Bolt-Tiny & 14 & recursive \LGBM{} & 0.205 & 0.199 & 0.026 [0.007, 0.044] \\
-Rohlik & Moirai~2.0-Small & 14 & recursive \LGBM{} & 0.194 & 0.199 & $-0.026$ [$-0.050$, $-0.000$] \\
+Rohlik & Moirai~2.0-Small & 14 & recursive \LGBM{} & 0.194 & 0.199 & $-0.026$ [$-0.050$, $-0.002$] \\
 Rohlik & TimesFM~2.5 & 14 & recursive \LGBM{} & 0.190 & 0.199 & $-0.048$ [$-0.074$, $-0.021$] \\
 Rohlik & TiRex & 14 & recursive \LGBM{} & 0.189 & 0.199 & $-0.051$ [$-0.077$, $-0.022$] \\
 Rohlik & Chronos-2 & 28 & recursive \LGBM{} & 0.193 & 0.209 & $-0.079$ [$-0.105$, $-0.053$] \\
@@ -685,7 +685,8 @@ nine matched M5, Rohlik, and Favorita cells, and every bootstrap interval
 excludes zero after adding tuned, richer-feature, and direct \LGBM{} comparators.
 Batched TiRex is also lower in all nine point estimates, while
 Moirai~2.0-Small is lower in eight of nine and effectively tied at Favorita
-$h=28$; both have bootstrap intervals excluding zero in seven cells.
+$h=28$; both have bootstrap intervals excluding zero in seven cells using
+the unrounded bootstrap quantiles.
 TimesFM~2.5 is lower
 than the best baseline on all six M5 and Rohlik cells, with intervals excluding
 zero in all six, but remains near parity on Favorita.  Chronos-Bolt-Tiny is
@@ -710,7 +711,10 @@ baseline for Favorita at $h=28$.  A richer-feature recursive \LGBM{} sensitivity
 on M5 adds lags \{1,7,14,21,28,56\}, rolling mean/std windows \{7,14,28\},
 an expanding mean, price momentum, and SNAP--weekday interactions.  It becomes
 the best observed M5 baseline at $h=14$ and $h=28$ but remains above Chronos-2.
-Neither tuned run improves the Rohlik best baseline.  The best-baseline column in Table~\ref{tab:sourceb-paired}
+Neither tuned run improves the Rohlik best baseline; the tuned recursive
+search selected configurations whose aggregate \WAPE{} is effectively
+equivalent to the fixed recursive defaults after rounding.  The
+best-baseline column in Table~\ref{tab:sourceb-paired}
 therefore uses the strongest observed baseline among Seasonal Naive, fixed
 recursive \LGBM{}, fixed direct \LGBM{}, horizon-scaled direct \LGBM{}, tuned
 recursive \LGBM{}, tuned direct \LGBM{}, and richer-feature tuned recursive
@@ -756,6 +760,9 @@ $h=7,14,28$, respectively.  Chronos-2 remains below the high-budget \LGBM{}
 envelope in all three M5 horizons with paired series-bootstrap intervals
 excluding zero.  Chronos-Bolt-Tiny remains a near-parity model: its 200-trial
 M5 intervals cross zero at all three horizons.
+The 200-trial envelope uses the original fixed feature set; the richer-feature
+\LGBM{} check is the separate 10-trial M5 sensitivity reported in
+Table~\ref{tab:sourceb-paired}.
 
 \begin{table}[htbp]
 \centering
