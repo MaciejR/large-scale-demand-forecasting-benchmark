@@ -75,7 +75,7 @@ Three notes on dataset preparation:
   and does not fit the 32\,GB E4DS\_V4 compute used for Phases
   A--D.  The selection rule biases Favorita \LGBM{} evaluation
   toward higher-velocity series; this is flagged as a limitation
-  in \S\ref{sec:threats} and \S\ref{sec:framework}, and the full-series evaluation
+  in \S\ref{sec:limitations} and \S\ref{sec:framework}, and the full-series evaluation
   is left for future work on larger hardware.
 \end{itemize}
 
@@ -336,21 +336,20 @@ Three observations at the headline level:
 
 \subsubsection{Per-Dataset Baseline Tables}\label{sec:perdataset}
 
-For compactness we do not reproduce the full 9-row per-dataset
-grids here --- they live in \S\ref{sec:baseline} next to the
-analysis that uses them.  The cross-dataset reader who wants the
+For compactness the full 9-row per-dataset grids are kept in
+\ref{app:baseline-detail}.  The cross-dataset reader who wants the
 condensed view can use Table~\ref{tab:t52} above; the per-horizon
-reader can jump to:
+reader can jump to the appendix tables:
 
 \begin{itemize}
-\item \S\ref{sec:m5results}, Table~\ref{tab:t53} --- M5 nine-row
+\item \ref{app:baseline-detail}, Table~\ref{tab:t53} --- M5 nine-row
   grid (SN, \LGBM{} recursive, \LGBM{} direct $\times$
   $h \in \{7, 14, 28\}$), including \WRMSSE{}.
-\item \S\ref{sec:rohlik}, Table~\ref{tab:t54} --- Rohlik~v2
+\item \ref{app:baseline-detail}, Table~\ref{tab:t54} --- Rohlik~v2
   nine-row grid.  \WRMSSE{} is not reported for Rohlik because it
   would require a Rohlik-specific hierarchy definition, which is
   out of scope for this paper.
-\item \S\ref{sec:favorita}, Table~\ref{tab:t55} --- Favorita
+\item \ref{app:baseline-detail}, Table~\ref{tab:t55} --- Favorita
   nine-row grid.
 \end{itemize}
 
@@ -767,9 +766,9 @@ below the 10-trial tuned \LGBM{} baseline in the same three cells.  This
 stratified sensitivity uses the original 10-trial tuned \LGBM{} baselines.  It
 is a model-specific robustness check, not a replacement for full M5 long-tail
 evaluation or for a 200-trial stratified-panel \LGBM{} rerun; Moirai, TiRex,
-and TimesFM were not included in this stratified
-rerun because their local inference paths did not complete reliably in the
-current MacBook environment.
+and TimesFM were not included in this stratified rerun.  The limitation is
+operational rather than statistical: those paths either exceeded the local
+runtime envelope or were not yet stable under the stratified batching code.
 
 \textbf{TiRex throughput note.}  The original series-by-series TiRex path
 was too slow for the 100-series matched panel.  The current implementation uses TiRex's

@@ -71,7 +71,8 @@ benchmark suites. In the extraction schema,
 \paragraph{Foundation models (FM).}
 Pre-trained on large corpora of heterogeneous time series and
 applied zero-shot (no fine-tuning on the target dataset) or with
-lightweight fine-tuning. The models in scope for this review are:
+lightweight fine-tuning. Table~\ref{tab:fm-scope} lists the
+models in scope for this review.
 
 \begin{table}[htbp]
 \centering
@@ -143,7 +144,7 @@ retail, energy, and transport. The standard metric is a skill score
 relative to Seasonal Naive, computed with bootstrapped confidence
 intervals. GIFT-Eval is the dominant evaluation suite in the FM
 literature: most of our Category~A (FM paper) rows cite it. Its
-limitation for our purposes is that only a subset of the 28 datasets
+limitation for our purposes is that only a subset of the 23 datasets
 is retail-specific, and the aggregate skill scores mix retail with
 non-retail, making it hard to extract a clean retail-only
 FM-vs-ML\_TREE delta.
