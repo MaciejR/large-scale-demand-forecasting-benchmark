@@ -64,6 +64,9 @@ def audit_paths(root: Path) -> list[str]:
     findings: list[str] = []
     for path in root.rglob("*"):
         rel = relative_posix(path, root)
+        if path.is_symlink():
+            findings.append(f"path:{rel}: forbidden symlink")
+            continue
         parts = path.relative_to(root).parts
         for forbidden in FORBIDDEN_PATH_PARTS:
             if (
@@ -87,7 +90,7 @@ def iter_text_lines(path: Path):
 def audit_text(root: Path) -> list[str]:
     findings: list[str] = []
     for path in root.rglob("*"):
-        if not path.is_file() or path.suffix.lower() in BINARY_SUFFIXES:
+        if path.is_symlink() or not path.is_file() or path.suffix.lower() in BINARY_SUFFIXES:
             continue
         rel = relative_posix(path, root)
         for lineno, line in iter_text_lines(path):

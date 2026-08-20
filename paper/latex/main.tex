@@ -10,6 +10,15 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{hyperref}
+\ifdefined\anonymoussubmission
+\hypersetup{
+  hidelinks,
+  hypertexnames=false,
+  pdftitle={When Do Foundation Models Pay Off for Retail Demand Forecasting? Evidence from Matched Panels and Public Benchmarks},
+  pdfauthor={},
+  pdfkeywords={demand forecasting, foundation models, benchmark study, LightGBM, structured literature search, retail, time series}
+}
+\else
 \hypersetup{
   hidelinks,
   hypertexnames=false,
@@ -17,6 +26,7 @@
   pdfauthor={Maciej Rubczynski},
   pdfkeywords={demand forecasting, foundation models, benchmark study, LightGBM, structured literature search, retail, time series}
 }
+\fi
 \usepackage{natbib}
 \usepackage{xcolor}
 \usepackage{multirow}
@@ -48,37 +58,30 @@
 \title{When Do Foundation Models Pay Off for Retail Demand Forecasting?\\
 Evidence from Matched Panels and Public Benchmarks}
 
+\ifdefined\anonymoussubmission
+\author{Anonymous manuscript}
+\else
 \author[inst1]{Maciej Rubczynski\corref{cor1}}
 \ead{rubczynski.maciej@gmail.com}
 \cortext[cor1]{Corresponding author.}
 \affiliation[inst1]{organization={Independent Researcher},city={Warsaw},country={Poland}}
+\fi
 
 \begin{abstract}
-We study when zero-shot time-series foundation models improve short-term
-retail demand forecasts relative to pragmatic LightGBM and statistical
-baselines.  The core evidence is a matched-panel Source~B experiment on M5,
-Rohlik~v2, and Favorita: five zero-shot foundation models and seven baseline
-variants are evaluated on the same 100-series rolling-origin panels, with
-paired series-bootstrap log-ratio covariance.  Chronos-2 has lower aggregate
-\WAPE{} than the best observed local baseline in all nine dataset--horizon
-cells; TiRex is lower in all nine point estimates and Moirai~2.0-Small in
-eight of nine; both have unrounded intervals excluding zero in seven cells.  On M5, a
-stratified intermittent panel
-preserves the Chronos-2 advantage against the 10-trial tuned \LGBM{} baseline,
-and richer-feature plus 200-trial \LGBM{} stress tests leave Chronos-2 below
-the best observed M5 \LGBM{} envelopes at all three horizons.  The local pattern includes
-Rohlik~v2, for which the evaluated model papers provide no documented
-pretraining exposure, although this is not a leakage audit.  A separate
-prediction-level rerun of official fev-bench retail windows provides paired
-\WAPE{} covariance matrices against Seasonal Naive for 20 tasks.  Public
-fev-bench and GIFT-Eval extraction is used descriptively:
-SQL shows the clearest directional FM advantage (median log-ratio $-0.229$;
-FM lower in 92\% of rows), whereas \WAPE{}/ND (median $-0.047$; 66\%) and
-\MASE{} (median $-0.036$; 61\%) are closer to conventional baselines.  The
-practical conclusion is conditional: rankings depend on metric, baseline
-feature set, multi-step protocol, workload matching, leakage risk, and demand
-characteristics.  We release prediction-level artefacts, covariance matrices,
-and a validation checklist for retail bake-offs.
+We examine when zero-shot time-series foundation models improve short-term
+retail demand forecasts over pragmatic LightGBM and statistical baselines.
+On matched 100-series rolling-origin panels from M5, Rohlik~v2, and Favorita,
+five foundation models and seven baseline variants are compared using paired
+series-bootstrap covariance.  Chronos-2 achieves lower aggregate \WAPE{} than
+the best observed local baseline in all nine dataset--horizon cells;
+richer-feature and 200-trial LightGBM sensitivity checks do not reverse the M5
+result.  Separate prediction-level reruns of 20 official fev-bench retail tasks
+provide paired \WAPE{} covariance against Seasonal Naive.  Public fev-bench and
+GIFT-Eval results are used descriptively: foundation-model advantages are
+clearest for Scaled Quantile Loss and smaller for \WAPE{} and \MASE{}.
+Rankings remain conditional on metric, baseline strength, multi-step protocol,
+workload matching, leakage risk, and demand characteristics.  The released
+artifacts support auditable retail forecasting bake-offs.
 \end{abstract}
 
 \begin{keyword}
@@ -115,20 +118,31 @@ The author declares no competing financial interests or personal
 relationships that could have appeared to influence the work
 reported in this paper.
 
+\ifdefined\anonymoussubmission
+\else
 \section*{CRediT authorship contribution statement}
 \textbf{Maciej Rubczynski:} Conceptualization, Methodology, Software,
 Formal analysis, Investigation, Data curation, Writing -- original
 draft, Writing -- review \& editing, Visualization.
+\fi
 
 \section*{Data availability}
+\ifdefined\anonymoussubmission
+An anonymized replication package containing the derived data, analysis code,
+generated tables and figures, audit outputs, and replication scripts is
+supplied with the submission.  Raw competition data and the full untracked
+prediction trees are excluded.  Public benchmark datasets remain available
+from their original providers.  Identifying repository and archive links will
+be restored after double-anonymized review.
+\else
 A historical technical-report snapshot is archived on Zenodo at
 \href{https://doi.org/10.5281/zenodo.21338004}{Zenodo}.
 The live repository for the current analysis is available at
 \href{https://github.com/MaciejR/large-scale-demand-forecasting-benchmark}{GitHub};
 the release package corresponding to this manuscript is prepared as a
 versioned Zenodo-ready archive under \path{release/} rather than overwriting the
-historical snapshot, and is prepared as GitHub release v1.20 at
-\href{https://github.com/MaciejR/large-scale-demand-forecasting-benchmark/releases/tag/v1.20}{the v1.20 release}.
+historical snapshot, and is prepared as GitHub release v1.21 at
+\href{https://github.com/MaciejR/large-scale-demand-forecasting-benchmark/releases/tag/v1.21}{the v1.21 release}.
 The package records the source commit in
 \path{COMMIT.txt} and file hashes in \path{CHECKSUMS.txt}.
 The repository includes derived extraction tables, analysis code, generated
@@ -139,13 +153,23 @@ The M5 dataset is publicly available via Kaggle; the Favorita
 dataset is publicly available via Kaggle; the Rohlik~v2 dataset
 is available via the
 \href{https://www.kaggle.com/competitions/rohlik-sales-forecasting-challenge-v2}{Rohlik~v2 Kaggle competition}.
+\fi
 
+\ifdefined\anonymoussubmission
+\else
 \section*{Acknowledgements}
 Experiments were conducted on a MacBook Air M3 (16\,GB, MPS/CPU backend)
 and Azure ML (E4DS\_V4 instances).  The author thanks
 the developers of \texttt{metafor} \citep{viechtbauer2010metafor}
 and the maintainers of the M5, Favorita, and Rohlik benchmark
 datasets.
+\fi
+
+\section*{Declaration of generative AI in scientific writing}
+During manuscript preparation, the author used OpenAI Codex to assist with
+language editing, document organization, and code checks.  The author reviewed
+and edited all outputs and takes full responsibility for the content of the
+article.
 
 % --- Bibliography ---
 \bibliographystyle{elsarticle-harv}

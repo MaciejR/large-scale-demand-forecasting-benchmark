@@ -6,9 +6,9 @@ authors:
   - family-names: Rubczynski
     given-names: Maciej
     affiliation: Independent researcher
-version: "v1.12"
-date-released: "2026-07-20"
-url: "https://github.com/MaciejR/large-scale-demand-forecasting-benchmark/releases/tag/v1.12"
+version: "v1.21"
+date-released: "2026-08-20"
+url: "https://github.com/MaciejR/large-scale-demand-forecasting-benchmark/releases/tag/v1.21"
 repository-code: "https://github.com/MaciejR/large-scale-demand-forecasting-benchmark"
 abstract: "A retail demand forecasting benchmark study of foundation models and conventional baselines, supported by a structured literature search and paired WAPE covariance artifacts for Source B and a fev-bench retail slice."
 keywords:

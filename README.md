@@ -14,14 +14,17 @@ The current manuscript PDF is available at
 The v1.0 technical-report release is archived on Zenodo:
 <https://doi.org/10.5281/zenodo.21338004>.
 
-The current Zenodo-ready release package is published as GitHub release
-[`v1.12`](https://github.com/MaciejR/large-scale-demand-forecasting-benchmark/releases/tag/v1.12)
+The current IJF submission-ready release package is published as GitHub release
+[`v1.21`](https://github.com/MaciejR/large-scale-demand-forecasting-benchmark/releases/tag/v1.21)
 and can also be rebuilt locally as
-`release/zenodo-v1.12-timesfm-fev-bench-wape-covariance-repair.zip`.  It
-contains the manuscript PDF, replication materials, `COMMIT.txt`, and
-`CHECKSUMS.txt`; raw Kaggle data, MLflow stores, model checkpoints, logs, and
-full fev-bench prediction parquet trees are intentionally excluded.
-The final publication checklist is in
+`release/v1.21/v1.21-ijf-submission-ready.zip`. It contains the public manuscript,
+the double-anonymized review manuscript, submission documents, replication
+materials, `COMMIT.txt`, and `CHECKSUMS.txt`; raw Kaggle data, MLflow stores,
+model checkpoints, logs, caches, and full fev-bench prediction parquet trees
+are intentionally excluded. The submission checklist and tracking record are
+in [`docs/IJF_SUBMISSION_CHECKLIST.md`](docs/IJF_SUBMISSION_CHECKLIST.md) and
+[`docs/IJF_SUBMISSION_LOG.md`](docs/IJF_SUBMISSION_LOG.md).
+The historical v1.12 publication procedure remains available in
 [`docs/PUBLICATION_HANDOFF_V1.12.md`](docs/PUBLICATION_HANDOFF_V1.12.md).
 
 ## Key Findings
@@ -55,8 +58,8 @@ corresponding Zenodo archive once minted:
 
 ```text
 Rubczynski, M. (2026). When Do Foundation Models Pay Off for Retail Demand
-Forecasting? A Benchmark Study with Structured Literature Search (v1.12).
-GitHub. https://github.com/MaciejR/large-scale-demand-forecasting-benchmark/releases/tag/v1.12
+Forecasting? A Benchmark Study with Structured Literature Search (v1.21).
+GitHub. https://github.com/MaciejR/large-scale-demand-forecasting-benchmark/releases/tag/v1.21
 ```
 
 The historical v1.0 technical-report record remains citable under its original
@@ -71,13 +74,13 @@ Zenodo. https://doi.org/10.5281/zenodo.21338004
 BibTeX:
 
 ```bibtex
-@misc{rubczynski2026foundationmodelsretail_v112,
+@misc{rubczynski2026foundationmodelsretail_v121,
   author       = {Rubczynski, Maciej},
   title        = {When Do Foundation Models Pay Off for Retail Demand Forecasting?
                   A Benchmark Study with Structured Literature Search},
   year         = {2026},
-  version      = {v1.12},
-  url          = {https://github.com/MaciejR/large-scale-demand-forecasting-benchmark/releases/tag/v1.12}
+  version      = {v1.21},
+  url          = {https://github.com/MaciejR/large-scale-demand-forecasting-benchmark/releases/tag/v1.21}
 }
 
 @misc{rubczynski2026foundationmodelsretail_v1,
@@ -94,13 +97,13 @@ BibTeX:
 
 ## Publication Roadmap
 
-The current recommended path is to treat v1.12 as a stronger exploratory
-benchmark study: Source B now has matched-panel covariance for all five local FMs
-on M5/Rohlik/Favorita, and one concrete
-Source A slice (fev-bench retail WAPE for Chronos-Bolt-Tiny, Chronos-2,
-TiRex, and TimesFM 2.5 against Seasonal Naive) has prediction-level paired covariance.  The remaining
-methodological gap is full prediction-level covariance for SQL, MASE,
-GIFT-Eval, stronger best-baseline comparisons, and additional FM families.
+Version v1.21 freezes the current evidence base for journal review. Source B
+has matched-panel covariance for all five local FMs on M5/Rohlik/Favorita, and
+the fev-bench retail WAPE slice has prediction-level paired covariance for
+Chronos-Bolt-Tiny, Chronos-2, TiRex, and TimesFM 2.5 against Seasonal Naive.
+Full prediction-level covariance for SQL, MASE, and GIFT-Eval, further baseline
+families, and additional FMs are post-submission extensions unless requested by
+reviewers.
 
 ## What Is In This Repository
 
@@ -199,11 +202,10 @@ sources:
 
 The v1.0 technical report has been published on Zenodo with DOI
 `10.5281/zenodo.21338004`. Later release packages are maintained separately and
-do not overwrite the historical v1.0 snapshot. The current working version is
-v1.12, adding TimesFM 2.5 official fev-bench prediction-level WAPE covariance
-artifacts on top of the v1.11 TimesFM Source B matched-panel extension, v1.10
-TiRex fev-bench covariance artifacts, v1.9 Chronos fev-bench covariance artifacts,
-and Source B matched-panel covariance artifacts.  The local v1.12 release directory records
-the exact source commit in `COMMIT.txt` and package integrity in
-`CHECKSUMS.txt`; the public GitHub release is
-<https://github.com/MaciejR/large-scale-demand-forecasting-benchmark/releases/tag/v1.12>.
+do not overwrite that historical snapshot. The current working version is
+v1.21, which freezes the v1.20 IJF evidence base and adds double-anonymized
+submission materials, a 100--150-word abstract, an explicit generative-AI
+declaration, and release-hygiene checks. The package records the exact source
+commit in `COMMIT.txt` and package integrity in `CHECKSUMS.txt`; the public
+GitHub release is
+<https://github.com/MaciejR/large-scale-demand-forecasting-benchmark/releases/tag/v1.21>.

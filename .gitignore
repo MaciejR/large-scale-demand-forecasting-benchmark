@@ -34,6 +34,7 @@ benchmark/results/source_b_paired_panel/source_b_v1_11_timesfm25_m5_rohlik_100_b
 benchmark/results/source_b_paired_panel/source_b_v1_15_strong_lightgbm_200trial_top_volume_100/
 release/zenodo-v*/
 release/zenodo-v*.zip
+release/v1.21/
 
 # LaTeX build products. Keep paper/latex/main.pdf tracked as the public draft.
 paper/latex/*.aux
@@ -43,3 +44,12 @@ paper/latex/*.log
 paper/latex/*.out
 paper/latex/*.spl
 paper/latex/*.synctex.gz
+
+# Private/generated IJF submission files. The title-page postal address must
+# never be committed; build it locally with IJF_POSTAL_ADDRESS.
+paper/submission/title_page.pdf
+paper/submission/cover_letter.pdf
+paper/submission/*.aux
+paper/submission/*.log
+paper/submission/*.out
+release/private-ijf-submission/

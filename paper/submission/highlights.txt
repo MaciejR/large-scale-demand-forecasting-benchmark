@@ -1,0 +1,6 @@
+Highlights
+
+- Chronos-2 beats the best local baseline in all nine matched-panel cells.
+- Richer-feature stress tests do not reverse the Chronos-2 result on M5.
+- Paired error covariance is released for 20 official retail benchmark tasks.
+- Model gains are larger for quantile loss than for point-forecast errors.
