@@ -1,162 +1,28 @@
-% === Section 9: Conclusions ===
-\section{Conclusions}
+\section{Conclusion}
 \label{sec:conclusions}\label{sec:conclusion}
 
-We presented a matched-panel benchmark study of foundation models for retail
-demand forecasting, supported by structured public-benchmark extraction.  The
-core evidence is Source~B: shared 100-series M5, Rohlik~v2, and Favorita
-panels with paired series-bootstrap covariance, plus M5 baseline stress tests.
-The second prediction-level component reruns official fev-bench retail windows
-for paired \WAPE{} covariance.  Source~A contributes $k=498$ descriptive
-best-baseline comparisons from fev-bench and GIFT-Eval; because those published
-benchmark tables do not provide paired prediction-level variances and
-covariances, this version does not claim a confirmatory pooled meta-analysis.
-We summarise the findings per research question, then state what the
-descriptive cost accounting can and cannot support.
+This study compared zero-shot foundation models with statistical and
+LightGBM baselines for short-term retail demand forecasting. On common
+100-series panels from M5, Rohlik~v2, and Favorita, Chronos-2 achieved lower
+aggregate \WAPE{} than the best observed conventional baseline in all nine
+dataset--horizon comparisons. TiRex and Moirai also performed well, whereas
+Chronos-Bolt-Tiny and TimesFM showed greater variation across datasets. The
+Chronos-2 result on M5 remained after a larger LightGBM search, richer
+features, a more intermittent sample, and a scaled-error calculation.
 
-\subsection{Answers to the research questions}
-\label{subsec:answers-rq}
+The wider public benchmark evidence was less uniform. Foundation models had a
+clear advantage on Scaled Quantile Loss, but median differences were small for
+\WAPE{} and \MASE{} in fev-bench. Results also differed between fev-bench and
+GIFT-Eval. These patterns do not support a general claim that one model family
+is more accurate. They show that the answer depends on the metric, baseline,
+available covariates, and evaluation design.
 
-\paragraph{RQ1 (Accuracy): Do zero-shot foundation models outperform
-conventional baselines on retail demand forecasting?}
-
-The answer is conditional.  On the same
-100-series panels and forecast origins, Chronos-2 has lower aggregate
-\WAPE{} than the best local baseline across all nine M5, Rohlik~v2, and Favorita
-dataset--horizon cells, including cells where the best baseline is tuned
-recursive or tuned direct \LGBM{}.  Rohlik~v2 is the youngest local dataset,
-and the evaluated model papers do not document its use in pretraining; this
-weakens an M5/Favorita-only interpretation but does not constitute a leakage
-audit.  Moirai~2.0-Small is lower in eight of nine point estimates, with
-unrounded bootstrap intervals excluding zero in seven.  Chronos-Bolt-Tiny
-is near parity on M5 and worse on Rohlik and Favorita.  TimesFM~2.5 is lower
-than the best local baseline on M5 and Rohlik but near parity on Favorita, while
-remaining the slowest local CPU path.  Batched TiRex is lower in all nine
-point estimates, with uncertainty crossing zero at M5 $h=28$ and Favorita
-$h=28$.
-The separate M5 stratified-panel sensitivity check makes the local Chronos-2
-claim less dependent on top-volume series: on a panel with median zero fraction
-0.773, Chronos-2 remains lower than the 10-trial tuned \LGBM{} baseline at
-$h=7,14,28$.  On the top-volume M5 panel, an additional 200-trial \LGBM{}
-sensitivity leaves Chronos-2 below the best observed high-budget
-\LGBM{} envelope at all three horizons.
-These results are paired local evidence, not a replacement for the broader
-Source~A benchmark extraction.
-
-In the Source~A best-baseline corpus, the metric-specific descriptive summaries
-are directionally favourable to FMs: SQL has median log-ratio $-0.229$ with
-FMs lower in 92\% of rows, \WAPE{}/ND has median $-0.047$ with FMs lower in
-66\% of rows, and \MASE{} has median $-0.036$ with FMs lower in 61\% of rows.
-GIFT-Eval is uniformly favourable to FMs in this extraction, while fev-bench is
-much closer to parity on point-forecast metrics.  The defensible conclusion is
-therefore not universal FM superiority; rankings depend on metric, baseline
-feature set, covariates, leakage controls, and evaluation protocol.
-
-\paragraph{RQ2 (Moderators): Which characteristics moderate the
-FM-vs-baseline gap?}
-
-All moderator statements are exploratory.  Metric choice is the dominant
-row-level pattern: the SQL/\WAPE{} split is more visible than any data
-characteristic.  Beyond metric, the following patterns are
-hypothesis-generating because the independent source count is small:
-
-\begin{itemize}
-  \item \textbf{Dataset:} No stable dataset-level moderator survives the
-    suite-level clustering.
-  \item \textbf{Model scale:} No stable scale effect appears in the
-    9\,M--200\,M Source~B range.  In the matched Source~B panel,
-    Chronos-2 is consistently stronger than Chronos-Bolt-Tiny, but
-    Moirai~2.0-Small is also competitive and TimesFM~2.5 does not dominate
-    the smaller models across M5, Rohlik, and Favorita.  That pattern is too narrow to claim a
-    monotonic scaling law.
-  \item \textbf{Horizon:} No stable horizon effect appears.
-  \item \textbf{Baseline family:} The FM advantage is larger against
-    statistical baselines (Auto~ETS, Seasonal Naive) than against
-    gradient-boosted trees, as expected.
-  \item \textbf{LightGBM protocol:} The direct-vs-recursive multi-step gap
-    differs across datasets, metric aggregation, and budgets.  Per-series
-    \WAPE{} made M5 look strongly direct-favourable in descriptive
-    outputs, but the matched aggregate-\WAPE{} panel makes M5 close at short horizons,
-    recursive-favourable on Rohlik, and mixed on Favorita: recursive is lower
-    at horizons 7 and 14, while direct is lower at horizon 28.  The scaled
-    direct variant is identical to direct at horizon 7 and worse at horizons
-    14 and 28 on Favorita, so the direct-scaled pattern is treated as a
-    budget diagnostic rather than a robust result.
-\end{itemize}
-
-\paragraph{RQ3 (Guidance): When should a retail team deploy a foundation
-model?}
-
-The \S\ref{sec:framework} decision framework distils the findings into
-conditions where an FM is worth testing first:
-
-\begin{enumerate}
-  \item \textbf{When distributional forecasts matter.}  If the business uses
-    quantile forecasts for safety-stock calculation or scenario planning,
-    FMs often provide lower SQL / quantile loss than tree models in the
-    benchmark corpus, but the result is benchmark-level rather than
-    leakage-free proof.
-
-  \item \textbf{Limited feature engineering capacity.}  Zero-shot FM
-    inference requires minimal inference-time preparation and can be a useful
-    baseline when no covariate pipeline exists.
-
-  \item \textbf{Cold-start or low-history series.}  Zero-shot FMs are a
-    plausible candidate when per-series training data are sparse, but this
-    should be validated against simple statistical baselines.
-\end{enumerate}
-
-The FM may not pay off when: (a)~the team has rich covariates and a tuned
-feature pipeline, or (b)~batch throughput at scale is the constraint.  These
-are validation hypotheses, not universal deployment rules.
-
-\paragraph{Descriptive cost accounting.}
-
-Consumer-hardware FM inference can be inexpensive for the Source~B setup,
-but the cost comparison is scenario-dependent.  It depends on batch size,
-available hardware, GPU recosting assumptions, and whether a team already
-has a tuned \LGBM{} pipeline.  The cost plots should be read as
-scenario-specific cost-error scatterplots, not as a universal efficiency
-frontier or break-even rule.
-
-\subsection{Future work}
-\label{subsec:future-work}
-
-\paragraph{Strengthen the Source~B matched panel.}
-The current shared-panel experiment covers M5, Rohlik, and Favorita for five
-zero-shot FMs, seven baseline variants, and 10-trial tuned recursive/direct
-\LGBM{} comparators.  M5 also has richer-feature recursive \LGBM{} and a
-completed 200-trial tuned
-recursive/direct \LGBM{} sensitivity check on the top-volume panel.  The
-remaining work is to extend the 200-trial baseline stress test to Rohlik,
-Favorita, and stratified or larger panels, then add GPU throughput
-measurements, covariate-aware FM variants, larger workloads, and larger model
-families.
-
-\paragraph{Acquire prediction-level benchmark artifacts.}
-The Source~A benchmark analysis remains descriptive because fev-bench and GIFT-Eval
-do not provide the paired prediction-error covariance needed for formal
-meta-analytic inference in the extracted tables.  The decisive next step is
-to obtain or regenerate benchmark prediction files, then compute the same
-paired log-ratio covariance matrices used for Source~B.
-
-\paragraph{Covariate-aware FM evaluation.}
-Covariate-aware FMs and TabPFN-TS should be evaluated with promotions and
-calendar features on Favorita and Rohlik to test whether an FM can close the
-covariate gap under matched conditions.
-
-\paragraph{Fine-tuned FM evaluation.}
-Our study is restricted to zero-shot FMs.  Lightweight fine-tuning (e.g.,
-LoRA on Chronos-2 with 1\% of target data) could shift the point-forecast
-balance, especially on covariate-rich datasets.
-
-\paragraph{Larger models.}
-The 9\,M--200\,M parameter range tested here may be too narrow to observe
-scaling effects.  Chronos-2~Large (710\,M) and Moirai-2.0-Large (305\,M)
-are untested on retail data; if their SQL advantage translates to improved
-point forecasts, the model-scale moderator could become significant.
-
-\paragraph{Beyond retail.}
-The metric gradient should be tested on spare-parts, pharmaceutical, and
-e-commerce demand datasets to determine whether it is a stable property of
-current FMs or specific to the present benchmark corpus.
+For a retail team, the practical implication is straightforward. A strong
+zero-shot model is worth including in an evaluation, particularly when a
+feature pipeline is unavailable or distributional forecasts are required. It
+should be compared with Seasonal Naive and a well-specified supervised model
+on the same series and forecast origins. When accuracy is similar, latency,
+licensing, covariate needs, and maintenance cost should determine the choice.
+The value of foundation models lies not in replacing evaluation, but in
+providing a capable additional option that is inexpensive to test.
+\label{subsec:answers-rq}\label{subsec:future-work}

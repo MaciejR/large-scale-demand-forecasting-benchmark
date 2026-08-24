@@ -2,190 +2,74 @@
 \section{Introduction}
 \label{sec:introduction}
 
-The 2024--2026 wave of time-series foundation models ---
-\citet{ansari2025chronos2}, TimesFM~2.5 \citep{das2025timesfm2},
-Moirai~2.0 \citep{liu2025moirai2}, TiRex \citep{auer2025tirex}
---- has shifted the default assumption in short-term forecasting.
-Where a retail team in 2022 would start with LightGBM and a
-feature-engineering sprint, the 2026 playbook increasingly says: try
-a zero-shot foundation model first, tune LightGBM only if the FM
-disappoints. Each model paper reports favourable results on its own
-evaluation suite --- GIFT-Eval, fev-bench, or a curated subset of
-the M~competitions --- but no paper runs the same battery of models
-under matched conditions on the same retail datasets and reports the
-delta. The benchmarks multiply; the synthesis does not.
+Time-series foundation models have become a practical alternative to models
+trained separately for each forecasting application. Chronos-2
+\citep{ansari2025chronos2}, TimesFM~2.5 \citep{das2025timesfm2}, Moirai~2.0
+\citep{liu2025moirai2}, and TiRex \citep{auer2025tirex} can all be applied
+without fitting their parameters to the target series. This makes them
+attractive in retail, where a forecasting system may cover thousands of items
+and where building and maintaining features for a supervised model can be
+costly.
 
-This paper asks: \textbf{when do foundation models actually pay off
-for retail demand forecasting?} We operationalise ``pay off'' as an
-observed, reproducible reduction in forecast error relative to a
-clearly specified conventional baseline (gradient-boosted tree or
-statistical model), evaluated under conditions that are as comparable
-as the available benchmark evidence allows. By ``when'' we mean: on
-which datasets, horizons, demand distributions, metrics, and hardware
-budgets.
+It is less clear whether this convenience comes with better forecasts. Model
+papers and public benchmarks generally compare foundation models with one
+another or with statistical methods. Retail applications, however, often rely
+on global gradient-boosted trees with lags, calendar variables, prices, and
+promotions. Published results rarely compare the two families on the same
+series, forecast origins, accuracy measure, and information set. Differences
+between benchmark tables may therefore reflect the evaluation design as much
+as the forecasting method. This is especially important for intermittent
+demand, for which metric aggregation and the treatment of zero sales can
+change model rankings.
 
-\subsection{Research Questions and Accounting Scope}
+We study when a zero-shot foundation model is a useful alternative to a
+conventional retail forecasting model. The analysis combines two forms of
+evidence. First, we run five foundation models and several LightGBM and
+statistical baselines on common 100-series samples from M5, Rohlik~v2, and
+Favorita. Every model is evaluated on the same rolling forecast origins, and
+prediction-level output is used for paired comparisons. We also vary the
+LightGBM multi-step strategy and tuning budget, because a weak tree baseline
+would exaggerate the apparent value of a foundation model. Second, we extract
+retail tasks from fev-bench \citep{shchur2025fevbench} and GIFT-Eval
+\citep{aksu2024gift}. These public results cover more tasks and models, but
+they are analysed descriptively because their published tables do not contain
+the prediction-level dependence information required for pooled statistical
+inference.
+
+The study addresses three questions:
 \label{sec:research-questions}
-
-We address three research questions and one descriptive accounting scope:
-
-\begin{itemize}
-  \item \textbf{RQ1 (Accuracy):} Do zero-shot foundation models
-    outperform conventional baselines on retail demand forecasting?
-    (\S\ref{sec:rq1-accuracy})
-  \item \textbf{RQ2 (Moderators):} Which characteristics ---
-    metric choice, demand intermittency, model scale, forecast
-    horizon --- moderate the FM-vs-baseline gap?
-    (\S\ref{sec:moderator-results})
-  \item \textbf{RQ3 (Guidance):} Under what conditions should a
-    retail forecasting team deploy a foundation model instead of
-    investing in feature engineering for LightGBM?
-    (\S\ref{sec:framework})
-  \item \textbf{Cost accounting scope:} Source~B runtime, electricity,
-    cloud-recosting, and CO\textsubscript{2} calculations are reported as
-    descriptive deployment accounting, not as a universal cost-effectiveness
-    test, because the Azure ledger is not fully reconciled
-    (\S\ref{sec:cost-accuracy}; \ref{app:cost-envelope}).
-\end{itemize}
-
-\subsection{Approach}
-\label{sec:approach}
-
-This study is a matched-panel benchmark study supported by public-benchmark
-extraction.  The strongest evidence comes from prediction-level comparisons
-where the same series, origins, and actuals are shared across models.  The
-structured search serves a narrower role: it documents why standalone papers do
-not provide matched FM-vs-LightGBM retail comparisons and identifies the public
-benchmark suites that can be re-extracted descriptively.
-
 \begin{enumerate}
-  \item \textbf{Source~A (structured search + benchmark extraction).} We
-    use 150 identified records (2020--2026) from retained
-    Google Scholar/web, Semantic Scholar, and arXiv searches, applying
-    retail-domain inclusion criteria. Scopus and Web of Science target
-    strings are reported as non-retained search limitations rather than
-    exportable logs. We supplement the extraction with per-model
-    per-task results from fev-bench \citep{shchur2025fevbench}
-    (20~retail tasks, 7~FMs vs LightGBM/CatBoost baselines) and
-    GIFT-Eval \citep{aksu2024gift} (4~Sales-domain tasks, 7~FMs vs
-    statistical baselines). The frozen extraction schema contains 802~rows
-    across 9~as-reported retail dataset names before normalisation
-    (\S\ref{sec:extraction-schema}).  These rows are used for descriptive
-    suite- and metric-level summaries, not for a confirmatory meta-analysis.
-
-  \item \textbf{Source~B (gap-filling experiments).} We run our own
-    experiments under a unified evaluation protocol
-    (\S\ref{sec:experimental-setup}): five foundation models
-    (Chronos-Bolt-Tiny, Moirai~2.0-Small, TiRex, Chronos-2,
-    TimesFM~2.5; 9--200\,M parameters) on a MacBook Air M3
-    (16\,GB, MPS/CPU), and three baseline families
-    (seasonal naive, recursive \LGBM{}, and direct \LGBM{}), expanded into
-    seven baseline variants after fixed-budget, horizon-scaled, tuned, and
-    richer-feature \LGBM{} checks.
-    Source~B produces matched-panel rows with runtime, cost, and
-    CO\textsubscript{2} metadata for a 100-series M5, Rohlik, and
-    Favorita panel.  The final analysis reports this shared panel for
-    Chronos-Bolt-Tiny, Chronos-2, Moirai~2.0-Small, batched TiRex,
-    TimesFM~2.5, and the baseline variants.  Earlier unmatched Source~B
-    sweeps are retained only as provenance and data-integrity material in
-    the appendices, not as primary evidence.
+  \item Do zero-shot foundation models improve retail demand forecasts relative
+    to statistical and LightGBM baselines?
+  \item Do the results vary with the accuracy measure, forecast horizon,
+    demand pattern, and baseline specification?
+  \item What evaluation procedure should a retailer use when choosing between
+    the two model families?
 \end{enumerate}
 
-For public-benchmark extraction, each (FM, task, metric) row is summarised as
-$\ell=\log(M_{\mathrm{FM}}/M_{\mathrm{best\ baseline}})$.  The
-primary descriptive file has $k = 498$ Source~A pairs from fev-bench and
-GIFT-Eval.  Heuristic weighted diagnostics remain generated for pipeline
-continuity, but the manuscript does not treat them as inferential evidence
-because the $1/n_{\text{FM}}+1/n_{\text{baseline}}$ term is a workload proxy,
-not a sampling variance.
+The matched experiments favour several foundation models, but not by a
+constant margin. Chronos-2 has lower aggregate \WAPE{} than the best observed
+local baseline in all nine dataset--horizon comparisons. TiRex also has a
+lower point estimate in all nine, while results for the other models depend
+more strongly on the dataset. The M5 comparison remains favourable to
+Chronos-2 after richer LightGBM features, a larger tuning budget, and a more
+intermittent sample are introduced. These findings apply to the tested panels
+and feature sets; they are not comparisons with the best systems developed for
+the M5 competition.
 
-\subsection{Headline findings}
-\label{sec:headline-findings}
+The public benchmarks give a more qualified picture. Across 498 matched
+model--task--metric comparisons, foundation models have their clearest
+advantage on Scaled Quantile Loss. Median differences are much smaller for
+\WAPE{} and \MASE{}, and rankings vary across suites. The result is therefore
+not a general ordering of model families. It shows instead that a useful
+comparison requires a common evaluation panel, a suitable business metric,
+and a credible conventional baseline.
 
-Four findings motivate the sections that follow:
-
-\begin{enumerate}
-  \item \textbf{Matched-panel local evidence favours several FMs against
-    pragmatic LightGBM baselines.}
-    Chronos-2 is below the best observed local baseline in all nine
-    M5, Rohlik~v2, and Favorita cells, including M5 richer-feature and
-    200-trial \LGBM{} stress tests.  The claim is local to 100-series panels
-    and the tested feature sets; it is not a claim against competition-grade
-    M5 feature engineering.
-
-  \item \textbf{Prediction-level fev-bench reruns strengthen one public
-    benchmark slice.}
-    For official fev-bench retail windows, paired \WAPE{} covariance matrices
-    can be generated for Seasonal Naive versus Chronos-Bolt-Tiny, Chronos-2,
-    TiRex, and TimesFM~2.5 across 20 tasks.  This is stronger evidence than
-    the extracted leaderboard rows, but it is metric- and comparator-specific.
-
-  \item \textbf{The broader public-benchmark pattern is metric-dependent.}
-    Across $k = 498$ descriptive Source~A benchmark pairs, SQL has the clearest
-    directional FM advantage (median log-ratio $-0.229$; FMs lower in 92\% of
-    rows), while \WAPE{}/ND and \MASE{} are closer to the best baseline.  This
-    motivates matched bake-offs rather than a universal FM ranking.
-
-  \item \textbf{The LightGBM protocol gap varies across panels,
-    metrics, and budgets.} \S\ref{sec:baseline-reliability} shows that
-    the direct-vs-recursive multi-step gap changes with dataset,
-    workload, metric aggregation, and compute budget.  The matched
-    aggregate-\WAPE{} panel makes M5 close at short horizons and mixed
-    on Favorita, while per-series \WAPE{} is much more sensitive to
-    small denominators.  Intermittency is a plausible stratification
-    variable, but the evidence supports a protocol hypothesis to
-    validate, not a hard threshold rule.  No retail-benchmark protocol
-    recommendation that ignores demand distribution, metric choice, and
-    compute budget should be treated as general.
-\end{enumerate}
-
-\subsection{Contributions}
-\label{sec:contributions}
-
-\begin{enumerate}
-  \item \textbf{Matched-panel Source~B benchmark} covering five zero-shot FMs
-    and seven pragmatic baseline variants on shared 100-series M5, Rohlik~v2,
-    and Favorita panels, with paired series-bootstrap covariance.
-  \item \textbf{Baseline stress tests} including an M5 stratified intermittent
-    panel, richer-feature M5 \LGBM{}, and a 200-trial M5 LightGBM tuning
-    sensitivity.
-  \item \textbf{Prediction-level fev-bench \WAPE{} reruns} with empirical
-    covariance matrices for 20 retail tasks.
-  \item \textbf{Structured benchmark extraction} from fev-bench and
-    GIFT-Eval, used descriptively to document metric-specific public
-    benchmark patterns and the extractability gap in standalone papers.
-  \item \textbf{Baseline reliability analysis} documenting the
-    conditional direct-vs-recursive LightGBM gap across three
-    datasets.
-  \item \textbf{Practitioner validation checklist} mapping data
-    characteristics to bake-off steps and deployment-accounting diagnostics,
-    rather than deterministic model-family rules.
-\end{enumerate}
-
-\subsection{Paper structure}
-\label{sec:paper-structure}
-
-\S\ref{sec:background} surveys the forecasting taxonomy and existing
-benchmarks. \S\ref{sec:methods} describes the structured search,
-extraction schema, and gap-filling experimental design.
-\S\ref{sec:prisma-results} summarises the supporting search and
-benchmark-extraction rows. \S\ref{sec:experiments}
-presents the matched-panel experiments:
-\S\ref{sec:experimental-setup}--\ref{sec:perdataset}
-experimental setup and per-dataset results,
-\S\ref{sec:baseline-reliability} baseline reliability (direct vs
-recursive), \S\ref{sec:fm-consumer-box} foundation model
-consumer-box results. \S\ref{sec:meta-regression} reports the
-supporting public-benchmark analysis: Source~A best-baseline log-ratios
-(\S\ref{sec:rq1-accuracy}), moderator hypotheses
-(\S\ref{sec:moderator-results}),
-deployment-accounting diagnostics (\S\ref{sec:cost-accuracy}),
-heterogeneity diagnostics (\S\ref{sec:heterogeneity}), and the
-prediction-level fev-bench analysis (\S\ref{subsec:fev-prediction-level-repair}).
-\S\ref{sec:framework} translates the findings into a practitioner
-validation checklist. \S\ref{sec:discussion} discusses implications and
-limitations
-(single-reviewer screening, metric sensitivity, fixed-budget baselines, and
-consumer-HW-only Source~B).
-\S\ref{sec:conclusion} concludes with per-RQ answers and future
-work.
+The paper contributes matched retail experiments with prediction-level
+uncertainty estimates, a reanalysis of two public benchmark suites, and an
+evaluation procedure that practitioners can reproduce. It also documents how
+LightGBM strategy, metric aggregation, covariates, and computational setting
+affect the comparison. The following section places the models and benchmarks
+in context. Sections~\ref{sec:methods}--\ref{sec:meta-regression} describe the
+data and results, and Sections~\ref{sec:framework}--\ref{sec:conclusion}
+discuss their practical and research implications.

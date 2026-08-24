@@ -1,929 +1,252 @@
-% =================================================================
-%  Section 5 — Gap-Filling Experiments
-%  Converted from paper/drafts/section5_1_experimental_setup.md,
-%  section5_2_results.md, section5_baseline_reliability.md,
-%  section5_4_foundation_models.md
-% =================================================================
+\section{Matched Retail Experiments}
+\label{sec:experiments}
 
-\section{Gap-Filling Experiments}\label{sec:experiments}
+\subsection{Data and evaluation design}
+\label{sec:setup}\label{sec:experimental-setup}\label{sec:datasets}
 
-% -----------------------------------------------------------------
-\subsection{Experimental Setup}\label{sec:setup}\label{sec:experimental-setup}
-% -----------------------------------------------------------------
-
-All gap-filling experiments described in \S\ref{sec:experiments} follow a single
-experimental protocol, parameterized per dataset.  This section
-defines the protocol once.  Dataset-specific choices (covariate
-sets, eval-window lengths, series-count caps) are noted inline in
-\S\ref{sec:results} for baseline models and \S\ref{sec:fm} for
-foundation models.
-
-\subsubsection{Datasets}\label{sec:datasets}
-
-We evaluate on three retail demand forecasting datasets, chosen
-to span the distribution of zero-day fractions in public retail
-benchmarks while keeping the hierarchical-SKU $\times$ location
-structure that retail practitioners actually face.  The three
-datasets together cover ${\sim}211\text{k} \times 1.4\text{k}$
-series-days across the full product $\times$ location $\times$
-time tensor.
+We use daily sales from M5, Rohlik~v2, and Favorita. The datasets differ
+substantially in the frequency of zero sales and in the available covariates
+(Table~\ref{tab:t51}). M5 and Rohlik are used in full for the preliminary
+baseline runs. Favorita is limited to the 30,000 highest-volume series because
+the full data did not fit the available Azure instance. The main paired
+comparison then selects the same 100 high-volume series from each dataset for
+every model.
 
 \begin{table}[htbp]
 \centering
-\caption{Datasets used in the gap-filling experiments.
-\texttt{Zero-day fraction} is the fraction of series-day
-observations with $y = 0$ in the training portion, a core
-moderator variable in \S\ref{subsec:moderator-outcomes}.}
+\caption{Datasets used in the retail experiments.}
 \label{tab:t51}
 \footnotesize
-\begin{tabularx}{\textwidth}{lrrrllX}
+\begin{tabularx}{\textwidth}{lrrrlX}
 \toprule
-Dataset & $n_\text{series}$ (full) & $n_\text{series}$ (used) & $n_\text{days}$ & Frequency & Zero-day frac & Covariates used \\
+Dataset & Full series & Baseline cap & Days & Approx. zero fraction & Covariates used by LightGBM \\
 \midrule
-M5 & 30{,}490 & 30{,}490 & 1{,}941 & daily & ${\sim}70\,\%$ series-day &
-  price; SNAP/calendar events; weekday and month \\
-Rohlik v2 & 5{,}390 & 5{,}390 & 1{,}402 & daily & ${\sim}1.2\,\%$ &
-  price; holidays; shop closures; school holidays; weekday and month \\
-Favorita & ${\sim}174{,}685$ & 30{,}000 & 1{,}684 & daily &
-  ${\sim}15$--$25\,\%$, long tail &
-  promotions; oil; holidays; transactions; weekday and month \\
+M5 & 30,490 & 30,490 & 1,941 & 70\% & Price, calendar events, weekday, month \\
+Rohlik~v2 & 5,390 & 5,390 & 1,402 & 1.2\% & Price, holidays, closures, weekday, month \\
+Favorita & 174,685 & 30,000 & 1,684 & 15--25\% & Promotions, oil, holidays, transactions, calendar \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-Three notes on dataset preparation:
+The last 20\% of dates form the evaluation period. Forecasts are produced from
+non-overlapping rolling origins at horizons 7, 14, and 28. All models in a
+dataset use identical series and origins. Our main accuracy measure is
+aggregate \WAPE{}, $\sum |y-\hat y|/\sum |y|$, calculated from the stored
+predictions. This avoids the instability of averaging ratios for low-volume
+series. MAE and sMAPE are retained in the replication output, and M5 receives
+additional scaled-error checks. We do not compare the latter with the official
+M5 competition score because our panel and rolling-origin design differ from
+the competition task.
+\label{sec:evalprotocol}\label{sec:fm_metrics}\label{sec:fm-m5-metric}
 
-\begin{itemize}
-\item \textbf{M5} is used in full.  The 30{,}490 store-item series
-  correspond to the Walmart subset of the M5 competition
-  \citep{makridakis2022m5}; we use the official tail 389 days as the
-  evaluation window (\S\ref{sec:evalprotocol}).
+Uncertainty is estimated by resampling series. The same bootstrap draws are
+used for every model within a dataset, preserving the dependence created by
+common observations and baselines. We report 95\% percentile intervals for
+the log error ratio $\ell$. A negative interval indicates lower error for the
+foundation model throughout the interval.
 
-\item \textbf{Rohlik v2} is used in full.  The dataset is 5{,}390
-  warehouse-SKU series from the Kaggle competition
-  \texttt{rohlik-sales-forecasting-challenge-v2}, covering
-  2020-08-01 to 2024-06-02 across 7 warehouses (Prague $\times$3,
-  Brno, Munich, Frankfurt, Budapest).  Approximately 31\% of Rohlik
-  SKUs enter later than day~1 (ragged series starts), which we
-  handle at the wide-pivot step via \texttt{fillna(0)} --- see
-  \S\ref{sec:modelfamilies}.
+\subsection{Models and implementation}
+\label{sec:modelfamilies}\label{sec:fm}\label{sec:fm_scope}
+\label{sec:fm_extraction}\label{sec:fm_local}\label{sec:fm-consumer-box}
 
-\item \textbf{Favorita} is capped at the top 30{,}000 series by
-  total \texttt{unit\_sales} across the training portion, matching
-  M5's scale for cross-dataset forecast-count comparability.  The
-  full dataset has ${\sim}174{,}685$ series at ${\sim}125$\,M rows
-  and does not fit the 32\,GB E4DS\_V4 compute used for Phases
-  A--D.  The selection rule biases Favorita \LGBM{} evaluation
-  toward higher-velocity series; this is flagged as a limitation
-  in \S\ref{sec:limitations} and \S\ref{sec:framework}, and the full-series evaluation
-  is left for future work on larger hardware.
-\end{itemize}
+Seasonal Naive repeats the value from seven days earlier. The LightGBM models
+are global Tweedie regressions using demand lags, rolling averages, calendar
+variables, and the dataset-specific covariates in Table~\ref{tab:t51}. The
+recursive specification feeds earlier predictions into later steps; the
+direct specification fits a separate model for each step. Both are evaluated
+with fixed hyperparameters and with a 10-trial search at a validation origin.
+An additional direct variant scales its tree budget with the horizon. The
+standard training window is the most recent 365 days. M5 also receives a
+richer feature set and a separate 200-trial tuning check.
 
-All three datasets are registered as versioned Azure ML data
-assets (\texttt{azureml:m5-sales:1}, \texttt{azureml:rohlik-train-v2:1},
-\texttt{azureml:favorita-train:1}, plus per-dataset covariate
-assets) for exact reproducibility.
+Five foundation models were feasible on the available MacBook Air M3 with
+16\,GB unified memory: Chronos-Bolt-Tiny, Moirai~2.0-Small, TiRex, Chronos-2,
+and TimesFM~2.5. Their parameter counts range from approximately 9 to 200
+million. Each is used zero-shot, without retail covariates or parameter
+tuning. TiRex runs in batches on the CPU; the other models use their supported
+MPS or CPU path. Thus the comparison is deliberately pragmatic, but it is not
+a study of GPU throughput, fine-tuning, or the largest available checkpoints.
 
-\subsubsection{Compute and Tracking}\label{sec:compute}
+The conventional models were run on a four-vCPU Azure instance with 32\,GB
+RAM, whereas the foundation models were run locally. Runtime and energy
+records are therefore reported within each setting rather than converted into
+a single cost ranking. Code, environments, data manifests, predictions, and
+run ledgers are versioned with the replication package.
+\label{sec:compute}\label{sec:reproducibility}\label{sec:fm_repro}
 
-All jobs run on Azure ML compute cluster \texttt{cc-forecast-batch}
-(E4DS\_V4 VM, 4 vCPU / 32\,GB RAM / no GPU) in region
-\texttt{swedencentral}, inside Docker environment
-\texttt{forecast-benchmark-cpu-env:1}.  We use
-\texttt{cc-forecast-batch} for the classical and ML baselines of
-\S\ref{sec:results}--\S\ref{sec:baseline}.  Foundation model
-sweeps (\S\ref{sec:fm}) run on a MacBook Air M3
-(16\,GB, MPS/CPU); setup details are in \S\ref{sec:fm_scope}.
+\subsection{The LightGBM comparator}
+\label{sec:results}\label{sec:crossdataset}\label{sec:perdataset}
+\label{sec:baseline}\label{sec:baseline-reliability}
+\label{sec:m5results}\label{sec:dirvsr}\label{sec:m5distance}
+\label{sec:rohlik}\label{sec:favorita}\label{sec:synthesis}
+\label{sec:threats}\label{sec:costconsequences}\label{sec:takeaways}
 
-Experiment orchestration uses Azure ML pipelines under
-\path{benchmark/code/pipelines/}, including the M5, Rohlik, and Favorita
-consolidated pipeline definitions.
-Every run logs metrics, parameters, runtime, and per-series CSVs
-via MLflow to the workspace tracking server.  Cost and CO$_2$
-estimates are computed inside the job using Azure's published
-per-second pricing for \texttt{Standard\_E4ds\_v4} in
-\texttt{swedencentral} (\$0.38/hr at time of writing) and the
-region's marginal CO$_2$ intensity (0.041\,kgCO$_2$eq/kWh,
-swedencentral 2024 baseline; Nowtricity/Ember).  The per-job runtime, cost, and
-CO$_2$ columns in Tables~\ref{tab:t53}--\ref{tab:t55} are descriptive
-accounting fields computed with this formula; they still require a single
-reconciled ledger before supporting stronger cost-efficiency claims.
-
-\subsubsection{Evaluation Protocol}\label{sec:evalprotocol}
-
-For each dataset we use \textbf{rolling-origin non-overlapping
-evaluation with a held-out tail window}, which is the protocol
-most commonly used in the FM papers we screened (\S\ref{sec:prisma-results}) and which
-gives a clean, reviewer-auditable split.  Specifically:
-
-\begin{itemize}
-\item \textbf{Train / eval split:}
-  $\texttt{train\_until} = \lfloor 0.8 \times n_\text{days} \rfloor$.
-  This gives a tail-eval window of 389 days on M5, 281 days on
-  Rohlik, and 337 days on Favorita.  The choice of 0.8 follows
-  \citet{hewamalage2023forecast} and
-  \citet{shchur2025fevbench}.
-
-\item \textbf{Rolling origin:} within the tail window, forecast
-  origins are spaced exactly $h$ days apart so that windows are
-  non-overlapping.  For example at $h = 14$ on Rohlik (eval
-  window $= 281$ days), we have $\lfloor 281/14 \rfloor = 20$
-  evaluation windows per series.  This keeps per-horizon sample
-  counts independent of each other and avoids the optimistic bias
-  of overlapping-windows evaluation.
-
-\item \textbf{Horizons:} $h \in \{7, 14, 28\}$ on all three
-  datasets.  Seven days is the operational horizon most retailers
-  use for short-term replenishment; 28 days is the M5 competition
-  horizon and a common upper bound in the literature
-  \citep{makridakis2022m5}; 14 days bridges the two.  We report
-  every metric at every horizon to enable horizon-conditioned
-  interpretation.
-
-\item \textbf{Metrics:} MAE, sMAPE, \WAPE{}, and (on M5 only)
-  \WRMSSE{}.  MAE and \WAPE{} are computed per series and
-  averaged with equal weights (\texttt{\_mean} suffix in the
-  tables).  sMAPE uses the classical symmetric form with a 200\%
-  cap on zero actuals.  \WRMSSE{} is computed in-job via the full
-  12-level \citet{makridakis2022m5} hierarchy from the raw
-  sales/calendar/prices CSVs.  On retail tasks with heavy right
-  tails (all three of ours), sMAPE is reported only for
-  reproducibility and is not used in any primary comparison ---
-  see \S\ref{sec:takeaways} for the cross-dataset justification.
-
-\item \textbf{Per-series filtering for \WAPE{}:} \WAPE{} requires
-  a non-zero denominator (sum of actuals in the eval window).
-  For series where the denominator is zero we drop the series from
-  \WAPE{} computation and report the \texttt{n\_valid} count
-  alongside the metric in Tables~\ref{tab:t53}--\ref{tab:t55}.
-  This affects at most 0.5\,\% of M5 series and a higher fraction
-  on Rohlik (where ragged starts leave some series with only a few
-  eval-window days); on Favorita the fraction is negligible for
-  \LGBM{} and ${\sim}50\,\%$ for SN, an \texttt{n\_valid}
-  asymmetry we discuss in \S\ref{sec:favorita}.
-\end{itemize}
-
-\textbf{Source~B matched-panel design.}  The main Source~B analysis evaluates
-each FM and baseline on the same fixed 100-series sample per dataset.  An
-unmatched 72-row local sweep did not share that workload across all models, so
-it is retained only as provenance and cost-accounting material.  The
-matched-panel run covers
-M5, Rohlik, and Favorita: the runner
-\texttt{benchmark/code/experiments/run\_source\_b\_paired\_panel.py}
-samples the same 100 top-volume series per dataset, stores the series
-manifest, writes prediction-level Parquet files, and computes paired
-bootstrap log-ratio contrasts against the best available baseline in the
-same dataset--horizon cell.  The completed matched panel covers
-Seasonal Naive, recursive \LGBM{}, direct \LGBM{}, horizon-scaled direct
-\LGBM{}, tuned recursive \LGBM{}, tuned direct \LGBM{}, Chronos-Bolt-Tiny,
-Chronos-2, Moirai~2.0-Small, TimesFM~2.5, and batched TiRex for M5, Rohlik,
-and Favorita at $h\in\{7,14,28\}$.
-Generated outputs are written to
-\texttt{analysis/figures/source\_b\_paired\_panel\_*}.
-
-\subsubsection{Model Families}\label{sec:modelfamilies}
-
-Three model families are evaluated per dataset in Phases B--E,
-all with the same rolling-origin protocol and the same per-dataset
-covariate set:
-
-\begin{itemize}
-\item \textbf{Seasonal Naive} (period $= 7$, no training, no
-  covariates) --- the cost floor and the universal baseline for
-  retail weekly cycles.
-
-\item \textbf{LightGBM recursive} --- one global Tweedie model per
-  dataset, fit with 300 boosting rounds, 63 leaves, minimum child
-  samples $= 20$, learning rate 0.05, and 0.8 feature/bagging
-  fractions.  The Tweedie variance power is 1.1.  The model uses lags
-  $\{1, 7, 14\}$, rolling means $\{7, 14\}$, and the
-  dataset-specific covariates listed in Table~\ref{tab:t51}.  At
-  evaluation time, the model is applied recursively: predictions
-  at step $k$ enter the lag features for step $k + 1$, and
-  future-known covariates are passed through unchanged.
-
-\item \textbf{LightGBM direct} --- $h$ separate global Tweedie
-  models per dataset, same hyperparameters and same feature set as
-  the recursive variant, but model $k$ predicts $y[t + k]$ from
-  lags and rolling means known at $t$ plus future-known covariates
-  at $t + k$.  No output feedback, no recursion.
-
-\item \textbf{LightGBM tuned recursive} --- the same recursive feature set,
-  but with a 10-trial validation-origin hyperparameter search over learning
-  rate, leaves, tree count, child samples, subsampling, column sampling,
-  regularisation, and Tweedie variance power.  The validation origin is the
-  horizon immediately before the evaluation panel.  The selected parameters
-  are then refit on the standard training window and evaluated on the same
-  matched panel as all other models.
-
-\item \textbf{LightGBM tuned direct} --- the same direct feature set and
-  validation-origin search budget as the tuned recursive comparator.  The
-  selected direct configuration is refit as $h$ horizon-specific models on
-  the standard training window, which makes it the strongest but slowest
-  local \LGBM{} comparator in the matched panel.
-\end{itemize}
-
-The direct-vs-recursive contrast with everything else held
-constant is the core protocol comparison of \S\ref{sec:baseline}.
-The fixed recursive and fixed direct hyperparameters are intentionally untuned
-beyond library defaults: the point of \S\ref{sec:baseline} is to characterize
-the \emph{protocol gap} between direct and recursive variants of an
-otherwise-fixed LightGBM, not to reach the M5 winner.  The tuned recursive and
-tuned direct runs are narrower 10-trial comparators used for the common
-M5--Rohlik--Favorita matched-panel analysis.  We additionally ran a 200-trial
-\LGBM{} sensitivity check on the M5 top-volume panel; Rohlik, Favorita, the
-M5 stratified panel, and larger workloads remain outside that high-budget
-sensitivity.
-
-For each training window we use the \textbf{last 365 days of the
-training portion} as the training set.  This cap is a deliberate
-scalability choice --- fitting ${\sim}10$--$30$\,M rows per
-LightGBM model takes 180--240\,s on E4DS\_V4 --- and we estimate
-in \S\ref{sec:limitations} that extending to the full training
-portion may improve \WRMSSE{} on M5.  The
-same cap applies on Rohlik and Favorita for comparability.
-
-Foundation models are evaluated zero-shot with each model's published
-inference script on a MacBook Air M3 (16\,GB, MPS/CPU).  The
-matched-panel Source~B experiment evaluates five FMs on M5, Rohlik, and
-Favorita with shared series IDs, shared forecast origins, and paired
-prediction outputs.
-Details of the FM protocol, context-length choices, and hardware
-configuration are in \S\ref{sec:fm}.
-
-\subsubsection{Reproducibility}\label{sec:reproducibility}
-
-Every result is tied to a git commit SHA, Azure ML pipeline run
-name, registered data asset version, and a versioned environment
-(\texttt{forecast-benchmark-cpu-env:1}).  Full reproducibility
-details are in \ref{app:reproducibility}.
-
-
-% -----------------------------------------------------------------
-\subsection{Gap-Filling Results}\label{sec:results}
-% -----------------------------------------------------------------
-
-This section reports the headline accuracy and cost numbers from
-our gap-filling experiments across the three retail datasets
-defined in \S\ref{sec:datasets}, under the shared protocol of
-\S\ref{sec:evalprotocol}.  The section is deliberately terse: the
-three tables below are the self-contained evidence base that
-\S\ref{sec:baseline} interprets.  For detailed per-dataset
-breakdowns (by horizon, by metric, by direct-vs-recursive variant)
-see \S\ref{sec:m5results} (M5, Table~\ref{tab:t53}),
-\S\ref{sec:rohlik} (Rohlik~v2, Table~\ref{tab:t54}), and
-\S\ref{sec:favorita} (Favorita, Table~\ref{tab:t55}).
-
-\subsubsection{Cross-Dataset Summary}\label{sec:crossdataset}
+LightGBM improves on Seasonal Naive in the full-workload preliminary runs: by
+28\% on M5 \WRMSSE{} at horizon 7, by 9\% on Rohlik \WAPE{}, and by 17\% on
+Favorita \WAPE{}. The choice between direct and recursive forecasting is less
+stable. Table~\ref{tab:lgbm-protocol} reports the comparison on the 100-series
+panels used for the foundation models. Direct forecasting is slightly worse
+at short horizons on M5, consistently worse on Rohlik, and better only at
+horizon 28 on M5 and Favorita. Increasing the direct model's tree budget does
+not improve these panel results.
 
 \begin{table}[htbp]
 \centering
-\caption{LightGBM versus Seasonal Naive at $h=7$ using a common metric
-within each dataset.  Lower is better.}
-\label{tab:t52}
+\caption{Error of direct LightGBM relative to recursive LightGBM on the
+matched panels. Positive values mean that direct forecasting has higher
+aggregate \WAPE{}.}
+\label{tab:lgbm-protocol}\label{tab:t52}\label{tab:t52b}\label{tab:t58}
 \small
-\begin{tabularx}{\textwidth}{llrrrX}
+\begin{tabular}{lrrr}
 \toprule
-Dataset & Metric & Seasonal Naive & Best \LGBM{} & Relative change & Note \\
+Dataset & $h=7$ & $h=14$ & $h=28$ \\
 \midrule
-M5 & \WRMSSE{} & 0.7758 & \textbf{0.5598} & $-27.8\,\%$ & Direct \LGBM{} is the best h=7 variant \\
-Rohlik~v2 & \WAPE{} & 0.4015 & \textbf{0.3654} & $-9.0\,\%$ & Recursive \LGBM{} is the best h=7 variant \\
-Favorita & \WAPE{} & 0.6363 & \textbf{0.5295} & $-16.8\,\%$ & Recursive \LGBM{} is the best h=7 variant \\
-\bottomrule
-\end{tabularx}
-\end{table}
-
-\begin{table}[htbp]
-\centering
-\caption{Direct versus recursive LightGBM at $h=7$.  Lower is better;
-the table separates the protocol contrast from the baseline-vs-SN
-comparison in Table~\ref{tab:t52}.}
-\label{tab:t52b}
-\small
-\begin{tabularx}{\textwidth}{llrrrX}
-\toprule
-Dataset & Metric & Recursive & Direct & Direct change & Interpretation \\
-\midrule
-M5 & \WAPE{} & 1.6246 & \textbf{1.3512} & $-16.8\,\%$ & Direct wins on fixed-budget M5 \\
-M5 & \WRMSSE{} & 0.6336 & \textbf{0.5598} & $-11.6\,\%$ & Same direction on hierarchy metric \\
-Rohlik~v2 & \WAPE{} & \textbf{0.3654} & 0.3816 & $+4.4\,\%$ & Recursive wins \\
-Favorita & \WAPE{} & \textbf{0.5295} & 0.5513 & $+4.1\,\%$ & Recursive wins in the fixed-budget run \\
-\bottomrule
-\end{tabularx}
-\end{table}
-
-Three observations at the headline level:
-
-\begin{enumerate}
-\item LightGBM substantially beats Seasonal Naive on every dataset
-  on its strongest metric --- 28\,\% better on M5 \WRMSSE{},
-  9\,\% on Rohlik \WAPE{}, 17\,\% on Favorita \WAPE{}.
-
-\item The best-performing LightGBM \textbf{protocol changes between
-  datasets}: direct on M5, recursive on Rohlik and Favorita.
-  The gap is large on M5 (${\sim}12\,\%$ \WRMSSE{} / ${\sim}17\,\%$
-  \WAPE{} in favor of direct) and small but consistent on Rohlik
-  and Favorita (3--10\,\% \WAPE{} in favor of recursive in the
-  fixed-budget run).
-  \S\ref{sec:baseline} is dedicated to unpacking this cross-dataset
-  flip.
-
-\item The cost records are not yet a single reconciled ledger.  The cost
-  consistency appendix
-  therefore treats the Azure cost tables as an audit target rather than as
-  a source for universal cost claims.
-\end{enumerate}
-
-\subsubsection{Per-Dataset Baseline Tables}\label{sec:perdataset}
-
-For compactness the full 9-row per-dataset grids are kept in
-\ref{app:baseline-detail}.  The cross-dataset reader who wants the
-condensed view can use Table~\ref{tab:t52} above; the per-horizon
-reader can jump to the appendix tables:
-
-\begin{itemize}
-\item \ref{app:baseline-detail}, Table~\ref{tab:t53} --- M5 nine-row
-  grid (SN, \LGBM{} recursive, \LGBM{} direct $\times$
-  $h \in \{7, 14, 28\}$), including \WRMSSE{}.
-\item \ref{app:baseline-detail}, Table~\ref{tab:t54} --- Rohlik~v2
-  nine-row grid.  \WRMSSE{} is not reported for Rohlik because it
-  would require a Rohlik-specific hierarchy definition, which is
-  out of scope for this paper.
-\item \ref{app:baseline-detail}, Table~\ref{tab:t55} --- Favorita
-  nine-row grid.
-\end{itemize}
-
-\subsubsection{Cost and Compute Envelope}\label{sec:costenvelope}
-
-The cost logs are treated as provenance data rather than as a universal cost
-model.  Summing the saved Source~B local sweep file gives 72 rows,
-241.6 wall hours, \$3.18 recorded cost, and 4.63\,kg CO$_2$eq under
-the recorded hardware assumptions; the baseline-only appendix tables use
-Azure job-level costs and are not directly commensurate
-with MacBook Air M3 marginal-electricity accounting.  We therefore use the cost
-figures for within-scenario comparisons and avoid a single universal
-break-even rule.
-
-\subsubsection{Foundation Model Results}\label{sec:fmresults_pointer}
-
-Foundation model zero-shot results are reported separately in
-\S\ref{sec:fm}.  Table~\ref{tab:sourceb-paired} presents the
-matched-panel results for M5, Rohlik, and Favorita.  Table~\ref{tab:t59}
-retains the older 72-row Source~B \WAPE{} grid for provenance only;
-because that sweep has unequal workload counts within cells, it is not
-used as paired evidence.
-
-
-% -----------------------------------------------------------------
-\subsection{Baseline Reliability: What Is a Fair LightGBM on
-Retail Demand Forecasting?}\label{sec:baseline}\label{sec:baseline-reliability}
-% -----------------------------------------------------------------
-
-Every foundation model paper that reports results on a retail
-forecasting benchmark compares against a LightGBM baseline, and
-every paper uses a different LightGBM.  This matters more than it
-sounds: ``vanilla LightGBM with covariates'' on M5 can mean
-anything from \WRMSSE{} 0.70 to \WRMSSE{} 0.56 depending on two
-protocol choices that are rarely stated --- \textbf{how the
-training window is selected} and \textbf{whether multi-step
-prediction is recursive or direct}.  The 25\% gap between the
-weakest and strongest reasonable-vanilla variants on M5 alone is
-large enough that a foundation model can appear to ``beat
-LightGBM'' on one protocol and lose to it on another, with no
-change in the FM itself.
-
-The \textbf{direction} of the protocol gap is not constant
-across datasets or metric definitions.  In the full-workload
-per-series \WAPE{} grid, direct LightGBM is much better than recursive
-LightGBM on M5, while recursive is better on Rohlik and Favorita under
-the fixed-budget runs.  In the matched 100-series aggregate-\WAPE{}
-panel, however, the M5 gap is small at $h=7$ and $h=14$ and direct is
-only lower at $h=28$; Favorita shows the same mixed pattern, with
-recursive lower at $h=7$ and $h=14$ and direct lower at $h=28$.  The
-``direct dominates recursive'' pattern is
-therefore conditional on dataset, workload, metric aggregation, and
-compute budget, not a property of multi-step LightGBM protocol choice in
-the abstract.  Intermittency is a plausible moderator, but the current
-three-dataset evidence cannot identify it as a causal boundary.  The
-established
-direct-vs-recursive literature \citep{bentaieb2014boosting,
-bentaieb2016bias} conditions the choice on model linearity and
-horizon length but not on demand intermittency; our finding that
-the gap sign varies across these retail datasets is therefore a
-hypothesis requiring further investigation.  \S\ref{sec:synthesis}
-develops this synthesis
-across all three datasets.
-
-We instantiate this range with the three-variant sweep of
-\S\ref{sec:modelfamilies} (Seasonal Naive, LightGBM recursive,
-LightGBM direct) on the held-out M5 tail of
-\S\ref{sec:evalprotocol} (days 1552--1940, 389 evaluation days).
-Model families, training window, hyperparameters, feature set, and
-rolling-origin protocol are all defined once in
-\S\ref{sec:setup} and not repeated here.  The rest of
-\S\ref{sec:baseline} analyses the nine-row table these settings
-produce and extends the analysis to Rohlik~v2
-(\S\ref{sec:rohlik}) and Favorita (\S\ref{sec:favorita}) with the
-same protocol.
-
-\subsubsection{Cross-Dataset Results}\label{sec:m5results}\label{sec:dirvsr}\label{sec:m5distance}\label{sec:rohlik}\label{sec:favorita}\label{sec:synthesis}\label{sec:threats}\label{sec:costconsequences}\label{sec:takeaways}
-
-We ran a three-variant sweep (Seasonal Naive, LightGBM recursive,
-LightGBM direct) on all three datasets.  The detailed per-dataset tables
-are in \ref{app:baseline-detail}; Table~\ref{tab:t58}
-summarises the full-workload per-series \WAPE{} pattern.  The
-matched-panel aggregate-\WAPE{} analysis is reported immediately
-after the table.
-
-\begin{table}[htbp]
-\centering
-\caption{Full-workload descriptive summary of the direct-vs-recursive
-LightGBM gap using per-series \WAPE{} means (positive = direct lower,
-negative = recursive lower).  The matched-panel aggregate-\WAPE{}
-analysis gives a more conservative M5 pattern and is described below.}
-\label{tab:t58}
-\small
-\begin{tabular}{llrrrlr}
-\toprule
-Dataset & Series-day zero frac. & $h = 7$ & $h = 14$ & $h = 28$ & Direction & Cost ratio \\
-\midrule
-M5 & ${\sim}70\,\%$ & $+16.8\,\%$ & $+18.5\,\%$ & $+21.8\,\%$ & direct wins & 3.7--13.1$\times$ \\
-Rohlik & ${\sim}1.2\,\%$ & $-4.4\,\%$ & $-3.0\,\%$ & $-2.8\,\%$ & recursive wins & 4.8--18.0$\times$ \\
-Favorita & ${\sim}15$--$25\,\%$ & $-4.1\,\%$ & $-7.5\,\%$ & $-9.6\,\%$ & recursive wins & 4.3--15.6$\times$ \\
+M5 & $+0.4\%$ & $+1.1\%$ & $-2.1\%$ \\
+Rohlik~v2 & $+3.9\%$ & $+4.3\%$ & $+4.0\%$ \\
+Favorita & $+4.6\%$ & $+2.2\%$ & $-4.9\%$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The matched-panel analysis gives a different protocol conclusion for
-M5, Rohlik, and Favorita.  On the same 100 top-volume series and aggregate-\WAPE{}
-metric used for Table~\ref{tab:sourceb-paired}, direct \LGBM{} is slightly
-worse than recursive on M5 at $h=7$ (+0.4\% error) and $h=14$ (+1.1\%),
-but better at $h=28$ (-2.1\%).  On Rohlik, direct is consistently worse
-than recursive by about 3.9--4.3\%.  On Favorita, recursive is lower at
-$h=7$ (+4.6\% direct error) and $h=14$ (+2.2\%), while direct is lower at
-$h=28$ (-4.9\%).  The horizon-scaled direct variant is identical to direct
-at $h=7$ and worse at $h=14,28$ in the matched panel, so the
-\texttt{direct\_scaled} rows are interpreted as budget diagnostics rather than
-as evidence for a stable direct advantage.
+The corresponding full-workload, per-series results are more favourable to
+direct forecasting on M5. This difference arises from both the sampled series
+and the aggregation of \WAPE{}. It cautions against describing either
+multi-step strategy as intrinsically stronger. For the comparisons below, we
+therefore select the lowest-error observed baseline separately for each
+dataset and horizon. Detailed baseline grids are reported in
+Appendix~\ref{app:baseline-detail}.
 
-Three key findings:
+\subsection{Foundation-model results}
+\label{sec:fmresults_pointer}\label{sec:fm_results}
 
-\begin{enumerate}
-\item \textbf{Direction varies across datasets, workloads, and metric
-  aggregation.}  The per-series grid gives a strong M5 direct
-  advantage, but the matched aggregate-\WAPE{} panel makes M5 close
-  at short horizons.  Rohlik remains recursive-favourable in both views,
-  while Favorita is recursive-favourable at short horizons and
-  direct-favourable at $h=28$.  This is consistent with an intermittency
-  hypothesis, but not sufficient to define a threshold or causal mechanism.
-
-\item \textbf{The recursive horizon profile differs by panel.}
-  In the matched aggregate-\WAPE{} panel, recursive \WAPE{} grows
-  $+19\%$ from $h = 7$ to $h = 28$ on M5, while on Rohlik and Favorita
-  the recursive horizon penalty is no worse than direct's.  This
-  describes a panel-level pattern; the current three-dataset evidence
-  cannot assign the difference to sparsity alone.
-
-\item \textbf{Budget effects remain real.}  The matched panel separates the
-  \texttt{direct\_scaled} budget diagnostic from the fixed-budget comparison:
-  the scaled and unscaled direct runs are identical at $h=7$ when both use
-  300 trees.
-  At $h=14$ and $h=28$, the scaled direct variant is more expensive and
-  does not improve aggregate \WAPE{} in this matched panel.
-\end{enumerate}
-
-The M5 \WRMSSE{} rows are reported as internal rolling-origin diagnostics
-only.  They are not directly comparable to the official M5 competition
-winner because the competition used a 28-day forecasting task, a fixed
-evaluation window, and different training/evaluation procedures.  sMAPE is
-excluded from all primary
-comparisons because Tweedie LightGBM's conditional-mean overshoot on
-right-skewed demand triggers sMAPE's 200\% saturation, producing a
-2--2.5$\times$ ranking flip vs Seasonal Naive on all three datasets
-regardless of intermittency.
-
-For the Source~A benchmark summaries (\S\ref{sec:meta-regression}), Source~B
-direct-vs-recursive rows are not used in the primary contrast file.  They
-remain a protocol hypothesis and a rerun target.
-
-
-
-
-% -----------------------------------------------------------------
-\subsection{Foundation Model Protocol}\label{sec:fm}
-% -----------------------------------------------------------------
-
-Foundation model rows come from two complementary data sources:
-the structured literature extraction (\S\ref{sec:fm_scope}--\S\ref{sec:fm_extraction})
-and a local consumer-box sensitivity run on a MacBook Air M3 via PyTorch
-MPS/CPU (\S\ref{sec:fm_local}--\S\ref{sec:fm_results}).
-
-\subsubsection{Scope and Two-Source Strategy}\label{sec:fm_scope}
-
-FM rows come from two sources.  \textbf{Source~A} (primary) draws
-on the structured extraction (\S\ref{sec:prisma-results}): 9~FM papers plus fev-bench (B02) and
-GIFT-Eval (B01) populate the FM grid entirely from published numbers.
-\textbf{Source~B} (secondary) adds local consumer-box sensitivity runs on
-a MacBook Air M3 (16\,GB, MPS/CPU backend).  The Source~B experiment
-contains five FMs (Chronos-Bolt-Tiny, Moirai~2.0-Small, TiRex,
-Chronos-2, TimesFM~2.5; 9--200\,M parameters).  The matched-panel analysis
-is paired: Chronos-Bolt-Tiny,
-Chronos-2, Moirai~2.0-Small, TiRex, and TimesFM~2.5 on
-M5, Rohlik, and Favorita, with the same series IDs and forecast
-origins as the baseline panel.  The two sources are kept
-separate: extraction rows carry
-\texttt{paper\_id}~$\in$~\{A01\ldots A17, B01, B02\}, local runs
-carry \texttt{LOCAL\_*}.  \S\ref{sec:metareg} reports the Source~A
-benchmark summaries; Source~B is reported as a separate local matched-panel
-analysis rather than pooled into Source~A.
-
-\subsubsection{Literature-Extraction Protocol
-(Source~A)}\label{sec:fm_extraction}
-
-Extraction follows the structured search protocol of
-\S\ref{sec:prisma-results} and records study identifiers, dataset variants,
-metric names and values, and a baseline-quality tier per row.  M5 has the
-densest FM coverage (8 papers); Favorita has 7;
-Rohlik~v2 has 3 (all from fev-bench).  Covariate asymmetry ---
-most extracted FMs are univariate while LightGBM uses the full
-covariate set --- is recorded as a moderator
-(\texttt{covariate\_aware}) rather than treated as a filter.
-
-\subsubsection{Local Consumer-Box Protocol
-(Source~B)}\label{sec:fm_local}\label{sec:fm-consumer-box}
-
-The local sensitivity run uses a single MacBook Air M3 with
-16\,GB unified memory, Python~3.11 in a dedicated venv
-(\texttt{\~{}/venvs/fm-local/}), and PyTorch~2.3 with the MPS
-backend.  Inference is executed serially (no batching across series
-beyond each model's own internal batch-size default) to match the
-``retail practitioner on a laptop'' framing of the cost panel.
-
-\textbf{Model selection.}  We run five models locally:
+Table~\ref{tab:sourceb-paired} summarises the 45 comparisons. Chronos-2 has lower
+aggregate \WAPE{} than the best observed baseline in every dataset--horizon
+cell, with intervals below zero. The estimated reduction ranges from about
+4\% on M5 at horizons 14 and 28 to about 8\% on Favorita at horizons 7 and 14.
+TiRex also has a lower point estimate in all nine cells, although intervals
+include zero for M5 and Favorita at horizon 28. Moirai is lower in eight cells
+and tied in the ninth. TimesFM performs well on M5 and Rohlik but is close to
+the LightGBM baseline on Favorita. Chronos-Bolt-Tiny is near parity on M5 and
+worse on the other two datasets.
 
 \begin{table}[htbp]
 \centering
-\caption{Local consumer-box model selection.}
-\label{tab:fm_models}
-\small
-\begin{tabular}{lrl}
-\toprule
-Model & Params & Why local-feasible \\
-\midrule
-Chronos-Bolt-Tiny & ${\sim}9$\,M & Smallest public Chronos variant, MPS-supported \\
-Moirai~2.0-Small & ${\sim}11$\,M & Decoder-only quantile model, smallest Moirai~2 variant \\
-TiRex & ${\sim}35$\,M & xLSTM-based, MPS-compatible (A13) \\
-Chronos-2 & ${\sim}120$\,M & Public Chronos-2 checkpoint, MPS-supported \\
-TimesFM~2.5 & ${\sim}200$\,M & Decoder-only, continuous quantile head, CPU-only \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-TabPFN-TS (${\sim}11$\,M) was planned but excluded due to budget
-constraints.
-The larger Chronos-Bolt and Moirai~2.0 variants ($>$16\,GB) were
-excluded due to memory constraints.
-
-Source~B thus spans 9--200\,M parameters, from the smallest
-(Chronos-Bolt-Tiny) to TimesFM~2.5 (200\,M).  Whether
-the largest remaining FMs (Moirai~2.0-Large at 305\,M)
-close the residual gap remains a priority for future
-work (\S\ref{subsec:future-work}).
-
-The intended evaluation protocol follows \S\ref{sec:evalprotocol}
-(same windows, horizons, metrics).  The matched-panel Source~B runs share
-the workload for completed M5, Rohlik, and Favorita runs: one manifest
-per dataset defines the 100 top-volume series, and every completed model
-writes predictions for the same series--origin panel.  Each FM uses its
-published default context and point-forecast mode with no tuning.
-
-\subsubsection{Evaluation and Metrics}\label{sec:fm_metrics}\label{sec:fm-m5-metric}
-
-Both sources use the \S\ref{sec:evalprotocol} metric definitions.
-Primary metrics are \WAPE{} and MAE on all datasets, \WRMSSE{} on M5
-only.  The local run reuses the same metric code path as the LightGBM
-baselines.  For the matched-panel subset, aggregate \WAPE{} is
-computed from prediction-level outputs on the same rows, and paired
-bootstrap intervals resample the shared series panel.  The same bootstrap
-draws are reused across all contrasts within a dataset, producing an
-empirical log-ratio covariance matrix for the 45 completed FM-vs-best-baseline
-contrasts.
-
-\subsubsection{Consumer-Box Run: Results}\label{sec:fm_results}
-
-The Source~B matched-panel analysis is the paired local evidence for completed
-panels and replaces the unmatched row-level comparison.  The main 100-series
-table has 45 FM-vs-best-baseline
-contrasts: five FMs on each of M5, Rohlik, and Favorita.
-The generated replication files include shared bootstrap draws, a wide
-log-ratio covariance matrix, and a long covariance/correlation table under
-the \texttt{source\_b\_paired\_panel\_*} prefix.
-
-\begin{table*}[htbp]
-\centering
-\caption{Source~B matched-panel FM-vs-best-baseline contrasts.  Aggregate
-\WAPE{} is computed from prediction-level outputs
-on the same 100 series and origins per dataset--horizon.  Negative
-$\ell$ favours the FM.}
+\caption{Summary of foundation-model comparisons with the best observed
+conventional baseline across three horizons. The final column counts bootstrap
+intervals lying entirely below zero.}
 \label{tab:sourceb-paired}
-\scriptsize
-\begin{tabular}{llrlrrr}
+\small
+\begin{tabular}{llrrr}
 \toprule
-Dataset & Model & $h$ & Best baseline & FM \WAPE{} & Baseline \WAPE{} & $\ell$ (95\% bootstrap CI) \\
+Dataset & Model & Lower error & Range of $\ell$ & Intervals below zero \\
 \midrule
-M5 & Chronos-2 & 7 & tuned recursive \LGBM{} & 0.294 & 0.312 & $-0.062$ [$-0.076$, $-0.048$] \\
-M5 & Chronos-Bolt-Tiny & 7 & tuned recursive \LGBM{} & 0.314 & 0.312 & 0.006 [$-0.011$, 0.024] \\
-M5 & Moirai~2.0-Small & 7 & tuned recursive \LGBM{} & 0.298 & 0.312 & $-0.047$ [$-0.063$, $-0.032$] \\
-M5 & TimesFM~2.5 & 7 & tuned recursive \LGBM{} & 0.299 & 0.312 & $-0.044$ [$-0.060$, $-0.029$] \\
-M5 & TiRex & 7 & tuned recursive \LGBM{} & 0.298 & 0.312 & $-0.047$ [$-0.062$, $-0.032$] \\
-M5 & Chronos-2 & 14 & rich tuned recursive \LGBM{} & 0.307 & 0.320 & $-0.042$ [$-0.057$, $-0.029$] \\
-M5 & Chronos-Bolt-Tiny & 14 & rich tuned recursive \LGBM{} & 0.331 & 0.320 & 0.032 [0.011, 0.053] \\
-M5 & Moirai~2.0-Small & 14 & rich tuned recursive \LGBM{} & 0.310 & 0.320 & $-0.033$ [$-0.049$, $-0.015$] \\
-M5 & TimesFM~2.5 & 14 & rich tuned recursive \LGBM{} & 0.311 & 0.320 & $-0.030$ [$-0.047$, $-0.011$] \\
-M5 & TiRex & 14 & rich tuned recursive \LGBM{} & 0.312 & 0.320 & $-0.026$ [$-0.042$, $-0.010$] \\
-M5 & Chronos-2 & 28 & rich tuned recursive \LGBM{} & 0.339 & 0.352 & $-0.038$ [$-0.060$, $-0.015$] \\
-M5 & Chronos-Bolt-Tiny & 28 & rich tuned recursive \LGBM{} & 0.360 & 0.352 & 0.021 [$-0.003$, 0.048] \\
-M5 & Moirai~2.0-Small & 28 & rich tuned recursive \LGBM{} & 0.329 & 0.352 & $-0.068$ [$-0.092$, $-0.047$] \\
-M5 & TimesFM~2.5 & 28 & rich tuned recursive \LGBM{} & 0.332 & 0.352 & $-0.061$ [$-0.082$, $-0.035$] \\
-M5 & TiRex & 28 & rich tuned recursive \LGBM{} & 0.348 & 0.352 & $-0.013$ [$-0.036$, 0.015] \\
-Rohlik & Chronos-2 & 7 & recursive \LGBM{} & 0.180 & 0.191 & $-0.061$ [$-0.080$, $-0.039$] \\
-Rohlik & Chronos-Bolt-Tiny & 7 & recursive \LGBM{} & 0.199 & 0.191 & 0.041 [0.021, 0.063] \\
-Rohlik & Moirai~2.0-Small & 7 & recursive \LGBM{} & 0.188 & 0.191 & $-0.016$ [$-0.040$, 0.010] \\
-Rohlik & TimesFM~2.5 & 7 & recursive \LGBM{} & 0.184 & 0.191 & $-0.040$ [$-0.063$, $-0.015$] \\
-Rohlik & TiRex & 7 & recursive \LGBM{} & 0.184 & 0.191 & $-0.037$ [$-0.061$, $-0.011$] \\
-Rohlik & Chronos-2 & 14 & recursive \LGBM{} & 0.185 & 0.199 & $-0.076$ [$-0.095$, $-0.054$] \\
-Rohlik & Chronos-Bolt-Tiny & 14 & recursive \LGBM{} & 0.205 & 0.199 & 0.026 [0.007, 0.044] \\
-Rohlik & Moirai~2.0-Small & 14 & recursive \LGBM{} & 0.194 & 0.199 & $-0.026$ [$-0.050$, $-0.002$] \\
-Rohlik & TimesFM~2.5 & 14 & recursive \LGBM{} & 0.190 & 0.199 & $-0.048$ [$-0.074$, $-0.021$] \\
-Rohlik & TiRex & 14 & recursive \LGBM{} & 0.189 & 0.199 & $-0.051$ [$-0.077$, $-0.022$] \\
-Rohlik & Chronos-2 & 28 & recursive \LGBM{} & 0.193 & 0.209 & $-0.079$ [$-0.105$, $-0.053$] \\
-Rohlik & Chronos-Bolt-Tiny & 28 & recursive \LGBM{} & 0.211 & 0.209 & 0.008 [$-0.017$, 0.033] \\
-Rohlik & Moirai~2.0-Small & 28 & recursive \LGBM{} & 0.202 & 0.209 & $-0.034$ [$-0.064$, $-0.007$] \\
-Rohlik & TimesFM~2.5 & 28 & recursive \LGBM{} & 0.197 & 0.209 & $-0.060$ [$-0.089$, $-0.031$] \\
-Rohlik & TiRex & 28 & recursive \LGBM{} & 0.196 & 0.209 & $-0.061$ [$-0.093$, $-0.031$] \\
-Favorita & Chronos-2 & 7 & recursive \LGBM{} & 0.248 & 0.271 & $-0.085$ [$-0.106$, $-0.065$] \\
-Favorita & Chronos-Bolt-Tiny & 7 & recursive \LGBM{} & 0.327 & 0.271 & 0.190 [0.143, 0.239] \\
-Favorita & Moirai~2.0-Small & 7 & recursive \LGBM{} & 0.264 & 0.271 & $-0.024$ [$-0.040$, $-0.009$] \\
-Favorita & TimesFM~2.5 & 7 & recursive \LGBM{} & 0.275 & 0.271 & 0.017 [$-0.014$, 0.052] \\
-Favorita & TiRex & 7 & recursive \LGBM{} & 0.258 & 0.271 & $-0.049$ [$-0.072$, $-0.028$] \\
-Favorita & Chronos-2 & 14 & tuned recursive \LGBM{} & 0.255 & 0.277 & $-0.086$ [$-0.112$, $-0.061$] \\
-Favorita & Chronos-Bolt-Tiny & 14 & tuned recursive \LGBM{} & 0.330 & 0.277 & 0.174 [0.125, 0.221] \\
-Favorita & Moirai~2.0-Small & 14 & tuned recursive \LGBM{} & 0.272 & 0.277 & $-0.018$ [$-0.035$, $-0.002$] \\
-Favorita & TimesFM~2.5 & 14 & tuned recursive \LGBM{} & 0.283 & 0.277 & 0.020 [$-0.012$, 0.052] \\
-Favorita & TiRex & 14 & tuned recursive \LGBM{} & 0.265 & 0.277 & $-0.046$ [$-0.071$, $-0.023$] \\
-Favorita & Chronos-2 & 28 & tuned direct \LGBM{} & 0.270 & 0.286 & $-0.057$ [$-0.108$, $-0.015$] \\
-Favorita & Chronos-Bolt-Tiny & 28 & tuned direct \LGBM{} & 0.337 & 0.286 & 0.162 [0.116, 0.214] \\
-Favorita & Moirai~2.0-Small & 28 & tuned direct \LGBM{} & 0.287 & 0.286 & 0.003 [$-0.039$, 0.040] \\
-Favorita & TimesFM~2.5 & 28 & tuned direct \LGBM{} & 0.293 & 0.286 & 0.025 [$-0.012$, 0.066] \\
-Favorita & TiRex & 28 & tuned direct \LGBM{} & 0.279 & 0.286 & $-0.025$ [$-0.070$, 0.014] \\
+M5 & Chronos-2 & 3/3 & $-0.062$ to $-0.038$ & 3/3 \\
+M5 & Chronos-Bolt-Tiny & 0/3 & 0.006 to 0.032 & 0/3 \\
+M5 & Moirai~2.0-Small & 3/3 & $-0.068$ to $-0.033$ & 3/3 \\
+M5 & TimesFM~2.5 & 3/3 & $-0.061$ to $-0.030$ & 3/3 \\
+M5 & TiRex & 3/3 & $-0.047$ to $-0.013$ & 2/3 \\
+\addlinespace
+Rohlik & Chronos-2 & 3/3 & $-0.079$ to $-0.061$ & 3/3 \\
+Rohlik & Chronos-Bolt-Tiny & 0/3 & 0.008 to 0.041 & 0/3 \\
+Rohlik & Moirai~2.0-Small & 3/3 & $-0.034$ to $-0.016$ & 2/3 \\
+Rohlik & TimesFM~2.5 & 3/3 & $-0.060$ to $-0.040$ & 3/3 \\
+Rohlik & TiRex & 3/3 & $-0.061$ to $-0.037$ & 3/3 \\
+\addlinespace
+Favorita & Chronos-2 & 3/3 & $-0.086$ to $-0.057$ & 3/3 \\
+Favorita & Chronos-Bolt-Tiny & 0/3 & 0.162 to 0.190 & 0/3 \\
+Favorita & Moirai~2.0-Small & 2/3 & $-0.024$ to 0.003 & 2/3 \\
+Favorita & TimesFM~2.5 & 0/3 & 0.017 to 0.025 & 0/3 \\
+Favorita & TiRex & 3/3 & $-0.049$ to $-0.025$ & 2/3 \\
 \bottomrule
 \end{tabular}
-\end{table*}
+\end{table}
 
-Chronos-2 has lower aggregate \WAPE{} than the best local baseline across all
-nine matched M5, Rohlik, and Favorita cells, and every bootstrap interval
-excludes zero after adding tuned, richer-feature, and direct \LGBM{} comparators.
-Batched TiRex is also lower in all nine point estimates, while
-Moirai~2.0-Small is lower in eight of nine and effectively tied at Favorita
-$h=28$; both have bootstrap intervals excluding zero in seven cells using
-the unrounded bootstrap quantiles.
-TimesFM~2.5 is lower
-than the best baseline on all six M5 and Rohlik cells, with intervals excluding
-zero in all six, but remains near parity on Favorita.  Chronos-Bolt-Tiny is
-near parity on M5 and worse on Rohlik and Favorita.
-These are paired local results for 100-series
-panels, not a claim that the same ranking holds for larger workloads, GPU
-inference, or covariate-aware FM variants.
-The shared-bootstrap covariance matrix is block-diagonal by dataset and
-captures dependence among contrasts that share the same sampled series,
-actuals, horizons, and best-baseline rows.  In the generated matrix, the
-diagonal is positive for all 45 contrasts and the strongest off-diagonal
-correlations occur within the same dataset/model or same dataset--horizon
-cell, as expected.  This supplies local Source~B uncertainty accounting;
-it does not create missing prediction-level covariance for Source~A
-benchmark-paper rows.
+The replication files contain all 45 cell-level estimates and intervals.
 
-\textbf{Tuned and richer-feature \LGBM{} comparators.}  The tuned recursive and tuned direct
-\LGBM{} runs use 10 validation-origin random-search trials per
-dataset--horizon cell.  Tuned recursive becomes the best local baseline for M5
-at $h=7$ and Favorita at $h=14$; tuned direct becomes the best local
-baseline for Favorita at $h=28$.  A richer-feature recursive \LGBM{} sensitivity
-on M5 adds lags \{1,7,14,21,28,56\}, rolling mean/std windows \{7,14,28\},
-an expanding mean, price momentum, and SNAP--weekday interactions.  It becomes
-the best observed M5 baseline at $h=14$ and $h=28$ but remains above Chronos-2.
-Neither tuned run improves the Rohlik best baseline; the tuned recursive
-search selected configurations whose aggregate \WAPE{} is effectively
-equivalent to the fixed recursive defaults after rounding.  The
-best-baseline column in Table~\ref{tab:sourceb-paired}
-therefore uses the strongest observed baseline among Seasonal Naive, fixed
-recursive \LGBM{}, fixed direct \LGBM{}, horizon-scaled direct \LGBM{}, tuned
-recursive \LGBM{}, tuned direct \LGBM{}, and richer-feature tuned recursive
-\LGBM{} where available.
-This selection is conservative for FM point effects because the comparator is
-the best observed baseline in the same cell, but the bootstrap intervals
-condition on the selected baseline and do not include baseline-selection
-uncertainty.
+Model size does not explain the ordering in this range. The 120-million
+parameter Chronos-2 is consistently strong, but the smaller Moirai and TiRex
+often match or improve on the 200-million parameter TimesFM. Nor is there a
+single horizon pattern shared by the models. The more useful distinction is
+between datasets: Favorita is the closest contest for Moirai and TimesFM,
+whereas Chronos-2 retains a clearer advantage.
 
-\textbf{Prespecified-baseline sensitivity.}  To separate the model comparison
-from post-hoc baseline selection, we also recomputed all Source~B contrasts
-against a fixed comparator, tuned recursive \LGBM{}
-(\texttt{lightgbm\_tuned\_cov}), in every dataset--horizon cell.  For
-Chronos-2, Table~\ref{tab:prespecified-tuned-recursive} shows the same
-direction in all nine cells, with bootstrap intervals excluding zero.  This
-does not replace the best-observed-baseline envelope; it verifies that the
-Chronos-2 direction is not created by switching comparators across cells.
+\subsection{Sensitivity of the Chronos-2 result}
+
+Selecting the lowest-error LightGBM variant separately in each cell protects
+against a weak comparator, but it also makes the comparison data-dependent.
+We therefore repeated the Chronos-2 contrast against tuned recursive LightGBM
+in all nine cells. The direction remains favourable to Chronos-2 and every
+interval remains below zero (Table~\ref{tab:prespecified-tuned-recursive}).
 
 \begin{table}[htbp]
 \centering
-\caption{Prespecified-comparator sensitivity for Chronos-2 versus tuned
-recursive \LGBM{} in every Source~B dataset--horizon cell.  Negative
-$\ell$ favours Chronos-2.}
+\caption{Chronos-2 compared with the same prespecified baseline, tuned
+recursive LightGBM, in every dataset--horizon cell.}
 \label{tab:prespecified-tuned-recursive}
 \small
 \input{../../analysis/figures/source_b_prespecified_lightgbm_tuned_cov_chronos2.tex}
 \end{table}
 
-\textbf{M5 200-trial \LGBM{} sensitivity.}  To test whether the M5 finding is
-an artefact of the 10-trial tuning budget, we reran tuned recursive and tuned
-direct \LGBM{} with 200 validation-origin trials on the same top-volume
-100-series panel.  Table~\ref{tab:m5-200trial} reports the observed
-high-budget envelope selected by test aggregate \WAPE{} within each horizon.
-The selection is therefore a sensitivity envelope, not a pre-registered
-confirmatory baseline selector.  Because the envelope chooses the better
-\LGBM{} variant on the test panel, its point estimates are optimistic for
-\LGBM{} and conservative for the FM-vs-baseline point effect; the reported
-intervals condition on the selected baseline and do not include selection
-uncertainty.  Recursive \LGBM{} is best at $h=7$ and $h=14$, while direct
-\LGBM{} is best at $h=28$.  The direct 200-trial path is slower than the
-recursive path by $6.3{\times}$, $3.1{\times}$, and $2.3{\times}$ at
-$h=7,14,28$, respectively.  Chronos-2 remains below the high-budget \LGBM{}
-envelope in all three M5 horizons with paired series-bootstrap intervals
-excluding zero.  Chronos-Bolt-Tiny remains a near-parity model: its 200-trial
-M5 intervals cross zero at all three horizons.
-The 200-trial envelope uses the original fixed feature set; the richer-feature
-\LGBM{} check is the separate 10-trial M5 sensitivity reported in
-Table~\ref{tab:sourceb-paired}.
+On M5, increasing the LightGBM search from 10 to 200 trials also leaves
+Chronos-2 ahead (Table~\ref{tab:m5-200trial}). The 200-trial comparison chooses
+the lower-error recursive or direct variant after observing the test results,
+so it is a deliberately demanding sensitivity check rather than a
+pre-registered estimator. Its intervals condition on that choice.
 
 \begin{table}[htbp]
 \centering
-\caption{M5 high-budget LightGBM sensitivity on the same top-volume
-100-series panel.  The best 200-trial baseline is selected by observed test
-aggregate \WAPE{} within horizon; $\ell=\log(\WAPE{}_{\text{Chronos-2}}/
-\WAPE{}_{\text{baseline}})$, so negative values favour Chronos-2.}
+\caption{M5 sensitivity to a 200-trial LightGBM search. Negative $\ell$
+favours Chronos-2.}
 \label{tab:m5-200trial}
 \small
 \begin{tabular}{rlrrr}
 \toprule
-$h$ & Best 200-trial baseline & Baseline \WAPE{} & Chronos-2 \WAPE{} &
+$h$ & Selected LightGBM & Baseline \WAPE{} & Chronos-2 \WAPE{} &
 $\ell$ (95\% bootstrap CI) \\
 \midrule
-7 & tuned recursive \LGBM{} & 0.313 & 0.294 &
-$-0.063$ [$-0.077$, $-0.050$] \\
-14 & tuned recursive \LGBM{} & 0.330 & 0.307 &
-$-0.073$ [$-0.091$, $-0.058$] \\
-28 & tuned direct \LGBM{} & 0.360 & 0.339 &
-$-0.061$ [$-0.089$, $-0.032$] \\
+7 & tuned recursive & 0.313 & 0.294 & $-0.063$ [$-0.077$, $-0.050$] \\
+14 & tuned recursive & 0.330 & 0.307 & $-0.073$ [$-0.091$, $-0.058$] \\
+28 & tuned direct & 0.360 & 0.339 & $-0.061$ [$-0.089$, $-0.032$] \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\textbf{M5 stratified-panel sensitivity.}  The top-volume M5 panel deliberately
-tests high-sales series.  To check whether the Chronos-2 result survives a
-harder intermittent sample, we reran M5 for Seasonal Naive, fixed/tuned
-recursive and direct \LGBM{}, Chronos-Bolt-Tiny, and Chronos-2 on a separate
-100-series panel stratified by total volume and zero fraction.  The stratified
-panel has median zero fraction 0.773 and median total volume 938.5, compared
-with 0.108 and 48{,}699.5 for the top-volume panel.  Chronos-2 remains below
-the 10-trial tuned \LGBM{} baseline at all three horizons: $\ell=-0.116$
-[$-0.146$,$-0.089$] at $h=7$, $\ell=-0.160$ [$-0.208$,$-0.116$] at $h=14$,
-and $\ell=-0.147$ [$-0.218$,$-0.079$] at $h=28$.  Chronos-Bolt-Tiny is also
-below the 10-trial tuned \LGBM{} baseline in the same three cells.  This
-stratified sensitivity uses the original 10-trial tuned \LGBM{} baselines.  It
-is a model-specific robustness check, not a replacement for full M5 long-tail
-evaluation or for a 200-trial stratified-panel \LGBM{} rerun; Moirai, TiRex,
-and TimesFM were not included in this stratified rerun.  The limitation is
-operational rather than statistical: those paths either exceeded the local
-runtime envelope or were not yet stable under the stratified batching code.
-
-\textbf{TiRex throughput note.}  The original series-by-series TiRex path
-was too slow for the 100-series matched panel.  The current implementation uses TiRex's
-2D context interface to batch all series within a forecast origin and runs
-the MacBook Air M3 path on CPU, which completed the M5, Rohlik, and Favorita
-100-series panel at $h\in\{7,14,28\}$.  GPU throughput and larger workloads
-remain separate scaling checks.
-
-\textbf{Descriptive Source~B grid.}  The unmatched per-series \WAPE{} grid is
-provenance material and is moved to \ref{app:sourceb-grid}.  It is not
-read as a fully paired model comparison because \texttt{n\_series} varies
-within dataset--horizon cells and M5's per-series denominator is sensitive to
-tail-sparsity artifacts.
-
-\textbf{Descriptive FM point estimates are clustered, but not paired.}
-Favorita and Rohlik show narrow FM spreads in the saved grid, while
-M5 shows larger separation under per-series \WAPE{}.  Because the
-model-specific \texttt{n\_series} values differ, these spreads are
-hypothesis-generating only.  They support the weaker statement that the
-descriptive Source~B data do not show a simple monotonic parameter-count
-gradient; they do not establish that one named checkpoint reliably
-outperforms another.
-
-\textbf{Log-ratio status.}  Source~A remains the only input to the
-\S\ref{subsec:pooling-strategy} benchmark analysis.  The unmatched
-45 Source~B FM rows are retained in a descriptive contrast file for
-provenance.  The matched-panel Source~B contrasts are reported separately
-in Table~\ref{tab:sourceb-paired}, because their estimand is local
-aggregate \WAPE{} on 100-series panels rather than the as-reported Source~A
-benchmark estimand.
-
-\textbf{M5 caveat: per-series \WAPE{} + intermittent demand.}
-The descriptive M5 point-estimate gaps are large, but they are inflated by
-the per-series \WAPE{} denominator on M5's long tail of near-zero-volume SKUs
-(\S\ref{subsec:perseries-vs-aggregate}).  The $>$1 \WAPE{} values for
-\texttt{lightgbm\_cov} (1.62--1.94) reflect this pathology, not a
-labelling error; \texttt{lightgbm\_direct} (1.35--1.51) and even
-\texttt{seasonal\_naive} (1.31--1.33) also exceed 1.  On Favorita
-and Rohlik, where tail-sparsity is less extreme, gaps collapse
-to 0.5--1\,pp --- so the M5-level gap is the ceiling, not the
-central tendency.
-
-A sanity check recasting \WAPE{} in aggregate form
-($\sum|e|/\sum|y|$) deflates FM M5 scores by ${\sim}11\%$ in the
-descriptive rows.  The matched-panel results therefore use aggregate
-\WAPE{} from shared predictions as the local Source~B estimand.
-
-\textbf{M5 panel-scaled sensitivity.}  Official M5 WRMSSE is defined on the
-full coherent 12-level hierarchy, so it is not available for the 100
-item--store matched panel.  As a scaled-error check, we recomputed an
-M5-style bottom-level RMSSE on the same M5 prediction panel, using
-origin-specific last-28-day dollar weights and scales estimated only from
-history available before each forecast origin.  Table~\ref{tab:m5-panel-scaled}
-shows that Chronos-2 remains below the best observed baseline on this
-panel-weighted scaled metric at all three horizons.  This is not the official
-competition WRMSSE; it tests whether the local M5 finding survives a
-scale-adjusted metric on the matched panel.
+The main M5 panel contains high-volume items and has a median zero fraction of
+0.108. A second panel, stratified by volume and zero frequency, has a median
+zero fraction of 0.773. Against the 10-trial tuned LightGBM baseline,
+Chronos-2's log ratios are $-0.116$, $-0.160$, and $-0.147$ at horizons 7,
+14, and 28; all three bootstrap intervals exclude zero. A bottom-level,
+dollar-weighted scaled-error calculation on the main panel gives the same
+direction (Table~\ref{tab:m5-panel-scaled}). This measure resembles the
+scaling logic of M5 but is not the official hierarchical \WRMSSE{}.
 
 \begin{table}[htbp]
 \centering
-\caption{M5 matched-panel scaled-error sensitivity for Chronos-2 versus the
-best observed local baseline.  The metric is a bottom-level,
-origin-specific, dollar-weighted RMSSE on the same 100 item--store panel, not
-official M5 WRMSSE.}
+\caption{M5 scaled-error sensitivity for Chronos-2 on the matched panel.}
 \label{tab:m5-panel-scaled}
 \small
 \input{../../analysis/figures/source_b_m5_panel_scaled_metric_chronos2.tex}
 \end{table}
 
-\textbf{Favorita is now the matched ``close call'' dataset.}
-On the shared 100-series Favorita panel, recursive \LGBM{} is the best
-observed baseline at $h=7$, tuned recursive \LGBM{} at $h=14$, and tuned
-direct \LGBM{} at $h=28$.  Chronos-2 is clearly lower than the selected
-baseline on all three horizons.  Batched TiRex is lower in all three point
-estimates, although the $h=28$ interval crosses zero; Moirai~2.0-Small is
-lower at $h=7$ and $h=14$ and effectively tied at $h=28$; TimesFM~2.5 is close
-to parity but slow.  By contrast, TimesFM~2.5 is lower than the best baseline
-on the matched M5 and Rohlik cells.  The result supports a matched bake-off
-interpretation rather than a universal FM win.
+Together, these checks make it unlikely that the observed Chronos-2 advantage
+is caused only by the initial LightGBM specification or by the high-volume M5
+sample. They do not establish performance on the full M5 hierarchy, on larger
+Rohlik or Favorita panels, or against retailer-specific production systems.
 
-\textbf{Cost and runtime footprint.}  The saved 72-row Source~B file sums
-to 241.6 wall hours, \$3.18, and 4.63\,kg CO$_2$eq under the recorded
-hardware assumptions.  These totals mix MacBook Air M3 marginal electricity with
-Azure job-level accounting and unequal workloads, so
-\S\ref{sec:cost-accuracy} uses them only as scenario inputs.  Claims such
-as ``16$\times$ cheaper per cell'' are not treated as general cost
-results.
+\subsection{Computational scope}
+\label{sec:costenvelope}
 
-\textbf{Caveats.}  The LightGBM comparators include fixed-budget variants and
-10-trial tuned recursive/direct variants for all three datasets, plus a
-200-trial tuned recursive/direct sensitivity on the M5 top-volume panel.
-They are still not exhaustive competition-grade or dataset-specialised
-LightGBM systems, and the 200-trial stress test has not yet been extended to
-Rohlik, Favorita, or the M5 stratified panel.  The FMs are zero-shot; this
-section is point-forecast only; the matched panel currently covers 100-series
-M5, Rohlik, and Favorita for completed models including batched TiRex, but not
-GPU throughput, larger workloads, or covariate-aware FM configurations.
+The archived local sweep totals 241.6 wall-clock hours, but its rows combine
+different workloads and two hardware settings. We therefore use runtime and
+energy values only to describe the measured scenarios. In particular,
+TimesFM's CPU implementation is slow in the local setting, while batching is
+important for TiRex. These observations should not be extrapolated to GPU
+serving or very large batches. Moirai~2.0-Small also has a non-commercial
+licence, which may matter more for deployment than its measured runtime.
 
-\subsubsection{Reproducibility}\label{sec:fm_repro}
-
-Source~B runs are anchored by git commit SHA, HuggingFace revision
-SHA, \texttt{pip freeze} snapshot, and machine fingerprint where
-available.  The matched-panel runs include shared series manifests,
-per-series predictions, run ledgers, and paired bootstrap contrasts for
-M5, Rohlik, and Favorita, including the batched TiRex path required for the
-100-series panels.  Future Source~B releases must extend the same structure
-to GPU throughput, larger workloads, and covariate-aware FMs before
-Source~B can enter a broader paired inference.  Moirai~2.0-Small carries a
-non-commercial license (CC-BY-NC-4.0), flagged in
-\S\ref{sec:framework}.
-
-\subsubsection{Threats to Validity}\label{sec:fm_threats}\label{sec:table59}
-
-Five threats are specific to the Source~B FM runs, detailed in the
-risk-of-bias appendix.  In summary: (1) extraction selection bias --- only
-papers that chose a retail task are represented; (2) Source~A vs
-Source~B protocol drift --- as-reported vs our rolling-origin
-protocol; (3) local run covers five models up to 200\,M params
---- the largest FMs ($>$200\,M) are Source~A only; (4)
-covariate asymmetry --- univariate FMs vs covariate-aware
-LightGBM; (5) top-30k Favorita cap propagates velocity bias.  The
-largest residual risk is threat~(4): the within-Source~B FM-vs-baseline
-comparison is univariate-FM vs covariate-aware-LightGBM.
+The main remaining threats are the small 100-series panels, the use of
+univariate foundation models against LightGBM models with covariates, possible
+overlap between public datasets and pre-training data, and the absence of
+high-budget LightGBM checks outside the main M5 panel. These issues are taken
+up in Section~\ref{sec:discussion} and Appendix~\ref{app:threats}.
+\label{sec:fm_threats}\label{sec:table59}

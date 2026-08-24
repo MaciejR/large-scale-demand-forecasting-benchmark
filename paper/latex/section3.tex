@@ -1,261 +1,114 @@
-% === Section 3: Methodology ===
-\section{Methodology}
+% !TEX root = main.tex
+\section{Methods}
 \label{sec:methodology}\label{sec:methods}
 
-This section describes the three-phase protocol: search and
-extraction (Source~A), gap-filling experiments (Source~B), and the
-Source~A benchmark analysis.
+The study has two components. A structured search identifies published retail
+comparisons and supplies results from public benchmark suites. New experiments
+then compare foundation models and conventional baselines under a common
+protocol. The public results provide breadth, while the experiments allow
+forecasts to be paired on the same observations.
 
-\subsection{Structured search protocol}
+\subsection{Literature search and data extraction}
 \label{subsec:search}
 
-The search is used to document the retail benchmark evidence gap and to
-identify extractable FM-vs-baseline results.  It is a single-reviewer structured
-search, not a registered systematic review: there is no independent duplicate
-screening or inter-rater reliability estimate.  \ref{app:search}
-reports a structured-search flow diagram for transparency, and the full protocol is
-committed at \texttt{analysis/prisma\_search\_protocol.md}; the main text
-summarises only the search parameters needed to interpret the benchmark
-extraction.
+We searched Google Scholar, Semantic Scholar, and arXiv for work published
+between January 2020 and 12 April 2026. Queries combined the names of
+foundation models or the terms ``foundation model'', ``pretrained model'', and
+``zero-shot forecasting'' with terms for demand forecasting and benchmark
+evaluation. Scopus and Web of Science were also considered, but their search
+exports were not retained and are not included in the reported flow. Full
+search strings and screening decisions are provided in Appendix~\ref{app:search}.
 
-\noindent\textbf{Search sources.}
-The retained auditable log covers Google Scholar/web searches, Semantic
-Scholar API, and arXiv (cs.LG, stat.ML).  Scopus and Web of Science were
-target sources, but their export logs were not retained in the final
-machine-readable search record; this is reported as a structured-search
-limitation in \ref{app:search}.
+Studies were eligible if they reported quantitative forecasting results for a
+foundation model on a retail dataset or on the retail portion of a public
+benchmark. We excluded studies without numerical results, studies confined to
+other domains, architecture papers without forecasting evaluation, and
+duplicate versions of the same results. Screening and extraction were
+performed by one reviewer. The search should therefore be read as a structured
+map of available benchmark evidence rather than as a registered systematic
+review.
 
-\noindent\textbf{Search query.}
-We combine three concept blocks with AND:
-
-\begin{enumerate}
-  \item \emph{Foundation model identifiers:} ``foundation model'',
-    ``pretrained model'', ``zero-shot forecasting'', Chronos, TimesFM,
-    Moirai, TimeGPT, Lag-Llama, TiRex, TabPFN.
-  \item \emph{Demand forecasting:} ``demand forecasting'', ``retail
-    forecasting'', ``time series forecasting'', ``sales forecasting''.
-  \item \emph{Benchmark anchors:} ``benchmark'', ``comparison'',
-    ``evaluation'', M5, GIFT-Eval, fev-bench.
-\end{enumerate}
-
-\noindent\textbf{Date range.}
-2020-01-01 to 2026-04-12.  The lower bound captures the M5 competition
-and pre-FM baselines; the upper bound is the extraction lock date.
-
-\noindent\textbf{Inclusion criteria.}
-\begin{enumerate}
-  \item Empirical evaluation of at least one foundation model on demand
-    or retail forecasting.
-  \item Reports quantitative accuracy metrics (\WAPE{}, \MASE{}, MAE,
-    sMAPE, CRPS, \WRMSSE{}, or win-rate/skill-score equivalents).
-  \item Uses at least one of M5, Favorita, Rohlik~v2, GIFT-Eval
-    (retail tasks), fev-bench (retail tasks), or Walmart.
-  \item Peer-reviewed or published preprint with reproducible
-    methodology.
-  \item English language.
-\end{enumerate}
-
-\noindent\textbf{Exclusion criteria.}
-\begin{enumerate}
-  \item No quantitative results (position papers, surveys without new
-    data).
-  \item Only financial, stock, or energy forecasting with no retail
-    overlap.
-  \item FM paper without forecasting evaluation (architecture-only).
-  \item Duplicate results --- keep most recent version.
-  \item Non-time-series forecasting (causal inference only).
-\end{enumerate}
-
-\subsection{Data extraction (Source~A)}
+For each eligible result we recorded the dataset, task, model, model family,
+forecast horizon, evaluation protocol, accuracy measure, reported value,
+covariate use, and available information about runtime and hardware. The
+resulting file contains 802 rows, including task-level results re-extracted
+from fev-bench and GIFT-Eval. Raw names were harmonised into common dataset and
+model-family categories, while the original values were retained for
+traceability. Table~\ref{tab:extraction-schema} summarises the fields used in
+the analysis; the full data dictionary accompanies the replication files.
 \label{subsec:extraction}\label{sec:extraction-schema}
-
-Each included Source~A study is extracted into one or more rows of the
-structured CSV \texttt{analysis/extraction\_schema.csv} (802 rows as of
-2026-04-20).  The schema has 23 fields per row:
 
 \begin{table}[htbp]
 \centering
-\caption{Extraction schema fields (Source~A).}
+\caption{Information recorded for each published benchmark result.}
 \label{tab:extraction-schema}
-\begin{tabular}{lll}
+\small
+\begin{tabularx}{\textwidth}{l X}
 \toprule
-Field & Type & Description \\
+Group & Variables \\
 \midrule
-\texttt{paper\_id}           & char & Unique row-level ID (e.g., \texttt{A01\_chronos\_indomain}) \\
-\texttt{authors}             & char & First author et al. \\
-\texttt{year}                & int  & Publication year \\
-\texttt{title}               & char & Paper title \\
-\texttt{venue}               & char & Journal, conference, or ``this study'' \\
-\texttt{dataset}             & char & Raw dataset name as reported \\
-\texttt{dataset\_variant}    & char & Sub-dataset or task identifier \\
-\texttt{n\_series}           & char & Number of series (free text) \\
-\texttt{series\_length\_median} & char & Median series length \\
-\texttt{frequency}           & char & Data frequency (D, W, M, mixed) \\
-\texttt{has\_covariates}     & char & Yes / No / mixed \\
-\texttt{model\_name}         & char & Model name as reported \\
-\texttt{model\_family}       & char & Normalised family tag (\S\ref{sec:literature}) \\
-\texttt{zero\_shot}          & char & Yes / No / mixed \\
-\texttt{fine\_tuned}         & char & Yes / No \\
-\texttt{horizon}             & char & Forecast horizon (free text) \\
-\texttt{eval\_method}        & char & rolling / rolling-tail / fixed\_origin \\
-\texttt{metric\_name}        & char & Metric name \\
-\texttt{metric\_value}       & char & Reported value (free text, incl.\ ``best'') \\
-\texttt{runtime\_reported}   & char & Whether runtime is reported \\
-\texttt{gpu\_hours}          & char & GPU hours if reported \\
-\texttt{hardware}            & char & Hardware description \\
-\texttt{notes}               & char & Free-text provenance notes \\
+Source & Study, year, venue, benchmark suite \\
+Task & Dataset, variant, frequency, number of series, forecast horizon \\
+Model & Reported name, harmonised family, zero-shot or fine-tuned status \\
+Evaluation & Forecast design, metric, reported value, covariate availability \\
+Computation & Runtime, hardware and GPU hours when reported \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
-\noindent\textbf{Row-level IDs and analysis clusters.}
-Each extracted result is a separate row with a unique
-\texttt{paper\_id}.  A paper reporting Chronos and LightGBM on M5
-contributes at least two rows (\texttt{A01\_chronos\_indomain},
-\texttt{A01\_chronos\_zeroshot}, etc.).  The current analysis therefore
-does not treat \texttt{paper\_id} as a paper-level dependency cluster.
-The R pipeline derives separate identifiers:
-\texttt{study\_id} for the publication or Source~B experiment source,
-\texttt{suite\_id} for the benchmark suite (fev-bench, GIFT-Eval,
-Source~B, or other), and \texttt{task\_id} for the benchmark
-task/dataset/frequency/horizon cell.
-
-\noindent\textbf{Category prefixes.}
-\texttt{A} = FM papers (17 papers, 58 rows),
-\texttt{B} = benchmark papers and per-task benchmark re-extraction
-(657 rows),
-\texttt{C} = retail ML/DL papers (8 papers, 31 rows),
-\texttt{D} = cross-domain papers (3 papers, 3 rows),
-\texttt{F} = fev-bench entries (1 paper, 8 rows),
-\texttt{OWN\_*} = Source~B baseline rows retained for provenance.
-Source~B rows are not counted as included literature records.
-
-\noindent\textbf{Normalisation.}
-Raw \texttt{dataset} values are collapsed to five canonical names
-(M5, Favorita, Rohlik, fev-bench, Walmart) by the R function
-\texttt{normalize\_dataset()} in \path{analysis/meta_regression.R}.
-Raw \texttt{model\_family} values are collapsed to four analysis
-families (FM, ML\_TREE, STATS, NN) by \texttt{normalize\_family()}.
-Rows that do not map to a canonical dataset or family are excluded
-from the primary reanalysis but retained in the schema for
-provenance.
-
-\subsection{Gap-filling experiments (Source~B)}
+\subsection{Matched retail experiments}
 \label{subsec:gapfilling}
 
-Source~A has two structural gaps: (1)~no FM paper reports per-series
-\WAPE{} on M5, Favorita, or Rohlik under a rolling-origin protocol
-matching \S\ref{sec:evalprotocol} --- the FM literature evaluates on benchmark suites
-(GIFT-Eval, fev-bench), not on individual retail datasets.
-(2)~No paper reports both FM and ML\_TREE on the same retail dataset
-under matched conditions with a shared \texttt{paper\_id}, so
-within-paper pairing (the original within-paper design) is
-structurally empty on Source~A.
+The literature search showed that standalone model papers seldom report
+foundation models and gradient-boosted trees on the same retail observations.
+We therefore ran both families on M5, Rohlik~v2, and Favorita. For each
+dataset, the main panel contains the same 100 high-volume series for every
+model. Forecasts are generated at horizons 7, 14, and 28 from common
+rolling-origin windows. The experiment writes one prediction for each series,
+origin, target date, and forecast step, which permits paired resampling.
 
-Source~B fills these gaps with matched-panel reruns for M5, Rohlik, and
-Favorita.  The runner
-\texttt{benchmark/code/experiments/run\_source\_b\_paired\_panel.py}
-selects the same 100 top-volume series per dataset, uses the same
-rolling-origin windows for every model, writes prediction-level parquet
-files keyed by series, origin date, target date, and forecast step, and
-records a machine-readable run ledger.  Completed matched-panel runs cover
-Seasonal Naive, recursive \LGBM{}, tuned recursive \LGBM{}, direct
-\LGBM{}, horizon-scaled direct \LGBM{}, tuned direct \LGBM{},
-Chronos-Bolt-Tiny, Chronos-2, Moirai~2.0-Small, batched TiRex, and
-TimesFM~2.5 on all three datasets at $h\in\{7,14,28\}$.  TiRex uses a CPU
-batched path on the MacBook because the MPS xLSTM fallback is slower for this
-workload.
+The models are Seasonal Naive; recursive and direct LightGBM specifications,
+including tuned variants; Chronos-Bolt-Tiny; Chronos-2;
+Moirai~2.0-Small; TiRex; and TimesFM~2.5. A horizon-scaled direct LightGBM
+variant is included to check whether the direct strategy benefits merely from
+receiving a larger total tuning budget. M5 receives two further checks: a
+sample stratified by volume and zero frequency, and a 200-trial LightGBM
+tuning run. Section~\ref{sec:experimental-setup} gives the datasets, features,
+and computational details.
 
-For M5, we also run a stratified-panel sensitivity check.  Instead of selecting
-the top 100 volume series, the panel samples across bins of total volume and
-zero fraction.  This produces a much more intermittent 100-series sample and
-tests whether the main Chronos-2 result is driven by high-volume SKUs.
+Earlier local runs used unequal numbers of series across models. They remain
+in the replication archive as provenance and for descriptive runtime
+accounting, but they are not used for paired accuracy comparisons.
 
-An unmatched local sweep is retained only as provenance and cost-accounting
-material.  It used related metric definitions and rolling-origin settings, but
-the saved cells did not share a common series workload across models, so it is
-not used for paired Source~B inference.
-
-\subsection{Reanalysis specification}
+\subsection{Comparisons and uncertainty}
 \label{subsec:metaspec}
 
-The primary estimand is the model-level paired log-ratio:
+For a foundation model $m$ and a conventional baseline $b$ evaluated in the
+same cell, we report the log error ratio
+\begin{equation}
+  \ell=\log\left(\frac{E_m}{E_b}\right),
+\end{equation}
+where $E$ is the relevant error measure. Negative values favour the foundation
+model. In the matched experiments, $b$ is the lowest-error baseline observed
+for that dataset and horizon. Series-level bootstrap samples are shared across
+models so that uncertainty reflects the paired design. Because the baseline is
+selected from several candidates, the intervals describe the contrast with
+the selected baseline and do not include uncertainty from that selection.
 
-\begin{quote}
-For each FM row $i$ and baseline summary that share the same
-(\texttt{task\_id}, dataset, metric) cell, compute
-$\ell_i = \log\{\text{metric}(\text{FM}_i) /
-\text{metric}(\text{best conventional baseline})\}$.
-\end{quote}
+For the public benchmark analysis, a foundation-model result is paired with
+the best conventional result for the same task and metric. This gives 498
+comparisons: 166 each for \WAPE{}, \MASE{}, and Scaled Quantile Loss. We
+summarise their medians, quantiles, and proportions below zero by benchmark
+suite and metric. The published benchmark tables do not provide paired
+prediction errors, so their sample sizes cannot be converted into valid
+sampling variances for these log ratios. We consequently do not estimate a
+pooled meta-analytic effect.
 
-\noindent The supporting Source~A model-level pairing produces $k = 498$
-observations across fev-bench and GIFT-Eval.  The older Source~B export can be
-appended for provenance, but those rows are descriptive because they do not
-share a common workload.  The matched-panel Source~B analysis is reported
-separately as a prediction-level paired analysis on FM-vs-best-baseline
-aggregate-\WAPE{} contrasts with shared-bootstrap log-ratio covariance
-matrices.  Historical workload-weighted diagnostics are generated by the
-replication pipeline for regression testing, but they are not reported in the
-submission manuscript.
-
-\noindent\textbf{Notation convention.}
-Throughout this paper, $\hat{\ell}$ denotes a reported log-ratio summary of
-\(\log(\text{FM metric}/\text{baseline metric})\).  \textbf{Negative
-$\hat{\ell}$ means FM is better}; \textbf{positive $\hat{\ell}$ means
-baseline is better}.  The older raw difference $\Dhat$ is retained only
-in provenance outputs and descriptive columns.
-
-\noindent\textbf{Workload proxy.}
-For Source~A pairs, $v_i = 1/n_{\mathrm{FM}} + 1/n_{\mathrm{baseline}}$ where
-$n_\text{series}$ is the number of series in the evaluation task.
-For the older Source~B export, the same proxy is computed with the recorded
-\texttt{n\_series} value for provenance only.  The proxy is not a sampling
-variance for a paired log-ratio: it does not capture metric dispersion,
-shared baselines, covariance between FM and baseline errors, or
-within-series autocorrelation.  It is used only to reproduce historical
-weighted diagnostics in generated files; the manuscript relies on suite-,
-metric-, and prediction-level paired summaries.
-
-\noindent\textbf{Moderator summaries.}
-Moderator rows are reported descriptively.  We inspect three row-level
-groupings, without multiplicity-adjusted hypothesis tests:
-
-\begin{enumerate}
-  \item \texttt{mods = \~{} dataset\_norm} --- tests whether the
-    FM-vs-ML\_TREE gap varies by dataset (H1 proxy for intermittency,
-    since M5 is the only high-intermittency dataset in the pool).
-  \item \texttt{mods = \~{} horizon\_bucket} --- tests whether longer
-    horizons widen or narrow the gap.
-  \item \texttt{mods = \~{} has\_covariates} --- tests whether
-    covariate-rich ML\_TREE baselines reduce FM advantage (H2).
-\end{enumerate}
-
-\noindent\textbf{Generated descriptive checks.}
-The replication pipeline writes the following Source~A checks for audit and
-for tables in \S\ref{sec:metaanalysis}:
-
-\begin{itemize}
-  \item \textbf{Excl-M5:} Drops all M5 pairs to test whether the
-    descriptive public-benchmark pattern is driven by the M5 \WAPE{}
-    denominator artefact.
-  \item \textbf{Metric-only slices:} Summarises \WAPE{}-only, SQL-only, and
-    \MASE{}-only pairs separately so the mixed-metric pool is not the
-    interpretive target.
-  \item \textbf{Source~B provenance rows:} Retains older unmatched
-    \texttt{LOCAL\_MAC\_*} rows outside the paired Source~B analysis for
-    reproducibility checks only.
-  \item \textbf{Source-A-only:} Restricts to fev-bench and GIFT-Eval rows,
-    which are the only rows used in the supporting public-benchmark summaries.
-  \item \textbf{Average baseline:} Replaces the primary best conventional
-    baseline with the average conventional baseline in each cell.
-  \item \textbf{Leave-one-suite-out:} Drops fev-bench and GIFT-Eval in
-    turn to show whether the descriptive pattern is suite-specific.
-  \item \textbf{Equal-weight:} Keeps an unweighted descriptive contrast file
-    for comparison with the historical workload-weighted output.
-\end{itemize}
-
-\noindent\textbf{Implementation.}
-All fits use \texttt{metafor} \citep{viechtbauer2010metafor}; the driver
-script is \path{analysis/meta_regression.R}.  Generated forest plots,
-intercept tables, and cell-level CSVs are committed to
-\path{analysis/figures/}.
+Sensitivity analyses replace the best baseline with the mean conventional
+baseline, omit one suite at a time, and report metrics separately. Dataset,
+horizon, and covariate availability are inspected as descriptive moderators.
+With only two public suites and a limited number of independent retail
+datasets, these comparisons are used to identify patterns for further testing,
+not causal moderator effects. The analysis is implemented in
+\texttt{analysis/meta\_regression.R}; generated tables and figures are included
+with the replication materials.

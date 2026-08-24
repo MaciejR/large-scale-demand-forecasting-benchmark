@@ -1,173 +1,116 @@
-% === Section 8: Discussion ===
 \section{Discussion}
 \label{sec:discussion}
 
-\subsection{Data leakage in FM evaluation}
-\label{subsec:data-leakage}
+\subsection{Interpretation of the results}
 
-The largest uncontrolled confound in the FM literature is training data overlap.
-Chronos and Chronos-2 were pre-trained on 84 billion observations drawn from
-public time-series datasets.  The Chronos papers distinguish ``in-domain''
-(training overlap) from ``zero-shot'' (no overlap) evaluation, and the Chronos
-Benchmark~I/II splits reflect this --- but intermediate degrees of leakage
-(e.g., same source domain, different temporal slice) are harder to verify.
-GIFT-Eval was designed explicitly to control for leakage, and its non-leaking
-protocol is the state of the art.  Our Source~B runs control train/test leakage
-within each dataset by using held-out rolling-origin windows, but they cannot
-rule out FM pre-training exposure to public benchmark datasets such as M5 or
-Favorita.  We therefore treat Source~B as a cleaner evaluation protocol, not as
-a definitive solution to benchmark memorisation.
-The public model papers and model cards do not provide auditable
-per-dataset pretraining manifests that would let us certify inclusion or
-exclusion of M5, Favorita, or Rohlik~v2 for each checkpoint.  Rohlik~v2 is
-therefore useful because we found no documented pretraining exposure in the
-evaluated model papers, but it is still not a formal pretraining-audit
-substitute.
+The matched experiments show that zero-shot forecasting can be competitive
+with a practical supervised baseline on retail data. Chronos-2 is the most
+consistent model in our panels, and its advantage survives several changes to
+the M5 sample and LightGBM specification. This is useful evidence against the
+view that a foundation model is relevant only when no trained baseline is
+available. At the same time, the differences are generally modest, the panels
+are small, and other foundation models do not share the same ranking. The
+result is best understood as a reason to include a strong zero-shot model in a
+retail evaluation, not as a reason to replace established systems without
+testing them.
 
-The practical consequence for our benchmark analysis: Source~A FM rows may be
-slightly optimistic (the FM saw something like the test distribution during
-pre-training), while Source~A ML\_TREE rows have no such advantage (they are
-trained from scratch on each dataset).  If this bias is present, it would
-inflate FM performance in the cross-paper pool.  The negative SQL and
-\WAPE{} log-ratio point estimates should therefore be interpreted as
-observed benchmark-suite advantages, not as leakage-free universal
-effects.  The true FM point-forecast advantage could be smaller than
-observed and may disappear under matched covariate-aware protocols.
+The public benchmarks support the same qualified interpretation. Foundation
+models compare particularly well on Scaled Quantile Loss, suggesting value for
+applications that require a predictive distribution. Their advantage is much
+smaller on point-forecast measures in fev-bench. This difference may reflect
+the objectives used in pre-training, the ability of the models to represent
+uncertainty, or the composition of the tasks. The available two-suite sample
+cannot distinguish among these explanations.
 
-\subsection{The covariate gap}
-\label{subsec:covariate-gap}
+Model size is not a useful guide within the range we tested. Chronos-2 is
+stronger than the smaller Chronos-Bolt-Tiny, but Moirai and TiRex often compare
+well with the larger TimesFM. Nor do the results reveal a common horizon
+effect. Checkpoint selection based only on parameter count or an overall
+leaderboard would therefore miss differences that appear at the dataset and
+metric level.
 
-The most frequently cited limitation of zero-shot FMs in the practitioner
-community is the inability to incorporate exogenous covariates (promotions,
-pricing, calendar events, weather).  Some current FMs or wrappers support
-exogenous information, while others remain univariate in the evaluated
-configuration.  In the rows analysed here, no Source~A paper reports a
-matched Chronos-2 or Moirai~2.0 covariate-aware run on M5, Favorita, or
-Rohlik, and our Source~B FM cells are all univariate zero-shot.
+\subsection{Information available to the models}
+\label{subsec:data-leakage}\label{subsec:covariate-gap}
 
-The \S\ref{sec:experiments} ``close call'' on Favorita is the clearest evidence
-of this gap: \texttt{lightgbm\_cov} is close to the univariate FM point
-estimates on Favorita.  The covariate signal on Favorita is plausibly
-material (oil price, holidays, and promotions), and a univariate FM cannot
-access it.  Whether a covariate-aware FM would close or reverse this gap is
-an open question that our data cannot answer; it requires a matched
-experiment on the same series and horizons.
+Two information asymmetries complicate the comparison. First, foundation
+models are trained on large collections that may include public retail data.
+Chronos documentation distinguishes in-domain and zero-shot evaluations, and
+GIFT-Eval was designed to reduce leakage, but public model cards do not provide
+complete dataset-level pre-training manifests. We cannot exclude exposure to
+M5 or Favorita. Rohlik~v2 is newer and we found no documented exposure in the
+model papers, although absence from the documentation is not proof that the
+data were unseen.
 
-\subsection{Per-series vs aggregate WAPE}
+Second, our LightGBM models use retail covariates while the foundation models
+are univariate. This gives the supervised baseline access to prices,
+promotions, and calendar information, but it also reflects a realistic use
+case. The close results for several models on Favorita, where promotions and
+holidays are important, suggest that a covariate-aware foundation model would
+be a valuable next comparison. The present experiments cannot show whether it
+would improve on the univariate forecasts.
+
+These asymmetries work in different directions: pre-training exposure may
+favour the foundation model, whereas target-specific covariates may favour
+LightGBM. They cannot be corrected by a statistical adjustment to the
+reported errors. More transparent pre-training records and matched
+covariate-aware experiments are needed.
+
+\subsection{Accuracy measures and intermittent demand}
 \label{subsec:perseries-vs-aggregate}
 
-The M5 descriptive pattern (\S\ref{sec:experiments}, \S\ref{sec:metareg}) turns on a
-metric choice that is rarely discussed in the FM literature.  Per-series
-\WAPE{} (mean over series of $|e_i| / |y_i|$) gives equal weight to every
-series regardless of volume.  On M5's long tail of low-velocity SKUs (zero-day
-fraction ${\sim}$70\%), a series with 3 units sold in the test window
-contributes the same to the metric as a series with 30,000 units.  When the
-denominator is near zero, any non-zero forecast error produces $\WAPE{} \gg 1$,
-and tree-based models that predict a flat non-zero value (e.g., LightGBM's
-leaf mean) are penalised disproportionately.
+The M5 results demonstrate the importance of aggregation. Mean per-series
+\WAPE{} gives equal influence to every item, including series with almost no
+demand in the test period. A small absolute miss can then produce a very large
+ratio. Aggregate \WAPE{} weights observations by demand volume and is less
+sensitive to this problem. \WRMSSE{} uses historical variation and economic
+weights and answers a different question again.
 
-Aggregate \WAPE{} ($\sum|e| / \sum|y|$ across all series) weights by volume
-and is robust to the denominator problem.  Our sanity check
-(\S\ref{sec:experiments}) shows that aggregate \WAPE{} deflates FM scores on
-M5 by ${\sim}$11\% in the available rows.  Source~B addresses this locally with
-matched prediction panels; the remaining limitation is that Source~A and
-full-suite benchmark comparisons cannot be recomputed on common aggregate-\WAPE{}
-prediction panels for every model.
+None of these measures is universally preferable. Item availability may
+justify giving low-volume series substantial weight, while aggregate planning
+may reasonably focus on volume. The implication is that an evaluation should
+state the decision level and report enough information to show whether its
+ranking is driven by a sparse tail. In datasets with intermittent demand, a
+volume-weighted measure and a per-series or stratified analysis provide a more
+complete picture than either alone.
 
-\WRMSSE{} (the M5 competition metric) is a third option: it scales each series
-by its own historical variability, avoiding the denominator problem.  The M5
-\WAPE{} and \WRMSSE{} readings should not be averaged; they answer different
-questions about different parts of the demand distribution, and official M5
-competition scores are not directly comparable to our rolling-origin Source~B
-diagnostics.
-
-\paragraph{Recommendation for future benchmarks:} report both per-series and
-aggregate \WAPE{} (or volume-weighted \MASE{}) whenever the dataset contains
-intermittent demand.  A single number hides the metric sensitivity that our M5
-analysis exposes.
-
-\subsection{Limitations}
+\subsection{Limitations and further work}
 \label{subsec:limitations}\label{sec:limitations}
 
-\paragraph{Single reviewer.}
-A single-reviewer structured search lacks the double-screening and inter-rater
-reliability that a multi-reviewer team provides.  We mitigate this with
-structured extraction from fev-bench and GIFT-Eval (whose data are
-machine-readable) and do not claim full systematic-review compliance.
+The structured search was screened by one reviewer and does not meet the
+standard of a duplicate-screened systematic review. Its coverage is also
+shaped by what benchmark authors make extractable. The 498 comparisons come
+from only two suites, and multiple rows within a suite share tasks, baselines,
+and actual values. For this reason, we report distributions of results rather
+than a pooled inferential estimate. The prediction-level fev-bench rerun
+improves uncertainty estimation for \WAPE{} against Seasonal Naive, but not
+for the other metrics, GIFT-Eval, or comparisons with the strongest tree
+baseline.
 
-\paragraph{Retail domain coverage.}
-The Source~A benchmark extraction covers 9~datasets spanning grocery (M5, Favorita),
-convenience (Rohlik), drug (Rossmann), general retail (Walmart, Hermes),
-restaurant, and intermittent parts (Car Parts).  Fashion retail (highly
-seasonal, short life cycles), e-commerce (long tail, promotional spikes),
-and fresh produce (short shelf life, weather-driven) are not represented.
-Each of these domains has different demand characteristics that could shift
-the FM-vs-baseline balance.
+The experiments cover three datasets and 100-series panels. Favorita is
+represented by high-volume series in the main panel, and the more intermittent
+check is limited to M5. The LightGBM models are credible practical baselines
+but not competition-winning, retailer-specific pipelines. A 200-trial search
+was completed only for the main M5 panel, and uncertainty intervals condition
+on the selected baseline. Larger panels and high-budget checks on Rohlik and
+Favorita would show whether the observed differences persist.
 
-\paragraph{Consumer-HW-only Source~B.}
-All FM Source~B cells ran on a MacBook Air M3 (16~GB, MPS/CPU backend).  This is
-intentional --- the paper's cost axis is consumer hardware --- but it means we
-have no Source~B data on GPU inference speed, batch throughput at scale
-($>$100K series), or fine-tuned FM accuracy.  The Azure batch cells are
-CPU-only ML\_TREE and statistical baselines.
+All foundation models are used zero-shot and no checkpoint exceeds 200 million
+parameters. The study therefore says nothing about fine-tuning, the largest
+models, or the use of exogenous variables by models that support them. Local
+inference was measured on a MacBook Air rather than a production GPU system.
+Runtime and energy observations cannot be extrapolated to large batches or
+service deployments.
 
-\paragraph{Source~B workload and matched-panel scope.}
-The original Source~B model rows were not consistently evaluated on the same
-series counts within each dataset--horizon cell, and the small-sample
-bootstrap file covered only four of the five FMs.  The main Source~B analysis
-therefore uses shared 100-series panels for M5, Rohlik, and Favorita with
-prediction-level outputs and paired bootstrap contrasts for the completed
-local models.  This adds a shared-bootstrap covariance matrix for the 45 completed
-FM-vs-best-baseline log-ratios.  The matched panel now includes
-Chronos-Bolt-Tiny, Chronos-2, Moirai~2.0-Small, batched TiRex, and
-TimesFM~2.5 on M5, Rohlik, and Favorita.  The matched panel still does not
-cover GPU throughput, covariate-aware FM variants, larger workloads, or
-200-trial \LGBM{} tuning on Rohlik and Favorita.  The M5 top-volume panel has
-a separate 200-trial \LGBM{} sensitivity check, but Source~B as a whole
-remains a local sensitivity analysis rather than a confirmatory
-cross-benchmark experiment.
+Retail coverage is also incomplete. Fashion, fresh produce, e-commerce, and
+spare-parts demand have life cycles and intermittency patterns not fully
+represented by M5, Rohlik, and Favorita. Future work should prioritise larger
+matched panels in these settings, prediction-level benchmark releases,
+covariate-aware foundation models, and a common hardware protocol. These
+extensions would be more informative than adding further unmatched
+leaderboard results.
 
-\paragraph{Approximate sampling variance.}
-The exploratory weighted model uses a proxy variance
-$v_i = 1/n_\text{FM} + 1/n_\text{baseline}$ rather than per-row bootstrap
-SEs.  This is a weight proxy rather than a true variance for a paired
-log-ratio: it does not model metric dispersion, shared baselines,
-within-series autocorrelation, or covariance between FM and baseline errors.
-Historical workload-weighted diagnostics and equal-weight summaries help audit
-the Source~A extraction, but they do not create the missing covariance
-information for published benchmark rows.  The fev-bench prediction-level
-analysis provides empirical \WAPE{} covariance matrices for
-Chronos-Bolt-Tiny, Chronos-2, TiRex, and TimesFM~2.5 against Seasonal Naive
-on 20 retail tasks, and the Source~B matched panel has an empirical bootstrap
-covariance matrix.  These covariance results are still metric- and model-specific:
-TiRex uses point forecasts replicated to quantile columns, so the paired
-TiRex slice is for \WAPE{} rather than SQL.  TimesFM~2.5 uses the continuous
-quantile head in the official fev-bench rerun, but the empirical covariance
-analysis reported here still targets paired \WAPE{} log-ratios.  A confirmatory
-cross-benchmark meta-analysis would require comparable prediction-level
-covariance for SQL, \MASE{}, GIFT-Eval, stronger best-baseline comparisons,
-additional FM families, or additional independent benchmark suites.
-
-\paragraph{Evaluation protocol heterogeneity.}
-Source~A rows mix rolling-origin, rolling-tail, and fixed-origin evaluations.
-Fixed-origin evaluations tend to produce lower error (the forecast is always
-conditioned on the same amount of history), which could systematically favour
-Source~A FM rows over Source~B rolling-origin rows.  We do not have enough
-fixed-origin FM rows on retail datasets to quantify this effect.
-
-\paragraph{Distributional metric interpretation.}
-The SQL finding is based on fev-bench's Scaled Quantile Loss, which
-aggregates across quantile levels.  We do not decompose by quantile level
-(e.g., upper tail vs median).  The negative SQL log-ratio could be driven by
-lower upper-tail quantile losses rather than uniform distributional
-improvement.  Per-quantile analysis would clarify this.
-
-\subsection{Generalisability beyond retail}
+The main lessons may nevertheless extend to other demand applications:
+comparisons should use the same observations, a baseline with a credible
+information set, and a measure tied to the decision. Whether the numerical
+advantages transfer beyond retail remains an empirical question.
 \label{subsec:generalisability}
-
-The conditional finding --- FM advantage depends on metric choice and demand
-characteristics, not model family --- likely extends to domains with similar
-demand structures (spare-parts, pharmaceutical, agricultural supply chains).
-The decision of whether to deploy an FM depends on the business metric, data
-characteristics, and infrastructure constraints --- all knowable before
-running a single experiment.

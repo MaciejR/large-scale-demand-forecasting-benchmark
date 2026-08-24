@@ -1,194 +1,91 @@
-% === Section 4: Structured Search and Benchmark Extraction ===
-\section{Structured Search and Benchmark Extraction}
+% !TEX root = main.tex
+\section{Evidence from the Literature and Public Benchmarks}
 \label{sec:literature}\label{sec:prisma-results}
 
-This supporting section reports the outcome of the structured search and
-describes the 802-row extraction schema (including per-task re-extraction from
-fev-bench and GIFT-Eval) before the matched-panel experiments
-(\S\ref{sec:experiments}) and benchmark analysis
-(\S\ref{sec:metaanalysis}) use it descriptively.  The search is not used as a
-standalone systematic review; its main result is the evidence gap documented in
-\S\ref{subsec:structural-finding}.
-
-\subsection{Search and extraction flow}
+\subsection{Search results}
 \label{subsec:prisma-flow}
+
+The search identified 150 records, of which 32 external studies or benchmark
+sources met the inclusion criteria (Figure~\ref{fig:prisma-flow} and
+Table~\ref{tab:prisma-flow}). Most were published in 2024 or 2025, reflecting
+the recent introduction of the models considered here. The final extraction
+contains 802 rows because benchmark papers report many combinations of task,
+model, and metric; the row count should not be interpreted as the number of
+independent studies.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.86\textwidth]{prisma_flow.pdf}
-\caption{Structured-search and benchmark-extraction flow of records from
-identification to extraction.}
+\includegraphics[width=0.82\textwidth]{prisma_flow.pdf}
+\caption{Flow of records through the structured search and extraction.}
 \label{fig:prisma-flow}
 \end{figure}
 
 \begin{table}[htbp]
 \centering
-\caption{Structured-search and benchmark-extraction flow summary.}
+\caption{Structured-search and extraction flow.}
 \label{tab:prisma-flow}
 \small
 \begin{tabularx}{\textwidth}{l r X}
 \toprule
-Stage & Count & Notes \\
+Stage & Count & Comment \\
 \midrule
-Records identified       & 150 & Google Scholar + Semantic Scholar + arXiv; Scopus/Web of Science target strings were not retained as machine-readable exports \\
-Duplicates removed       & 30  & DOI/title overlap across the retained web, arXiv, and Semantic Scholar records \\
-Records screened (title/abstract) & 120 & \\
-Excluded at screening    & 50  & Non-retail, no quantitative results, financial only \\
-Full-text assessed       & 70  & \\
-Excluded at full-text    & 38  & No retail dataset, no FM evaluation, duplicate/non-comparable results \\
-Source~A studies included & 32 & External papers and benchmark sources \\
-Source~B experiment blocks & 7 & Own experiments; not included literature records \\
-Extraction schema rows   & 802       & Multiple rows per study; incl.\ per-task fev-bench/GIFT-Eval \\
+Records identified & 150 & Google Scholar, Semantic Scholar, and arXiv \\
+Duplicates removed & 30 & DOI or title overlap \\
+Titles and abstracts screened & 120 & 50 excluded \\
+Full texts assessed & 70 & 38 excluded \\
+External studies and benchmark sources included & 32 & Literature extraction \\
+Experimental blocks added & 7 & Present study; not literature records \\
+Extracted result rows & 802 & Multiple task--model--metric rows per source \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-The Source~A extraction and Source~B experiment blocks break down as follows:
-\begin{itemize}
-  \item \textbf{Category~A (FM papers):} 17 papers, 58 rows.  These
-    are the primary FM technical reports --- Chronos (A01), Chronos-2
-    (A02), TimesFM (A03--A04), Moirai (A05--A06), TiRex (A13),
-    TabPFN-TS (A14), and the smaller FM entries (A07--A11, A15--A17).
-  \item \textbf{Category~B (benchmark papers and per-task
-    re-extraction):} 657 rows.  This includes GIFT-Eval (B01/B03),
-    fev-bench (B02), and two smaller multi-model comparison papers
-    (B07--B08).  The large row count reflects task--model--metric
-    expansion, not hundreds of independent papers.
-  \item \textbf{Category~C (retail ML/DL papers):} 8 papers, 31 rows.
-    M5 competition analyses (C01, C05), transformer-based retail
-    studies (C03, C06), AutoML baselines (C10), and cross-domain
-    comparisons (C04, C12).
-  \item \textbf{Category~D (cross-domain):} 3 papers, 3 rows.
-    Included for model-family coverage but not in the retail-scoped
-    benchmark analysis.
-  \item \textbf{Category~F (fev-bench summary entries):} 1
-    paper, 8 rows.  These are retained for provenance but the
-    model-level benchmark analysis uses the expanded B02 per-task rows.
-  \item \textbf{OWN\_* (own experiments):} 7 experiment blocks,
-    45 extraction rows retained for
-    provenance.  The separate local Source~B sweep file adds 72 rows
-    (five FM models plus three baseline families across three datasets and
-    three horizons) and is not counted as an included literature record.
-\end{itemize}
+Fev-bench and GIFT-Eval account for most rows because their published results
+can be separated by task. The extraction includes 20 retail tasks from
+fev-bench and four from GIFT-Eval, as well as results for M5, Favorita,
+Rohlik, Rossmann, Walmart, and several smaller retail datasets. Foundation
+models are consequently over-represented in the raw row count. This imbalance
+does not affect the main comparison, which pairs each foundation-model result
+with a conventional method in the same task and metric cell.
 
-\subsection{Descriptive statistics}
+The three most common measures are \WAPE{}, \MASE{}, and Scaled Quantile Loss.
+Their near-equal representation in the paired file---166 comparisons for each
+measure---allows metric-specific summaries. Other measures, including the
+official M5 \WRMSSE{}, are retained for context but are not pooled with these
+three because they answer different forecasting questions.
 \label{subsec:descriptive}
 
-\noindent\textbf{Temporal distribution.}
-The extraction skews heavily toward 2024--2025: 589 rows from 2025
-papers, 140 from 2024, 53 from 2026.  Pre-2024 rows (20 total) are
-almost entirely M5 competition entries (2020--2022) and early DL
-comparisons.  This reflects the recency of the FM wave --- the first
-Chronos paper appeared in late 2023, and the bulk of FM evaluation
-literature dates from mid-2024 onward.  The 2025 dominance is driven
-by the fev-bench and GIFT-Eval per-task re-extraction.
-
-\noindent\textbf{Dataset distribution.}
-After per-task re-extraction from fev-bench and GIFT-Eval, the
-distribution is broad: 20 fev-bench retail tasks (24--27 rows each,
-534 rows total) and 4 GIFT-Eval retail tasks (${\sim}$107 rows) dominate,
-followed by M5 (40 rows, 6\%) and the remaining retail datasets.
-The per-task granularity enables Source~A model-level pairing within each
-(task, metric) cell, which is the basis of the $k = 498$ primary
-benchmark analysis.
-
-\noindent\textbf{Model family distribution.}
-Foundation models account for 567 rows (71\%), followed by ML\_TREE
-(125 rows, 16\%), statistical (48 rows, 6\%), deep learning
-(13 rows, 2\%), and various mixed/comparison/hybrid categories.  The
-high FM share reflects both the search strategy's emphasis on FM
-papers and the per-task extraction from benchmark suites where each
-FM generates one row per task.  The OWN\_* baseline rows (45 rows)
-partially offset the imbalance.
-
-\noindent\textbf{Metric heterogeneity.}
-The extraction contains three primary metrics after re-extraction:
-\WAPE{} (232 rows), \MASE{} (227 rows), and SQL (213 rows), plus
-\WRMSSE{} (23 rows, M5 only) and a long tail of win-rate, rank,
-runtime, cost, and other minor metrics.  After within-cell
-best-baseline pairing, the
-supporting Source~A contrast file uses 166 \WAPE{} pairs, 166 SQL pairs,
-and 166 \MASE{} pairs.  SQL pairs
-drive the distributional-accuracy finding, while \WAPE{} pairs test the
-point-forecast question.
-
-\noindent\textbf{Evaluation protocol.}
-The per-task fev-bench and GIFT-Eval rows use rolling-tail protocols
-as defined by those benchmarks.  The remaining Source~A rows split
-across rolling origin, rolling-tail, and fixed origin in roughly
-equal proportion.  Protocol heterogeneity is a known threat to
-validity (\S\ref{sec:limitations}; \ref{app:threats}).
-
-\subsection{Narrative synthesis by model family}
+\subsection{What the published evidence can compare}
 \label{subsec:narrative}
 
-\noindent\textbf{Foundation models.}
-The extraction schema contains 567 foundation-model rows (71\% of the
-schema), spanning three
-tiers of granularity: (i)~per-paper aggregate results from Source~A
-Category~A (54 foundation-model rows within 58 Category~A rows),
-(ii)~per-task per-model \WAPE{}/\MASE{}/SQL scores from the fev-bench,
-GIFT-Eval, and benchmark-suite re-extraction (509 foundation-model
-rows), and (iii)~four additional Source~A retail rows from Category~C.
-The local Source~B sweep is stored separately and adds 45 descriptive FM
-\WAPE{} rows, but those rows are not part of the 567-row extraction-schema
-count.
-On benchmark suites, Chronos-2, TimesFM~2.5, and Moirai~2.0 achieve
-win rates of 75--84\% against statistical baselines on GIFT-Eval,
-and normalised SQL scores of 20--35 on fev-bench.  The per-task
-extraction enables model-level FM-vs-baseline pairing within each
-(task, metric) cell --- the structural basis of the $k = 498$ primary
-benchmark analysis (\S\ref{sec:metaanalysis}).
+The search revealed a separation between two literatures. Papers introducing
+foundation models usually compare them with statistical methods and other
+foundation models on broad suites. Retail forecasting papers more often study
+LightGBM, XGBoost, or neural models on individual datasets, and many predate
+the recent zero-shot models. We found no standalone model paper that reported
+a foundation model and a gradient-boosted tree on the same retail series with
+the same per-series metric and forecast protocol.
 
-\noindent\textbf{Gradient-boosted trees (ML\_TREE).}
-The 125 ML\_TREE rows split between M5 competition entries (C01,
-7~rows with \WRMSSE{} 0.52--0.54 for the top-5 solutions), our own
-LightGBM baselines (OWN\_*, 45 rows across three datasets with
-\WAPE{} and \WRMSSE{}), and fev-bench/GIFT-Eval baseline rows where
-LightGBM or CatBoost serves as the reference.  Source~A ML\_TREE rows
-on M5 show competition-grade LightGBM at 0.52 \WRMSSE{} --- materially
-better than any FM row on the same metric (Chronos at 0.97, from C05).
-This \WRMSSE{} reading is the mirror image of the \WAPE{} reading on
-M5, where \LGBM{} posts 1.35--1.94 (per-series) vs FM at 0.93--0.96
---- the metric choice determines the sign of the comparison.
+Public benchmark suites partly bridge this gap. Fev-bench and GIFT-Eval report
+several model families within common tasks, which makes the 498 descriptive
+pairings possible. They also illustrate why the choice of comparator matters:
+foundation models tend to have a larger advantage over Seasonal Naive or
+Auto~ETS than over LightGBM or CatBoost. Their task-level tables do not,
+however, provide the joint prediction errors required to estimate uncertainty
+for a difference between models.
 
-\noindent\textbf{Statistical models.}
-The 48 STATS rows include our Seasonal Naive baselines (OWN\_*),
-Auto~ETS and Theta rows from fev-bench/GIFT-Eval, and Croston
-from the M5 competition.  On Favorita and Rohlik, both FM and
-ML\_TREE beat Seasonal Naive comfortably (by 8--15~pp \WAPE{}); on
-M5, Seasonal Naive at 1.31--1.33 \WAPE{} actually beats
-lightgbm\_cov (1.62--1.94) at longer horizons --- a striking failure
-of the tree baseline documented in \S\ref{sec:baseline} and
-\S\ref{sec:fm_results}.
+M5 provides a further warning against combining results solely by dataset
+name. Strong tree models achieve \WRMSSE{} near 0.52--0.54, whereas
+published foundation-model results on M5 often use per-series \WAPE{}. The two
+sets of numbers cannot be compared directly. A low-volume series with little
+test-period demand can dominate mean per-series \WAPE{} but receives a very
+different weight under \WRMSSE{}. We therefore treat metric-specific public
+results separately and use the matched experiments for the direct retail
+comparison.
 
-\noindent\textbf{Deep learning.}
-The 13 NN rows include M5 competition entries (DeepAR at \WRMSSE{}
-0.56 from C01, PatchTST variants from C05) and transformer
-comparisons on M5 (C06).  FM-vs-NN pairing is possible on fev-bench
-SQL scores but is outside the primary retail point-forecast scope.
-
-\subsection{Structural finding: FM-vs-ML\_TREE pairing requires
-  benchmark suites or original experiments}
+This division of evidence determines the role of the two empirical analyses
+that follow. The local experiments provide tighter comparisons on three
+datasets and consumer hardware. The public suites cover a wider range of
+tasks, models, and distributional forecasts. Agreement between them is
+informative, but neither is taken as a substitute for the other.
 \label{subsec:structural-finding}
-
-A key observation from the extraction: \textbf{no standalone Source~A
-paper reports both FM and ML\_TREE results on a single retail dataset
-under matched per-series metrics.}  The FM papers (Category~A)
-evaluate against statistical baselines or other FMs; the ML\_TREE
-papers (Category~C) predate the FM wave.  The only Source~A papers
-that pair both families are the benchmark suites --- fev-bench (B02)
-and GIFT-Eval (B01) --- which report per-task SQL, \WAPE{}, and
-\MASE{} for FMs alongside LightGBM, CatBoost, and Auto~ETS.
-
-The per-task re-extraction from these suites (\S\ref{subsec:extraction})
-partially resolves the original gap: the $k = 498$ primary
-benchmark analysis draws its paired rows from Source~A benchmark suites.
-Source~B (\S\ref{subsec:gapfilling}) remains necessary for two
-reasons: (1)~it adds the consumer-hardware cost dimension absent from
-benchmark evaluations, and (2)~it provides per-series \WAPE{} on
-individual retail datasets (M5, Favorita, Rohlik) under a controlled
-rolling-origin protocol.  Because the unmatched Source~B rows had unequal
-workloads, we report Source~B separately rather than as part of the primary
-Source~A contrast file.  The matched Source~B analysis is also reported
-separately because it has a local 100-series aggregate-\WAPE{} estimand.

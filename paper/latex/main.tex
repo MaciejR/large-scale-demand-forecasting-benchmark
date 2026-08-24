@@ -68,20 +68,20 @@ Evidence from Matched Panels and Public Benchmarks}
 \fi
 
 \begin{abstract}
-We examine when zero-shot time-series foundation models improve short-term
-retail demand forecasts over pragmatic LightGBM and statistical baselines.
-On matched 100-series rolling-origin panels from M5, Rohlik~v2, and Favorita,
-five foundation models and seven baseline variants are compared using paired
-series-bootstrap covariance.  Chronos-2 achieves lower aggregate \WAPE{} than
-the best observed local baseline in all nine dataset--horizon cells;
-richer-feature and 200-trial LightGBM sensitivity checks do not reverse the M5
-result.  Separate prediction-level reruns of 20 official fev-bench retail tasks
-provide paired \WAPE{} covariance against Seasonal Naive.  Public fev-bench and
-GIFT-Eval results are used descriptively: foundation-model advantages are
-clearest for Scaled Quantile Loss and smaller for \WAPE{} and \MASE{}.
-Rankings remain conditional on metric, baseline strength, multi-step protocol,
-workload matching, leakage risk, and demand characteristics.  The released
-artifacts support auditable retail forecasting bake-offs.
+We compare zero-shot time-series foundation models with conventional methods
+for short-term retail demand forecasting. Our main evidence comes from
+rolling-origin experiments on common samples of 100 series from M5,
+Rohlik~v2, and Favorita. Five foundation models are evaluated against seasonal
+naive forecasts and several LightGBM specifications. Chronos-2 records lower
+aggregate \WAPE{} than the strongest LightGBM result in each of the nine
+dataset--horizon comparisons, although the size of the difference varies.
+Results extracted from fev-bench and GIFT-Eval provide broader but less tightly
+controlled evidence. In those benchmarks, foundation models perform most
+consistently well on Scaled Quantile Loss, while differences in \WAPE{} and
+\MASE{} are smaller. The comparison is sensitive to the accuracy measure,
+LightGBM specification, available covariates, and evaluation design. We
+therefore recommend testing the two model families on identical forecast
+origins rather than treating either as a universal default.
 \end{abstract}
 
 \begin{keyword}

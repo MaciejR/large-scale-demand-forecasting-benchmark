@@ -2,181 +2,101 @@
 \section{Background}
 \label{sec:background}
 
-Short-term retail demand forecasting --- predicting daily or weekly
-SKU-level sales 1--4 weeks ahead --- is one of the most mature
-applied forecasting problems. The operational stakes
-(replenishment, markdown optimisation, labour scheduling) have
-driven a long lineage of benchmark competitions and model
-development. This section establishes the taxonomy we use throughout
-the paper and surveys the three benchmark ecosystems whose results
-populate our extraction schema.
+Short-term retail demand forecasts support replenishment, inventory allocation,
+markdowns, and labour planning. The data typically consist of many related
+item--location series, often with intermittent sales and information about
+prices, promotions, and the calendar. This combination has encouraged the use
+of global models, which learn across series, as well as a long tradition of
+simple per-series benchmarks.
 
-\subsection{Taxonomy of forecasting approaches}
+\subsection{Forecasting methods}
 \label{sec:taxonomy}
 
-We group methods into four families, matching the
-\texttt{model\_family} field in our extraction schema
-(\S\ref{sec:extraction-schema}). The grouping is coarse by design:
-the benchmark analysis (\S\ref{sec:meta-regression}) treats it as a
-categorical moderator, so finer distinctions (e.g., GRU vs
-Transformer within NN) would create sparsely populated cells.
+We distinguish four broad model families. Statistical methods such as
+exponential smoothing, ARIMA, Theta, Seasonal Naive, Croston, and TSB are fitted
+to individual series \citep{croston1972forecasting,teunter2011intermittent}.
+They remain useful benchmarks: a more complex model should demonstrate an
+improvement over a forecast that repeats the most recent seasonal pattern.
 
-\paragraph{Statistical models.}
-Exponential smoothing (ETS), ARIMA, Theta, Seasonal Naive, and
-intermittent-demand methods (Croston, TSB)
-\citep{croston1972forecasting,teunter2011intermittent}. These are fitted
-per-series with no cross-series learning. Their value in this paper
-is as a sanity-check baseline: any global model that loses to
-Seasonal Naive on a given (dataset, horizon) cell is failing in a
-way that demands explanation, not hand-waving. We include Croston
-because M5 has a \textasciitilde{}70\,\% series-day zero fraction and
-Croston is the textbook method for intermittent demand. In our
-extraction schema these models carry
-\texttt{model\_family = "statistical"}.
+Gradient-boosted trees such as LightGBM \citep{ke2017lightgbm} and XGBoost
+\citep{chen2016xgboost} are commonly fitted globally across items and stores.
+Lagged demand, calendar indicators, prices, promotions, and item or store
+identifiers allow the model to combine temporal and cross-sectional
+information. This family dominated the M5 competition and is an important
+practical comparator for retail applications. Multi-step forecasts can be
+produced recursively with one model or directly with a separate model for each
+horizon. As shown later, this choice can materially affect the result.
 
-\paragraph{Gradient-boosted trees (ML\_TREE).}
-LightGBM \citep{ke2017lightgbm} and XGBoost \citep{chen2016xgboost}
-fitted as global models: one model trained
-across all series, with cross-sectional features (lags, calendar
-effects, price, promotions, store/item embeddings). This is the
-family that the M5 competition (\S\ref{sec:m5-benchmark}) crowned
-as the winner, and it remains the production default at most
-retailers. In the extraction schema,
-\texttt{model\_family $\in$ \{"ml\_tree", "ml", "ml\_gbm", "gbdt",
-"ml\_ensemble", "ml\_hybrid"\}}. The \S\ref{sec:baseline-reliability}
-baseline reliability analysis shows that the choice of multi-step
-strategy (direct vs recursive) within this family can flip the
-accuracy ranking by 10+ pp \WAPE{} depending on demand distribution
---- a confound that the literature rarely reports and that our
-gap-filling experiments control for.
+Neural forecasting methods also learn across series. They include recurrent
+models such as DeepAR \citep{salinas2020deepar}, attention-based models such as
+TFT and PatchTST \citep{lim2021tft,nie2023patchtst}, and architectures such as
+N-BEATS and N-HiTS \citep{oreshkin2020nbeats,challu2023nhits}. They require
+training on the target collection and therefore differ from the zero-shot
+models at the centre of this paper.
 
-\paragraph{Deep learning (NN).}
-Recurrent (DeepAR \citep{salinas2020deepar}, LSTNet
-\citep{lai2018lstnet}), attention-based
-(TFT \citep{lim2021tft}, PatchTST \citep{nie2023patchtst}, Informer
-\citep{zhou2021informer}),
-and MLP-based (N-BEATS \citep{oreshkin2020nbeats}, N-HiTS
-\citep{challu2023nhits}) models trained on many
-series. These models occupy a middle ground: they learn cross-series
-patterns like tree models but have higher computational cost and
-typically require more data to avoid overfitting. In the M5
-competition, the top-50 solutions were overwhelmingly tree-based; DL
-entries placed in the top quartile but did not win outright. Since
-2023, PatchTST and its descendants have narrowed the gap on
-benchmark suites. In the extraction schema,
-\texttt{model\_family} values such as \texttt{nn}, \texttt{deep},
-\texttt{transformer}, \texttt{rnn}, \texttt{deep\_learning}, and
-\texttt{ensemble\_dl} are mapped to NN.
-
-\paragraph{Foundation models (FM).}
-Pre-trained on large corpora of heterogeneous time series and
-applied zero-shot (no fine-tuning on the target dataset) or with
-lightweight fine-tuning. Table~\ref{tab:fm-scope} lists the
-models in scope for this review.
+Foundation models are pre-trained on large collections of time series and can
+be transferred to a new dataset without estimating new model parameters.
+Table~\ref{tab:fm-scope} lists the models covered by the literature extraction
+or the experiments. Our empirical comparison is restricted to zero-shot use;
+fine-tuned results are recorded in the data but excluded from the main
+contrasts.
 
 \begin{table}[htbp]
 \centering
-\caption{Foundation models in scope.}
-\label{tab:fm-scope}
+\caption{Foundation models covered by the study.}
+\label{tab:fm-scope}\label{tab:fm_models}
 \footnotesize
-\begin{tabularx}{\textwidth}{l l X X X X}
+\begin{tabularx}{\textwidth}{l l X X X}
 \toprule
-Model & Params & Architecture & Checkpoint / code & Covariates used here & Key reference \\
+Model & Parameters & Architecture & Version considered & Reference \\
 \midrule
-Chronos family & 9--710\,M & Chronos / Chronos-2 & Chronos-2 120M; Bolt Tiny/Base & No; covariate support not tested here &
-  \citet{ansari2024chronos, ansari2025chronos2} \\
-TimesFM~2.5 & 200\,M & Decoder-only & 2.5 checkpoint & No &
-  \citet{das2025timesfm2} \\
-Moirai~2.0 & 11--305\,M & Decoder-only quantile model & Small checkpoint & No in analyzed rows &
-  \citet{liu2025moirai2} \\
-TiRex & \textasciitilde{}35\,M & xLSTM & public checkpoint & No &
-  \citet{auer2025tirex} \\
-TabPFN-TS & \textasciitilde{}12\,M & Tabular PFN + temporal features & TabPFN-v2 extension & Yes in fev-bench covariate tasks &
-  \citet{mueller2025tabpfnts} \\
-Lag-Llama & 6\,M & Llama backbone & public checkpoint & No &
-  \citet{rasul2023laglama} \\
-TimeGPT & not disclosed & Proprietary & API model & Not in the primary paired file &
-  \citet{garza2023timegpt} \\
+Chronos family & 9--710\,M & Chronos / Chronos-2 & Chronos-2 120M; Bolt Tiny/Base &
+  \citet{ansari2024chronos,ansari2025chronos2} \\
+TimesFM~2.5 & 200\,M & Decoder-only & 2.5 checkpoint & \citet{das2025timesfm2} \\
+Moirai~2.0 & 11--305\,M & Quantile model & Small checkpoint & \citet{liu2025moirai2} \\
+TiRex & \textasciitilde{}35\,M & xLSTM & Public checkpoint & \citet{auer2025tirex} \\
+TabPFN-TS & \textasciitilde{}12\,M & Tabular PFN & fev-bench tasks & \citet{mueller2025tabpfnts} \\
+Lag-Llama & 6\,M & Llama backbone & Public checkpoint & \citet{rasul2023laglama} \\
+TimeGPT & Not disclosed & Proprietary & Published API results & \citet{garza2023timegpt} \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-In the extraction schema, \texttt{model\_family = "foundation"}.
-The zero-shot setting is the primary scope of this review;
-fine-tuned FM entries (e.g., Chronos-2 with in-domain pre-training)
-are retained in the schema but flagged as
-\texttt{fine\_tuned = "Yes"} and excluded from the primary
-contrast file to avoid confounding pre-training scale with
-task-specific tuning.
-
-\subsection{Existing benchmarks}
+\subsection{Retail forecasting benchmarks}
 \label{sec:existing-benchmarks}
 
-Three benchmark ecosystems contribute the majority of our extraction
-rows. We note their design choices because those choices determine
-what the extracted metrics actually measure --- and where they
-systematically mislead.
-
-\paragraph{M5 Competition \citep{makridakis2022m5}.}
+Three benchmark sources are particularly relevant. The M5 competition
+\citep{makridakis2022m5} contains 30,490 daily Walmart item--store series and
+covariates for calendar events, prices, and the US Supplemental Nutrition
+Assistance Program. Its official measure, \WRMSSE{}, scales errors by each
+series' historical variability and weights economically important series more
+heavily. Gradient-boosted trees were used by the leading entries.
 \label{sec:m5-benchmark}
-30{,}490 daily Walmart series across 10 stores and 3{,}049 products,
-with calendar, price, and SNAP covariates. The official metric is
-\WRMSSE{} --- a weighted ratio of root mean squared scaled errors
-that accounts for intermittent demand by scaling each series' error
-by its historical variability. The competition was won by
-gradient-boosted trees (top-5 all LightGBM or XGBoost); the best DL
-entry (DeepAR) placed around \#50. M5 is still the go-to retail
-benchmark in 2026, but it has two ageing problems: (1) the data is
-from 2011--2016, predating modern promotional patterns, and (2)
-many foundation model papers report per-series \WAPE{} rather than
-\WRMSSE{} on M5, creating a metric mismatch that
-\S\ref{sec:fm-m5-metric} documents in detail. On per-series
-\WAPE{}, the \textasciitilde{}70\,\% series-day zero fraction in M5's long
-tail causes denominator explosions that make \LGBM{} appear to
-perform worse than Seasonal Naive --- a metric artefact, not a
-model failure.
 
-\paragraph{GIFT-Eval \citep{aksu2024gift}.}
-The published paper reports 23 datasets (about 144{,}000 series) curated
-to avoid train--test leakage
-in foundation-model evaluations. Covers multiple domains including
-retail, energy, and transport. The standard metric is a skill score
-relative to Seasonal Naive, computed with bootstrapped confidence
-intervals. GIFT-Eval is the dominant evaluation suite in the FM
-literature: most of our Category~A (FM paper) rows cite it. Its
-limitation for our purposes is that only a subset of the 23 datasets
-is retail-specific, and the aggregate skill scores mix retail with
-non-retail, making it hard to extract a clean retail-only
-FM-vs-ML\_TREE delta.
+M5 also illustrates why apparently minor evaluation choices matter. A large
+share of item--day observations are zero. Mean per-series \WAPE{} gives the
+same weight to a low-volume item as to a high-volume item and becomes unstable
+when test-period demand is close to zero. Aggregate \WAPE{} and \WRMSSE{}
+place different weights on the series and may therefore produce different
+rankings. We keep these measures separate throughout the analysis.
 
-\paragraph{fev-bench \citep{shchur2025fevbench}.}
-100 tasks spanning 46 with exogenous covariates, designed as a
-direct response to the ``no covariates in FM evaluation'' criticism.
-Uses bootstrapped CIs and skill scores. Covers a broader set of
-model families than GIFT-Eval, including covariate-aware baselines
-that are largely absent from FM papers. For our extraction, fev-bench
-provides the largest single block of rows with both FM and
-statistical baselines on the same tasks, though the task-level
-granularity (rather than dataset-level) makes cross-benchmark
-alignment non-trivial.
+GIFT-Eval \citep{aksu2024gift} was designed to reduce the risk that a public
+test set had appeared in a foundation model's pre-training data. It covers 23
+datasets from several domains and reports skill relative to Seasonal Naive
+with bootstrap intervals. Only part of the suite is retail-specific, so we
+extract results at the task level rather than use its overall ranking.
 
-\subsection{Meta-analyses in forecasting}
-\label{sec:meta-analyses}
+Fev-bench \citep{shchur2025fevbench} contains 100 forecasting tasks, including
+46 with exogenous variables. It covers foundation models, statistical
+methods, and tree baselines, and is consequently useful for studying whether
+benchmark conclusions change with the comparator or accuracy measure. We use
+the 20 tasks identified as retail-related.
 
-The M-competition lineage (M1--M5, Makridakis 1982--2022) is the
-closest antecedent to our work: each competition is, in effect, a
-large-scale empirical comparison of forecasting methods on a shared
-dataset with standardised metrics. The M5 (retail) and M4
-(heterogeneous) competitions produced substantial secondary
-analysis, but always on a single dataset per competition.
-Petropoulos et al.\ (2022) survey the forecasting landscape broadly
-but do not benchmark recent foundation models on matched retail panels.
-Lim \& Zohren (2021) review deep learning for time series but predate the
-FM wave.
-
-To our knowledge, \textbf{no prior work combines} (1)~a
-structured literature search that documents extractability, (2)~quantitative
-extraction across multiple retail-relevant benchmark suites, (3)~matched-panel
-local experiments to fill structural holes, and (4)~prediction-level paired
-bootstrap covariance artefacts for concrete FM-vs-baseline retail contrasts.
-This is the gap we fill.
+Forecasting competitions provide strong comparisons because models share data
+and metrics, but each competition represents a limited set of demand patterns.
+Reviews of forecasting and deep learning provide broader context but either
+precede the recent foundation-model literature or do not compare these models
+with retail tree baselines on common panels \citep{lim2021tft}. The evidence
+assembled here connects those two forms of evaluation: broad public benchmark
+coverage and narrower experiments in which the forecasts can be paired at the
+series level.

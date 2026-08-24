@@ -1,100 +1,74 @@
-% === Section 7: Decision Framework ===
-\section{Decision Framework}
+\section{Implications for Model Evaluation}
 \label{sec:framework}
 
-The evidence in \S\ref{sec:metareg} is not strong enough to justify a
-deterministic decision tree.  The defensible output is a validation
-procedure: run a small, paired bake-off on the target workload, choose the
-metric that matches the business loss, and treat model-family rankings as
-conditional on that protocol.
+The experiments do not support a rule that assigns one model family to a
+retail dataset from a few summary statistics. They do support a relatively
+simple evaluation procedure. Its purpose is to prevent differences in samples,
+metrics, and baseline effort from being mistaken for differences between
+models.
 
-\subsection{Validation checklist}
+\subsection{A common-panel comparison}
 \label{subsec:validation-checklist}
 
-For a new retail forecasting deployment, we recommend the following order.
+The first step is to choose an accuracy measure that represents the decision
+being supported. Aggregate or volume-weighted errors may suit warehouse and
+category planning, while item-level replenishment may require per-series or
+service-level measures. Safety-stock decisions should be evaluated with
+quantile loss or the relevant inventory cost rather than point-forecast error
+alone. On intermittent series, both the number of zero-demand periods and the
+denominator of percentage measures should be inspected.
 
-\begin{enumerate}
-  \item \textbf{Define the decision metric before modelling.}  If the
-    business decision is replenishment at SKU level, use a per-series or
-    service-level metric and inspect denominator sensitivity.  If the
-    decision is category or warehouse planning, include aggregate \WAPE{} or
-    a volume-weighted metric.  For safety-stock decisions, evaluate quantile
-    loss directly.
+The candidate models should then be run on identical series, origins,
+horizons, and actual values. Seasonal Naive provides a minimum reference. A
+global LightGBM model with available covariates represents a practical
+supervised baseline, and at least one alternative multi-step strategy should
+be checked when the horizon is long. One or two zero-shot foundation models
+can be added without an extensive search over checkpoints. Saving individual
+forecasts permits a paired bootstrap comparison and makes later error analysis
+possible.
 
-  \item \textbf{Build the common evaluation panel.}  Use the same series IDs,
-    origins, horizons, and actuals for Seasonal Naive, the candidate FM, and
-    the tree baseline.  Store per-series predictions so that paired
-    bootstrap intervals can be computed for every model contrast.
+The final choice should consider the size and uncertainty of the accuracy
+difference rather than the rank alone. If the paired interval is practically
+indistinguishable from zero, implementation effort, latency, licensing, and
+maintenance become reasonable tie-breakers. Comparisons based on different
+series counts or forecast windows should be labelled as descriptive and should
+not determine deployment.
 
-  \item \textbf{Run three baselines first.}  Seasonal Naive is the sanity
-    floor.  A fixed-budget LightGBM recursive model measures the value of a
-    cheap covariate-aware tree.  A direct or horizon-scaled direct LightGBM
-    measures the value of avoiding recursive feedback at higher training
-    cost.
-
-  \item \textbf{Run one or two zero-shot FMs on the same panel.}  Start with
-    a small, operationally cheap FM and one stronger checkpoint if latency
-    allows.  Do not compare an FM sampled on 100 series with a baseline
-    evaluated on a full dataset unless the claim is explicitly labelled as
-    descriptive.
-
-  \item \textbf{Compare paired contrasts, not table ranks.}  Report
-    the paired log-ratio
-    \[
-      \log(\text{FM metric}/\text{baseline metric})
-    \]
-    with a paired bootstrap interval.  A point estimate within the noise
-    floor is a tie; choose the simpler or cheaper deployment.
-\end{enumerate}
-
-\subsection{Interpreting the main moderators}
+\subsection{Factors that change the comparison}
 \label{subsec:framework-moderators}
 
-\paragraph{Metric.}
-The most stable empirical pattern is metric dependence.  SQL, \WAPE{}, and
-\MASE{} do not measure the same construct, and a mixed-metric omnibus should
-not drive deployment.  Use the metric-specific result that matches the
-operational decision.
+Metric choice produced the most consistent difference in the public results.
+The strong pattern for Scaled Quantile Loss does not imply an equally strong
+advantage in \WAPE{} or \MASE{}. A team should therefore avoid an overall
+benchmark rank that averages measures with different operational meanings.
 
-\paragraph{Demand intermittency.}
-The direct-vs-recursive gap differs across M5, Rohlik, and Favorita.  This
-supports an intermittency hypothesis, but it does not establish a universal
-zero-day threshold.  Treat zero-day fraction as a stratification variable in
-the bake-off rather than as a rule such as ``above 15\%, choose direct.''
+Demand intermittency can affect both model behaviour and metric aggregation.
+Our direct--recursive LightGBM results differ between samples and between
+per-series and aggregate \WAPE{}. The zero fraction is consequently useful for
+stratifying an evaluation panel, but the three datasets do not establish a
+threshold at which one strategy should replace another.
 
-\paragraph{Covariates.}
-When promotions, prices, stockouts, holidays, or weather are predictive, a
-covariate-aware LightGBM can be a strong comparator.  A univariate FM may
-still be useful when the team lacks a feature pipeline, but that is a
-systems tradeoff rather than evidence that the model family has more
-forecasting information.
+Covariates create a further asymmetry. Prices, promotions, holidays, weather,
+and stock availability can give a supervised model information that a
+univariate foundation model does not receive. A zero-shot model may still be
+valuable when such features are unavailable or costly to maintain, but this is
+an engineering trade-off rather than an accuracy advantage under equal
+information.
 
-\paragraph{Cost and hardware.}
-The Source~B cost logs mix MacBook marginal electricity, Azure job costs,
-and unequal workloads.  They are useful for scenario planning, not for a
-universal break-even point.  A publishable cost comparison should normalize
-to the same number of series, the same horizons, the same batching policy,
-and the same accounting basis.
+Finally, the measured laptop and Azure runtimes should not be used as a general
+cost comparison. Throughput depends on batching, model implementation,
+hardware, and the number and length of series. These quantities need to be
+measured on the intended workload. Licence restrictions also matter:
+Moirai~2.0-Small, for example, is distributed under a non-commercial licence.
 
-\subsection{Decision rule after the bake-off}
+\subsection{Deployment choice}
 \label{subsec:framework-decision-rule}
 
-After the paired bake-off, choose the FM when all of the following hold:
-
-\begin{itemize}
-  \item the FM has a lower or practically tied paired error interval on the
-    target metric;
-  \item the saved feature-engineering or maintenance effort is material for
-    the team;
-  \item inference latency and hardware cost are acceptable at the target
-    series count;
-  \item the business does not depend on covariates that the evaluated FM
-    cannot consume.
-\end{itemize}
-
-Choose the conventional baseline when it wins the paired interval, uses
-important covariates, or already exists as a reliable production pipeline.
-Choose Seasonal Naive or another simple statistical method when both FM and
-LightGBM fail to beat it on the target metric; that outcome usually signals
-an evaluation, feature, or data-quality problem before it signals a need for
-a larger model.
+A foundation model is a reasonable choice when it matches or improves the
+target metric on the common panel, its inference requirements are acceptable,
+and avoiding a feature and training pipeline has material value. A supervised
+baseline is preferable when it performs better, already operates reliably in
+production, or benefits from important covariates that the candidate
+foundation model cannot use. If neither improves on Seasonal Naive, the first
+response should be to inspect the data and evaluation design rather than to
+increase model complexity.
